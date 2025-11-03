@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PrescriptionForm from "./pages/PrescriptionForm";
 import PrescriptionList from "./pages/PrescriptionList";
+import PrintOpdForm from "./pages/PrintOpdForm";
 
 function App() {
   return (
@@ -71,6 +72,8 @@ function App() {
             </Layout>
           }
         />
+        <Route path="/print-opd-form" element={<PrintOpdForm />} />
+
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />

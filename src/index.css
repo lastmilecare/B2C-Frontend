@@ -1,9 +1,42 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+
 body {
   font-family: 'Inter', sans-serif;
   background: linear-gradient(120deg, #f0fdfa, #e0f2fe);
   min-height: 100vh;
   color: #1f2937;
+}
+
+/* ✅ PRINT FIX */
+@layer utilities {
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 0 !important;
+    }
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 210mm !important;
+      height: 297mm !important;
+      background: white !important;
+      overflow: hidden !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    * {
+      page-break-inside: avoid !important;
+      page-break-after: avoid !important;
+      box-sizing: border-box !important;
+    }
+
+    /* ✅ Hide browser headers, footers, and scaling */
+    @page :first {
+      margin: 0 !important;
+    }
+  }
 }
