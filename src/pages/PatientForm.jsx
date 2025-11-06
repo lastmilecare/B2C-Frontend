@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ArrowPathIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
-import { RELATIONSHIP_OPTIONS, TITLES, BLOOD_GROUPS, RESIDENTAL_STATUS } from "../utils/constants";
+import { RELATIONSHIP_OPTIONS, TITLES, BLOOD_GROUPS, RESIDENTAL_STATUS, OCCUPATION_OPTIONS } from "../utils/constants";
+// import { useSearchDiseasesQuery } from "../redux/apiSlice";
+import DiseaseSelect from "../components/DiseaseSelect";
+import { useLocationData } from "../services/locationApi";
+
+
 
 const baseInput =
   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
@@ -59,6 +64,10 @@ const Button = ({ variant = "sky", children, ...props }) => {
 
 const PatientRegistration = () => {
   const [age, setAge] = useState("");
+  const [countryId, setCountryId] = useState("");
+  const [stateId, setStateId] = useState("");
+
+  const { countries, states, districts } = useLocationData(countryId, stateId);
 
   const formik = useFormik({
     initialValues: {
@@ -83,7 +92,7 @@ const PatientRegistration = () => {
       emergencyContactName: "",
       emergencyContactNumber: "",
       blood_group: "",
-      complaint: "",
+      diseases: [],
       creditamount: "",
       uniquenumber: "",
     },
@@ -239,28 +248,80 @@ const PatientRegistration = () => {
               <option>BPL</option>
             </Select>
 
-            <Input
+            {/* <Input
               {...formik.getFieldProps("country")}
               label="Country"
               required
               error={formik.touched.country && formik.errors.country}
-            />
+            /> */}
 
-            <Input
+
+            {/* <Input
               {...formik.getFieldProps("localAddressState")}
               label="State"
               required
               error={formik.touched.localAddressState && formik.errors.localAddressState}
-            />
+            /> */}
 
-            <Input {...formik.getFieldProps("localAddressDistrict")} label="District" />
+            {/* <Input {...formik.getFieldProps("localAddressDistrict")} label="District" /> */}
 
-            <Input
-              {...formik.getFieldProps("occupation")}
-              label="Occupation"
+            <Select
+              label="Country"
               required
-              error={formik.touched.occupation && formik.errors.occupation}
-            />
+              value={countryId}
+              onChange={(e) => {
+                const value = e.target.value;
+                setCountryId(value);
+                formik.setFieldValue("country", value);
+                setStateId(""); // reset when country changes
+                formik.setFieldValue("localAddressState", "");
+                formik.setFieldValue("localAddressDistrict", "");
+              }}
+              error={formik.touched.country && formik.errors.country}
+            >
+              <option value="">Select Country</option>
+              {countries.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </Select>
+
+            <Select
+              label="State"
+              required
+              value={stateId}
+              disabled={!countryId}
+              onChange={(e) => {
+                const value = e.target.value;
+                setStateId(value);
+                formik.setFieldValue("localAddressState", value);
+                formik.setFieldValue("localAddressDistrict", "");
+              }}
+              error={formik.touched.localAddressState && formik.errors.localAddressState}
+            >
+              <option value="">Select State</option>
+              {states.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </Select>
+
+            <Select
+              label="District"
+              value={formik.values.localAddressDistrict}
+              disabled={!stateId}
+              onChange={(e) => formik.setFieldValue("localAddressDistrict", e.target.value)}
+            >
+              <option value="">Select District</option>
+              {districts.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </Select>
+
+            <Select {...formik.getFieldProps("occupation")} label="Occupation" error={formik.touched.occupation && formik.errors.occupation}>
+              <option value="">Select</option>
+              {OCCUPATION_OPTIONS.map((e) => (
+                <option key={e}>{e}</option>
+              ))}
+            </Select>
 
             <Input {...formik.getFieldProps("healthCardNumber")} label="Health Card Number" />
             <Input {...formik.getFieldProps("localAddress")} label="Local Address" />
@@ -291,7 +352,14 @@ const PatientRegistration = () => {
               ))}
             </Select>
 
-            <Input {...formik.getFieldProps("complaint")} label="Chief Complaint" />
+            <DiseaseSelect
+              value={formik.values.diseases}
+              label="Pre-existing Diseases"
+              onChange={(selected) => formik.setFieldValue("diseases", selected)}
+              required
+            />
+
+
             <Input {...formik.getFieldProps("creditamount")} label="Credit Amount" />
             <Input {...formik.getFieldProps("uniquenumber")} label="Identification No" />
           </div>

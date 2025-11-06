@@ -4,7 +4,7 @@ import { cookie } from "../utils/cookie";
 // Create a new axios instance
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "https://api.example.com",
-  withCredentials: true, // allow cookies to be sent with requests
+  // withCredentials: true,  Uncomment into the future
   headers: {
     "Content-Type": "application/json",
   },

@@ -7,7 +7,7 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import ServiceSection from "../components/ServiceSection";
-
+import DiseaseSelect from "../components/DiseaseSelect";
 // 🩵 Reusable input components
 const baseInput =
   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
@@ -55,7 +55,7 @@ const OpdBilling = () => {
     initialValues: {
       UHID: "",
       CenterName: "",
-      ChiefComplaint: "",
+      diseases: [],
       Name: "",
       Mobile: "",
       Gender: "",
@@ -147,12 +147,18 @@ const OpdBilling = () => {
               <option>Main Center</option>
               <option>Branch A</option>
             </Select>
-            <textarea
+            {/* <textarea
               {...formik.getFieldProps("ChiefComplaint")}
               placeholder="Chief Complaint"
               className={`${baseInput} h-14`}
-            />
+            /> */}
 
+            <DiseaseSelect
+              label=""
+              value={formik.values.ChiefComplaint}
+              onChange={(selected) => formik.setFieldValue("diseases", selected)}
+              required
+            />
             <Input {...formik.getFieldProps("Name")} placeholder="Name" />
             <Input {...formik.getFieldProps("Mobile")} placeholder="Mobile Number" />
 

@@ -4,19 +4,19 @@ import axiosClient from "../api/axiosClient";
 // axiosBaseQuery wrapper for RTK Query
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
-  async ({ url, method, data, params }) => {
-    try {
-      const result = await axiosClient({ url: baseUrl + url, method, data, params });
-      return { data: result.data };
-    } catch (error) {
-      return {
-        error: {
-          status: error.response?.status,
-          data: error.response?.data || error.message,
-        },
-      };
-    }
-  };
+    async ({ url, method, data, params }) => {
+      try {
+        const result = await axiosClient({ url: baseUrl + url, method, data, params });
+        return { data: result.data };
+      } catch (error) {
+        return {
+          error: {
+            status: error.response?.status,
+            data: error.response?.data || error.message,
+          },
+        };
+      }
+    };
 
 export const api = createApi({
   reducerPath: "api",
@@ -31,7 +31,35 @@ export const api = createApi({
     getPatients: build.query({
       query: () => ({ url: "/patients", method: "get" }),
     }),
+    searchDiseases: build.query({
+      query: ({ q, page = 1, limit = 20 }) => ({
+        url: "/diseases/search",
+        method: "get",
+        params: { q, page, limit },
+      }),
+    }),
+    getCountries: build.query({
+      query: () => ({ url: "/location/countries", method: "get" }),
+    }),
+
+    getStatesByCountry: build.query({
+      query: (countryId) => ({
+        url: `/location/states/${countryId}`,
+        method: "get",
+      }),
+    }),
+
+    getDistrictsByState: build.query({
+      query: (stateId) => ({
+        url: `/location/districts/${stateId}`,
+        method: "get",
+      }),
+    }),
+
   }),
 });
 
-export const { useLoginMutation, useSignupMutation, useGetPatientsQuery } = api;
+export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSearchDiseasesQuery, useGetCountriesQuery,
+  useGetStatesByCountryQuery,
+  useGetDistrictsByStateQuery,
+} = api;
