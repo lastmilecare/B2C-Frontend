@@ -8,6 +8,8 @@ import {
 } from "@heroicons/react/24/outline";
 import ServiceSection from "../components/ServiceSection";
 import DiseaseSelect from "../components/DiseaseSelect";
+
+import { PAYMENT_TYPES } from "../utils/constants";
 // 🩵 Reusable input components
 const baseInput =
   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
@@ -262,10 +264,9 @@ const OpdBilling = () => {
 
             <Select {...formik.getFieldProps("PayMode")}>
               <option value="">Select Pay Mode</option>
-              <option>Cash</option>
-              <option>Card</option>
-              <option>UPI</option>
-              <option>Cheque</option>
+              {PAYMENT_TYPES.map((b) => (
+                <option key={b}>{b}</option>
+              ))}
             </Select>
 
             <Input {...formik.getFieldProps("CashAmount")} placeholder="Cash Amount" />

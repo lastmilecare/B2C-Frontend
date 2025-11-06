@@ -29,7 +29,7 @@ export const api = createApi({
       query: (body) => ({ url: "/auth/signup", method: "post", data: body }),
     }),
     getPatients: build.query({
-      query: () => ({ url: "/patients", method: "get" }),
+      query: () => ({ url: "/patient", method: "get" }),
     }),
     searchDiseases: build.query({
       query: ({ q, page = 1, limit = 20 }) => ({
@@ -55,6 +55,7 @@ export const api = createApi({
         method: "get",
       }),
     }),
+
 
   }),
 });

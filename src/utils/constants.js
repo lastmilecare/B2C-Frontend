@@ -29,4 +29,29 @@ export const OCCUPATION_OPTIONS = [
     "Unemployed",
     "Other"
 ];
+export const PAYMENT_TYPES = [
+    "Cash",
+    "Credit Card",
+    "Debit Card",
+    "UPI",
+    "Net Banking",
+    "Cheque",
+    "Insurance",
+    "Online Payment",
+    "Wallet",
+    "Other",
+];
 
+
+export const IDENTIFICATION_TYPES = [
+    { value: "aadhaar", label: "Aadhaar Card" },
+    { value: "pan", label: "PAN Card" },
+    { value: "voter", label: "Voter ID" },
+    { value: "passport", label: "Passport" },
+    { value: "driving_license", label: "Driving License" },
+    { value: "ration_card", label: "Ration Card" },
+    { value: "employee_id", label: "Employee ID" },
+    { value: "student_id", label: "Student ID" },
+    { value: "health_card", label: "Health Card" },
+    { value: "other", label: "Other" },
+];

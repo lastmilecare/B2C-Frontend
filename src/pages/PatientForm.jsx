@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ArrowPathIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
-import { RELATIONSHIP_OPTIONS, TITLES, BLOOD_GROUPS, RESIDENTAL_STATUS, OCCUPATION_OPTIONS } from "../utils/constants";
+import { RELATIONSHIP_OPTIONS, TITLES, BLOOD_GROUPS, RESIDENTAL_STATUS, OCCUPATION_OPTIONS, IDENTIFICATION_TYPES } from "../utils/constants";
 // import { useSearchDiseasesQuery } from "../redux/apiSlice";
 import DiseaseSelect from "../components/DiseaseSelect";
 import { useLocationData } from "../services/locationApi";
@@ -94,7 +94,9 @@ const PatientRegistration = () => {
       blood_group: "",
       diseases: [],
       creditamount: "",
-      uniquenumber: "",
+      idProof_number: "",
+      idProof_name: "",
+
     },
     validationSchema: Yup.object({
       title: Yup.string().required("Title is required"),
@@ -360,8 +362,37 @@ const PatientRegistration = () => {
             />
 
 
+            <Select {...formik.getFieldProps("idProof_name")} label="Identification Type">
+              <option value="">Select</option>
+              {IDENTIFICATION_TYPES.map((b) => (
+                <option key={b.value} value={b.value}>
+                  {b.label}
+                </option>
+              ))}
+            </Select>
+
+
+            {formik.values.idProof_name && (
+              <Input
+                {...formik.getFieldProps("idProof_number")}
+                label="Identification Number"
+                required
+                error={formik.touched.idProof_number && formik.errors.idProof_number}
+              />
+            )}
+
+
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Payment Details
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+
             <Input {...formik.getFieldProps("creditamount")} label="Credit Amount" />
-            <Input {...formik.getFieldProps("uniquenumber")} label="Identification No" />
           </div>
         </section>
 
