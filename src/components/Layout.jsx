@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import Footer from "./Footer";
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -17,7 +18,9 @@ const Layout = ({ children }) => {
       {/* Main Area */}
       <div className="flex-1 flex flex-col">
         <Topbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="p-6 overflow-y-auto">{children}</main>
+        <main className="p-2 overflow-y-auto">{children}</main>
+        <Footer />
+
       </div>
     </div>
   );

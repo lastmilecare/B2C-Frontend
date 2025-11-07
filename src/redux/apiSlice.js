@@ -29,8 +29,32 @@ export const api = createApi({
       query: (body) => ({ url: "/auth/signup", method: "post", data: body }),
     }),
     getPatients: build.query({
-      query: () => ({ url: "/patient", method: "get" }),
+      query: ({
+        page = 1,
+        limit = 10,
+        mobile,
+        uniqueId,
+        name,
+        gender,
+        startDate,
+        endDate,
+      } = {}) => ({
+        url: "/patient",
+        method: "get",
+        params: {
+          page,
+          limit,
+          mobile,
+          uniqueId,
+          name,
+          gender,
+          startDate,
+          endDate,
+        },
+      }),
     }),
+
+
     searchDiseases: build.query({
       query: ({ q, page = 1, limit = 20 }) => ({
         url: "/diseases/search",
