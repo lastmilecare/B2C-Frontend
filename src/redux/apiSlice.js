@@ -32,24 +32,28 @@ export const api = createApi({
       query: ({
         page = 1,
         limit = 10,
-        mobile,
-        uniqueId,
         name,
+        contactNumber,
         gender,
+        category,
         startDate,
         endDate,
+        external_id,
+        idProof_number
       } = {}) => ({
         url: "/patient",
         method: "get",
         params: {
           page,
           limit,
-          mobile,
-          uniqueId,
           name,
+          contactNumber,
           gender,
+          category,
           startDate,
           endDate,
+          external_id,
+          idProof_number
         },
       }),
     }),

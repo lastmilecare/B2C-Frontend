@@ -8,11 +8,13 @@ const PatientList = () => {
   const [limit, setLimit] = useState(10);
   const [tempFilters, setTempFilters] = useState({
     name: "",
-    mobile: "",
+    contactNumber: "",
     gender: "",
     category: "",
     startDate: "",
     endDate: "",
+    external_id: "",
+    idProof_number: ""
   });
   const [filters, setFilters] = useState({});
 
@@ -64,7 +66,7 @@ const PatientList = () => {
   };
 
   const filtersConfig = [
-    { label: "Uhid", name: "external_id", type: "text" },
+    { label: "UHID", name: "external_id", type: "text" },
     { label: "Patient Name", name: "name", type: "text" },
     { label: "Mobile", name: "contactNumber", type: "text" },
     {
@@ -94,7 +96,7 @@ const PatientList = () => {
   const columns = [
     { name: "S.No", selector: (row, i) => (page - 1) * limit + i + 1 },
     { name: "Name", selector: (row) => row.name, sortable: true },
-    { name: "Contact", selector: (row) => row.contactNumber },
+    { name: "Mobile", selector: (row) => row.contactNumber, width: "120px" },
     { name: "Centre", selector: (row) => row.driver_cetname },
     { name: "UHID", selector: (row) => row.external_id, width: "120px", sortable: true },
     { name: "Gender", selector: (row) => row.gender },
