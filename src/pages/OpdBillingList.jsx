@@ -1,7 +1,98 @@
-import React from "react";
+import React, { useState } from "react";
 import CommonList from "../components/CommonList";
+import FilterBar from "../components/common/FilterBar";
+import { useGetPatientsQuery } from "../redux/apiSlice";
 
 const OpdBillingList = () => {
+
+
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [tempFilters, setTempFilters] = useState({
+    name: "",
+    contactNumber: "",
+    gender: "",
+    category: "",
+    startDate: "",
+    endDate: "",
+    external_id: "",
+    idProof_number: ""
+  });
+  const [filters, setFilters] = useState({});
+
+  const { data, isLoading } = useGetPatientsQuery({
+    page,
+    limit,
+    ...filters,
+  });
+
+  const patients = data?.data || [];
+  const pagination = data?.pagination || {};
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setTempFilters((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleApplyFilters = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const { startDate, endDate } = tempFilters;
+
+    if (endDate && endDate > today) {
+      alert("End date cannot be greater than today.");
+      return;
+    }
+
+    if (startDate && endDate && startDate > endDate) {
+      alert("Start date cannot be after end date.");
+      return;
+    }
+
+    setFilters(tempFilters);
+    setPage(1);
+  };
+  const handleResetFilters = () => {
+    setTempFilters({
+      name: "",
+      contactNumber: "",
+      gender: "",
+      category: "",
+      startDate: "",
+      endDate: "",
+      external_id: "",
+      idProof_number: ""
+    });
+    setFilters({});
+    setPage(1);
+  };
+
+  const filtersConfig = [
+    { label: "UHID", name: "external_id", type: "text" },
+    { label: "Patient Name", name: "name", type: "text" },
+    { label: "Mobile", name: "contactNumber", type: "text" },
+    {
+      label: "Gender",
+      name: "gender",
+      type: "select",
+      options: [
+        { label: "Male", value: "male" },
+        { label: "Female", value: "female" },
+        { label: "Other", value: "other" },
+      ],
+    },
+    {
+      label: "Fin Category",
+      name: "category",
+      type: "select",
+      options: [
+        { label: "APL", value: "apl" },
+        { label: "BPL", value: "bpl" }
+      ],
+    },
+    { label: "Start Date", name: "startDate", type: "date" },
+    { label: "End Date", name: "endDate", type: "date" },
+    { label: "Unique Id", name: "idProof_number", type: "text" },
+  ];
+
   const columns = [
     { name: "Bill No", selector: (row) => row.ID, sortable: true },
     { name: "Patient ID", selector: (row) => row.PatientID },
@@ -27,95 +118,30 @@ const OpdBillingList = () => {
       selector: (row) => (row.DueAmount > 0 ? "🟠 Pending" : "🟢 Paid"),
     },
   ];
-
-  const data = [
-    {
-      ID: 101,
-      PatientID: 2001,
-      Mobile: "9876543210",
-      ServiceTypeID: 3,
-      TotalServiceAmount: 1500,
-      PaidAmount: 1500,
-      DueAmount: 0,
-    },
-    {
-      ID: 102,
-      PatientID: 2002,
-      Mobile: "9812345678",
-      ServiceTypeID: 5,
-      TotalServiceAmount: 2200,
-      PaidAmount: 1200,
-      DueAmount: 1000,
-    },
-    {
-      ID: 103,
-      PatientID: 2002,
-      Mobile: "9812345678",
-      ServiceTypeID: 5,
-      TotalServiceAmount: 2200,
-      PaidAmount: 1200,
-      DueAmount: 1000,
-    },
-    {
-      ID: 104,
-      PatientID: 2002,
-      Mobile: "9812345678",
-      ServiceTypeID: 5,
-      TotalServiceAmount: 2200,
-      PaidAmount: 1200,
-      DueAmount: 1000,
-    },
-    {
-      ID: 105,
-      PatientID: 2002,
-      Mobile: "9812345678",
-      ServiceTypeID: 5,
-      TotalServiceAmount: 2200,
-      PaidAmount: 1200,
-      DueAmount: 1000,
-    },
-    {
-      ID: 106,
-      PatientID: 2002,
-      Mobile: "9812345678",
-      ServiceTypeID: 5,
-      TotalServiceAmount: 2200,
-      PaidAmount: 1200,
-      DueAmount: 1000,
-    },
-    {
-      ID: 107,
-      PatientID: 2002,
-      Mobile: "9812345678",
-      ServiceTypeID: 5,
-      TotalServiceAmount: 2200,
-      PaidAmount: 1200,
-      DueAmount: 1000,
-    },
-
-  ];
-
-  const filters = [
-    { label: "All", value: "all" },
-    { label: "Paid", value: "paid" },
-    { label: "Pending", value: "pending" },
-  ];
-
   return (
-    <div className="p-6">
+    <div className="p-0">
+      <FilterBar
+        filtersConfig={filtersConfig}
+        tempFilters={tempFilters}
+        onChange={handleChange}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+        onExport={() => console.log("Export clicked!")}
+      />
       <CommonList
         title="💳 OPD Billing List"
         columns={columns}
-        data={data}
-        filters={filters}
+        data={patients}
+        totalRows={pagination.totalRecords || 0}
+        currentPage={pagination.currentPage || page}
+        perPage={limit}
+        onPageChange={(newPage) => setPage(newPage)}
+        onPerPageChange={(newLimit) => {
+          setLimit(newLimit);
+          setPage(1);
+        }}
         enableActions
-        onEdit={(row) => alert(`Edit Bill #${row.ID}`)}
-        onView={(row) => alert(`Viewing Bill #${row.ID}`)}
-        onDelete={(row) => alert(`Deleted Bill #${row.ID}`)}
-        onFilterChange={(f) => console.log("Filter:", f)}
-        searchPlaceholder="Search by patient, mobile, or bill no..."
-        enableExport
-        onExport={() => console.log("Export clicked!")}
+        isLoading={isLoading}
       />
     </div>
   );
