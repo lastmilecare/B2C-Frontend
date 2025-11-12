@@ -79,18 +79,37 @@ const CommonList = ({
     },
   };
 
+  // const visibleColumns = useMemo(
+  //   () =>
+  //     columns
+  //       .filter((col) => !col.hidden)
+  //       .map((col) => ({
+  //         ...col,
+  //         width: col.width || "auto",
+  //         minWidth: col.minWidth || "100px",
+  //         wrap: col.wrap ?? true,
+  //       })),
+  //   [columns]
+  // );
   const visibleColumns = useMemo(
     () =>
       columns
         .filter((col) => !col.hidden)
         .map((col) => ({
           ...col,
+          // ✅ Wrap header name with tooltip using `title`
+          name: (
+            <span title={col.title || col.name} className="cursor-help">
+              {col.name}
+            </span>
+          ),
           width: col.width || "auto",
           minWidth: col.minWidth || "100px",
           wrap: col.wrap ?? true,
         })),
     [columns]
   );
+
 
   const enhancedColumns = useMemo(() => {
     if (!enableActions) return visibleColumns;

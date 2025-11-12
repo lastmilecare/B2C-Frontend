@@ -84,11 +84,54 @@ export const api = createApi({
       }),
     }),
 
+    getOpdBilling: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        contactNumber,
+        gender,
+        category,
+        startDate,
+        endDate,
+        external_id,
+        idProof_number,
+        bill_no,
+        department,
+        doctor_id,
+        pay_mode
+      } = {}) => ({
+        url: "/opd-billing/view",
+        method: "get",
+        params: {
+          page,
+          limit,
+          name,
+          contactNumber,
+          gender,
+          category,
+          startDate,
+          endDate,
+          external_id,
+          idProof_number,
+          bill_no,
+          department,
+          doctor_id,
+          pay_mode
+        },
+      }),
+    }),
+    getCombo: build.query({
+      query: (type) => ({
+        url: `/combo/${type}`,
+        method: "get",
+      }),
+    }),
 
   }),
 });
 
 export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSearchDiseasesQuery, useGetCountriesQuery,
   useGetStatesByCountryQuery,
-  useGetDistrictsByStateQuery,
+  useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery
 } = api;

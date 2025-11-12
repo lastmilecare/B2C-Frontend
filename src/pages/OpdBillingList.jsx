@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
-// Use whichever hook name your apiSlice actually exports.
-// If your apiSlice exported useGetOpdBillQuery, change the import accordingly.
-import { useGetOpdBillingQuery } from "../redux/apiSlice";
+import { useGetOpdBillingQuery, useGetComboQuery } from "../redux/apiSlice";
 
 const OpdBillingList = () => {
   const [page, setPage] = useState(1);
@@ -29,6 +27,10 @@ const OpdBillingList = () => {
     },
     { skip: !page || !limit }
   );
+  const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
+  const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
+  const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
+  const { data: collectedBy, isLoading: collectedComboLoading } = useGetComboQuery("collectedBy");
 
   const patients = data?.data || [];
   const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
@@ -70,36 +72,41 @@ const OpdBillingList = () => {
     setFilters({});
     setPage(1);
   };
-
-  // helper: safe currency formatting
   const formatCurrency = (value) => {
     if (value === null || value === undefined || value === "") return `₹0.00`;
-    // If value is an object with amount property, try to extract it
     let v = value;
     if (typeof value === "object" && value !== null) {
-      // if it's like { amount: 123 } or { value: "123" }
       if ("amount" in value) v = value.amount;
       else if ("value" in value) v = value.value;
       else v = NaN;
     }
-    // allow numeric strings with commas
     if (typeof v === "string") {
       v = v.replace(/,/g, "");
     }
     const n = Number(v);
     if (!Number.isFinite(n)) return `₹0.00`;
-    return `₹${n.toFixed(2)}`;
+    return `₹${n.toFixed(0)}`; // change as per need the value value ex 2
   };
-
-  // helper: safe string
   const safeString = (v, fallback = "-") =>
     v === null || v === undefined || v === "" ? fallback : String(v);
 
   const filtersConfig = [
     { label: "UHID", name: "external_id", type: "text" },
     { label: "Bill No", name: "id", type: "text" },
-    { label: "Department", name: "department", type: "select" },
-    { label: "Doctor", name: "doctor", type: "select" },
+    {
+      label: "Department",
+      name: "department",
+      type: "select",
+      options: department?.map((d) => ({ label: d.name, value: d.id })) || [],
+    },
+
+    {
+      label: "Doctor",
+      name: "doctor",
+      type: "select",
+      options: doctors?.map((d) => ({ label: d.name || d.doctor_name, value: d.id })) || [],
+    },
+
     {
       label: "Fin Category",
       name: "category",
@@ -109,8 +116,20 @@ const OpdBillingList = () => {
         { label: "BPL", value: "bpl" },
       ],
     },
-    { label: "Pay Mode", name: "payment_mode", type: "select" },
-    { label: "Collected By", name: "collected_by", type: "select" },
+    {
+      label: "Pay Mode",
+      name: "payment_mode",
+      type: "select",
+      options: paymode?.map((p) => ({ label: p.name, value: p.id })) || [],
+    },
+
+    {
+      label: "Collected By",
+      name: "collected_by",
+      type: "select",
+      options: collectedBy?.map((u) => ({ label: u.name, value: u.id })) || [],
+    },
+
     { label: "Mobile", name: "contactNumber", type: "text" },
     {
       label: "Gender",
@@ -145,6 +164,7 @@ const OpdBillingList = () => {
       title: "Bill Number",
       selector: (row) => safeString(row?.bill_no, "-"),
       sortable: true,
+      width: "70px",
     },
     {
       name: "Cntr",
@@ -156,7 +176,7 @@ const OpdBillingList = () => {
       name: "UHID",
       title: "Unique Health ID",
       selector: (row) => safeString(row?.uhid, "-"),
-      width: "120px",
+      width: "99px",
       sortable: true,
     },
     {
@@ -164,7 +184,7 @@ const OpdBillingList = () => {
       title: "Patient Name",
       selector: (row) => safeString(row?.patient_name, "-"),
       sortable: true,
-      width: "120px",
+      width: "100px",
     },
     {
       name: "Age",
@@ -195,42 +215,43 @@ const OpdBillingList = () => {
     {
       name: "Ph",
       title: "Mobile Number",
-      selector: (row) => safeString(row?.Mobile, "-"),
+      selector: (row) => safeString(row?.contactNumber, "-"),
+      width: "93px"
     },
     {
       name: "P.Due",
       title: "Previous Due Amount",
       selector: (row) => formatCurrency(row?.DueAmount),
       sortable: true,
-      width: "80px",
+      width: "70px",
     },
     {
       name: "B.Amt",
       title: "Bill Amount",
       selector: (row) => formatCurrency(row?.BillAmount ?? row?.PaidAmount),
       sortable: true,
-      width: "80px",
+      width: "70px",
     },
     {
       name: "T.Bill",
       title: "Total Bill Amount",
       selector: (row) => formatCurrency(row?.TotalServiceAmount),
       sortable: true,
-      width: "80px",
+      width: "70px",
     },
     {
       name: "P.Amt",
       title: "Paid Amount",
       selector: (row) => formatCurrency(row?.PaidAmount),
       sortable: true,
-      width: "80px",
+      width: "70px",
     },
     {
       name: "D.Amt",
       title: "Due Amount",
       selector: (row) => formatCurrency(row?.DueAmount),
       sortable: true,
-      width: "80px",
+      width: "70px",
     },
     {
       name: "P.Mode",
@@ -242,7 +263,7 @@ const OpdBillingList = () => {
       name: "Dr.",
       title: "Consultant Doctor",
       selector: (row) => safeString(row?.doctor_name, "-"),
-      width: "120px",
+      width: "100px",
     },
     {
       name: "Srvc",
