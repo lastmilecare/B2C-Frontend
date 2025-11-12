@@ -1,17 +1,127 @@
-import React from "react";
+import React, { useState } from "react";
 import CommonList from "../components/CommonList";
+import FilterBar from "../components/common/FilterBar";
+import { useGetPrescriptionsQuery  } from "../redux/apiSlice";
 
 const PrescriptionList = () => {
-  // 🧾 Columns for prescription table
-  const columns = [
-    { name: "Prescription ID", selector: (row) => row.prescription_id, sortable: true },
-    { name: "Doctor ID", selector: (row) => row.doctor_id },
-    { name: "Driver ID", selector: (row) => row.driver_id },
-    { name: "Diagnosis", selector: (row) => row.diagnose || "-" },
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [tempFilters, setTempFilters] = useState({
+    name: "",
+    contactNumber: "",
+    gender: "",
+    category: "",
+    startDate: "",
+    endDate: ""
+  });
+  const [filters, setFilters] = useState({});
+  const { data, isLoading, isError, error } = useGetPrescriptionsQuery (
     {
-      name: "Follow Up",
+      page,
+      limit,
+      ...filters,
+    },
+    { skip: !page || !limit }
+  );
+  const patients = data?.data || [];
+  const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setTempFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleApplyFilters = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const { startDate, endDate } = tempFilters;
+
+    if (endDate && endDate > today) {
+      alert("End date cannot be greater than today.");
+      return;
+    }
+
+    if (startDate && endDate && startDate > endDate) {
+      alert("Start date cannot be after end date.");
+      return;
+    }
+
+    setFilters(tempFilters);
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setTempFilters({
+      name: "",
+      contactNumber: "",
+      startDate: "",
+      endDate: ""
+    });
+    setFilters({});
+    setPage(1);
+  };
+  const filtersConfig = [
+    { label: "Bill No", name: "id", type: "text" },
+    { label: "Name", name: "name", type: "text" },
+    { label: "Start Date", name: "startDate", type: "date" },
+    { label: "End Date", name: "endDate", type: "date" },
+    { label: "Mobile", name: "contactNumber", type: "text" }
+  ];
+  const safeString = (v, fallback = "-") =>
+    v === null || v === undefined || v === "" ? fallback : String(v);
+  const columns = [
+    {
+      name: "S.No",
+      title: "Serial Number",
+      selector: (row, i) => (page - 1) * limit + i + 1,
+      width: "70px",
+    },
+    {
+      name: "Bill No",
+      title: "Bill Number",
+      selector: (row) => safeString(row?.bill_no, "-"),
+      sortable: true,
+      width: "70px",
+    },
+    {
+      name: "UHID",
+      title: "Unique Health ID",
+      selector: (row) => safeString(row?.uhid, "-"),
+      width: "120px",
+      sortable: true,
+    },
+    {
+      name: "Name",
+      title: "Patient Name",
+      selector: (row) => safeString(row?.patient_name, "-"),
+      sortable: true,
+      width: "120px",
+    },
+    {
+      name: "Age",
+      title: "Patient Age",
+      selector: (row) => safeString(row?.age, "-"),
+      sortable: true,
+      width: "50px",
+    },
+    {
+      name: "Gender",
+      title: "Gender",
+      selector: (row) => safeString(row?.gender, "-"),
+      width: "60px",
+    },
+    {
+      name: "Phone",
+      title: "Mobile Number",
+      selector: (row) => safeString(row?.contactNumber, "-"),
+      width: "99px"
+    },
+    {
+      name: "Added Date",
+      title: "Added Date",
       selector: (row) =>
-        row.follow_up ? new Date(row.follow_up).toLocaleDateString() : "-",
+        row?.createdAt ? new Date(row.createdAt).toISOString().split("T")[0] : "-",
+      sortable: true,
+      width: "100px",
     },
     {
       name: "Status",
@@ -19,60 +129,36 @@ const PrescriptionList = () => {
     },
   ];
 
-  // 📋 Sample data
-  const data = [
-    {
-      prescription_id: "PR-1001",
-      doctor_id: 23,
-      driver_id: 554,
-      diagnose: "Flu and cold",
-      follow_up: "2025-11-10",
-      isReady: true,
-    },
-    {
-      prescription_id: "PR-1002",
-      doctor_id: 12,
-      driver_id: 431,
-      diagnose: "Diabetes management",
-      follow_up: "2025-11-15",
-      isReady: false,
-    },
-  ];
-
-  // 🔍 Filter options
-  const filters = [
-    { label: "All", value: "all" },
-    { label: "Ready", value: "ready" },
-    { label: "Pending", value: "pending" },
-  ];
-
-  // ⚙️ Filter logic
-  const handleFilterChange = (filterValue) => {
-    console.log("Filter applied:", filterValue);
-  };
-
-  // 👆 Row click action
   const handleRowClick = (row) => {
     alert(`Opening details for Prescription ID: ${row.prescription_id}`);
   };
 
-  return (
-    <div className="p-6">
-      <CommonList
-        title="Prescription List"
-        columns={columns}
-        data={data}
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onRowClick={handleRowClick}
-        searchPlaceholder="Search by diagnosis or doctor..."
-        onEdit={(row) => alert(`Prescription List #${row.ID}`)}
-        onView={(row) => alert(`Prescription #${row.ID}`)}
-        onDelete={(row) => alert(`Prescription  #${row.ID}`)}
-        enableActions
-        enableExport
-        onExport={() => console.log("Export clicked!")}
 
+
+  return (
+    <div className="p-0">
+      <FilterBar
+        filtersConfig={filtersConfig}
+        tempFilters={tempFilters}
+        onChange={handleChange}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+        onExport={() => console.log("Export clicked!")}
+      />
+      <CommonList
+        title="💳 Prescription List"
+        columns={columns}
+        data={patients}
+        totalRows={pagination.totalRecords || 0}
+        currentPage={pagination.currentPage || page}
+        perPage={limit}
+        onPageChange={(newPage) => setPage(newPage)}
+        onPerPageChange={(newLimit) => {
+          setLimit(newLimit);
+          setPage(1);
+        }}
+        enableActions
+        isLoading={isLoading}
       />
     </div>
   );

@@ -127,11 +127,42 @@ export const api = createApi({
         method: "get",
       }),
     }),
+    getPrescriptions: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        contactNumber,
+        gender,
+        category,
+        startDate,
+        endDate,
+      } = {}) => ({
+        url: "/prescriptions/view",
+        method: "get",
+        params: {
+          page,
+          limit,
+          name,
+          contactNumber,
+          gender,
+          category,
+          startDate,
+          endDate,
+        },
+      }),
+      transformResponse: (response) => ({
+        data: response.data || [],
+        pagination: response.pagination || {},
+      }),
+    }),
+
 
   }),
+
 });
 
 export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSearchDiseasesQuery, useGetCountriesQuery,
   useGetStatesByCountryQuery,
-  useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery
+  useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery
 } = api;
