@@ -9,10 +9,10 @@ const PrescriptionList = () => {
   const [tempFilters, setTempFilters] = useState({
     name: "",
     contactNumber: "",
-    gender: "",
     category: "",
     startDate: "",
-    endDate: ""
+    endDate: "",
+    billNumber:""
   });
   const [filters, setFilters] = useState({});
   const { data, isLoading, isError, error } = useGetPrescriptionsQuery (
@@ -54,13 +54,14 @@ const PrescriptionList = () => {
       name: "",
       contactNumber: "",
       startDate: "",
-      endDate: ""
+      endDate: "",
+      billNumber:""
     });
     setFilters({});
     setPage(1);
   };
   const filtersConfig = [
-    { label: "Bill No", name: "id", type: "text" },
+    { label: "Bill No", name: "billNumber", type: "text" },
     { label: "Name", name: "name", type: "text" },
     { label: "Start Date", name: "startDate", type: "date" },
     { label: "End Date", name: "endDate", type: "date" },
