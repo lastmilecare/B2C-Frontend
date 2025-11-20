@@ -92,7 +92,6 @@ const OpdBilling = () => {
       PayMode: Yup.string().required("Pay mode is required"),
     }),
     onSubmit: (values) => {
-      console.log("Form Data:", { ...values, selectedServices });
       alert("✅ OPD Billing Saved Successfully!");
     },
   });

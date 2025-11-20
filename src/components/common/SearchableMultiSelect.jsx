@@ -24,7 +24,6 @@ const SearchableMultiSelect = ({
 
   useEffect(() => {
     if (debouncedSearch) {
-      console.log("Fetched Diseases:", results);
     }
   }, [apiResponse]);
 

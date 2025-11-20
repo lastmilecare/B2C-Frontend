@@ -148,6 +148,7 @@ const PatientList = () => {
         }}
         enableActions
         isLoading={isLoading}
+        actionButtons={["edit"]}
       />
     </div>
   );

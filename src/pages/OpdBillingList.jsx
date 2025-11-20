@@ -321,6 +321,7 @@ const OpdBillingList = () => {
         }}
         enableActions
         isLoading={isLoading}
+        actionButtons={["edit", "delete", "print", "printCS"]}
       />
     </div>
   );

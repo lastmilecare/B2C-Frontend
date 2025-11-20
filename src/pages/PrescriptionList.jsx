@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
-import { useGetPrescriptionsQuery  } from "../redux/apiSlice";
+import { useGetPrescriptionsQuery } from "../redux/apiSlice";
+import { useReactToPrint } from "react-to-print";
+import PrescriptionPrint from "./PrescriptionPrint";
 
 const PrescriptionList = () => {
   const [page, setPage] = useState(1);
@@ -12,10 +14,13 @@ const PrescriptionList = () => {
     category: "",
     startDate: "",
     endDate: "",
-    billNumber:""
+    billNumber: ""
   });
   const [filters, setFilters] = useState({});
-  const { data, isLoading, isError, error } = useGetPrescriptionsQuery (
+  const [printRow, setPrintRow] = useState(null);
+  const printRef = useRef();
+
+  const { data, isLoading, isError, error } = useGetPrescriptionsQuery(
     {
       page,
       limit,
@@ -55,7 +60,7 @@ const PrescriptionList = () => {
       contactNumber: "",
       startDate: "",
       endDate: "",
-      billNumber:""
+      billNumber: ""
     });
     setFilters({});
     setPage(1);
@@ -134,6 +139,36 @@ const PrescriptionList = () => {
     alert(`Opening details for Prescription ID: ${row.prescription_id}`);
   };
 
+  const handleEdit = (row) => {
+    alert(`Editing prescription ID: ${row.prescription_id}`);
+  };
+
+  const handleDelete = (row) => {
+    if (window.confirm("Are you sure you want to delete?")) {
+      alert(`Deleting ID: ${row.prescription_id}`);
+    }
+  };
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Prescription"
+  });
+
+
+  useEffect(() => {
+    if (printRow && printRef.current) {
+      handlePrint();
+
+      setTimeout(() => {
+        setPrintRow(null);
+      }, 300);
+    }
+  }, [printRow]);
+
+
+  const onPrint = (row) => {
+    setPrintRow(row);
+  };
 
 
   return (
@@ -160,7 +195,18 @@ const PrescriptionList = () => {
         }}
         enableActions
         isLoading={isLoading}
+        actionButtons={["edit", "delete", "print"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onPrint={onPrint}
+
       />
+      {printRow && (
+        <div style={{ display: 'none' }}>
+          <PrescriptionPrint ref={printRef} data={printRow} />
+        </div>
+      )}
+
     </div>
   );
 };

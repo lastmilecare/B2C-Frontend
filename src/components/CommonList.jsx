@@ -18,9 +18,12 @@ const CommonList = ({
   onView = () => { },
   onDelete = () => { },
   onExport = () => { },
+  onPrint = () => { },
+  onPrintCS = () => { },
   isLoading = false,
   filtersConfig = [],
   onFilterApply = () => { },
+  actionButtons = [],
 }) => {
   const [tempFilters, setTempFilters] = useState({});
   const today = new Date().toISOString().split("T")[0];
@@ -79,25 +82,12 @@ const CommonList = ({
     },
   };
 
-  // const visibleColumns = useMemo(
-  //   () =>
-  //     columns
-  //       .filter((col) => !col.hidden)
-  //       .map((col) => ({
-  //         ...col,
-  //         width: col.width || "auto",
-  //         minWidth: col.minWidth || "100px",
-  //         wrap: col.wrap ?? true,
-  //       })),
-  //   [columns]
-  // );
   const visibleColumns = useMemo(
     () =>
       columns
         .filter((col) => !col.hidden)
         .map((col) => ({
           ...col,
-          // ✅ Wrap header name with tooltip using `title`
           name: (
             <span title={col.title || col.name} className="cursor-help">
               {col.name}
@@ -110,9 +100,37 @@ const CommonList = ({
     [columns]
   );
 
-
   const enhancedColumns = useMemo(() => {
     if (!enableActions) return visibleColumns;
+
+    const buttonConfig = {
+      view: {
+        label: "View",
+        color: "text-sky-700",
+        handler: onView,
+      },
+      edit: {
+        label: "Edit",
+        color: "text-yellow-600",
+        handler: onEdit,
+      },
+      delete: {
+        label: "Delete",
+        color: "text-red-600",
+        handler: onDelete,
+      },
+      print: {
+        label: "Print",
+        color: "text-green-700",
+        handler: onPrint,
+      },
+      printCS: {
+        label: "Print CS",
+        color: "text-purple-700",
+        handler: onPrintCS,
+      },
+    };
+
     return [
       ...visibleColumns,
       {
@@ -122,6 +140,7 @@ const CommonList = ({
             <Menu.Button className="p-1 rounded hover:bg-sky-100">
               <EllipsisVerticalIcon className="w-4 h-4 text-sky-600" />
             </Menu.Button>
+
             <Transition
               as={Fragment}
               enter="transition ease-out duration-100"
@@ -132,36 +151,26 @@ const CommonList = ({
               leaveTo="transform opacity-0 scale-95"
             >
               <Menu.Items className="absolute right-0 mt-1 w-28 bg-white border border-gray-200 rounded shadow-lg z-[9999]">
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={() => onView(row)}
-                      className={`${active ? "bg-sky-50" : ""} block w-full text-left px-2 py-1 text-xs text-sky-700`}
-                    >
-                      View
-                    </button>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={() => onEdit(row)}
-                      className={`${active ? "bg-sky-50" : ""} block w-full text-left px-2 py-1 text-xs text-yellow-600`}
-                    >
-                      Edit
-                    </button>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={() => onDelete(row)}
-                      className={`${active ? "bg-sky-50" : ""} block w-full text-left px-2 py-1 text-xs text-red-600`}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </Menu.Item>
+
+                {actionButtons.map((btnKey) => {
+                  const btn = buttonConfig[btnKey];
+                  if (!btn) return null;
+
+                  return (
+                    <Menu.Item key={btnKey}>
+                      {({ active }) => (
+                        <button
+                          onClick={() => btn.handler(row)}
+                          className={`${active ? "bg-sky-50" : ""} 
+                          block w-full text-left px-2 py-1 text-xs ${btn.color}`}
+                        >
+                          {btn.label}
+                        </button>
+                      )}
+                    </Menu.Item>
+                  );
+                })}
+
               </Menu.Items>
             </Transition>
           </Menu>
@@ -171,7 +180,16 @@ const CommonList = ({
         ignoreRowClick: true,
       },
     ];
-  }, [visibleColumns, enableActions, onEdit, onDelete, onView]);
+  }, [
+    visibleColumns,
+    enableActions,
+    actionButtons,
+    onEdit,
+    onDelete,
+    onView,
+    onPrint,
+    onPrintCS,
+  ]);
 
   return (
     <div className="bg-white shadow-md rounded-xl p-3 border border-gray-100">

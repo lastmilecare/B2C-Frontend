@@ -112,7 +112,6 @@ const PatientRegistration = () => {
       // email: Yup.string().email("Invalid email"),
     }),
     onSubmit: (values, { resetForm }) => {
-      console.log("Patient Data:", values);
       alert("✅ Patient Registered Successfully!");
       resetForm();
       setAge("");

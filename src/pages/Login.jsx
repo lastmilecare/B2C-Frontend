@@ -25,7 +25,6 @@ export default function Login() {
           initialValues={{ email: "", password: "" }}
           validationSchema={LoginSchema}
           onSubmit={(values) => {
-            console.log(values);
             navigate("/dashboard");
           }}
         >
