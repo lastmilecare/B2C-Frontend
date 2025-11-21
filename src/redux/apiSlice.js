@@ -2,11 +2,33 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
 
 // axiosBaseQuery wrapper for RTK Query
+// const axiosBaseQuery =
+//   ({ baseUrl } = { baseUrl: "" }) =>
+//     async ({ url, method, data, params, responseType }) => {
+//       try {
+//         const result = await axiosClient({ url: baseUrl + url, method, data, params, responseType: responseType || "json", });
+//         return { data: result.data };
+//       } catch (error) {
+//         return {
+//           error: {
+//             status: error.response?.status,
+//             data: error.response?.data || error.message,
+//           },
+//         };
+//       }
+//     };
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
-    async ({ url, method, data, params }) => {
+    async ({ url, method, data, params, responseType }) => {
       try {
-        const result = await axiosClient({ url: baseUrl + url, method, data, params });
+        const result = await axiosClient({
+          url: baseUrl + url,
+          method,
+          data,
+          params,
+          responseType: responseType || "json",
+        });
+
         return { data: result.data };
       } catch (error) {
         return {
@@ -156,6 +178,17 @@ export const api = createApi({
         pagination: response.pagination || {},
       }),
     }),
+    exportPrescriptionsExcel: build.query({
+      query: (filters = {}) => ({
+        url: "/prescriptions/export/excel",
+        method: "GET",
+        params: filters,
+        responseType: "blob",
+      }),
+      transformResponse: (response) => response,
+    }),
+
+
 
 
   }),
@@ -164,5 +197,5 @@ export const api = createApi({
 
 export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSearchDiseasesQuery, useGetCountriesQuery,
   useGetStatesByCountryQuery,
-  useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery
+  useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery
 } = api;
