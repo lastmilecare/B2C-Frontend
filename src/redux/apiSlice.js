@@ -204,7 +204,15 @@ export const api = createApi({
         params: { query },
       }),
     }),
-
+    getServiceMasters: build.query({
+      query: (serviceName) => ({
+        url: "/opd-service/service-master",
+        method: "GET",
+        params: {
+          ServiceName: serviceName || "",
+        },
+      }),
+    }),
 
   }),
 
@@ -213,5 +221,5 @@ export const api = createApi({
 export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSearchDiseasesQuery, useGetCountriesQuery,
   useGetStatesByCountryQuery,
   useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery,
-  useGetPatientsByUhidQuery, useSearchUHIDQuery
+  useGetPatientsByUhidQuery, useSearchUHIDQuery,useGetServiceMastersQuery 
 } = api;

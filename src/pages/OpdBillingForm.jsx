@@ -144,12 +144,9 @@ const OpdBilling = () => {
     },
   });
 
-  // Fixed useEffect - only depend on patientData and selectedUhid
   useEffect(() => {
     if (!patientData) return;
     if (patientData.external_id !== selectedUhid) return;
-
-    // Only populate once per UHID selection
     if (populatedUhidRef.current === selectedUhid) return;
     populatedUhidRef.current = selectedUhid;
 
@@ -227,7 +224,6 @@ const OpdBilling = () => {
       </h2>
 
       <form onSubmit={formik.handleSubmit} className="space-y-5">
-        {/* ================= PATIENT DETAILS ================= */}
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Patient
@@ -249,13 +245,11 @@ const OpdBilling = () => {
                   setSelectedUhid("");
                   formik.setFieldValue("UHID", "");
                   setSuggestionsList([]);
-                  populatedUhidRef.current = ""; // Reset when clearing
+                  populatedUhidRef.current = "";
                 }}
                 autoComplete="off"
               />
 
-
-              {/* Dropdown suggestions */}
               {suggestionsList.length > 0 &&
                 uhidSearch.length >= 2 && (
                   <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
