@@ -187,8 +187,23 @@ export const api = createApi({
       }),
       transformResponse: (response) => response,
     }),
-
-
+    getPatientsByUhid: build.query({
+      query: ({
+        uhid
+      } = {}) => ({
+        url: "/patient/by-uhid",
+        method: "GET",
+        params: {
+          uhid
+        },
+      }),
+    }),
+    searchUHID: build.query({
+      query: (query) => ({
+        url: `/patient/search-uhid`,
+        params: { query },
+      }),
+    }),
 
 
   }),
@@ -197,5 +212,6 @@ export const api = createApi({
 
 export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSearchDiseasesQuery, useGetCountriesQuery,
   useGetStatesByCountryQuery,
-  useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery
+  useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery,
+  useGetPatientsByUhidQuery, useSearchUHIDQuery
 } = api;
