@@ -119,10 +119,10 @@ const OpdBilling = () => {
       LastVisitDate: "",
       Quantity: 1,
       ServiceName: "",
-      PreviousDue: "",
+      PreviousDue: "0",
       TotalAmount: "",
       PaidAmount: "",
-      CreditBalance: "",
+      CreditBalance: "0",
       AdjustWithBalance: false,
       DueAmount: "",
       PayMode: "",
@@ -216,7 +216,7 @@ const OpdBilling = () => {
   const handlePrintForm = () => {
     window.open("/print-opd-form", "_blank");
   };
-
+  console.log(uhidSearch, formik.values.UHID)
   return (
     <div className="max-w-6xl mx-auto mt-8 bg-white p-5 rounded-2xl shadow-md border border-gray-100">
       <h2 className="text-2xl font-bold text-sky-700 mb-5 text-center">
@@ -368,6 +368,11 @@ const OpdBilling = () => {
           <ServiceSection
             selectedServices={selectedServices}
             setSelectedServices={setSelectedServices}
+            // uhid={uhidSearch || formik.values.UHID}
+            department={formik.values.Department}
+            consultingDoctor={formik.values.Doctor}
+            payMode={formik.values.PayMode}
+            setBillingTotals={(total) => formik.setFieldValue("TotalAmount", total)}
           />
         </section>
 
@@ -379,31 +384,32 @@ const OpdBilling = () => {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input {...formik.getFieldProps("PreviousDue")} placeholder="Previous Due Amount" />
-            <Input {...formik.getFieldProps("TotalAmount")} placeholder="Total Amount" />
-            <Input {...formik.getFieldProps("PaidAmount")} placeholder="Paid Amount" />
-            <Input {...formik.getFieldProps("CreditBalance")} placeholder="Credit / Balance Amount" />
+            <Input {...formik.getFieldProps("PreviousDue")} placeholder="Previous Due Amount" disabled label="Previous Due" />
+            <Input {...formik.getFieldProps("TotalAmount")} placeholder="Total Amount" disabled label="Total Amount" />
+            <Input {...formik.getFieldProps("PaidAmount")} placeholder="Paid Amount" label="Paid Amount" />
+            <Input {...formik.getFieldProps("CreditBalance")} placeholder="Credit / Balance Amount" label="Credit Balance" />
 
             <label className="flex items-center gap-2 text-gray-700 text-sm mt-2">
               <input
                 type="checkbox"
                 {...formik.getFieldProps("AdjustWithBalance")}
                 checked={formik.values.AdjustWithBalance}
+                disabled
               />
               Adjust with Balance
             </label>
 
-            <Input {...formik.getFieldProps("DueAmount")} placeholder="Due Amount" readOnly />
+            <Input {...formik.getFieldProps("DueAmount")} placeholder="Due Amount" disabled label="Due Amount" />
 
-            <Select {...formik.getFieldProps("PayMode")}>
+            <Select {...formik.getFieldProps("PayMode")} label="Payment Mode">
               <option value="">Select Pay Mode</option>
               {PAYMENT_TYPES.map((b) => (
                 <option key={b}>{b}</option>
               ))}
             </Select>
 
-            <Input {...formik.getFieldProps("CashAmount")} placeholder="Cash Amount" />
-            <Input {...formik.getFieldProps("CardAmount")} placeholder="Card / Online / UPI Amount" />
+            <Input {...formik.getFieldProps("CashAmount")} placeholder="Cash Amount" label="Cash Amount" />
+            <Input {...formik.getFieldProps("CardAmount")} placeholder="Card / Online / UPI Amount" label="Card / Online / UPI Amount" />
           </div>
         </section>
 
