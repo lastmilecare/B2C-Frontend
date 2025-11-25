@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useFormik } from "formik";
+import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
 import {
   ArrowPathIcon,
@@ -10,9 +10,9 @@ import ServiceSection from "../components/ServiceSection";
 import DiseaseSelect from "../components/DiseaseSelect";
 import useDebounce from "../hooks/useDebounce";
 import { PAYMENT_TYPES } from "../utils/constants";
-import { useGetPatientsByUhidQuery, useSearchUHIDQuery, useGetComboQuery } from "../redux/apiSlice";
+import { useGetPatientsByUhidQuery, useSearchUHIDQuery, useGetComboQuery, useCreateBillMutation } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
-
+import { healthAlert } from "../utils/healthSwal";
 
 const baseInput =
   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
@@ -63,7 +63,6 @@ const OpdBilling = () => {
   const [suggestionsList, setSuggestionsList] = useState([]);
   const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
   const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
-  const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
   const { data: collectedBy, isLoading: collectedComboLoading } = useGetComboQuery("collectedBy");
   // Track if we've already populated data for this UHID
   const populatedUhidRef = useRef("");
@@ -74,6 +73,7 @@ const OpdBilling = () => {
       : skipToken
   );
 
+  const [createBill, { isLoading: isCreating, error: createError }] = useCreateBillMutation();
 
   const { data: suggestions = [] } = useSearchUHIDQuery(
     debouncedUhid,
@@ -99,6 +99,64 @@ const OpdBilling = () => {
 
     const [dd, mm, yyyy] = raw.split("-");
     return `${yyyy}-${mm}-${dd}`;
+  };
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  const buildPayload = (values) => {
+    console.log(values, "esa kya");
+    console.log(selectedServices);
+    if (!patientData || !selectedServices.length) return null;
+    const finalAmount = selectedServices.reduce(
+      (sum, s) => sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
+      0
+    )
+    const header = {
+      PatientID: patientData.id,
+      PicasoNo: values.UHID || patientData.external_id,
+      Mobile: values.Mobile,
+      ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
+      PatientType: values.FinCategory,
+      PaidAmount: values.PaidAmount || 0,
+      CashAmount: values.CashAmount || 0,
+      CardAmount: values.CardAmount || 0,
+      PayMode: values.PayMode ? values.PayMode : "Cash",
+      DueAmount: values.DueAmount,
+      AddedBy: 1, // this need to add user id
+      DepartmentID: values.Department,
+      ConsultantDoctorID: values.Doctor,
+      DoctorId: values.Doctor,
+      TotalServiceAmount: finalAmount,
+      HospitalID: selectedServices[0]?.HospitalID || 1,                      // set your hospital ID
+      FinancialYearID: currentYear,
+      CentreID: 2, // Need to manage Center id
+      ReferTo: values.ReferBy,
+      IsActive: true
+    };
+
+    const details = selectedServices.map((s) => ({
+      ServiceTypeID: s.ServiceTypeID || 1,
+      ServiceID: s.id,
+      ServiceName: s.name,
+      ServiceAmount: s.price,
+      Qty: s.quantity || 1,
+      HospitalID: s.HospitalID,
+      FinancialYearID: currentYear,
+      PatientID: patientData.id,
+      NetServiceAmount: finalAmount,
+      PicasoNo: values.UHID || patientData.external_id,
+      HospitalCharge: 0,
+      DoctorCharge: 0,
+      Discount: 0,
+      Isdiscount: false,
+      DiscountBy: 0,
+      DoctorID: values.Doctor,
+      AddedBy: 1, //Need to manage this
+      MonthID: currentMonth,
+      IsActive: true,
+      FinancialYearID: currentYear
+    }));
+
+    return { header, details };
   };
 
   const formik = useFormik({
@@ -137,12 +195,45 @@ const OpdBilling = () => {
         .required("Mobile is required"),
       Department: Yup.string().required("Department is required"),
       Doctor: Yup.string().required("Consulting doctor is required"),
-      PayMode: Yup.string().required("Pay mode is required"),
     }),
-    onSubmit: (values) => {
-      alert("✅ OPD Billing Saved Successfully!");
+    onSubmit: async (values) => {
+      try {
+        if (!values.UHID || !values.department || !values.Doctor) {
+          healthAlert({
+            title: "UHID Required",
+            text: "Please select a UHID, Department and Doctor from the list",
+            icon: "warning",
+          });
+          return;
+        };
+
+        const payload = buildPayload(values);
+        const response = await createBill(payload).unwrap();
+        healthAlert({
+          title: "UHID Required",
+          text: "OPD Billing Saved Successfully",
+          icon: "success",
+        });
+        formik.resetForm();
+        setSelectedServices([]);
+      } catch (err) {
+        healthAlert({
+          title: "UHID Required",
+          text: err.message,
+          icon: "error",
+        });
+      }
     },
+
+
   });
+  // Inside your component
+  useEffect(() => {
+    if (Object.keys(formik.errors).length > 0) {
+      console.log("Validation Errors:", formik.errors);
+    }
+  }, [formik.errors]);
+
 
   useEffect(() => {
     if (!patientData) return;
@@ -181,11 +272,8 @@ const OpdBilling = () => {
 
       updates.Age = `${years}y ${months}m ${days}d`;
     }
-
-    // Set all values at once
     formik.setValues({ ...formik.values, ...updates }, false);
-  }, [patientData, selectedUhid]); // Only these two dependencies
-
+  }, [patientData, selectedUhid]);
 
   const handleDOBChange = (e) => {
     formik.handleChange(e);
@@ -206,17 +294,18 @@ const OpdBilling = () => {
     formik.setFieldValue("Age", ageString);
   };
 
-  useEffect(() => {
-    const total = Number(formik.values.TotalAmount) || 0;
-    const paid = Number(formik.values.PaidAmount) || 0;
-    const due = total - paid;
-    formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
-  }, [formik.values.TotalAmount, formik.values.PaidAmount]);
+
+  // Future logic for the calcuation of due
+  // useEffect(() => {
+  //   const total = Number(formik.values.TotalAmount) || 0;
+  //   const paid = Number(formik.values.PaidAmount) || 0;
+  //   const due = total - paid;
+  //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
+  // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
 
   const handlePrintForm = () => {
     window.open("/print-opd-form", "_blank");
   };
-  console.log(uhidSearch, formik.values.UHID)
   return (
     <div className="max-w-6xl mx-auto mt-8 bg-white p-5 rounded-2xl shadow-md border border-gray-100">
       <h2 className="text-2xl font-bold text-sky-700 mb-5 text-center">
@@ -275,9 +364,10 @@ const OpdBilling = () => {
             <DiseaseSelect
               label="Complaint"
               value={formik.values.ChiefComplaint}
-              onChange={(selected) => formik.setFieldValue("diseases", selected)}
+              onChange={(selected) => formik.setFieldValue("ChiefComplaint", selected)}
               required
             />
+
             <Input
               label="Name"
               {...formik.getFieldProps("Name")}
@@ -362,17 +452,26 @@ const OpdBilling = () => {
             />
           </div>
         </section>
-
-        {/* ================= SERVICE DETAILS ================= */}
         <section>
           <ServiceSection
             selectedServices={selectedServices}
             setSelectedServices={setSelectedServices}
-            // uhid={uhidSearch || formik.values.UHID}
             department={formik.values.Department}
             consultingDoctor={formik.values.Doctor}
             payMode={formik.values.PayMode}
-            setBillingTotals={(total) => formik.setFieldValue("TotalAmount", total)}
+            setBillingTotals={(total) => {
+              formik.setFieldValue("TotalAmount", total?.toString() || "0");
+              if (formik.values.PayMode == "Cash" || formik.values.PayMode == "") {
+                formik.setFieldValue("CashAmount", total?.toString() || "0");
+                formik.setFieldValue("CardAmount", "0");
+                formik.setFieldValue("PaidAmount", total?.toString() || "0");
+              } else {
+                formik.setFieldValue("CardAmount", total?.toString() || "0");
+                formik.setFieldValue("CashAmount", "0");
+                formik.setFieldValue("PaidAmount", total?.toString() || "0");
+              }
+            }}
+
           />
         </section>
 
@@ -421,11 +520,11 @@ const OpdBilling = () => {
           <Button type="button" variant="gray" onClick={formik.handleReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
           </Button>
-          <Button type="button" variant="green">
-            <PrinterIcon className="w-5 h-5 inline mr-1" /> Print
-          </Button>
+          {/* <Button type="button" variant="green">
+            <PrinterIcon className="w-5 h-5 inline mr-1" disabled /> Print
+          </Button> */}
           <Button type="button" variant="outline" onClick={handlePrintForm}>
-            Print Form
+            Print CS
           </Button>
         </div>
       </form>

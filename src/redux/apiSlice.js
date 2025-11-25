@@ -213,6 +213,14 @@ export const api = createApi({
         },
       }),
     }),
+    createBill: build.mutation({
+      query: (billData) => ({
+        url: "/opd-billing",
+        method: "POST",
+        body: billData,
+      }),
+      invalidatesTags: ["Bill"],
+    }),
 
   }),
 
@@ -221,5 +229,5 @@ export const api = createApi({
 export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSearchDiseasesQuery, useGetCountriesQuery,
   useGetStatesByCountryQuery,
   useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery,
-  useGetPatientsByUhidQuery, useSearchUHIDQuery,useGetServiceMastersQuery 
+  useGetPatientsByUhidQuery, useSearchUHIDQuery, useGetServiceMastersQuery, useCreateBillMutation
 } = api;
