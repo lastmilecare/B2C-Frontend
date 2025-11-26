@@ -19,23 +19,35 @@ const baseInput =
 const baseBtn =
   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
 
-const Input = ({ label, ...props }) => (
+const Input = ({ label, required, error, ...props }) => (
   <div>
     {label && (
-      <label className="text-sm text-gray-600 block mb-1">{label}</label>
+      <label className="text-sm text-gray-600 block mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
     )}
-    <input {...props} className={`${baseInput} ${props.className || ""}`} />
+    <input
+      {...props}
+      className={`${baseInput} ${error ? "border-red-500" : ""} ${props.className || ""}`}
+    />
+    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
   </div>
 );
 
-const Select = ({ label, children, ...props }) => (
+const Select = ({ label, required, error, children, ...props }) => (
   <div>
     {label && (
-      <label className="text-sm text-gray-600 block mb-1">{label}</label>
+      <label className="text-sm text-gray-600 block mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
     )}
-    <select {...props} className={`${baseInput} ${props.className || ""}`}>
+    <select
+      {...props}
+      className={`${baseInput} ${error ? "border-red-500" : ""}`}
+    >
       {children}
     </select>
+    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
   </div>
 );
 
@@ -64,6 +76,7 @@ const OpdBilling = () => {
   const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
   const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
   const { data: collectedBy, isLoading: collectedComboLoading } = useGetComboQuery("collectedBy");
+  const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
   // Track if we've already populated data for this UHID
   const populatedUhidRef = useRef("");
 
@@ -103,8 +116,6 @@ const OpdBilling = () => {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   const buildPayload = (values) => {
-    console.log(values, "esa kya");
-    console.log(selectedServices);
     if (!patientData || !selectedServices.length) return null;
     const finalAmount = selectedServices.reduce(
       (sum, s) => sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
@@ -115,41 +126,41 @@ const OpdBilling = () => {
       PicasoNo: values.UHID || patientData.external_id,
       Mobile: values.Mobile,
       ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
-      PatientType: values.FinCategory,
-      PaidAmount: values.PaidAmount || 0,
-      CashAmount: values.CashAmount || 0,
-      CardAmount: values.CardAmount || 0,
-      PayMode: values.PayMode ? values.PayMode : "Cash",
-      DueAmount: values.DueAmount,
-      AddedBy: 1, // this need to add user id
+      PatientType: values.FinCategory == "BPL" ? 1 : 2,   // NEED TO CHECK VALUE
+      PaidAmount: Number(values.PaidAmount || 0),
+      CashAmount: Number(values.CashAmount || 0),
+      CardAmount: Number(values.CardAmount || 0),
+      PayMode: Number(values.PayMode),
+      DueAmount: Number(values.DueAmount || 0),
+      AddedBy: 178, // this need to add user id
       DepartmentID: values.Department,
-      ConsultantDoctorID: values.Doctor,
-      DoctorId: values.Doctor,
+      ConsultantDoctorID: Number(values.Doctor),
+      DoctorId: Number(values.Doctor),
       TotalServiceAmount: finalAmount,
-      HospitalID: selectedServices[0]?.HospitalID || 1,                      // set your hospital ID
+      HospitalID: selectedServices[0]?.HospitalID || 1,
       FinancialYearID: currentYear,
-      CentreID: 2, // Need to manage Center id
-      ReferTo: values.ReferBy,
+      CenterID: 49, // Need to manage Center id
+      ReferTo: Number(values.ReferBy || 0),
       IsActive: true
     };
 
     const details = selectedServices.map((s) => ({
       ServiceTypeID: s.ServiceTypeID || 1,
-      ServiceID: s.id,
+      ServiceID: Number(s.id),
       ServiceName: s.name,
-      ServiceAmount: s.price,
-      Qty: s.quantity || 1,
-      HospitalID: s.HospitalID,
+      ServiceAmount: Number(s.price),
+      Qty: Number(s.quantity || 1),
+      HospitalID: Number(s.HospitalID),
       FinancialYearID: currentYear,
       PatientID: patientData.id,
-      NetServiceAmount: finalAmount,
+      NetServiceAmount: Number(s.quantity * s.price),
       PicasoNo: values.UHID || patientData.external_id,
       HospitalCharge: 0,
       DoctorCharge: 0,
       Discount: 0,
       Isdiscount: false,
       DiscountBy: 0,
-      DoctorID: values.Doctor,
+      DoctorID: Number(values.Doctor),
       AddedBy: 1, //Need to manage this
       MonthID: currentMonth,
       IsActive: true,
@@ -169,23 +180,23 @@ const OpdBilling = () => {
       Gender: "",
       Age: "",
       DOB: "",
-      Department: "",
-      Doctor: "",
+      Department: 0,
+      Doctor: 0,
       FinCategory: "",
       ReferBy: "",
       VisitType: "",
       LastVisitDate: "",
       Quantity: 1,
       ServiceName: "",
-      PreviousDue: "0",
-      TotalAmount: "",
-      PaidAmount: "",
-      CreditBalance: "0",
+      PreviousDue: 0,
+      TotalAmount: 0,
+      PaidAmount: 0,
+      CreditBalance: 0,
       AdjustWithBalance: false,
-      DueAmount: "",
-      PayMode: "",
-      CashAmount: "",
-      CardAmount: "",
+      DueAmount: 0,
+      PayMode: 1,
+      CashAmount: 0,
+      CardAmount: 0,
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -193,24 +204,29 @@ const OpdBilling = () => {
       Mobile: Yup.string()
         .matches(/^[0-9]{10}$/, "Must be 10 digits")
         .required("Mobile is required"),
-      Department: Yup.string().required("Department is required"),
-      Doctor: Yup.string().required("Consulting doctor is required"),
+
+      Department: Yup.number()
+        .min(1, "Department is required")
+        .required("Department is required"),
+
+      Doctor: Yup.number()
+        .min(1, "Consulting doctor is required")
+        .required("Consulting doctor is required"),
     }),
     onSubmit: async (values) => {
       try {
-        if (!values.UHID || !values.department || !values.Doctor) {
+        const payload = buildPayload(values);
+        if (!payload) {
           healthAlert({
-            title: "UHID Required",
-            text: "Please select a UHID, Department and Doctor from the list",
-            icon: "warning",
+            title: "OPD Billing",
+            text: "Service or Patient detail missing please verify before procceding.",
+            icon: "error",
           });
           return;
-        };
-
-        const payload = buildPayload(values);
+        }
         const response = await createBill(payload).unwrap();
         healthAlert({
-          title: "UHID Required",
+          title: "OPD Billing",
           text: "OPD Billing Saved Successfully",
           icon: "success",
         });
@@ -218,8 +234,8 @@ const OpdBilling = () => {
         setSelectedServices([]);
       } catch (err) {
         healthAlert({
-          title: "UHID Required",
-          text: err.message,
+          title: "OPD Billing",
+          text: err?.data?.message,
           icon: "error",
         });
       }
@@ -321,7 +337,7 @@ const OpdBilling = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="relative">
-              <label className="text-sm text-gray-600 block mb-1">UHID</label>
+              <label className="text-sm text-gray-600 block mb-1">UHID <span className="text-red-500">*</span></label>
 
               <input
                 type="text"
@@ -375,10 +391,15 @@ const OpdBilling = () => {
               className="bg-gray-100 cursor-not-allowed"
             />
             <Input
-              label="Mobile"
+              label={
+                <span>
+                  Mobile <span className="text-red-500">*</span>
+                </span>
+              }
               {...formik.getFieldProps("Mobile")}
               readOnly
               className="bg-gray-100 cursor-not-allowed"
+              error={formik.touched.Mobile && formik.errors.Mobile}
             />
 
             <Input
@@ -404,7 +425,16 @@ const OpdBilling = () => {
             />
 
 
-            <Select {...formik.getFieldProps("Department")} label="Department">
+            <Select {...formik.getFieldProps("Department")}
+
+              label={
+                <span>
+                  Department <span className="text-red-500">*</span>
+                </span>
+              }
+
+              error={formik.touched.Department && formik.errors.Department}
+            >
               <option value="">Select Department</option>
               {department?.map((d) => (
                 <option key={d.id} value={d.id}>{d.name}</option>
@@ -412,7 +442,12 @@ const OpdBilling = () => {
             </Select>
 
 
-            <Select {...formik.getFieldProps("Doctor")} label="Doctor">
+            <Select {...formik.getFieldProps("Doctor")} label={
+              <span>
+                Doctor <span className="text-red-500">*</span>
+              </span>
+            }
+              error={formik.touched.Doctor && formik.errors.Doctor}>
               <option value="">Consulting Doctor</option>
               {doctors?.map((d) => (
                 <option key={d.id} value={d.id}>
@@ -461,7 +496,7 @@ const OpdBilling = () => {
             payMode={formik.values.PayMode}
             setBillingTotals={(total) => {
               formik.setFieldValue("TotalAmount", total?.toString() || "0");
-              if (formik.values.PayMode == "Cash" || formik.values.PayMode == "") {
+              if (formik.values.PayMode == 1 || formik.values.PayMode == "") {
                 formik.setFieldValue("CashAmount", total?.toString() || "0");
                 formik.setFieldValue("CardAmount", "0");
                 formik.setFieldValue("PaidAmount", total?.toString() || "0");
@@ -470,6 +505,7 @@ const OpdBilling = () => {
                 formik.setFieldValue("CashAmount", "0");
                 formik.setFieldValue("PaidAmount", total?.toString() || "0");
               }
+
             }}
 
           />
@@ -483,8 +519,8 @@ const OpdBilling = () => {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input {...formik.getFieldProps("PreviousDue")} placeholder="Previous Due Amount" disabled label="Previous Due" />
-            <Input {...formik.getFieldProps("TotalAmount")} placeholder="Total Amount" disabled label="Total Amount" />
+            <Input {...formik.getFieldProps("PreviousDue")} placeholder="Previous Due Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Previous Due" />
+            <Input {...formik.getFieldProps("TotalAmount")} placeholder="Total Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Total Amount" />
             <Input {...formik.getFieldProps("PaidAmount")} placeholder="Paid Amount" label="Paid Amount" />
             <Input {...formik.getFieldProps("CreditBalance")} placeholder="Credit / Balance Amount" label="Credit Balance" />
 
@@ -494,16 +530,17 @@ const OpdBilling = () => {
                 {...formik.getFieldProps("AdjustWithBalance")}
                 checked={formik.values.AdjustWithBalance}
                 disabled
+                className="bg-gray-100 cursor-not-allowed"
               />
               Adjust with Balance
             </label>
 
-            <Input {...formik.getFieldProps("DueAmount")} placeholder="Due Amount" disabled label="Due Amount" />
+            <Input {...formik.getFieldProps("DueAmount")} placeholder="Due Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Due Amount" />
 
             <Select {...formik.getFieldProps("PayMode")} label="Payment Mode">
               <option value="">Select Pay Mode</option>
-              {PAYMENT_TYPES.map((b) => (
-                <option key={b}>{b}</option>
+              {paymode?.map((u) => (
+                <option key={u.id} value={u.id}>{u.name}</option>
               ))}
             </Select>
 

@@ -24,8 +24,8 @@ const ServiceSection = ({
     type: item.ServiceType || "General",
     name: item.ServiceName,
     price: item.ServiceCharge,
-    HospitalID:item.HospitalID,
-    ServiceTypeID:item.ServiceTypeID
+    HospitalID: item.HospitalID,
+    ServiceTypeID: item.ServiceTypeID
   }));
 
   const canAdd = department && consultingDoctor;
@@ -83,7 +83,7 @@ const ServiceSection = ({
         </div>
 
         <div className="col-span-2 relative">
-          <label className="text-sm text-gray-600">Service Name</label>
+          <label className="text-sm text-gray-600">Service Name <span className="text-red-500">*</span></label>
           <input
             type="text"
             placeholder="Search service..."
@@ -91,7 +91,6 @@ const ServiceSection = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             className={`border rounded-lg px-3 py-2 w-full 
               }`}
-          // disabled={!canAdd}
           />
 
           {searchTerm && (

@@ -24,7 +24,7 @@ const healthTheme = {
     // Compact sizing
     width: "24rem",
     padding: "1.25rem",
-    borderRadius: "0.75rem",
+    // borderRadius: "0.75rem",
     backdrop: "rgba(17, 24, 39, 0.4)",
 
     reverseButtons: true,

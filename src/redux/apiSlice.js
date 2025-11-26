@@ -217,11 +217,10 @@ export const api = createApi({
       query: (billData) => ({
         url: "/opd-billing",
         method: "POST",
-        body: billData,
+        data: billData,
       }),
       invalidatesTags: ["Bill"],
     }),
-
   }),
 
 });
