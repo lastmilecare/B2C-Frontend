@@ -232,6 +232,7 @@ const OpdBilling = () => {
         });
         formik.resetForm();
         setSelectedServices([]);
+        setSelectedUhid("")
       } catch (err) {
         healthAlert({
           title: "OPD Billing",

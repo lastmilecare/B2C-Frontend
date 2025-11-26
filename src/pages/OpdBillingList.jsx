@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
 import { useGetOpdBillingQuery, useGetComboQuery } from "../redux/apiSlice";
-
+import PrintOpdForm from "./PrintOpdForm";
+import { useReactToPrint } from "react-to-print";
 const OpdBillingList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -17,7 +18,8 @@ const OpdBillingList = () => {
     idProof_number: "",
   });
   const [filters, setFilters] = useState({});
-
+  const [printRow, setPrintRow] = useState(null);
+  const printRef = useRef();
   // API call (assumes this hook exists in your apiSlice)
   const { data, isLoading, isError, error } = useGetOpdBillingQuery(
     {
@@ -146,7 +148,9 @@ const OpdBillingList = () => {
     { label: "End Date", name: "endDate", type: "date" },
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
-
+  // const handlePrintForm = () => {
+  //   window.open("/print-opd-form", "_blank");
+  // };
   const columns = [
     {
       name: "S.No",
@@ -293,10 +297,28 @@ const OpdBillingList = () => {
   ];
 
 
-  if (isError) {
-    console.error("OPD Billing Fetch Error:", error);
-  }
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Opd"
+  });
 
+
+  useEffect(() => {
+    if (printRow && printRef.current) {
+      handlePrint();
+
+      setTimeout(() => {
+        setPrintRow(null);
+      }, 300);
+    }
+  }, [printRow]);
+  
+  const onPrintCS = (row) => {
+    setPrintRow(row);
+  };
+  const onPrintBill = () => {
+
+  }
   return (
     <div className="p-0">
       <FilterBar
@@ -322,7 +344,14 @@ const OpdBillingList = () => {
         enableActions
         isLoading={isLoading}
         actionButtons={["edit", "delete", "print", "printCS"]}
+        onPrintCS={onPrintCS}
+        onPrint={onPrintBill}
       />
+      {printRow && (
+        <div style={{ display: 'none' }}>
+          <PrintOpdForm ref={printRef} data={printRow} />
+        </div>
+      )}
     </div>
   );
 };

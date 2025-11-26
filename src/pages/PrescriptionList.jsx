@@ -38,10 +38,6 @@ const PrescriptionList = () => {
   };
   const handleExport = async () => {
     const blob = await exportExcel(filters).unwrap();
-    console.log("BLOB:", blob);
-    console.log("IS BLOB:", blob instanceof Blob);
-    console.log("TYPE:", typeof blob);
-    console.log("CONSTRUCTOR:", blob?.constructor?.name);
 
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");

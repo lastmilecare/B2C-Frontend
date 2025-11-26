@@ -10,7 +10,8 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
         const diffMs = followUpDate - today;
         followup_days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     }
-
+    const add = import.meta.env.VITE_CENTER_ADD;
+    const mobile = import.meta.env.VITE_CENTER_MOBILE;
     return (
         <div
             ref={ref}
@@ -29,8 +30,9 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
                 <h2 style={{ color: "#00397A", margin: 0, fontWeight: "800" }}>MEDI KAVACH</h2>
                 <h3 style={{ color: "#4A6FA1", margin: 0, fontWeight: "600" }}>HEALTH CENTRE</h3>
                 <p style={{ fontSize: "11px", color: "#4A6FA1" }}>
-                    Address: Demo Road, Demo City • Phone: +91-9876543210
+                    {`Address: ${add ?? ""} • Phone: ${mobile ?? ""}`}
                 </p>
+
             </div>
 
             <hr style={{ margin: "5px 0", borderColor: "#00397A" }} />

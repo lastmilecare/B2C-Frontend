@@ -1,66 +1,65 @@
-import React, { useEffect } from "react";
+import React, { forwardRef, useEffect } from "react";
 
-const PrintOpdForm = () => {
-  useEffect(() => {
-    setTimeout(() => window.print(), 300);
-  }, []);
-
+const PrintOpdForm = forwardRef(({ data }, ref) => {
+  const add = import.meta.env.VITE_CENTER_ADD;
+  const mobile = import.meta.env.VITE_CENTER_MOBILE;
+  const addedDate = new Date(data.AddedDate).toISOString().split("T")[0];
   return (
     <div
-      className="
-        bg-white mx-auto text-black font-sans text-[12px]
-        w-[210mm] h-[297mm] p-[15mm]
-        overflow-hidden box-border print:bg-white print:overflow-hidden
-        print:m-0 print:p-[15mm]
-      "
+      ref={ref}
       style={{
-        boxSizing: "border-box",
-        pageBreakInside: "avoid",
-        pageBreakAfter: "avoid",
-        height: "calc(297mm - 0.5mm)", // fix overflow rounding issue
+        width: "210mm",
+        minHeight: "297mm",
+        padding: "12mm 15mm",
+        fontFamily: "Arial, sans-serif",
+        fontSize: "13px",
+        color: "#000",
+        lineHeight: "1.45",
       }}
     >
-      {/* ====== Header ====== */}
-      <div className="text-center mb-3">
-        <h2 className="text-[18px] font-extrabold text-[#00397A]">MEDI KAVACH</h2>
-        <h3 className="text-[14px] font-semibold text-[#4A6FA1]">HEALTH CENTRE</h3>
-        <p className="text-[11px] text-[#4A6FA1]">
-          Address: Demo Road, Demo City, Phone: +91-9876543210
+      <div style={{ textAlign: "center", marginBottom: "10px" }}>
+        <h2 style={{ color: "#00397A", margin: 0, fontWeight: "800" }}>MEDI KAVACH</h2>
+        <h3 style={{ color: "#4A6FA1", margin: 0, fontWeight: "600" }}>HEALTH CENTRE</h3>
+        <p style={{ fontSize: "11px", color: "#4A6FA1" }}>
+          {`Address: ${add ?? ""} • Phone: ${mobile ?? ""}`}
         </p>
       </div>
+      <hr style={{ margin: "5px 0", borderColor: "#00397A" }} />
 
-      <hr className="border-t border-black my-2" />
 
-      {/* ====== Date + UHID ====== */}
-      <div className="flex justify-between mb-2">
-        <p><b>Date :</b></p>
-        <p><b>Patient's UHID :</b></p>
+      <div style={{ display: "flex", justifyContent: "space-between", margin: "10px 0" }}>
+        <div><b>Date:</b> {addedDate}</div>
+        <div><b>UHID:</b> {data?.uhid}</div>
       </div>
 
-      {/* ====== Patient & Doctor Details ====== */}
-      <div className="flex justify-between mt-2">
-        <div className="w-[48%]">
-          <h4 className="text-[13px] underline font-bold mb-1">PATIENT'S DETAILS</h4>
-          <p><b>Name :</b></p>
-          <p><b>Age :</b></p>
-          <p><b>Gender :</b></p>
-          <p><b>Contact No :</b></p>
-        </div>
-
-        <div className="w-[48%]">
-          <h4 className="text-[13px] underline font-bold mb-1">DOCTOR'S DETAILS</h4>
-          <p><b>Doctor Name :</b></p>
-          <p><b>Qualification :</b></p>
-          <p><b>Reg. No :</b></p>
-          <p><b>Fin. Category :</b></p>
-        </div>
+      {/* Patient & Doctor */}
+      <div style={{ display: "flex", justifyContent: "space-between", margin: "10px 0" }}>
+        <h3 style={sectionTitle}>PATIENT DETAILS</h3>
+        <h3 style={sectionTitle}>DOCTOR DETAILS</h3>
       </div>
 
-      <hr className="border-t border-black my-2" />
-
-      {/* ====== Vitals ====== */}
-      <h4 className="text-[13px] underline font-bold mb-1">VITALS :</h4>
-      <table className="w-full border border-black border-collapse text-[11px] mb-4">
+      <table style={table}>
+        <tbody>
+          <tr>
+            <td style={td}><b>Name:</b> {data?.patient_name}</td>
+            <td style={td}><b>Doctor:</b> {data?.doctor_name}</td>
+          </tr>
+          <tr>
+            <td style={td}><b>Age:</b> {data?.age}</td>
+            <td style={td}><b>Qualification:</b> {data?.qualification}</td>
+          </tr>
+          <tr>
+            <td style={td}><b>Gender:</b> {data?.gender}</td>
+            <td style={td}><b>Reg No:</b> {data?.registration_number}</td>
+          </tr>
+          <tr>
+            <td style={td}><b>Contact:</b> {data?.contactNumber}</td>
+            <td style={td}><b>Category:</b> {data?.patient_type}</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3 style={sectionTitle}>VITALS</h3>
+      <table style={tableBordered}>
         <thead>
           <tr>
             {["BP (mmHg)", "PR (xx/min)", "SPO2 (%)", "Temp (°F)", "Weight (kg)", "Height (cm)"].map(
@@ -74,24 +73,21 @@ const PrintOpdForm = () => {
         </thead>
         <tbody>
           <tr>
-            {[...Array(6)].map((_, i) => (
-              <td key={i} className="border border-black p-4 text-center">&nbsp;</td>
-            ))}
+            <td style={tdCenter}>{data?.vitals?.systolicBP}</td>
+            <td style={tdCenter}>{data?.vitals?.diastolicBP}</td>
+            <td style={tdCenter}>{data?.vitals?.pulse}</td>
+            <td style={tdCenter}>{data?.vitals?.spo2}</td>
+            <td style={tdCenter}>{data?.vitals?.temperature}</td>
+            <td style={tdCenter}>{data?.vitals?.height || "-"}</td>
+            <td style={tdCenter}>{data?.vitals?.weight}</td>
           </tr>
         </tbody>
       </table>
-
-      {/* ====== Diagnosis and Others (Vertical Line Layout) ====== */}
       <div className="flex mt-6 min-h-[420px]">
-        {/* Left Section */}
         <div className="w-[30%] text-[12px] font-semibold pr-3">
           <p className="font-bold">Advised Diagnosis<br />and Others</p>
         </div>
-
-        {/* Vertical Line */}
         <div className="border-l border-black mx-2"></div>
-
-        {/* Right Section */}
         <div className="flex-1 space-y-3 text-[12px]">
           <p><b>Chief Complaint :</b></p>
           <p><b>History :</b></p>
@@ -105,12 +101,53 @@ const PrintOpdForm = () => {
         </div>
       </div>
 
-      {/* ====== Doctor Signature ====== */}
       <div className="text-right mt-8 text-[12px] font-semibold">
         Doctor's Sign & Stamp
       </div>
     </div>
   );
+
+});
+const sectionTitle = {
+  marginTop: "20px",
+  marginBottom: "8px",
+  fontSize: "15px",
+  fontWeight: "bold",
+  color: "#00397A",
+  borderBottom: "1px solid #4A6FA1",
+  paddingBottom: "4px"
+};
+
+const table = {
+  width: "100%",
+  borderCollapse: "collapse",
+  marginBottom: "10px",
+};
+
+const tableBordered = {
+  width: "100%",
+  borderCollapse: "collapse",
+  border: "1px solid #000",
+  marginBottom: "10px",
+};
+
+const td = {
+  border: "1px solid #000",
+  padding: "5px",
+};
+
+const tdCenter = {
+  border: "1px solid #000",
+  padding: "5px",
+  textAlign: "center",
+};
+
+const th = {
+  border: "1px solid #000",
+  padding: "6px",
+  background: "#EDF5FF",
+  fontWeight: "bold",
+  textAlign: "center",
 };
 
 export default PrintOpdForm;
