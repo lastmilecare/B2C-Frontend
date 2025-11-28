@@ -17,13 +17,34 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
         lineHeight: "1.45",
       }}
     >
-      <div style={{ textAlign: "center", marginBottom: "10px" }}>
+      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 pointer-events-none select-none z-0">
+        <p className="text-[60px] font-extrabold text-gray-400 opacity-10 rotate-[310deg] tracking-widest">
+          Last Mile Care Pvt Ltd
+        </p>
+      </div>
+      {/* <div style={{ textAlign: "center", marginBottom: "10px" }}>
         <h2 style={{ color: "#00397A", margin: 0, fontWeight: "800" }}>MEDI KAVACH</h2>
         <h3 style={{ color: "#4A6FA1", margin: 0, fontWeight: "600" }}>HEALTH CENTRE</h3>
         <p style={{ fontSize: "11px", color: "#4A6FA1" }}>
           {`Address: ${add ?? ""} • Phone: ${mobile ?? ""}`}
         </p>
+      </div> */}
+
+      <div className="text-center mb-6 border-b pb-6 pt-4">
+        <h1 className="text-[#00397A] text-[32px] font-extrabold tracking-wide leading-none">
+          MEDI KAVACH
+        </h1>
+        <h2 className="text-[#4A6FA1] text-[13px] font-semibold tracking-[0.25em] mt-1">
+          HEALTH CENTRE
+        </h2>
+        <p className="text-[10px] text-[#4A6FA1] mt-2">
+          {add || ""} • Contact: {mobile || ""}
+        </p>
       </div>
+
+
+
+
       <hr style={{ margin: "5px 0", borderColor: "#00397A" }} />
 
 

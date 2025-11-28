@@ -24,11 +24,12 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
       className="relative w-[700px] mx-auto p-16 print:p-4 text-[11px] text-black font-sans bg-white"
     >
 
-      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 pointer-events-none select-none z-0">
-        <p className="text-[60px] font-extrabold text-gray-400 opacity-10 tracking-widest">
-          Last Mile Care
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
+        <p className="text-[90px] font-extrabold text-gray-400 opacity-10 rotate-[-30deg] tracking-widest whitespace-nowrap">
+          Last Mile Care Pvt Ltd
         </p>
       </div>
+
 
       {/* MAIN CONTENT WRAPPER */}
       <div className="relative z-10">

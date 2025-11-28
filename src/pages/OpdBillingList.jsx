@@ -173,7 +173,7 @@ const OpdBillingList = () => {
     {
       name: "T.No",
       title: "Token Number",
-      selector: (row) => safeString(row?.token_no, "-"),
+      selector: (row) => safeString(row?.token, "-"),
       sortable: true,
     },
     {
@@ -193,7 +193,7 @@ const OpdBillingList = () => {
       name: "UHID",
       title: "Unique Health ID",
       selector: (row) => safeString(row?.uhid, "-"),
-      width: "99px",
+      width: "115px",
       sortable: true,
     },
     {
@@ -285,7 +285,7 @@ const OpdBillingList = () => {
     {
       name: "Srvc",
       title: "Service Name",
-      selector: (row) => safeString(row?.ServiceType, "-"),
+      selector: (row) => safeString((row?.opd_billing_data || []).map((item, idx) => (item?.ServiceName ))),
       width: "120px",
     },
     {

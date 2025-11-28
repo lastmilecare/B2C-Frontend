@@ -93,6 +93,7 @@ const OpdBilling = () => {
       }, 300);
     }
   }, [printRow]);
+
   const onPrintCS = (row) => {
     setPrintRow(row);
   };
@@ -100,6 +101,7 @@ const OpdBilling = () => {
     contentRef: printRef,
     documentTitle: "Opd"
   });
+
   const { data: patientData, isFetching } = useGetPatientsByUhidQuery(
     selectedUhid && selectedUhid.trim() !== ""
       ? { uhid: selectedUhid }
@@ -145,8 +147,6 @@ const OpdBilling = () => {
     const chiefComplaintStr = Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
       ? values.ChiefComplaint.map((e) => e.name).join(", ")
       : "";
-
-    debugger;
     const header = {
       PatientID: patientData.id,
       PicasoNo: values.UHID || patientData.external_id,
@@ -346,9 +346,7 @@ const OpdBilling = () => {
   //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
   // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
 
-  const handlePrintForm = () => {
-    <PrintOpdForm ref={printRef} data={printRow} />
-  };
+
   return (
     <div className="max-w-6xl mx-auto mt-8 bg-white p-5 rounded-2xl shadow-md border border-gray-100">
       <h2 className="text-2xl font-bold text-sky-700 mb-5 text-center">
@@ -575,8 +573,6 @@ const OpdBilling = () => {
             <Input {...formik.getFieldProps("CardAmount")} placeholder="Card / Online / UPI Amount" label="Card / Online / UPI Amount" />
           </div>
         </section>
-
-        {/* ================= ACTION BUTTONS ================= */}
         <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">
           <Button type="submit" variant="sky">
             <CheckCircleIcon className="w-5 h-5 inline mr-1" /> Save
@@ -584,10 +580,7 @@ const OpdBilling = () => {
           <Button type="button" variant="gray" onClick={formik.handleReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
           </Button>
-          {/* <Button type="button" variant="green">
-            <PrinterIcon className="w-5 h-5 inline mr-1" disabled /> Print
-          </Button> */}
-          <Button type="button" variant="outline" onClick={handlePrintForm}>
+          <Button type="button" variant="outline" onClick={onPrintCS}>
             Print CS
           </Button>
         </div>
