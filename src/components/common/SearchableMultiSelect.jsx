@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { healthAlert } from "../../utils/healthSwal";
 
 const SearchableMultiSelect = ({
   label,
@@ -31,7 +32,11 @@ const SearchableMultiSelect = ({
     if (value.find((v) => v.id === item.id)) return;
 
     if (value.length >= maxSelection) {
-      alert(`You can select up to ${maxSelection} diseases only.`);
+      healthAlert({
+        title: "Diseases",
+        text: `You can select up to ${maxSelection} diseases only.`,
+        icon: "info",
+      });
       return;
     }
 

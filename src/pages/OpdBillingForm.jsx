@@ -13,6 +13,8 @@ import { PAYMENT_TYPES } from "../utils/constants";
 import { useGetPatientsByUhidQuery, useSearchUHIDQuery, useGetComboQuery, useCreateBillMutation } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert } from "../utils/healthSwal";
+import PrintOpdForm from "./PrintOpdForm";
+import { useReactToPrint } from "react-to-print";
 
 const baseInput =
   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
@@ -80,6 +82,24 @@ const OpdBilling = () => {
   // Track if we've already populated data for this UHID
   const populatedUhidRef = useRef("");
 
+  const [printRow, setPrintRow] = useState(null);
+  const printRef = useRef();
+  useEffect(() => {
+    if (printRow && printRef.current) {
+      handlePrint();
+
+      setTimeout(() => {
+        setPrintRow(null);
+      }, 300);
+    }
+  }, [printRow]);
+  const onPrintCS = (row) => {
+    setPrintRow(row);
+  };
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Opd"
+  });
   const { data: patientData, isFetching } = useGetPatientsByUhidQuery(
     selectedUhid && selectedUhid.trim() !== ""
       ? { uhid: selectedUhid }
@@ -116,11 +136,17 @@ const OpdBilling = () => {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   const buildPayload = (values) => {
+
     if (!patientData || !selectedServices.length) return null;
     const finalAmount = selectedServices.reduce(
       (sum, s) => sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
       0
     )
+    const chiefComplaintStr = Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
+      ? values.ChiefComplaint.map((e) => e.name).join(", ")
+      : "";
+
+    debugger;
     const header = {
       PatientID: patientData.id,
       PicasoNo: values.UHID || patientData.external_id,
@@ -141,7 +167,8 @@ const OpdBilling = () => {
       FinancialYearID: currentYear,
       CenterID: 49, // Need to manage Center id
       ReferTo: Number(values.ReferBy || 0),
-      IsActive: true
+      IsActive: true,
+      complaint: chiefComplaintStr
     };
 
     const details = selectedServices.map((s) => ({
@@ -163,8 +190,7 @@ const OpdBilling = () => {
       DoctorID: Number(values.Doctor),
       AddedBy: 1, //Need to manage this
       MonthID: currentMonth,
-      IsActive: true,
-      FinancialYearID: currentYear
+      IsActive: true
     }));
 
     return { header, details };
@@ -321,7 +347,7 @@ const OpdBilling = () => {
   // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
 
   const handlePrintForm = () => {
-    window.open("/print-opd-form", "_blank");
+    <PrintOpdForm ref={printRef} data={printRow} />
   };
   return (
     <div className="max-w-6xl mx-auto mt-8 bg-white p-5 rounded-2xl shadow-md border border-gray-100">
@@ -566,6 +592,11 @@ const OpdBilling = () => {
           </Button>
         </div>
       </form>
+      {printRow && (
+        <div style={{ display: 'none' }}>
+          <PrintOpdForm ref={printRef} data={printRow} />
+        </div>
+      )}
     </div>
   );
 };

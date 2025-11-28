@@ -3,7 +3,7 @@ import React, { forwardRef, useEffect } from "react";
 const PrintOpdForm = forwardRef(({ data }, ref) => {
   const add = import.meta.env.VITE_CENTER_ADD;
   const mobile = import.meta.env.VITE_CENTER_MOBILE;
-  const addedDate = new Date(data.AddedDate).toISOString().split("T")[0];
+  const addedDate = data.AddedDate ? new Date(data.AddedDate).toISOString().split("T")[0] : "-";
   return (
     <div
       ref={ref}
@@ -89,7 +89,7 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
         </div>
         <div className="border-l border-black mx-2"></div>
         <div className="flex-1 space-y-3 text-[12px]">
-          <p><b>Chief Complaint :</b></p>
+          <p><b>Chief Complaint : {data?.complaint || ""}</b></p>
           <p><b>History :</b></p>
           <p><b>Physical Findings :</b></p>
           <p><b>Provisional Diagnosis :</b></p>

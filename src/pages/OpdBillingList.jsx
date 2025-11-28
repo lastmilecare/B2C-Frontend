@@ -4,6 +4,9 @@ import FilterBar from "../components/common/FilterBar";
 import { useGetOpdBillingQuery, useGetComboQuery } from "../redux/apiSlice";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
+import InvoiceTemplate from "./InvoicePage";
+import { healthAlert } from "../utils/healthSwal";
+
 const OpdBillingList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -19,7 +22,9 @@ const OpdBillingList = () => {
   });
   const [filters, setFilters] = useState({});
   const [printRow, setPrintRow] = useState(null);
+  const [printRow1, setPrintRow1] = useState(null);
   const printRef = useRef();
+  const printRef1 = useRef();
   // API call (assumes this hook exists in your apiSlice)
   const { data, isLoading, isError, error } = useGetOpdBillingQuery(
     {
@@ -47,12 +52,20 @@ const OpdBillingList = () => {
     const { startDate, endDate } = tempFilters;
 
     if (endDate && endDate > today) {
-      alert("End date cannot be greater than today.");
+      healthAlert({
+        title: "Opd",
+        text: `End date cannot be greater than today.`,
+        icon: "info",
+      });
       return;
     }
 
     if (startDate && endDate && startDate > endDate) {
-      alert("Start date cannot be after end date.");
+      healthAlert({
+        title: "Opd",
+        text: `Start date cannot be after end date.`,
+        icon: "info",
+      });
       return;
     }
 
@@ -312,13 +325,32 @@ const OpdBillingList = () => {
       }, 300);
     }
   }, [printRow]);
-  
+
   const onPrintCS = (row) => {
     setPrintRow(row);
   };
-  const onPrintBill = () => {
 
-  }
+  const handlePrint1 = useReactToPrint({
+    contentRef: printRef1,
+    documentTitle: "Invoice"
+  });
+
+
+  useEffect(() => {
+    if (printRow1 && printRef1.current) {
+      handlePrint1();
+
+      setTimeout(() => {
+        setPrintRow1(null);
+      }, 300);
+    }
+  }, [printRow1]);
+
+  const onPrintInvoice = (row) => {
+    setPrintRow1(row);
+  };
+
+
   return (
     <div className="p-0">
       <FilterBar
@@ -345,13 +377,19 @@ const OpdBillingList = () => {
         isLoading={isLoading}
         actionButtons={["edit", "delete", "print", "printCS"]}
         onPrintCS={onPrintCS}
-        onPrint={onPrintBill}
+        onPrint={onPrintInvoice}
       />
       {printRow && (
         <div style={{ display: 'none' }}>
           <PrintOpdForm ref={printRef} data={printRow} />
         </div>
       )}
+      {printRow1 && (
+        <div style={{ display: "none" }}>
+          <InvoiceTemplate ref={printRef1} data={printRow1} />
+        </div>
+      )}
+
     </div>
   );
 };
