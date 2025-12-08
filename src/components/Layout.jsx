@@ -18,7 +18,7 @@ const Layout = ({ children }) => {
       {/* Main Area */}
       <div className="flex-1 flex flex-col">
         <Topbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="p-2 overflow-y-auto">{children}</main>
+        <main className="flex-grow p-2 overflow-y-auto">{children}</main>
         <Footer />
 
       </div>

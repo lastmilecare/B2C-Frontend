@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { createPortal } from "react-dom"; // 1. Ye naya import hai (Portal ke liye)
+import { createPortal } from "react-dom"; 
 import DataTable from "react-data-table-component";
 import { EllipsisVerticalIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 const CommonList = ({
@@ -25,12 +25,9 @@ const CommonList = ({
   actionButtons = [],
 }) => {
   const [tempFilters, setTempFilters] = useState({});
-  
-  // 2. Ye State add ki hai: Taki pata chale kaunsa Menu khula hai
   const [openMenuRow, setOpenMenuRow] = useState(null);
-  
   const today = new Date().toISOString().split("T")[0];
-
+  
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setTempFilters((prev) => ({ ...prev, [name]: value }));
@@ -119,7 +116,7 @@ const CommonList = ({
         width: "70px",
         center: true,
         ignoreRowClick: true,
-        // 3. Yahan par Humne 'ActionMenu' component lagaya hai (Jo niche define hai)
+        
         cell: (row) => (
           <ActionMenu
             row={row}
@@ -136,7 +133,7 @@ const CommonList = ({
     enableActions, 
     actionButtons, 
     onEdit, onDelete, onView, onPrint, onPrintCS, 
-    openMenuRow // Ye dependency zaroori hai update ke liye
+    openMenuRow 
   ]);
 
   return (
@@ -250,8 +247,6 @@ const CommonList = ({
 
 export default CommonList;
 
-// 4. ACTION MENU COMPONENT (Portal Logic Wala)
-// Ye component Menu ko 'document.body' par render karta hai taaki wo table se bahar rahe
 const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenuRow }) => {
   const isOpen = openMenuRow === row;
   const [menuStyle, setMenuStyle] = useState({});
@@ -266,7 +261,7 @@ const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenu
       setOpenMenuRow(null);
       return;
     }
-    // Calculate Position (Menu kahan dikhana hai)
+    
     const rect = e.currentTarget.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -288,7 +283,7 @@ const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenu
     setOpenMenuRow(row);
   };
 
-  // Close menu on Scroll, Resize, or Click Outside
+  
   useEffect(() => {
     if (!isOpen) return;
     const closeMenu = () => setOpenMenuRow(null);
@@ -345,7 +340,7 @@ const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenu
       >
         <EllipsisVerticalIcon className="w-4 h-4 text-sky-600" />
       </button>
-      {/* Menu ko 'body' me bhej diya taaki cut na ho */}
+      
       {isOpen && createPortal(menuContent, document.body)}
     </>
   );

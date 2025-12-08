@@ -4,6 +4,7 @@ import FilterBar from "../components/common/FilterBar";
 import { useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery } from "../redux/apiSlice";
 import { useReactToPrint } from "react-to-print";
 import PrescriptionPrint from "./PrescriptionPrint";
+import { px, wrap } from "framer-motion";
 
 const PrescriptionList = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
@@ -94,7 +95,8 @@ const PrescriptionList = () => {
       name: "S.No",
       title: "Serial Number",
       selector: (row, i) => (page - 1) * limit + i + 1,
-      width: "100px",
+      width: "70px",
+      // center: true,
     },
     {
       name: "Bill No",
@@ -102,39 +104,52 @@ const PrescriptionList = () => {
       selector: (row) => safeString(row?.bill_no, "-"),
       sortable: true,
       width: "110px",
+      // center: true,
     },
     {
       name: "UHID",
       title: "Unique Health ID",
       selector: (row) => safeString(row?.uhid, "-"),
-      width: "200px",
+      // width: "220px",/
+      grow: 2,
       sortable: true,
+      // center: true,
     },
     {
       name: "Name",
       title: "Patient Name",
       selector: (row) => safeString(row?.patient_name, "-"),
       sortable: true,
-      width: "200px",
+      grow: 2,
+      
+      // center: true,
+      
     },
     {
       name: "Age",
       title: "Patient Age",
       selector: (row) => safeString(row?.age, "-"),
       sortable: true,
-      width: "90px",
+      // width: "80px",
+       grow: 1,
+       center: true,
+
     },
     {
       name: "Gender",
       title: "Gender",
       selector: (row) => safeString(row?.gender, "-"),
-      width: "200px",
+      // width: "100px",
+      grow: 1,
+      center: true,
     },
     {
       name: "Phone",
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNumber, "-"),
-      width: "200px"
+      // width: "150px",
+      grow: 1,
+      // center: true,
     },
     {
       name: "Added Date",
@@ -142,7 +157,9 @@ const PrescriptionList = () => {
       selector: (row) =>
         row?.createdAt ? new Date(row.createdAt).toISOString().split("T")[0] : "-",
       sortable: true,
-      width: "200px",
+      // width: "150px",
+      grow: 1,
+      // center: true,
     },
     // {
     //   name: "Status",
