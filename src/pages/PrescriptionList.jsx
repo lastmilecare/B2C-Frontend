@@ -96,7 +96,7 @@ const PrescriptionList = () => {
       title: "Serial Number",
       selector: (row, i) => (page - 1) * limit + i + 1,
       width: "70px",
-      // center: true,
+      
     },
     {
       name: "Bill No",
@@ -104,7 +104,7 @@ const PrescriptionList = () => {
       selector: (row) => safeString(row?.bill_no, "-"),
       sortable: true,
       width: "110px",
-      // center: true,
+     
     },
     {
       name: "UHID",
@@ -113,7 +113,8 @@ const PrescriptionList = () => {
       // width: "220px",/
       grow: 2,
       sortable: true,
-      // center: true,
+      center : true,
+      
     },
     {
       name: "Name",
@@ -121,8 +122,9 @@ const PrescriptionList = () => {
       selector: (row) => safeString(row?.patient_name, "-"),
       sortable: true,
       grow: 2,
+      center: true,
       
-      // center: true,
+     
       
     },
     {
@@ -141,7 +143,7 @@ const PrescriptionList = () => {
       selector: (row) => safeString(row?.gender, "-"),
       // width: "100px",
       grow: 1,
-      center: true,
+      // center: true,
     },
     {
       name: "Phone",
@@ -149,7 +151,7 @@ const PrescriptionList = () => {
       selector: (row) => safeString(row?.contactNumber, "-"),
       // width: "150px",
       grow: 1,
-      // center: true,
+     
     },
     {
       name: "Added Date",
@@ -159,7 +161,7 @@ const PrescriptionList = () => {
       sortable: true,
       // width: "150px",
       grow: 1,
-      // center: true,
+      
     },
     // {
     //   name: "Status",
