@@ -55,3 +55,4 @@ export const IDENTIFICATION_TYPES = [
     { value: "health_card", label: "Health Card" },
     { value: "other", label: "Other" },
 ];
+

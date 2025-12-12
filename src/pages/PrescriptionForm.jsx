@@ -4,12 +4,16 @@ import * as Yup from "yup";
 
 const PrescriptionForm = () => {
   const fields = [
+    { name: "uhid_no", label: "UHID", type: "text", required: true },
+    { name: "patient_name", label: "Patient Name", type: "text", required: true },
+    { name: "contact_no", label: "Contact No", type: "number", required: true },
+    { name:"age", label: "Age", type: "number"},
     // 🔗 Relations
     { name: "consultation_id", label: "Consultation ID", type: "text", required: true },
     { name: "doctor_id", label: "Doctor ID", type: "number", required: true },
     { name: "driver_id", label: "Driver ID", type: "number", required: true },
     { name: "bill_no", label: "Bill No", type: "number", required: true },
-
+    
     // 💊 Prescription Details
     {
       name: "diagnose",
@@ -58,17 +62,22 @@ const PrescriptionForm = () => {
     { name: "follow_up", label: "Follow Up Date", type: "date" },
 
     // 🧠 Health Info
-    {
-      name: "vitals",
-      label: "Vitals (JSON)",
-      type: "textarea",
-      placeholder: '{"bp":"120/80","pulse":"72"}',
+   { name: "vital_bp", label: "BP (mmHg)", type: "text", placeholder: "e.g. 120/80" },
+    { name: "vital_pulse", label: "Pulse (BPM)", type: "number", placeholder: "e.g. 72" },
+    { name: "vital_temp", label: "Temperature (°F)", type: "number", placeholder: "e.g. 98.6" },
+    { name: "vital_weight", label: "Weight (kg)", type: "number", placeholder: "e.g. 65" },
+    { name: "vital_spo2", label: "SPO2 (%)", type: "number", placeholder: "e.g. 98" },
+    { 
+      name: "condition_diabetes", 
+      label: "Diabetic?", 
+      type: "select", 
+      options: ["No", "Yes"] 
     },
-    {
-      name: "health_conditions",
-      label: "Health Conditions (JSON)",
-      type: "textarea",
-      placeholder: '{"diabetes":true,"hypertension":false}',
+    { 
+      name: "condition_hypertension", 
+      label: "Hypertension (BP)?", 
+      type: "select", 
+      options: ["No", "Yes"] 
     },
 
     // 🧾 Status
@@ -90,6 +99,11 @@ const PrescriptionForm = () => {
     doctor_id: Yup.number().required("Doctor ID is required"),
     driver_id: Yup.number().required("Driver ID is required"),
     bill_no: Yup.number().required("Bill number is required"),
+    uhid_no: Yup.string().required("UHID is required"),
+    patient_name: Yup.string().required("Patient Name is required"),
+    contact_no: Yup.string().matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
+    .required("Contact Number is required"),
+
   };
 
   const handleSubmit = (values) => {
