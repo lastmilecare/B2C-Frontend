@@ -111,8 +111,8 @@ const Navbar = () => {
             </div>
 
             {/* Signup / Logout */}
-            <NavLink to="/signup" className={navItemClass}>
-              <UserPlusIcon className="w-5 h-5 text-sky-600" /> Signup
+            <NavLink to="/login" className={navItemClass}>
+              <UserPlusIcon className="w-5 h-5 text-sky-600" /> Login
             </NavLink>
             <button className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 hover:text-red-600">
               <ArrowRightOnRectangleIcon className="w-5 h-5" /> Logout
@@ -194,8 +194,8 @@ const Navbar = () => {
           </div>
 
           {/* Signup / Logout */}
-          <NavLink to="/signup" className={navItemClass}>
-            <UserPlusIcon className="w-5 h-5 text-sky-600" /> Signup
+          <NavLink to="/login" className={navItemClass}>
+            <UserPlusIcon className="w-5 h-5 text-sky-600" /> <Login></Login>
           </NavLink>
           <button className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 hover:text-red-600">
             <ArrowRightOnRectangleIcon className="w-5 h-5" /> Logout

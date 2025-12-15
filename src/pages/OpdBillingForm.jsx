@@ -347,7 +347,7 @@ const OpdBilling = () => {
       //   const due = total - paid;
       //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
       // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
-      // Sirf tab Due Amount dikhayega jab Adjust button (checkbox) checked hoga
+      
   useEffect(() => {
     const total = Number(formik.values.TotalAmount) || 0;
     const paid = Number(formik.values.PaidAmount) || 0;

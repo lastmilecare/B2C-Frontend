@@ -1,67 +1,232 @@
-import React from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import { Link, useNavigate } from "react-router-dom";
-import CommonButton from "../components/CommonButton";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { Button, Col, Form, Input, Row, Modal, Radio } from "antd";
 
-const LoginSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  password: Yup.string().required("Password is required"),
-});
-
-export default function Login() {
-  const navigate = useNavigate();
+const Login = () => {
+  const [form] = Form.useForm();
+  const [deleteForm] = Form.useForm();
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [searchType, setSearchType] = useState("email");
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 to-blue-50">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md"
-      >
-        <h2 className="text-3xl font-bold text-teal-700 mb-6 text-center">Welcome Back 👨‍⚕️</h2>
-        <Formik
-          initialValues={{ email: "", password: "" }}
-          validationSchema={LoginSchema}
-          onSubmit={(values) => {
-            navigate("/dashboard");
-          }}
-        >
-          {() => (
-            <Form className="space-y-5">
-              <div>
-                <label className="block mb-1 font-medium text-gray-700">Email</label>
-                <Field
+    <div className="login-container">
+      <style>{`
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto; }
+
+        .login-container {
+          min-height: 100vh;
+          background: #fff;
+        }
+
+        .min-height-100-vh {
+          min-height: 100vh;
+        }
+
+        .login-bg {
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(180deg, #c7dbf5 0%, #e6f0fb 100%);
+        }
+
+        .img-responsive {
+          max-width: 82%;
+          height: auto;
+        }
+
+        .login-box {
+          height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .logo {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+
+        .logo img {
+          width: 240px;
+        }
+
+        .ant-form-item-label > label::before {
+          display: none !important;
+        }
+
+        .custom-label {
+          font-size: 15px;
+          font-weight: 500;
+          color: #222;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .required-star {
+          color: #ff4d4f;
+          font-size: 14px;
+          line-height: 1;
+        }
+
+        .ant-input,
+        .ant-input-affix-wrapper {
+          height: 42px;
+          border-radius: 6px;
+          font-size: 15px;
+          display: flex;
+          align-items: center;
+        }
+
+        .ant-input-password input {
+          line-height: 42px;
+        }
+
+        .ant-input-affix-wrapper input {
+          height: 42px;
+        }
+
+        .login-btn {
+          height: 44px;
+          font-size: 16px;
+          font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+          .login-bg {
+            height: 45vh;
+          }
+          .login-box {
+            height: auto;
+            padding: 30px 0;
+          }
+        }
+      `}</style>
+
+      <Row className="min-height-100-vh">
+        <Col md={16} xs={24}>
+          <div className="login-bg">
+            <img
+              src="/images/secure-login.png"
+              className="img-responsive"
+              alt="login"
+            />
+          </div>
+        </Col>
+
+        <Col md={8} xs={24}>
+          <div className="login-box">
+            <Col md={18} xs={22}>
+              <div className="logo">
+                <img src="/images/LMC_logo.webp" alt="logo" />
+              </div>
+
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={() => console.log("login submit")}
+              >
+                <Form.Item
+                  label={
+                    <span className="custom-label">
+                      Email <span className="required-star">*</span>
+                    </span>
+
+                  }
                   name="email"
-                  type="email"
-                  className="w-full border rounded-xl px-3 py-2 focus:ring-2 focus:ring-teal-400 outline-none"
-                />
-                <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1" />
-              </div>
+                  rules={[{ required: true, message: "Email is required" }]}
+                >
+                  <Input />
+                </Form.Item>
 
-              <div>
-                <label className="block mb-1 font-medium text-gray-700">Password</label>
-                <Field
+                <Form.Item
+                  label={
+                    <span className="custom-label">
+                      Password <span className="required-star">*</span>
+                    </span>
+                  }
                   name="password"
-                  type="password"
-                  className="w-full border rounded-xl px-3 py-2 focus:ring-2 focus:ring-teal-400 outline-none"
-                />
-                <ErrorMessage name="password" component="div" className="text-red-500 text-sm mt-1" />
+                  rules={[{ required: true, message: "Password is required"  }]}
+                >
+                  <Input.Password />
+                </Form.Item>
+
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    block
+                    className="login-btn"
+                  >
+                    Sign In
+                  </Button>
+                </Form.Item>
+              </Form>
+
+              <div style={{ textAlign: "center", marginTop: 14 }}>
+                <Button
+                  type="link"
+                  danger
+                  onClick={() => setDeleteModalVisible(true)}
+                  style={{ padding: 0 }}
+                >
+                  Delete Account
+                </Button>
               </div>
+            </Col>
+          </div>
+        </Col>
+      </Row>
 
-              <CommonButton type="submit">Login</CommonButton>
+      <Modal
+        title="Delete Account"
+        open={deleteModalVisible}
+        footer={null}
+        centered
+        onCancel={() => {
+          setDeleteModalVisible(false);
+          deleteForm.resetFields();
+        }}
+      >
+        <Form
+          form={deleteForm}
+          layout="vertical"
+          onFinish={() => setDeleteLoading(false)}
+        >
+          <Form.Item label="Search by">
+            <Radio.Group
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+            >
+              <Radio value="email">Email</Radio>
+              <Radio value="phone">Phone Number</Radio>
+            </Radio.Group>
+          </Form.Item>
 
-              <p className="text-sm text-center mt-4 text-gray-600">
-                Don’t have an account?{" "}
-                <Link to="/signup" className="text-teal-600 font-medium hover:underline">
-                  Sign up
-                </Link>
-              </p>
-            </Form>
-          )}
-        </Formik>
-      </motion.div>
+          <Form.Item
+            label={searchType === "email" ? "Email" : "Phone Number"}
+            name="emailOrPhone"
+            rules={[{ required: true }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              danger
+              block
+              loading={deleteLoading}
+              htmlType="submit"
+            >
+              Delete Account
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
-}
+};
+
+export default Login;

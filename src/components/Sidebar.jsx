@@ -112,9 +112,9 @@ const Sidebar = () => {
 
       {/* Footer */}
       <div className="border-t border-gray-100 p-2">
-        <NavLink to="/signup" className={navItemClass}>
+        <NavLink to="/login" className={navItemClass}>
           <UserPlusIcon className="w-5 h-5 text-sky-600" />
-          {isOpen && "Signup"}
+          {isOpen && "Login"}
         </NavLink>
         <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-red-100 hover:text-red-600 transition">
           <ArrowRightOnRectangleIcon className="w-5 h-5" />

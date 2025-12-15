@@ -47,9 +47,9 @@ export const api = createApi({
     login: build.mutation({
       query: (body) => ({ url: "/auth/login", method: "post", data: body }),
     }),
-    signup: build.mutation({
-      query: (body) => ({ url: "/auth/signup", method: "post", data: body }),
-    }),
+      // signup: build.mutation({
+      //   query: (body) => ({ url: "/auth/signup", method: "post", data: body }),
+      // }),
     getPatients: build.query({
       query: ({
         page = 1,
