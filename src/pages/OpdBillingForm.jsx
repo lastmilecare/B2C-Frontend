@@ -219,8 +219,9 @@ const OpdBilling = () => {
       PaidAmount: 0,
       CreditBalance: 0,
       AdjustWithBalance: false,
+      
       DueAmount: 0,
-      PayMode: 1,
+      PayMode: "",
       CashAmount: 0,
       CardAmount: 0,
     },
@@ -238,6 +239,7 @@ const OpdBilling = () => {
       Doctor: Yup.number()
         .min(1, "Consulting doctor is required")
         .required("Consulting doctor is required"),
+      PayMode: Yup.string().required("Payment Mode is required"),
     }),
     onSubmit: async (values) => {
       try {
@@ -339,12 +341,33 @@ const OpdBilling = () => {
 
 
   // Future logic for the calcuation of due
-  // useEffect(() => {
-  //   const total = Number(formik.values.TotalAmount) || 0;
-  //   const paid = Number(formik.values.PaidAmount) || 0;
-  //   const due = total - paid;
-  //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
-  // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
+      // useEffect(() => {
+      //   const total = Number(formik.values.TotalAmount) || 0;
+      //   const paid = Number(formik.values.PaidAmount) || 0;
+      //   const due = total - paid;
+      //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
+      // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
+      // Sirf tab Due Amount dikhayega jab Adjust button (checkbox) checked hoga
+  useEffect(() => {
+    const total = Number(formik.values.TotalAmount) || 0;
+    const paid = Number(formik.values.PaidAmount) || 0;
+    const credit = Number(formik.values.CreditBalance) || 0;
+    const isAdjusting = formik.values.AdjustWithBalance;
+    if (isAdjusting) {
+      let due = total - paid - credit;
+      if (due < 0) due = 0;
+
+      formik.setFieldValue("DueAmount", due.toFixed(2));
+    } else {
+      formik.setFieldValue("DueAmount", "0.00");
+    }
+
+  }, [
+    formik.values.AdjustWithBalance, 
+    formik.values.TotalAmount, 
+    formik.values.PaidAmount,
+    formik.values.CreditBalance
+  ]);
 
 
   return (
@@ -554,15 +577,20 @@ const OpdBilling = () => {
                 type="checkbox"
                 {...formik.getFieldProps("AdjustWithBalance")}
                 checked={formik.values.AdjustWithBalance}
-                disabled
-                className="bg-gray-100 cursor-not-allowed"
+                  // disabled
+                  
+                  // className="bg-gray-100 cursor-not-allowed"
+                  className="cursor-pointer h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
               />
               Adjust with Balance
             </label>
 
             <Input {...formik.getFieldProps("DueAmount")} placeholder="Due Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Due Amount" />
 
-            <Select {...formik.getFieldProps("PayMode")} label="Payment Mode">
+            <Select {...formik.getFieldProps("PayMode")} label="Payment Mode"
+            required
+            error={formik.touched.PayMode && formik.errors.PayMode}
+            >
               <option value="">Select Pay Mode</option>
               {paymode?.map((u) => (
                 <option key={u.id} value={u.id}>{u.name}</option>

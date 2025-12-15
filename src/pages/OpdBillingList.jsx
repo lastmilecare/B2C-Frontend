@@ -157,8 +157,8 @@ const OpdBillingList = () => {
       ],
     },
 
-    { label: "Start Date", name: "startDate", type: "date" },
-    { label: "End Date", name: "endDate", type: "date" },
+    { label: "Date from ", name: "startDate", type: "date" },
+    { label: "Date to", name: "endDate", type: "date" },
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
   // const handlePrintForm = () => {

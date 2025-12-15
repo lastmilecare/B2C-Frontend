@@ -35,6 +35,7 @@ const PatientList = () => {
   const handleApplyFilters = () => {
     const today = new Date().toISOString().split("T")[0];
     const { startDate, endDate } = tempFilters;
+        
 
     if (endDate && endDate > today) {
       alert("End date cannot be greater than today.");
@@ -88,8 +89,8 @@ const PatientList = () => {
         { label: "BPL", value: "bpl" }
       ],
     },
-    { label: "Start Date", name: "startDate", type: "date" },
-    { label: "End Date", name: "endDate", type: "date" },
+    { label: "Date from", name: "startDate", type: "date" },
+    { label: "Date to", name: "endDate", type: "date" },
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
 
