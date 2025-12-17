@@ -6,7 +6,7 @@ import { RELATIONSHIP_OPTIONS, TITLES, BLOOD_GROUPS, RESIDENTAL_STATUS, OCCUPATI
 import { useRegisterPatientsMutation } from "../redux/apiSlice";
 import DiseaseSelect from "../components/DiseaseSelect";
 import { useLocationData } from "../services/locationApi";
-import { healthAlert } from "../utils/healthSwal";
+import { healthAlerts } from "../utils/healthSwal";
 
 
 const baseInput =
@@ -117,22 +117,16 @@ const PatientRegistration = () => {
       try {
         const payload = buildPayload(values);
         if (!payload) {
-          healthAlert({
-            title: "Patient",
-            text: "Patient detail missing please verify before procceding.",
-            icon: "error",
-          });
+           healthAlerts.error("Patient detail missing please verify before procceding.", "error")
           return;
         }
         const response = await createPatient(payload).unwrap();
-        healthAlert({
-          title: "Patient",
-          text: "Patient Data Saved Successfully",
-          icon: "success",
-        });
+        healthAlerts.success("Patient Data Saved Successfully", "Patient Saved")
         formik.resetForm();
         setSelectedServices([]);
-        setSelectedUhid("")
+        setSelectedUhid("");
+        resetForm();
+        setAge("");
       } catch (err) {
         healthAlert({
           title: "Patient",
@@ -140,8 +134,7 @@ const PatientRegistration = () => {
           icon: "error",
         });
       }
-      resetForm();
-      setAge("");
+
     },
   });
   useEffect(() => { }, [formik.errors])

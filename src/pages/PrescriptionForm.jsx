@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
-import FormBuilder from "../components/common/FormBuilder";
-import * as Yup from "yup";
-import { useGetPatientsByUhidQuery, useSearchUHIDQuery, useGetComboQuery, useCreateBillMutation } from "../redux/apiSlice";
-import { healthAlert } from "../utils/healthSwal";
-import useDebounce from "../hooks/useDebounce";
-import { skipToken } from "@reduxjs/toolkit/query";
 import { Formik, useFormik } from "formik";
+import * as Yup from "yup";
 import {
   ArrowPathIcon,
   PrinterIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
+import ServiceSection from "../components/ServiceSection";
+import DiseaseSelect from "../components/DiseaseSelect";
+import useDebounce from "../hooks/useDebounce";
+import { PAYMENT_TYPES } from "../utils/constants";
+import { useGetPatientsByUhidQuery, useSearchUHIDQuery, useGetComboQuery, useCreateBillMutation } from "../redux/apiSlice";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { healthAlert, healthAlerts } from "../utils/healthSwal";
+import PrintOpdForm from "./PrintOpdForm";
+import { useReactToPrint } from "react-to-print";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+
 const baseInput =
   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
 const baseBtn =
@@ -29,7 +35,7 @@ const Input = ({ label, required, error, ...props }) => (
     />
     {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
   </div>
-);  
+);
 
 const Select = ({ label, required, error, children, ...props }) => (
   <div>
@@ -63,126 +69,38 @@ const Button = ({ variant = "sky", children, ...props }) => {
 };
 
 const PrescriptionForm = () => {
-
+  const [selectedServices, setSelectedServices] = useState([]);
   const [uhidSearch, setUhidSearch] = useState("");
-    const debouncedUhid = useDebounce(uhidSearch, 500);
-    const [selectedUhid, setSelectedUhid] = useState("");
-    const [suggestionsList, setSuggestionsList] = useState([]);
+  const debouncedUhid = useDebounce(uhidSearch, 500);
+  const [selectedUhid, setSelectedUhid] = useState("");
+  const [suggestionsList, setSuggestionsList] = useState([]);
+  const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
+  const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
+  const { data: collectedBy, isLoading: collectedComboLoading } = useGetComboQuery("collectedBy");
+  const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
+  const [prescriptionList, setPrescriptionList] = useState([]);
 
-  const fields = [
-    { type: "section", label: "Patient Details" },
+  // Track if we've already populated data for this UHID
+  const populatedUhidRef = useRef("");
 
-    {
-      name: "uhid_no",
-      label: "UHID",
-      type: "text",
-      required: true,
-    },
-    { name: "bill_no", label: "Bill No", type: "number", required: true },
+  const [printRow, setPrintRow] = useState(null);
+  const printRef = useRef();
+  useEffect(() => {
+    if (printRow && printRef.current) {
+      handlePrint();
 
-    { name: "patient_name", label: "Name", type: "text", required: true },
-    { name: "age", label: "Age", type: "number" },
+      setTimeout(() => {
+        setPrintRow(null);
+      }, 300);
+    }
+  }, [printRow]);
 
-    {
-      name: "gender",
-      label: "Gender",
-      type: "select",
-      options: ["Male", "Female", "Other"],
-    },
-    { name: "contact_no", label: "Mobile", type: "number", required: true },
-    { type: "section", label: "Vitals" },
-
-    { name: "vital_bp", label: "BP (mmHg)", type: "text" },
-    { name: "vital_pulse", label: "Pulse (BPM)", type: "number" },
-
-    { name: "vital_temp", label: "Temperature (°F)", type: "number" },
-    { name: "vital_spo2", label: "SPO2 (%)", type: "number" },
-
-    {
-      name: "vital_weight",
-      label: "Weight (kg)",
-      type: "number",
-      className: "col-span-full",
-    },
-    { type: "section", label: "Clinical Details" },
-
-    {
-      name: "diagnose",
-      label: "Diagnosis",
-      type: "text",
-      className: "col-span-full",
-    },
-    { name: "chief_complaints", label: "Chief Complaints", type: "textarea" },
-    { name: "drug_allergies", label: "Drug Allergies", type: "textarea" },
-    // 💊 Rx (Medicines)
-    { type: "section", label: "Rx (Medicines)" },
-
-    {
-      name: "rx_medicines",
-      label: "Medicine | Dosage | Frequency | Duration",
-      type: "textarea",
-      required: true,
-      className: "col-span-full",
-      placeholder:
-        "Paracetamol | 500mg | 1-0-1 | 5 days\nAmoxicillin | 250mg | 1-1-1 | 7 days",
-    },
-
-    // 📋 Advice & Tests
-    { type: "section", label: "Advice & Tests" },
-
-    { name: "lab", label: "Lab Tests", type: "textarea" },
-    { name: "preventive_advice", label: "Preventive Advice", type: "textarea" },
-    {
-      name: "follow_up",
-      label: "Follow-up Date",
-      type: "date",
-      className: "col-span-full",
-    },
-
-    // 🧾 Prescription Status
-    { type: "section", label: "Prescription Status" },
-
-
-    { name: "consultation_id", label: "Consultation ID", type: "text", required: true },
-    { name: "doctor_id", label: "Doctor ID", type: "number", required: true },
-    { name: "driver_id", label: "Driver ID", type: "number", required: true },
-
-    {
-      name: "Other_Instructions",
-      label: "Other Instructions",
-      type: "textarea",
-      className: "col-span-full",
-      required: true,
-    },
-
-    {
-      name: "isReady",
-      label: "Prescription Ready?",
-      type: "select",
-      options: ["Yes", "No"],
-    },
-  ];
-
-  const initialValues = fields.reduce((acc, cur) => {
-    if (cur.name) acc[cur.name] = "";
-    return acc;
-  }, {});
-
-  const validationSchema = Yup.object({
-    uhid_no: Yup.string().required("UHID is required"),
-    patient_name: Yup.string().required("Patient Name is required"),
-    contact_no: Yup.string()
-      .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
-      .required("Mobile is required"),
-
-    rx_medicines: Yup.string().required("Rx Medicines are required"),
-
-    bill_no: Yup.number().required("Bill number is required"),
-    consultation_id: Yup.string().required("Consultation ID is required"),
-    doctor_id: Yup.number().required("Doctor ID is required"),
-    driver_id: Yup.number().required("Driver ID is required"),
-
-    Other_Instructions: Yup.string().required("Other Instructions are required"),
+  const onPrintCS = (row) => {
+    setPrintRow(row);
+  };
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Opd"
   });
 
   const { data: patientData, isFetching } = useGetPatientsByUhidQuery(
@@ -191,10 +109,13 @@ const PrescriptionForm = () => {
       : skipToken
   );
 
+  const [createBill, { isLoading: isCreating, error: createError }] = useCreateBillMutation();
+
   const { data: suggestions = [] } = useSearchUHIDQuery(
     debouncedUhid,
     { skip: debouncedUhid.length < 2 }
   );
+
 
   useEffect(() => {
     if (selectedUhid) return;
@@ -208,6 +129,74 @@ const PrescriptionForm = () => {
     }
 
   }, [suggestions, selectedUhid, uhidSearch]);
+
+  const parseDOB = (raw) => {
+    if (!raw || !raw.includes("-")) return "";
+
+    const [dd, mm, yyyy] = raw.split("-");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  const buildPayload = (values) => {
+
+    if (!patientData || !selectedServices.length) return null;
+    const finalAmount = selectedServices.reduce(
+      (sum, s) => sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
+      0
+    )
+    const chiefComplaintStr = Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
+      ? values.ChiefComplaint.map((e) => e.name).join(", ")
+      : "";
+    const header = {
+      PatientID: patientData.id,
+      PicasoNo: values.UHID || patientData.external_id,
+      Mobile: values.Mobile,
+      ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
+      PatientType: values.FinCategory == "BPL" ? 1 : 2,   // NEED TO CHECK VALUE
+      PaidAmount: Number(values.PaidAmount || 0),
+      CashAmount: Number(values.CashAmount || 0),
+      CardAmount: Number(values.CardAmount || 0),
+      PayMode: Number(values.PayMode),
+      DueAmount: Number(values.DueAmount || 0),
+      AddedBy: 178, // this need to add user id
+      DepartmentID: values.Department,
+      ConsultantDoctorID: Number(values.Doctor),
+      DoctorId: Number(values.Doctor),
+      TotalServiceAmount: finalAmount,
+      HospitalID: selectedServices[0]?.HospitalID || 1,
+      FinancialYearID: currentYear,
+      CenterID: 49, // Need to manage Center id
+      ReferTo: Number(values.ReferBy || 0),
+      IsActive: true,
+      complaint: chiefComplaintStr
+    };
+
+    const details = selectedServices.map((s) => ({
+      ServiceTypeID: s.ServiceTypeID || 1,
+      ServiceID: Number(s.id),
+      ServiceName: s.name,
+      ServiceAmount: Number(s.price),
+      Qty: Number(s.quantity || 1),
+      HospitalID: Number(s.HospitalID),
+      FinancialYearID: currentYear,
+      PatientID: patientData.id,
+      NetServiceAmount: Number(s.quantity * s.price),
+      PicasoNo: values.UHID || patientData.external_id,
+      HospitalCharge: 0,
+      DoctorCharge: 0,
+      Discount: 0,
+      Isdiscount: false,
+      DiscountBy: 0,
+      DoctorID: Number(values.Doctor),
+      AddedBy: 1, //Need to manage this
+      MonthID: currentMonth,
+      IsActive: true
+    }));
+
+    return { header, details };
+  };
+
   const formik = useFormik({
     initialValues: {
       UHID: "",
@@ -290,11 +279,123 @@ const PrescriptionForm = () => {
       console.log("Validation Errors:", formik.errors);
     }
   }, [formik.errors]);
+
+
+  useEffect(() => {
+    if (!patientData) return;
+    if (patientData.external_id !== selectedUhid) return;
+    if (populatedUhidRef.current === selectedUhid) return;
+    populatedUhidRef.current = selectedUhid;
+
+    const updates = {
+      UHID: patientData.external_id,
+      Name: patientData.name || "",
+      Gender: patientData.gender || "",
+      Mobile: patientData.contactNumber || "",
+      FinCategory: patientData.category || "",
+      LastVisitDate: patientData.createdAt ? new Date(patientData.createdAt).toISOString().split("T")[0] : "",
+      VisitType: patientData?.VisitType || "N/A"
+    };
+
+    if (patientData.dateOfBirthOrAge) {
+      const dobValue = parseDOB(patientData.dateOfBirthOrAge);
+      updates.DOB = dobValue;
+
+      const dob = new Date(dobValue);
+      const today = new Date();
+      let years = today.getFullYear() - dob.getFullYear();
+      let months = today.getMonth() - dob.getMonth();
+      let days = today.getDate() - dob.getDate();
+
+      if (days < 0) {
+        months -= 1;
+        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+      }
+      if (months < 0) {
+        years -= 1;
+        months += 12;
+      }
+
+      updates.Age = `${years}y ${months}m ${days}d`;
+    }
+    formik.setValues({ ...formik.values, ...updates }, false);
+  }, [patientData, selectedUhid]);
+
+  useEffect(() => {
+    const total = Number(formik.values.TotalAmount) || 0;
+    const paid = Number(formik.values.PaidAmount) || 0;
+    const credit = Number(formik.values.CreditBalance) || 0;
+    const isAdjusting = formik.values.AdjustWithBalance;
+    if (isAdjusting) {
+      let due = total - paid - credit;
+      if (due < 0) due = 0;
+
+      formik.setFieldValue("DueAmount", due.toFixed(2));
+    } else {
+      formik.setFieldValue("DueAmount", "0.00");
+    }
+
+  }, [
+    formik.values.AdjustWithBalance,
+    formik.values.TotalAmount,
+    formik.values.PaidAmount,
+    formik.values.CreditBalance
+  ]);
+  const handleAddPrescription = () => {
+    const {
+      medicine,
+      typemedicine,
+      dosage,
+      dosageinstructions,
+      preferredtime,
+      duration
+    } = formik.values;
+    if (
+      !medicine ||
+      !typemedicine ||
+      !dosage ||
+      !duration
+    ) {
+
+      healthAlerts.warning("Please fill all mandatory medicine fields");
+      return;
+    }
+
+    const newItem = {
+      medicine,
+      type: typemedicine,
+      dosage,
+      instructions: dosageinstructions,
+      preferredTime: preferredtime,
+      duration,
+    };
+
+    setPrescriptionList((prev) => [...prev, newItem]);
+
+    // Clear only prescription fields
+    formik.setValues({
+      ...formik.values,
+      medicine: "",
+      typemedicine: "",
+      dosage: "",
+      dosageinstructions: "",
+      preferredtime: "",
+      duration: "",
+    });
+  };
+  const handleDeletePrescription = (index) => {
+    setPrescriptionList((prev) =>
+      prev.filter((_, i) => i !== index)
+    );
+  };
+
+
   return (
     <div className="max-w-6xl mx-auto mt-8 bg-white p-5 rounded-2xl shadow-md border border-gray-100">
       <h2 className="text-2xl font-bold text-sky-700 mb-5 text-center">
         💳 Prescription Form
       </h2>
+
       <form onSubmit={formik.handleSubmit} className="space-y-5">
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -304,7 +405,7 @@ const PrescriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="relative">
-              <label className="text-sm text-gray-600 block mb-1">UHID <span className="text-red-500">*</span></label>
+              <label className="text-sm text-gray-600 block mb-1">Bill No <span className="text-red-500">*</span></label>
 
               <input
                 type="text"
@@ -343,20 +444,36 @@ const PrescriptionForm = () => {
                 )}
             </div>
 
-
-            {/* <DiseaseSelect
-              label="Complaint"
-              value={formik.values.ChiefComplaint}
-              onChange={(selected) => formik.setFieldValue("ChiefComplaint", selected)}
-              required
-            /> */}
-
             <Input
               label="Name"
               {...formik.getFieldProps("Name")}
               readOnly
               className="bg-gray-100 cursor-not-allowed"
             />
+
+            <Input
+              label="UHID"
+              {...formik.getFieldProps("uhid")}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
+            >
+            </Input>
+
+            <Input
+              label="Age"
+              {...formik.getFieldProps("Age")}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
+            />
+
+            <Input
+              label="Gender"
+              {...formik.getFieldProps("Gender")}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
+            >
+            </Input>
+
             <Input
               label={
                 <span>
@@ -368,158 +485,132 @@ const PrescriptionForm = () => {
               className="bg-gray-100 cursor-not-allowed"
               error={formik.touched.Mobile && formik.errors.Mobile}
             />
-
-            <Input
-              label="Gender"
-              {...formik.getFieldProps("Gender")}
-              readOnly
-              className="bg-gray-100 cursor-not-allowed"
-            >
-            </Input>
-
-            {/* <Input
-              label="Date of Birth"
-              type="date"
-              {...formik.getFieldProps("DOB")}
-              onChange={handleDOBChange}
-              max={new Date().toISOString().split("T")[0]}
-            /> */}
-            <Input
-              label="Age"
-              {...formik.getFieldProps("Age")}
-              readOnly
-              className="bg-gray-100 cursor-not-allowed"
-            />
-
-
-            {/* <Select {...formik.getFieldProps("Department")}
-
-              label={
-                <span>
-                  Department <span className="text-red-500">*</span>
-                </span>
-              }
-
-              error={formik.touched.Department && formik.errors.Department}
-            >
-              <option value="">Select Department</option>
-              {department?.map((d) => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
-            </Select>
-
-
-            <Select {...formik.getFieldProps("Doctor")} label={
-              <span>
-                Doctor <span className="text-red-500">*</span>
-              </span>
-            }
-              error={formik.touched.Doctor && formik.errors.Doctor}>
-              <option value="">Consulting Doctor</option>
-              {doctors?.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name || d.doctor_name}
-                </option>
-              ))}
-            </Select> */}
-
-
             <Input {...formik.getFieldProps("FinCategory")} className="bg-gray-100 cursor-not-allowed" label="Category" readOnly>
-
             </Input>
 
-            {/* <Select {...formik.getFieldProps("ReferBy")} label="Refer By">
-              <option value="">Refer By</option>
-              {collectedBy?.map((u) => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </Select> */}
 
-
-            <Input
-              label="Visit Type"
-              {...formik.getFieldProps("VisitType")}
-              className="bg-gray-100 cursor-not-allowed"
-              readOnly
-            >
+            <Input {...formik.getFieldProps("bpsystolic")} className="bg-gray-100 cursor-not-allowed" label="BP Systolic" >
             </Input>
-
-            <Input
-              label="Last Visit Date"
-              type="date"
-              {...formik.getFieldProps("LastVisitDate")}
-              max={new Date().toISOString().split("T")[0]}
-              className="bg-gray-100 cursor-not-allowed"
-              readOnly
-            />
+            <Input {...formik.getFieldProps("bpdiastolic")} className="bg-gray-100 cursor-not-allowed" label="BP Diastolic" >
+            </Input>
+            <Input {...formik.getFieldProps("pulserate")} className="bg-gray-100 cursor-not-allowed" label="Pulse Rate" >
+            </Input>
+            <Input {...formik.getFieldProps("spo2")} className="bg-gray-100 cursor-not-allowed" label="SPO2" >
+            </Input>
+            <Input {...formik.getFieldProps("temprature")} className="bg-gray-100 cursor-not-allowed" label="Temperature" >
+            </Input>
+            <Input {...formik.getFieldProps("height")} className="bg-gray-100 cursor-not-allowed" label="Height" >
+            </Input>
+            <Input {...formik.getFieldProps("weight")} className="bg-gray-100 cursor-not-allowed" label="Weight" >
+            </Input>
           </div>
         </section>
-        {/* <section>
-          <ServiceSection
-            selectedServices={selectedServices}
-            setSelectedServices={setSelectedServices}
-            department={formik.values.Department}
-            consultingDoctor={formik.values.Doctor}
-            payMode={formik.values.PayMode}
-            setBillingTotals={(total) => {
-              formik.setFieldValue("TotalAmount", total?.toString() || "0");
-              if (formik.values.PayMode == 1 || formik.values.PayMode == "") {
-                formik.setFieldValue("CashAmount", total?.toString() || "0");
-                formik.setFieldValue("CardAmount", "0");
-                formik.setFieldValue("PaidAmount", total?.toString() || "0");
-              } else {
-                formik.setFieldValue("CardAmount", total?.toString() || "0");
-                formik.setFieldValue("CashAmount", "0");
-                formik.setFieldValue("PaidAmount", total?.toString() || "0");
-              }
-
-            }}
-
-          />
-        </section> */}
 
         {/* ================= BILLING DETAILS ================= */}
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Billing
+            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Prescription
             Details
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input {...formik.getFieldProps("PreviousDue")} placeholder="Previous Due Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Previous Due" />
-            <Input {...formik.getFieldProps("TotalAmount")} placeholder="Total Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Total Amount" />
-            <Input {...formik.getFieldProps("PaidAmount")} placeholder="Paid Amount" label="Paid Amount" />
-            <Input {...formik.getFieldProps("CreditBalance")} placeholder="Credit / Balance Amount" label="Credit Balance" />
-
-            <label className="flex items-center gap-2 text-gray-700 text-sm mt-2">
-              <input
-                type="checkbox"
-                {...formik.getFieldProps("AdjustWithBalance")}
-                checked={formik.values.AdjustWithBalance}
-                // disabled
-
-                // className="bg-gray-100 cursor-not-allowed"
-                className="cursor-pointer h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
-              />
-              Adjust with Balance
-            </label>
-
-            <Input {...formik.getFieldProps("DueAmount")} placeholder="Due Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Due Amount" />
-
-            {/* <Select {...formik.getFieldProps("PayMode")} label="Payment Mode"
+            <Input {...formik.getFieldProps("otherinstrution")} placeholder="Other Instructions *" className="bg-gray-100 cursor-not-allowed" label="Other Instructions" />
+            <DiseaseSelect
+              label="Complaint"
+              value={formik.values.ChiefComplaint}
+              onChange={(selected) => formik.setFieldValue("ChiefComplaint", selected)}
               required
-              error={formik.touched.PayMode && formik.errors.PayMode}
-            >
-              <option value="">Select Pay Mode</option>
-              {paymode?.map((u) => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </Select> */}
-
-            <Input {...formik.getFieldProps("CashAmount")} placeholder="Cash Amount" label="Cash Amount" />
-            <Input {...formik.getFieldProps("CardAmount")} placeholder="Card / Online / UPI Amount" label="Card / Online / UPI Amount" />
+            />
+            <Input {...formik.getFieldProps("labs")} placeholder="Labs" className="bg-gray-100 cursor-not-allowed" label="Labs" />
+            <Input {...formik.getFieldProps("otherlabs")} placeholder="Other Labs" label="Other Labs" />
+            <Input {...formik.getFieldProps("followup")} placeholder="Next Follow-up days" label="Next Follow-up days" />
+            <Input {...formik.getFieldProps("advice")} placeholder="Preventive Advice" label="Preventive Advice" />
+            <Input {...formik.getFieldProps("history")} placeholder="History" label="History" />
           </div>
         </section>
+        {/* ================= Medical Prescription DETAILS ================= */}
+        <section>
+          <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Medical Prescription DETAILS
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Input {...formik.getFieldProps("medicine")} placeholder="Name of Medicine" label="Name of Medicine *" />
+            <Input {...formik.getFieldProps("typemedicine")} placeholder="Type of Medicine" label="Type of Medicine *" />
+            <Input {...formik.getFieldProps("dosage")} placeholder="Dosage pills " label="Dosage pills*" />
+            <Input {...formik.getFieldProps("dosageinstructions")} placeholder="Instructions " label="Instructions *" />
+            <Input {...formik.getFieldProps("preferredtime")} placeholder="Preferred Time" label="Preferred Time *" />
+            <Input {...formik.getFieldProps("duration")} placeholder="Duration (in days)" label="Duration (in days) *" />
+            <button
+              type="button"
+              onClick={handleAddPrescription}
+              title="Add medicine"
+              className="h-9 w-9 flex items-center justify-center rounded-full
+             bg-emerald-600 text-white hover:bg-emerald-700
+             focus:ring-2 focus:ring-emerald-500"
+            >
+              <PlusIcon className="h-5 w-5" />
+            </button>
+
+
+            {prescriptionList.length > 0 && (
+              <div className="mt-4 rounded-lg border bg-white shadow-sm">
+                <div className="px-4 py-2 font-semibold text-gray-700 border-b bg-gray-50">
+                  Added Medicines
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th className="px-3 py-2 text-left">SL No</th>
+                        <th className="px-3 py-2 text-left">Medicine</th>
+                        <th className="px-3 py-2 text-left">Type</th>
+                        <th className="px-3 py-2 text-left">Dosage</th>
+                        <th className="px-3 py-2 text-left">Time</th>
+                        <th className="px-3 py-2 text-left">Days</th>
+                        <th className="px-3 py-2 text-center">Delete</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {prescriptionList.map((item, index) => (
+                        <tr
+                          key={index}
+                          className="border-t hover:bg-gray-50"
+                        >
+                          <td className="px-3 py-2">{index + 1}</td>
+                          <td className="px-3 py-2 font-medium">
+                            {item.medicine}
+                          </td>
+                          <td className="px-3 py-2">{item.type}</td>
+                          <td className="px-3 py-2">{item.dosage}</td>
+                          <td className="px-3 py-2">{item.preferredTime || "-"}</td>
+                          <td className="px-3 py-2">{item.duration}</td>
+                          <td className="px-3 py-2 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePrescription(index)}
+                              className="text-red-500 hover:text-red-700"
+                              title="Delete"
+                            >
+                              🗑
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+
+
+
+          </div>
+        </section>
+
         <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">
           <Button type="submit" variant="sky">
             <CheckCircleIcon className="w-5 h-5 inline mr-1" /> Save
@@ -527,8 +618,16 @@ const PrescriptionForm = () => {
           <Button type="button" variant="gray" onClick={formik.handleReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
           </Button>
+          <Button type="button" variant="outline" onClick={onPrintCS}>
+            Print CS
+          </Button>
         </div>
       </form>
+      {printRow && (
+        <div style={{ display: 'none' }}>
+          <PrintOpdForm ref={printRef} data={printRow} />
+        </div>
+      )}
     </div>
   );
 };
