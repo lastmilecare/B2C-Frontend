@@ -18,7 +18,9 @@ import { useReactToPrint } from "react-to-print";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 const baseInput =
-  "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
+  "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
+  "focus:ring-2 focus:ring-sky-400 focus:border-sky-500 " +
+  "transition";
 const baseBtn =
   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
 
@@ -391,7 +393,7 @@ const PrescriptionForm = () => {
 
 
   return (
-    <div className="max-w-6xl mx-auto mt-8 bg-white p-5 rounded-2xl shadow-md border border-gray-100">
+    <div className="max-w-6xl mx-auto mt-8 bg-white p-6 rounded-2xl shadow border border-gray-200">
       <h2 className="text-2xl font-bold text-sky-700 mb-5 text-center">
         💳 Prescription Form
       </h2>
@@ -403,7 +405,7 @@ const PrescriptionForm = () => {
             Details
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div className="relative">
               <label className="text-sm text-gray-600 block mb-1">Bill No <span className="text-red-500">*</span></label>
 
@@ -489,7 +491,7 @@ const PrescriptionForm = () => {
             </Input>
 
 
-            <Input {...formik.getFieldProps("bpsystolic")} className="bg-gray-100 cursor-not-allowed" label="BP Systolic" >
+            {/* <Input {...formik.getFieldProps("bpsystolic")} className="bg-gray-100 cursor-not-allowed" label="BP Systolic" >
             </Input>
             <Input {...formik.getFieldProps("bpdiastolic")} className="bg-gray-100 cursor-not-allowed" label="BP Diastolic" >
             </Input>
@@ -502,26 +504,42 @@ const PrescriptionForm = () => {
             <Input {...formik.getFieldProps("height")} className="bg-gray-100 cursor-not-allowed" label="Height" >
             </Input>
             <Input {...formik.getFieldProps("weight")} className="bg-gray-100 cursor-not-allowed" label="Weight" >
-            </Input>
+            </Input> */}
+          </div>
+        </section>
+        <section className="mt-6">
+          <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
+            Vitals & Examination
+          </h3>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Input {...formik.getFieldProps("bpsystolic")} label="BP Systolic (mmHg)" />
+            <Input {...formik.getFieldProps("bpdiastolic")} label="BP Diastolic (mmHg)" />
+            <Input {...formik.getFieldProps("pulserate")} label="Pulse (bpm)" />
+            <Input {...formik.getFieldProps("spo2")} label="SPO2 (%)" />
+            <Input {...formik.getFieldProps("temprature")} label="Temperature (°C)" />
+            <Input {...formik.getFieldProps("height")} label="Height (cm)" />
+            <Input {...formik.getFieldProps("weight")} label="Weight (kg)" />
           </div>
         </section>
 
-        {/* ================= BILLING DETAILS ================= */}
-        <section>
+
+        {/* ================= BILLING DETAILS ================= */}        <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Prescription
             Details
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input {...formik.getFieldProps("otherinstrution")} placeholder="Other Instructions *" className="bg-gray-100 cursor-not-allowed" label="Other Instructions" />
+            <Input {...formik.getFieldProps("otherinstrution")} placeholder="Other Instructions " className="bg-gray-100 cursor-not-allowed" label="Other Instructions" />
             <DiseaseSelect
               label="Complaint"
               value={formik.values.ChiefComplaint}
               onChange={(selected) => formik.setFieldValue("ChiefComplaint", selected)}
               required
             />
-            <Input {...formik.getFieldProps("labs")} placeholder="Labs" className="bg-gray-100 cursor-not-allowed" label="Labs" />
+            <Input {...formik.getFieldProps("labs")} placeholder="Labs" className="bg-gray-100 cursor-not-allowed"  label="Labs" />
             <Input {...formik.getFieldProps("otherlabs")} placeholder="Other Labs" label="Other Labs" />
             <Input {...formik.getFieldProps("followup")} placeholder="Next Follow-up days" label="Next Follow-up days" />
             <Input {...formik.getFieldProps("advice")} placeholder="Preventive Advice" label="Preventive Advice" />
@@ -531,7 +549,7 @@ const PrescriptionForm = () => {
         {/* ================= Medical Prescription DETAILS ================= */}
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Medical Prescription DETAILS
+            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Medical Prescription
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -556,7 +574,7 @@ const PrescriptionForm = () => {
             {prescriptionList.length > 0 && (
               <div className="mt-4 rounded-lg border bg-white shadow-sm">
                 <div className="px-4 py-2 font-semibold text-gray-700 border-b bg-gray-50">
-                  Added Medicines
+                  Prescribed Medicines
                 </div>
 
                 <div className="overflow-x-auto">
