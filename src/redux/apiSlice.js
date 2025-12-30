@@ -221,12 +221,21 @@ export const api = createApi({
       }),
       invalidatesTags: ["Bill"],
     }),
+    registerPatients: build.mutation({
+      query: (pData) => ({
+        url: "/patient/register",
+        method: "POST",
+        data: pData,
+      }),
+    })
   }),
+
 
 });
 
 export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSearchDiseasesQuery, useGetCountriesQuery,
   useGetStatesByCountryQuery,
   useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery,
-  useGetPatientsByUhidQuery, useSearchUHIDQuery, useGetServiceMastersQuery, useCreateBillMutation
+  useGetPatientsByUhidQuery, useSearchUHIDQuery,
+  useGetServiceMastersQuery, useCreateBillMutation, useRegisterPatientsMutation
 } = api;

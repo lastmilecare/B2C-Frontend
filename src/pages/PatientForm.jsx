@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ArrowPathIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { RELATIONSHIP_OPTIONS, TITLES, BLOOD_GROUPS, RESIDENTAL_STATUS, OCCUPATION_OPTIONS, IDENTIFICATION_TYPES } from "../utils/constants";
-// import { useSearchDiseasesQuery } from "../redux/apiSlice";
+import { useRegisterPatientsMutation } from "../redux/apiSlice";
 import DiseaseSelect from "../components/DiseaseSelect";
 import { useLocationData } from "../services/locationApi";
-
+import { healthAlerts } from "../utils/healthSwal";
 
 
 const baseInput =
@@ -68,6 +68,7 @@ const PatientRegistration = () => {
   const [stateId, setStateId] = useState("");
 
   const { countries, states, districts } = useLocationData(countryId, stateId);
+  const [createPatient, { isLoading: isCreating, error: createError }] = useRegisterPatientsMutation();
 
   const formik = useFormik({
     initialValues: {
@@ -110,14 +111,80 @@ const PatientRegistration = () => {
       localAddressState: Yup.string().required("State is required"),
       occupation: Yup.string().required("Occupation is required"),
       // email: Yup.string().email("Invalid email"),
+      CO: Yup.string().required("Co is required")
     }),
-    onSubmit: (values, { resetForm }) => {
-      console.log(" Final Form Data :", values);
-      alert("✅ Patient Registered Successfully!");
-      resetForm();
-      setAge("");
+    onSubmit: async (values) => {
+      try {
+        const payload = buildPayload(values);
+        if (!payload) {
+           healthAlerts.error("Patient detail missing please verify before procceding.", "error")
+          return;
+        }
+        const response = await createPatient(payload).unwrap();
+        healthAlerts.success("Patient Data Saved Successfully", "Patient Saved")
+        formik.resetForm();
+        setSelectedServices([]);
+        setSelectedUhid("");
+        resetForm();
+        setAge("");
+      } catch (err) {
+        healthAlert({
+          title: "Patient",
+          text: err?.data?.message,
+          icon: "error",
+        });
+      }
+
     },
   });
+  useEffect(() => { }, [formik.errors])
+
+
+  const buildPayload = (values) => {
+    debugger;
+    if (!values) return null;
+    const ageValue = values?.age?.split(" ") ?? [];
+
+    const iage = parseInt(ageValue[0], 10);
+    const imonth = parseInt(ageValue[1], 10);
+    const iday = parseInt(ageValue[2], 10);
+
+    const disease_ids = values?.diseases.map(d => d.id);
+
+
+    let payload = {
+      name: values.name,
+      healthCardNumber: values.healthCardNumber,
+      gender: values.gender,
+      localAddress: values.localAddress,
+      contactNumber: values.contactNumber,
+      emergencyContactName: values.emergencyContactName,
+      emergencyContactNumber: values.emergencyContactNumber,
+      idProof_number: values.idProof_number,
+      dateOfBirthOrAge: values.dob,
+      idProof_name: values.idProof_name,
+      createdBy: "88", // this need to change with user id
+      blood_group: values.blood_group,
+      age: iage,
+      comingFromWebsite: 'B2B',
+      pin: values.pin,
+      iage: iage,
+      idays: iday,
+      imonth: imonth,
+      disease_ids: disease_ids || [],
+      country_id: Number(values.country),
+      state_id: Number(values.localAddressState),
+      district_id: Number(values.localAddressDistrict),
+      category: values.fincat,
+      occupation: values.occupation,
+      residentialstatus: values.residentialstatus,
+      title: values.title,
+      co: values.CO,
+      relationship: values.relationship
+    }
+    console.log(payload, "this is final value")
+    return payload;
+  }
 
   // 🎂 Auto Age Calculation
   const handleDOBChange = (e) => {
@@ -188,7 +255,7 @@ const PatientRegistration = () => {
               className="bg-gray-100 text-gray-600 cursor-not-allowed"
             />
 
-            <Input {...formik.getFieldProps("CO")} label="C/O" />
+            <Input {...formik.getFieldProps("CO")} label="C/O" required error={formik.touched.name && formik.errors.name} />
 
             <Select {...formik.getFieldProps("relationship")} label="Relationship">
               <option value="">Select</option>
@@ -362,7 +429,7 @@ const PatientRegistration = () => {
             />
 
 
-            <Select {...formik.getFieldProps("idProof_name")} label="Identification Type">
+            <Select {...formik.getFieldProps("idProof_name")} label="Identification Type" required>
               <option value="">Select</option>
               {IDENTIFICATION_TYPES.map((b) => (
                 <option key={b.value} value={b.value}>
@@ -392,7 +459,7 @@ const PatientRegistration = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
-            <Input {...formik.getFieldProps("creditamount")} label="Credit Amount" />
+            <Input {...formik.getFieldProps("creditamount")} label="Credit Amount" disabled />
           </div>
         </section>
 

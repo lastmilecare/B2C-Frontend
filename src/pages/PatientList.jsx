@@ -98,12 +98,12 @@ const PatientList = () => {
     { name: "S.No", selector: (row, i) => (page - 1) * limit + i + 1 },
     { name: "Name", selector: (row) => row.name, sortable: true },
     { name: "Mobile", selector: (row) => row.contactNumber, width: "120px" },
-    { name: "Centre", selector: (row) => row.driver_cetname },
+    { name: "Centre", selector: (row) => row.driver_cetname },  // this will show based on the login
     { name: "UHID", selector: (row) => row.external_id, width: "120px", sortable: true },
     { name: "Gender", selector: (row) => row.gender },
     { name: "Age", selector: (row) => row.age, sortable: true },
-    { name: "Complaint", selector: (row) => row.Disease },
-    { name: "Credit Amt", selector: (row) => row.creditamount },
+    { name: "Complaint", selector: (row) => row.Disease || "N/A"}, //this need to fix
+    { name: "Credit Amt", selector: (row) => row.creditamount || 0 },
     { name: "Address", selector: (row) => row.localAddressDistrict },
     { name: "Category", selector: (row) => row.category, sortable: true },
     {
