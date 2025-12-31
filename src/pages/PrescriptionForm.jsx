@@ -407,7 +407,7 @@ const PrescriptionForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div className="relative">
-              <label className="text-sm text-gray-600 block mb-1">Bill No <span className="text-red-500">*</span></label>
+              <label className="text-sm text-gray-600 block mb-1">UHID <span className="text-red-500">*</span></label>
 
               <input
                 type="text"
@@ -454,8 +454,8 @@ const PrescriptionForm = () => {
             />
 
             <Input
-              label="UHID"
-              {...formik.getFieldProps("uhid")}
+              label="Bill no"
+              {...formik.getFieldProps("Bill no")}
               readOnly
               className="bg-gray-100 cursor-not-allowed"
             >
@@ -539,7 +539,7 @@ const PrescriptionForm = () => {
               onChange={(selected) => formik.setFieldValue("ChiefComplaint", selected)}
               required
             />
-            <Input {...formik.getFieldProps("labs")} placeholder="Labs" className="bg-gray-100 cursor-not-allowed"  label="Labs" />
+            <Input {...formik.getFieldProps("labs")} placeholder="Labs" className="bg-gray-100 cursor-not-allowed" label="Labs" />
             <Input {...formik.getFieldProps("otherlabs")} placeholder="Other Labs" label="Other Labs" />
             <Input {...formik.getFieldProps("followup")} placeholder="Next Follow-up days" label="Next Follow-up days" />
             <Input {...formik.getFieldProps("advice")} placeholder="Preventive Advice" label="Preventive Advice" />
@@ -559,6 +559,9 @@ const PrescriptionForm = () => {
             <Input {...formik.getFieldProps("dosageinstructions")} placeholder="Instructions " label="Instructions *" />
             <Input {...formik.getFieldProps("preferredtime")} placeholder="Preferred Time" label="Preferred Time *" />
             <Input {...formik.getFieldProps("duration")} placeholder="Duration (in days)" label="Duration (in days) *" />
+          </div>
+          <div className="mt-3">
+
             <button
               type="button"
               onClick={handleAddPrescription}
@@ -569,64 +572,60 @@ const PrescriptionForm = () => {
             >
               <PlusIcon className="h-5 w-5" />
             </button>
-
-
-            {prescriptionList.length > 0 && (
-              <div className="mt-4 rounded-lg border bg-white shadow-sm">
-                <div className="px-4 py-2 font-semibold text-gray-700 border-b bg-gray-50">
-                  Prescribed Medicines
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th className="px-3 py-2 text-left">SL No</th>
-                        <th className="px-3 py-2 text-left">Medicine</th>
-                        <th className="px-3 py-2 text-left">Type</th>
-                        <th className="px-3 py-2 text-left">Dosage</th>
-                        <th className="px-3 py-2 text-left">Time</th>
-                        <th className="px-3 py-2 text-left">Days</th>
-                        <th className="px-3 py-2 text-center">Delete</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {prescriptionList.map((item, index) => (
-                        <tr
-                          key={index}
-                          className="border-t hover:bg-gray-50"
-                        >
-                          <td className="px-3 py-2">{index + 1}</td>
-                          <td className="px-3 py-2 font-medium">
-                            {item.medicine}
-                          </td>
-                          <td className="px-3 py-2">{item.type}</td>
-                          <td className="px-3 py-2">{item.dosage}</td>
-                          <td className="px-3 py-2">{item.preferredTime || "-"}</td>
-                          <td className="px-3 py-2">{item.duration}</td>
-                          <td className="px-3 py-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => handleDeletePrescription(index)}
-                              className="text-red-500 hover:text-red-700"
-                              title="Delete"
-                            >
-                              🗑
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-
-
-
           </div>
+
+
+          {prescriptionList.length > 0 && (
+            <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+              <div className="px-4 py-2 font-semibold text-sky-700 border-b bg-sky--50">
+                Prescribed Medicines
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left">SL No</th>
+                      <th className="px-4 py-3 text-left">Medicine</th>
+                      <th className="px-4 py-3 text-left">Type</th>
+                      <th className="px-4 py-3 text-left">Dosage</th>
+                      <th className="px-4 py-3 text-left">Time</th>
+                      <th className="px-4 py-3 text-left">Days</th>
+                      <th className="px-4 py-3 text-center">Delete</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {prescriptionList.map((item, index) => (
+                      <tr
+                        key={index}
+                        className="border-t hover:bg-gray-50"
+                      >
+                        <td className="px-4 py-3">{index + 1}</td>
+                        <td className="px-4 py-3 font-medium">
+                          {item.medicine}
+                        </td>
+                        <td className="px-4 py-3">{item.type}</td>
+                        <td className="px-4 py-3">{item.dosage}</td>
+                        <td className="px-4 py-3">{item.preferredTime || "-"}</td>
+                        <td className="px-4 py-3">{item.duration}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePrescription(index)}
+                            className="text-red-500 hover:text-red-700"
+                            title="Delete"
+                          >
+                            🗑
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </section>
 
         <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">
