@@ -63,7 +63,7 @@ const Button = ({ variant = "sky", children, ...props }) => {
 };
 
 const PatientRegistration = () => {
-  const [age, setAge] = useState("");
+  // const [age, setAge] = useState("");
   const [countryId, setCountryId] = useState("");
   const [stateId, setStateId] = useState("");
 
@@ -185,16 +185,26 @@ const PatientRegistration = () => {
     console.log(payload, "this is final value")
     return payload;
   }
+  const handleReset = () => {
+  formik.resetForm();   
+  setCountryId("");     
+  setStateId("");       
+};
+
 
   // 🎂 Auto Age Calculation
   const handleDOBChange = (e) => {
-    formik.handleChange(e);
-    const dob = new Date(e.target.value);
-    if (isNaN(dob)) return;
+    const dob = e.target.value;
+    formik.setFieldValue("dob",dob);
+    if (!dob){
+      formik.setFieldValue("age", "");
+      return;
+    } 
+    const birth = new Date(dob)
     const today = new Date();
-    let years = today.getFullYear() - dob.getFullYear();
-    let months = today.getMonth() - dob.getMonth();
-    let days = today.getDate() - dob.getDate();
+    let years = today.getFullYear() - birth.getFullYear();
+    let months = today.getMonth() - birth.getMonth();
+    let days = today.getDate() - birth.getDate();
     if (days < 0) {
       months -= 1;
       days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
@@ -203,9 +213,9 @@ const PatientRegistration = () => {
       years -= 1;
       months += 12;
     }
-    const ageString = `${years}y ${months}m ${days}d`;
-    setAge(ageString);
-    formik.setFieldValue("age", ageString);
+    
+    
+    formik.setFieldValue("age", `${years}y ${months}m ${days}d`);
   };
 
   return (
@@ -250,7 +260,7 @@ const PatientRegistration = () => {
 
             <Input
               label="Age"
-              value={age}
+              value={formik.values.age}
               readOnly
               className="bg-gray-100 text-gray-600 cursor-not-allowed"
             />
@@ -468,7 +478,7 @@ const PatientRegistration = () => {
           <Button type="submit" variant="sky">
             <CheckCircleIcon className="w-5 h-5 inline mr-1" /> Save
           </Button>
-          <Button type="button" variant="gray" onClick={formik.handleReset}>
+          <Button type="button" variant="gray" onClick={handleReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
           </Button>
         </div>
