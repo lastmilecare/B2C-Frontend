@@ -16,6 +16,7 @@ import { healthAlert } from "../utils/healthSwal";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 
+
 const baseInput =
   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
 const baseBtn =
@@ -219,7 +220,7 @@ const OpdBilling = () => {
       PaidAmount: 0,
       CreditBalance: 0,
       AdjustWithBalance: false,
-      
+
       DueAmount: 0,
       PayMode: "",
       CashAmount: 0,
@@ -247,7 +248,7 @@ const OpdBilling = () => {
         if (!payload) {
           healthAlert({
             title: "OPD Billing",
-            text: "Service or Patient detail missing please verify before procceding.",
+            text: "Service or Patient detail missing please verify before proceeding.",
             icon: "error",
           });
           return;
@@ -258,9 +259,8 @@ const OpdBilling = () => {
           text: "OPD Billing Saved Successfully",
           icon: "success",
         });
-        formik.resetForm();
-        setSelectedServices([]);
-        setSelectedUhid("")
+        handleFormReset();
+        
       } catch (err) {
         healthAlert({
           title: "OPD Billing",
@@ -272,6 +272,14 @@ const OpdBilling = () => {
 
 
   });
+  const handleFormReset = () => {
+  formik.resetForm();
+  setSelectedServices([]);
+  setUhidSearch("");
+  setSelectedUhid("");
+  setSuggestionsList([]);
+  populatedUhidRef.current = "";
+};
   // Inside your component
   useEffect(() => {
     if (Object.keys(formik.errors).length > 0) {
@@ -341,13 +349,13 @@ const OpdBilling = () => {
 
 
   // Future logic for the calcuation of due
-      // useEffect(() => {
-      //   const total = Number(formik.values.TotalAmount) || 0;
-      //   const paid = Number(formik.values.PaidAmount) || 0;
-      //   const due = total - paid;
-      //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
-      // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
-      
+  // useEffect(() => {
+  //   const total = Number(formik.values.TotalAmount) || 0;
+  //   const paid = Number(formik.values.PaidAmount) || 0;
+  //   const due = total - paid;
+  //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
+  // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
+
   useEffect(() => {
     const total = Number(formik.values.TotalAmount) || 0;
     const paid = Number(formik.values.PaidAmount) || 0;
@@ -356,17 +364,33 @@ const OpdBilling = () => {
     if (isAdjusting) {
       let due = total - paid - credit;
       if (due < 0) due = 0;
-
       formik.setFieldValue("DueAmount", due.toFixed(2));
+      const amountBeingPaid = paid.toString();
+      if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
+        formik.setFieldValue("CashAmount", amountBeingPaid);
+        formik.setFieldValue("CardAmount", "0");
+      } else {
+        formik.setFieldValue("CardAmount", amountBeingPaid);
+        formik.setFieldValue("CashAmount", "0");
+      }
     } else {
       formik.setFieldValue("DueAmount", "0.00");
+      const amountBeingPaid = paid.toString();
+    if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
+        formik.setFieldValue("CashAmount", amountBeingPaid);
+        formik.setFieldValue("CardAmount", "0");
+    } else {
+        formik.setFieldValue("CardAmount", amountBeingPaid);
+        formik.setFieldValue("CashAmount", "0");
+    }
     }
 
   }, [
-    formik.values.AdjustWithBalance, 
-    formik.values.TotalAmount, 
+    formik.values.AdjustWithBalance,
+    formik.values.TotalAmount,
     formik.values.PaidAmount,
-    formik.values.CreditBalance
+    formik.values.CreditBalance,
+    formik.values.PayMode
   ]);
 
 
@@ -377,6 +401,7 @@ const OpdBilling = () => {
       </h2>
 
       <form onSubmit={formik.handleSubmit} className="space-y-5">
+
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Patient
@@ -543,19 +568,12 @@ const OpdBilling = () => {
             consultingDoctor={formik.values.Doctor}
             payMode={formik.values.PayMode}
             setBillingTotals={(total) => {
-              formik.setFieldValue("TotalAmount", total?.toString() || "0");
-              if (formik.values.PayMode == 1 || formik.values.PayMode == "") {
-                formik.setFieldValue("CashAmount", total?.toString() || "0");
-                formik.setFieldValue("CardAmount", "0");
-                formik.setFieldValue("PaidAmount", total?.toString() || "0");
-              } else {
-                formik.setFieldValue("CardAmount", total?.toString() || "0");
-                formik.setFieldValue("CashAmount", "0");
-                formik.setFieldValue("PaidAmount", total?.toString() || "0");
+              const val = total?.toString() || "0"; 
+              formik.setFieldValue("TotalAmount", val);
+              if (!formik.values.AdjustWithBalance && formik.values.PaidAmount === "0") {
+                formik.setFieldValue("PaidAmount", val);
               }
-
             }}
-
           />
         </section>
 
@@ -577,19 +595,35 @@ const OpdBilling = () => {
                 type="checkbox"
                 {...formik.getFieldProps("AdjustWithBalance")}
                 checked={formik.values.AdjustWithBalance}
-                  // disabled
-                  
-                  // className="bg-gray-100 cursor-not-allowed"
-                  className="cursor-pointer h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
+                // disabled
+
+                // className="bg-gray-100 cursor-not-allowed"
+                className="cursor-pointer h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
               />
               Adjust with Balance
             </label>
 
             <Input {...formik.getFieldProps("DueAmount")} placeholder="Due Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Due Amount" />
 
-            <Select {...formik.getFieldProps("PayMode")} label="Payment Mode"
-            required
-            error={formik.touched.PayMode && formik.errors.PayMode}
+            <Select {...formik.getFieldProps("PayMode")}
+              label="Payment Mode"
+              required
+              // error={formik.touched.PayMode && formik.errors.PayMode}
+              onChange={(e) => {
+                const mode = e.target.value;
+                formik.setFieldValue("PayMode", mode);
+
+                
+                const currentPaid = formik.values.PaidAmount;
+
+                if (mode === "1") { 
+                  formik.setFieldValue("CashAmount", currentPaid);
+                  formik.setFieldValue("CardAmount", "0");
+                } else {
+                  formik.setFieldValue("CardAmount", currentPaid);
+                  formik.setFieldValue("CashAmount", "0");
+                }
+              }}
             >
               <option value="">Select Pay Mode</option>
               {paymode?.map((u) => (
@@ -605,7 +639,7 @@ const OpdBilling = () => {
           <Button type="submit" variant="sky">
             <CheckCircleIcon className="w-5 h-5 inline mr-1" /> Save
           </Button>
-          <Button type="button" variant="gray" onClick={formik.handleReset}>
+          <Button type="button" variant="gray" onClick={handleFormReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
           </Button>
           <Button type="button" variant="outline" onClick={onPrintCS}>

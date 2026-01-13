@@ -8,6 +8,9 @@ const FilterBar = ({
   onApply,
   onReset,
   onExport,
+  suggestions,
+  uhidSearch,
+  onSelectSuggestion,
 }) => {
   const today = new Date().toISOString().split("T")[0];
 
@@ -35,14 +38,35 @@ const FilterBar = ({
               {filter.label}
             </label>
             {filter.type === "text" && (
-              <input
-                type="text"
-                name={filter.name}
-                value={tempFilters[filter.name] || ""}
-                onChange={onChange}
-                placeholder={filter.placeholder || `Enter ${filter.label}`}
-                className="w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  name={filter.name}
+                  value={tempFilters[filter.name] || ""}
+                  onChange={onChange}
+                  autoComplete="none"
+                  placeholder={filter.placeholder || `Enter ${filter.label}`}
+                  className={`w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400 focus:bg-white outline-none shadow-none ${filter.name === "external_id" ? "uppercase" : ""
+                    }`}
+                />
+                {filter.name === "external_id" && uhidSearch?.length >= 2 && suggestions?.length > 0 && (
+                  <ul className="absolute z-[100] bg-white border rounded-md shadow-lg w-full max-h-40 overflow-auto mt-1 border-sky-200">
+                    {suggestions.map((item) => (
+                      <li
+                        key={item.id || item.external_id}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          onSelectSuggestion(item.external_id);
+                        }}
+                        className="px-3 py-2 hover:bg-sky-50 cursor-pointer text-[11px] border-b border-gray-50 last:border-0"
+                      >
+                        <span className="font-bold text-sky-700">{item.external_id}</span>
+                        <span className="ml-2 text-gray-500">- {item.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
             {filter.type === "select" && (
               <select
