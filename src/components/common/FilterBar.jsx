@@ -50,7 +50,7 @@ const FilterBar = ({
                     }`}
                 />
                 {filter.name === "external_id" && uhidSearch?.length >= 2 && suggestions?.length > 0 && (
-                  <ul className="absolute z-[100] bg-white border rounded-md shadow-lg w-full max-h-40 overflow-auto mt-1 border-sky-200">
+                  <ul className="absolute z-[1000] bg-white border border-gray-200 rounded-md shadow-lg w-full max-h-60 overflow-auto mt-1">
                     {suggestions.map((item) => (
                       <li
                         key={item.id || item.external_id}
@@ -58,9 +58,9 @@ const FilterBar = ({
                           e.preventDefault();
                           onSelectSuggestion(item.external_id);
                         }}
-                        className="px-3 py-2 hover:bg-sky-50 cursor-pointer text-[11px] border-b border-gray-50 last:border-0"
+                        className="px-4 py-2.5 hover:bg-sky-50 cursor-pointer border-b border-gray-50 last:border-0 transition-all"
                       >
-                        <span className="font-bold text-sky-700">{item.external_id}</span>
+                        <span className=" text-gray-700">{item.external_id}</span>
                         <span className="ml-2 text-gray-500">- {item.name}</span>
                       </li>
                     ))}

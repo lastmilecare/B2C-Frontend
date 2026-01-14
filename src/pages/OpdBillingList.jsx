@@ -1,13 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
-import { useGetOpdBillingQuery, useGetComboQuery } from "../redux/apiSlice";
+import { useGetOpdBillingQuery, useGetComboQuery, useSearchUHIDQuery } from "../redux/apiSlice";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 import InvoiceTemplate from "./InvoicePage";
 import { healthAlert } from "../utils/healthSwal";
+import useDebounce from "../hooks/useDebounce";
 
 const OpdBillingList = () => {
+  const [uhidSearch, setUhidSearch] = useState("");
+  const debouncedUhid = useDebounce(uhidSearch, 500);
+  const { data: suggestions = [] } = useSearchUHIDQuery(
+    debouncedUhid,
+    { skip: debouncedUhid.length < 2 }
+  );
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [tempFilters, setTempFilters] = useState({
@@ -34,6 +41,7 @@ const OpdBillingList = () => {
     },
     { skip: !page || !limit }
   );
+
   const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
   const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
   const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
@@ -46,7 +54,13 @@ const OpdBillingList = () => {
     const { name, value } = e.target;
     setTempFilters((prev) => ({ ...prev, [name]: value }));
   };
-
+  const handleSelectSuggestion = (val) => {
+    setTempFilters(prev => ({ ...prev, external_id: val }));
+    setUhidSearch("");
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
   const handleApplyFilters = () => {
     const today = new Date().toISOString().split("T")[0];
     const { startDate, endDate } = tempFilters;
@@ -285,7 +299,7 @@ const OpdBillingList = () => {
     {
       name: "Srvc",
       title: "Service Name",
-      selector: (row) => safeString((row?.opd_billing_data || []).map((item, idx) => (item?.ServiceName ))),
+      selector: (row) => safeString((row?.opd_billing_data || []).map((item, idx) => (item?.ServiceName))),
       width: "120px",
     },
     {
@@ -356,10 +370,20 @@ const OpdBillingList = () => {
       <FilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
-        onChange={handleChange}
+        onChange={(e) => {
+          const { name, value } = e.target;
+          if (name === "external_id") {
+            setUhidSearch(value); 
+          }
+          handleChange(e); 
+        }}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
         onExport={() => console.log("Export clicked!")}
+        suggestions={suggestions}
+        uhidSearch={uhidSearch}
+        onSelectSuggestion={handleSelectSuggestion}
+
       />
       <CommonList
         title="💳 OPD Billing List"

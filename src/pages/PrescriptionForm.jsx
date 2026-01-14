@@ -532,14 +532,16 @@ const PrescriptionForm = () => {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input {...formik.getFieldProps("otherinstrution")} placeholder="Other Instructions " className="bg-gray-100 cursor-not-allowed" label="Other Instructions" />
+            <Input {...formik.getFieldProps("otherinstrution")}
+             placeholder="Other Instructions "  
+             label="Other Instructions" />
             <DiseaseSelect
               label="Complaint"
               value={formik.values.ChiefComplaint}
               onChange={(selected) => formik.setFieldValue("ChiefComplaint", selected)}
               required
             />
-            <Input {...formik.getFieldProps("labs")} placeholder="Labs" className="bg-gray-100 cursor-not-allowed" label="Labs" />
+            <Input {...formik.getFieldProps("labs")} placeholder="Labs" label="Labs" />
             <Input {...formik.getFieldProps("otherlabs")} placeholder="Other Labs" label="Other Labs" />
             <Input {...formik.getFieldProps("followup")} placeholder="Next Follow-up days" label="Next Follow-up days" />
             <Input {...formik.getFieldProps("advice")} placeholder="Preventive Advice" label="Preventive Advice" />
