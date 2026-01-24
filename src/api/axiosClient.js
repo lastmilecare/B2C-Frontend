@@ -15,7 +15,7 @@ axiosClient.interceptors.request.use(
   (config) => {
     const token = cookie.get("token");
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.cookie = `Bearer ${token}`;
     }
     return config;
   },
@@ -27,7 +27,7 @@ axiosClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       cookie.remove("token");
-      // optionally: window.location.href = "/login";
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

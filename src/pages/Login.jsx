@@ -1,12 +1,46 @@
 import React, { useState } from "react";
-import { Button, Col, Form, Input, Row, Modal, Radio } from "antd";
+import { Button, Col, Form, Input, Row, Modal, Radio, message } from "antd";
+import { useLoginMutation } from "../redux/apiSlice";
+import { cookie } from "../utils/cookie";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../redux/authSlice";
 
 const Login = () => {
   const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const [login, { isLoading }] = useLoginMutation();
+
   const [deleteForm] = Form.useForm();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [searchType, setSearchType] = useState("email");
+  const dispatch = useDispatch();
+  const onFinish = async (values) => {
+  try {
+    const response = await login(values).unwrap();
+    const token = response.data?.token || response.token;
+
+    if (!token) {
+      message.error("Token not received");
+      return;
+    }
+
+    cookie.set("token", token);
+
+    dispatch(
+      setCredentials({
+        user: response.data?.user || null,
+        token,
+      })
+    );
+
+    message.success("Login Successful");
+    navigate("/", { replace: true });
+  } catch (err) {
+    message.error(err.data?.message || err.message || "Login failed!");
+  }
+};
 
   return (
     <div className="login-container">
@@ -125,7 +159,7 @@ const Login = () => {
               <Form
                 form={form}
                 layout="vertical"
-                onFinish={() => console.log("login submit")}
+                onFinish={onFinish}
               >
                 <Form.Item
                   label={
