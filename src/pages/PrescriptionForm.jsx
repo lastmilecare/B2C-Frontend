@@ -16,7 +16,7 @@ import { healthAlert, healthAlerts } from "../utils/healthSwal";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-
+import { useParams } from "react-router-dom";
 const baseInput =
   "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
   "focus:ring-2 focus:ring-sky-400 focus:border-sky-500 " +
@@ -87,6 +87,9 @@ const PrescriptionForm = () => {
 
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
+  const { id } = useParams();
+  const isEdit = !!id;
+  console.log("Edit ID:", id);
   useEffect(() => {
     if (printRow && printRef.current) {
       handlePrint();
@@ -235,16 +238,19 @@ const PrescriptionForm = () => {
         .matches(/^[0-9]{10}$/, "Must be 10 digits")
         .required("Mobile is required"),
 
-      Department: Yup.number()
-        .min(1, "Department is required")
-        .required("Department is required"),
+      // Department: Yup.number()
+        // .min(1, "Department is required")
+        // .required("Department is required"),
 
-      Doctor: Yup.number()
-        .min(1, "Consulting doctor is required")
-        .required("Consulting doctor is required"),
-      PayMode: Yup.string().required("Payment Mode is required"),
+      // Doctor: Yup.number()
+        // .min(1, "Consulting doctor is required")
+        // .required("Consulting doctor is required"),
+      // PayMode: Yup.string().required("Payment Mode is required"),
     }),
     onSubmit: async (values) => {
+      console.log("Formik Values:", values);
+      console.log("Selected Service:", selectedServices);
+      console.log("Prescription List :", prescriptionList);
       try {
         const payload = buildPayload(values);
         if (!payload) {
@@ -255,7 +261,7 @@ const PrescriptionForm = () => {
           });
           return;
         }
-        const response = await createBill(payload).unwrap();
+          const response = await createBill(payload).unwrap();
         healthAlert({
           title: "OPD Billing",
           text: "OPD Billing Saved Successfully",

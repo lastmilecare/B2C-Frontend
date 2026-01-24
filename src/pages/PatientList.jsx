@@ -3,6 +3,7 @@ import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
 import { useGetPatientsQuery, useSearchUHIDQuery } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
+import { useNavigate } from "react-router-dom";
 const PatientList = () => {
   const [uhidSearch, setUhidSearch] = useState("");
   const debouncedUhid = useDebounce(uhidSearch, 500);
@@ -32,7 +33,7 @@ const PatientList = () => {
 
   const patients = data?.data || [];
   const pagination = data?.pagination || {};
-
+  const navigate = useNavigate();
   const handleChange = (e) => {
     const { name, value } = e.target;
     const finalValue = name === "external_id" ? value.toUpperCase() : value;
@@ -44,9 +45,9 @@ const PatientList = () => {
   const handleSelectSuggestion = (val) => {
     setTempFilters(prev => ({ ...prev, external_id: val }));
     setUhidSearch("");
-   if (document.activeElement instanceof HTMLElement) {
-    document.activeElement.blur();
-  }
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   };
 
   const handleApplyFilters = () => {
@@ -170,6 +171,9 @@ const PatientList = () => {
         enableActions
         isLoading={isLoading}
         actionButtons={["edit"]}
+        onEdit={(row) => {
+          navigate(`/patient-registration/${row.id}`);
+        }}
       />
     </div>
   );

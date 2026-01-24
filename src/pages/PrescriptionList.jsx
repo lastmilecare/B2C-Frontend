@@ -5,6 +5,7 @@ import { useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery } from "
 import { useReactToPrint } from "react-to-print";
 import PrescriptionPrint from "./PrescriptionPrint";
 import { px, wrap } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const PrescriptionList = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
@@ -173,8 +174,10 @@ const PrescriptionList = () => {
     alert(`Opening details for Prescription ID: ${row.prescription_id}`);
   };
 
+  const navigate = useNavigate();
   const handleEdit = (row) => {
     alert(`Editing prescription ID: ${row.prescription_id}`);
+        navigate(`/prescription/edit/${row.prescription_id}`);
   };
 
   const handleDelete = (row) => {

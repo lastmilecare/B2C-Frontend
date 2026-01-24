@@ -9,8 +9,17 @@ import {
   ClipboardDocumentListIcon,
   Bars3Icon,
 } from "@heroicons/react/24/outline";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../redux/authSlice";
 
 const Sidebar = () => {
+   const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const handleLogout = () => {
+      dispatch(logout());
+      navigate("/login");
+    };
   const [isOpen, setIsOpen] = useState(true);
   const [openPatient, setOpenPatient] = useState(false);
   const [openOpd, setOpenOpd] = useState(false);
@@ -116,7 +125,9 @@ const Sidebar = () => {
           <UserPlusIcon className="w-5 h-5 text-sky-600" />
           {isOpen && "Login"}
         </NavLink>
-        <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-red-100 hover:text-red-600 transition">
+        <button 
+        onClick={handleLogout}
+        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-red-100 hover:text-red-600 transition">
           <ArrowRightOnRectangleIcon className="w-5 h-5" />
           {isOpen && "Logout"}
         </button>

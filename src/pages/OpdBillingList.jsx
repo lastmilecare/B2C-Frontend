@@ -1,14 +1,58 @@
 import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
-import { useGetOpdBillingQuery, useGetComboQuery, useSearchUHIDQuery } from "../redux/apiSlice";
+import { useGetOpdBillingQuery, useGetComboQuery, useSearchUHIDQuery, useDeleteOpdBillMutation} from "../redux/apiSlice";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 import InvoiceTemplate from "./InvoicePage";
 import { healthAlert } from "../utils/healthSwal";
 import useDebounce from "../hooks/useDebounce";
+import { useNavigate } from "react-router-dom";
 
 const OpdBillingList = () => {
+  const navigate = useNavigate();
+  const [deleteOpdBill] = useDeleteOpdBillMutation();
+  const handleDelete = async (row) => {
+  if (!row || !row.bill_no) {
+    alert("Bill number not found");
+    return;
+  }
+  const confirm = window.confirm(
+    `Are you sure you want to delete OPD Bill No ${row.bill_no}?`
+  );
+  if (!confirm) return;
+
+  // 3️⃣ API call
+  try {
+    await deleteOpdBill(Number(row.bill_no)).unwrap();
+
+    healthAlert({
+  title: "Success",
+  text: "OPD Bill deleted successfully",
+  icon: "success",
+});   
+
+  } catch (error) {
+    alert("Delete failed");
+    error.message("DELETE ERROR:", error);
+  }
+};
+
+const handleEdit = (row) => {
+  if (!row || !row.bill_no) {
+    alert("Bill number not found");
+    return;
+  }
+
+   navigate(`/opd-form/${row.bill_no}`, {
+    state: {
+      editData: row,    
+    }
+  });
+};
+
+  
+  
   const [uhidSearch, setUhidSearch] = useState("");
   const debouncedUhid = useDebounce(uhidSearch, 500);
   const { data: suggestions = [] } = useSearchUHIDQuery(
@@ -400,6 +444,8 @@ const OpdBillingList = () => {
         enableActions
         isLoading={isLoading}
         actionButtons={["edit", "delete", "print", "printCS"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
         onPrintCS={onPrintCS}
         onPrint={onPrintInvoice}
       />

@@ -1,28 +1,12 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
-
-// axiosBaseQuery wrapper for RTK Query
-// const axiosBaseQuery =
-//   ({ baseUrl } = { baseUrl: "" }) =>
-//     async ({ url, method, data, params, responseType }) => {
-//       try {
-//         const result = await axiosClient({ url: baseUrl + url, method, data, params, responseType: responseType || "json", });
-//         return { data: result.data };
-//       } catch (error) {
-//         return {
-//           error: {
-//             status: error.response?.status,
-//             data: error.response?.data || error.message,
-//           },
-//         };
-//       }
-//     };
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
     async ({ url, method, data, params, responseType }) => {
       try {
+        const isAbsoluteUrl = url.startsWith("http");
         const result = await axiosClient({
-          url: baseUrl + url,
+          url: isAbsoluteUrl ? url : baseUrl + url,
           method,
           data,
           params,
@@ -43,13 +27,30 @@ const axiosBaseQuery =
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
+  tagTypes: ["Bill"],
   endpoints: (build) => ({
     login: build.mutation({
-      query: (body) => ({ url: "/auth/login", method: "post", data: body }),
+      query: (body) => ({ url: import.meta.env.VITE_AUTH_URL, method: "POST", data: body }),
     }),
       // signup: build.mutation({
       //   query: (body) => ({ url: "/auth/signup", method: "post", data: body }),
       // }),
+      getPatientById: build.query({
+  query: (id) => ({
+    url: "/patient/by-id",
+    method: "GET",
+    params: {
+      patientId: id, 
+    },
+  }),
+}),
+updatePatient: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/patient/update-patient/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
     getPatients: build.query({
       query: ({
         page = 1,
@@ -142,6 +143,7 @@ export const api = createApi({
           pay_mode
         },
       }),
+      providesTags: ["Bill"],
     }),
     getCombo: build.query({
       query: (type) => ({
@@ -213,6 +215,14 @@ export const api = createApi({
         },
       }),
     }),
+    getOpdBillById: build.query({
+  query: (id) => ({
+    url: `/opd-billing/${id}`,
+    method: "GET",
+  }),
+  providesTags: ["Bill"],
+}),
+
     createBill: build.mutation({
       query: (billData) => ({
         url: "/opd-billing",
@@ -221,6 +231,23 @@ export const api = createApi({
       }),
       invalidatesTags: ["Bill"],
     }),
+    updateBill: build.mutation({
+      query: ({ id, data}) => ({
+        url: `/opd-billing/${id}`,
+        method: "PUT",
+        data: data,
+      }),
+      invalidatesTags: ["Bill"],
+
+    }),
+    deleteOpdBill: build.mutation({
+  query: (id) => ({
+    url: `/opd-billing/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Bill"],
+}),
+
     registerPatients: build.mutation({
       query: (pData) => ({
         url: "/patient/register",
@@ -230,12 +257,12 @@ export const api = createApi({
     })
   }),
 
-
 });
 
 export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSearchDiseasesQuery, useGetCountriesQuery,
   useGetStatesByCountryQuery,
   useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery,
   useGetPatientsByUhidQuery, useSearchUHIDQuery,
-  useGetServiceMastersQuery, useCreateBillMutation, useRegisterPatientsMutation
+  useGetServiceMastersQuery, useCreateBillMutation, useRegisterPatientsMutation, useGetPatientByIdQuery,
+  useUpdatePatientMutation, useUpdateBillMutation, useDeleteOpdBillMutation, useGetOpdBillByIdQuery,
 } = api;

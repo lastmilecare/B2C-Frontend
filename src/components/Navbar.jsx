@@ -9,13 +9,21 @@ import {
   Bars3Icon,
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../redux/authSlice";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openPatient, setOpenPatient] = useState(false);
   const [openOpd, setOpenOpd] = useState(false);
   const [openPrescription, setOpenPrescription] = useState(false);
-
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
+  };
   const navItemClass = ({ isActive }) =>
     `flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
       isActive
@@ -114,7 +122,9 @@ const Navbar = () => {
             <NavLink to="/login" className={navItemClass}>
               <UserPlusIcon className="w-5 h-5 text-sky-600" /> Login
             </NavLink>
-            <button className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 hover:text-red-600">
+            <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 hover:text-red-600">
               <ArrowRightOnRectangleIcon className="w-5 h-5" /> Logout
             </button>
           </div>
@@ -195,9 +205,12 @@ const Navbar = () => {
 
           {/* Signup / Logout */}
           <NavLink to="/login" className={navItemClass}>
-            <UserPlusIcon className="w-5 h-5 text-sky-600" /> <Login></Login>
+            <UserPlusIcon className="w-5 h-5 text-sky-600" /> 
+            Login
           </NavLink>
-          <button className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 hover:text-red-600">
+          <button 
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 hover:text-red-600">
             <ArrowRightOnRectangleIcon className="w-5 h-5" /> Logout
           </button>
         </div>
