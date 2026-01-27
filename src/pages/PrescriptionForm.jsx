@@ -76,10 +76,10 @@ const PrescriptionForm = () => {
   const debouncedUhid = useDebounce(uhidSearch, 500);
   const [selectedUhid, setSelectedUhid] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
-  const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
-  const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
-  const { data: collectedBy, isLoading: collectedComboLoading } = useGetComboQuery("collectedBy");
-  const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
+  // const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
+  // const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
+  // const { data: collectedBy, isLoading: collectedComboLoading } = useGetComboQuery("collectedBy");
+  // const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
   const [prescriptionList, setPrescriptionList] = useState([]);
 
   // Track if we've already populated data for this UHID
@@ -87,9 +87,9 @@ const PrescriptionForm = () => {
 
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
-  const { id } = useParams();
-  const isEdit = !!id;
-  console.log("Edit ID:", id);
+  // const { id } = useParams();
+  // const isEdit = Boolean(id);
+  // console.log("Edit ID:", id);
   useEffect(() => {
     if (printRow && printRef.current) {
       handlePrint();
@@ -114,7 +114,7 @@ const PrescriptionForm = () => {
       : skipToken
   );
 
-  const [createBill, { isLoading: isCreating, error: createError }] = useCreateBillMutation();
+  // const [createBill, { isLoading: isCreating, error: createError }] = useCreateBillMutation();
 
   const { data: suggestions = [] } = useSearchUHIDQuery(
     debouncedUhid,
@@ -135,21 +135,21 @@ const PrescriptionForm = () => {
 
   }, [suggestions, selectedUhid, uhidSearch]);
 
-  const parseDOB = (raw) => {
-    if (!raw || !raw.includes("-")) return "";
+  // const parseDOB = (raw) => {
+  //   if (!raw || !raw.includes("-")) return "";
 
-    const [dd, mm, yyyy] = raw.split("-");
-    return `${yyyy}-${mm}-${dd}`;
-  };
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
+  //   const [dd, mm, yyyy] = raw.split("-");
+  //   return `${yyyy}-${mm}-${dd}`;
+  // };
+  // const currentYear = new Date().getFullYear();
+  // const currentMonth = new Date().getMonth();
   const buildPayload = (values) => {
 
-    if (!patientData || !selectedServices.length) return null;
-    const finalAmount = selectedServices.reduce(
-      (sum, s) => sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
-      0
-    )
+    // if (!patientData || !selectedServices.length) return null;
+    // const finalAmount = selectedServices.reduce(
+    //   (sum, s) => sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
+    //   0
+    // )
     const chiefComplaintStr = Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
       ? values.ChiefComplaint.map((e) => e.name).join(", ")
       : "";
@@ -159,18 +159,18 @@ const PrescriptionForm = () => {
       Mobile: values.Mobile,
       ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
       PatientType: values.FinCategory == "BPL" ? 1 : 2,   // NEED TO CHECK VALUE
-      PaidAmount: Number(values.PaidAmount || 0),
-      CashAmount: Number(values.CashAmount || 0),
-      CardAmount: Number(values.CardAmount || 0),
-      PayMode: Number(values.PayMode),
-      DueAmount: Number(values.DueAmount || 0),
+      // PaidAmount: Number(values.PaidAmount || 0),
+      // CashAmount: Number(values.CashAmount || 0),
+      // CardAmount: Number(values.CardAmount || 0),
+      // PayMode: Number(values.PayMode),
+      // DueAmount: Number(values.DueAmount || 0),
       AddedBy: 178, // this need to add user id
-      DepartmentID: values.Department,
-      ConsultantDoctorID: Number(values.Doctor),
-      DoctorId: Number(values.Doctor),
-      TotalServiceAmount: finalAmount,
-      HospitalID: selectedServices[0]?.HospitalID || 1,
-      FinancialYearID: currentYear,
+      // DepartmentID: values.Department,
+      // ConsultantDoctorID: Number(values.Doctor),
+      // DoctorId: Number(values.Doctor),
+      // TotalServiceAmount: finalAmount,
+      // HospitalID: selectedServices[0]?.HospitalID || 1,
+      // FinancialYearID: currentYear,
       CenterID: 49, // Need to manage Center id
       ReferTo: Number(values.ReferBy || 0),
       IsActive: true,
@@ -188,11 +188,11 @@ const PrescriptionForm = () => {
       PatientID: patientData.id,
       NetServiceAmount: Number(s.quantity * s.price),
       PicasoNo: values.UHID || patientData.external_id,
-      HospitalCharge: 0,
-      DoctorCharge: 0,
-      Discount: 0,
-      Isdiscount: false,
-      DiscountBy: 0,
+      // HospitalCharge: 0,
+      // DoctorCharge: 0,
+      // Discount: 0,
+      // Isdiscount: false,
+      // DiscountBy: 0,
       DoctorID: Number(values.Doctor),
       AddedBy: 1, //Need to manage this
       MonthID: currentMonth,
@@ -215,21 +215,21 @@ const PrescriptionForm = () => {
       Department: 0,
       Doctor: 0,
       FinCategory: "",
-      ReferBy: "",
-      VisitType: "",
-      LastVisitDate: "",
+      // ReferBy: "",
+      // VisitType: "",
+      // LastVisitDate: "",
       Quantity: 1,
-      ServiceName: "",
-      PreviousDue: 0,
-      TotalAmount: 0,
-      PaidAmount: 0,
-      CreditBalance: 0,
-      AdjustWithBalance: false,
+      // ServiceName: "",
+      // PreviousDue: 0,
+      // TotalAmount: 0,
+      // PaidAmount: 0,
+      // CreditBalance: 0,
+      // AdjustWithBalance: false,
 
-      DueAmount: 0,
-      PayMode: "",
-      CashAmount: 0,
-      CardAmount: 0,
+      // DueAmount: 0,
+      // PayMode: "",
+      // CashAmount: 0,
+      // CardAmount: 0,
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -253,26 +253,26 @@ const PrescriptionForm = () => {
       console.log("Prescription List :", prescriptionList);
       try {
         const payload = buildPayload(values);
-        if (!payload) {
-          healthAlert({
-            title: "OPD Billing",
-            text: "Service or Patient detail missing please verify before procceding.",
-            icon: "error",
-          });
-          return;
-        }
-          const response = await createBill(payload).unwrap();
-        healthAlert({
-          title: "OPD Billing",
-          text: "OPD Billing Saved Successfully",
-          icon: "success",
-        });
+        // if (!payload) {
+        //   healthAlert({
+        //     title: "OPD Billing",
+        //     text: "Service or Patient detail missing please verify before procceding.",
+        //     icon: "error",
+        //   });
+        //   return;
+        // }
+        //   const response = await createBill(payload).unwrap();
+        // healthAlert({
+        //   title: "OPD Billing",
+        //   text: "OPD Billing Saved Successfully",
+        //   icon: "success",
+        // });
         formik.resetForm();
         setSelectedServices([]);
         setSelectedUhid("")
       } catch (err) {
         healthAlert({
-          title: "OPD Billing",
+          title: "Piscription Form",
           text: err?.data?.message,
           icon: "error",
         });
@@ -282,11 +282,11 @@ const PrescriptionForm = () => {
 
   });
   // Inside your component
-  useEffect(() => {
-    if (Object.keys(formik.errors).length > 0) {
-      console.log("Validation Errors:", formik.errors);
-    }
-  }, [formik.errors]);
+  // useEffect(() => {
+  //   if (Object.keys(formik.errors).length > 0) {
+  //     console.log("Validation Errors:", formik.errors);
+  //   }
+  // }, [formik.errors]);
 
 
   useEffect(() => {
@@ -301,54 +301,54 @@ const PrescriptionForm = () => {
       Gender: patientData.gender || "",
       Mobile: patientData.contactNumber || "",
       FinCategory: patientData.category || "",
-      LastVisitDate: patientData.createdAt ? new Date(patientData.createdAt).toISOString().split("T")[0] : "",
-      VisitType: patientData?.VisitType || "N/A"
+      // LastVisitDate: patientData.createdAt ? new Date(patientData.createdAt).toISOString().split("T")[0] : "",
+      // VisitType: patientData?.VisitType || "N/A"
     };
 
-    if (patientData.dateOfBirthOrAge) {
-      const dobValue = parseDOB(patientData.dateOfBirthOrAge);
-      updates.DOB = dobValue;
+    // if (patientData.dateOfBirthOrAge) {
+    //   const dobValue = parseDOB(patientData.dateOfBirthOrAge);
+    //   updates.DOB = dobValue;
 
-      const dob = new Date(dobValue);
-      const today = new Date();
-      let years = today.getFullYear() - dob.getFullYear();
-      let months = today.getMonth() - dob.getMonth();
-      let days = today.getDate() - dob.getDate();
+    //   const dob = new Date(dobValue);
+    //   const today = new Date();
+    //   let years = today.getFullYear() - dob.getFullYear();
+    //   let months = today.getMonth() - dob.getMonth();
+    //   let days = today.getDate() - dob.getDate();
 
-      if (days < 0) {
-        months -= 1;
-        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-      }
-      if (months < 0) {
-        years -= 1;
-        months += 12;
-      }
+    //   if (days < 0) {
+    //     months -= 1;
+    //     days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    //   }
+    //   if (months < 0) {
+    //     years -= 1;
+    //     months += 12;
+    //   }
 
-      updates.Age = `${years}y ${months}m ${days}d`;
-    }
+    //   updates.Age = `${years}y ${months}m ${days}d`;
+    // }
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedUhid]);
 
-  useEffect(() => {
-    const total = Number(formik.values.TotalAmount) || 0;
-    const paid = Number(formik.values.PaidAmount) || 0;
-    const credit = Number(formik.values.CreditBalance) || 0;
-    const isAdjusting = formik.values.AdjustWithBalance;
-    if (isAdjusting) {
-      let due = total - paid - credit;
-      if (due < 0) due = 0;
+  // useEffect(() => {
+  //   const total = Number(formik.values.TotalAmount) || 0;
+  //   const paid = Number(formik.values.PaidAmount) || 0;
+  //   const credit = Number(formik.values.CreditBalance) || 0;
+  //   const isAdjusting = formik.values.AdjustWithBalance;
+  //   if (isAdjusting) {
+  //     let due = total - paid - credit;
+  //     if (due < 0) due = 0;
 
-      formik.setFieldValue("DueAmount", due.toFixed(2));
-    } else {
-      formik.setFieldValue("DueAmount", "0.00");
-    }
+  //     formik.setFieldValue("DueAmount", due.toFixed(2));
+  //   } else {
+  //     formik.setFieldValue("DueAmount", "0.00");
+  //   }
 
-  }, [
-    formik.values.AdjustWithBalance,
-    formik.values.TotalAmount,
-    formik.values.PaidAmount,
-    formik.values.CreditBalance
-  ]);
+  // }, [
+  //   formik.values.AdjustWithBalance,
+  //   formik.values.TotalAmount,
+  //   formik.values.PaidAmount,
+  //   formik.values.CreditBalance
+  // ]);
   const handleAddPrescription = () => {
     const {
       medicine,
