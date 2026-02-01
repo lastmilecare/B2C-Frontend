@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   UserCircleIcon,
+  ArchiveBoxIcon,
   BuildingOffice2Icon,
   ChevronDownIcon,
   ArrowRightOnRectangleIcon,
@@ -14,17 +15,17 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
 
 const Sidebar = () => {
-   const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const handleLogout = () => {
-      dispatch(logout());
-      navigate("/login");
-    };
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
+  };
   const [isOpen, setIsOpen] = useState(true);
   const [openPatient, setOpenPatient] = useState(false);
   const [openOpd, setOpenOpd] = useState(false);
   const [openPrescription, setOpenPrescription] = useState(false);
-
+  const [openInventory, setOpenInventory] = useState(false);
   const navItemClass = ({ isActive }) =>
     `flex items-center gap-2 px-4 py-2 text-sm rounded-md transition ${isActive
       ? "bg-sky-100 text-sky-700 font-semibold"
@@ -117,17 +118,37 @@ const Sidebar = () => {
             </div>
           )}
         </div>
+        {/* Inventory Menu - New Added */}
+        <div>
+          <button
+            onClick={() => setOpenInventory(!openInventory)}
+            className="flex justify-between items-center w-full px-2 py-2 font-medium text-gray-800 hover:bg-sky-100 rounded-md"
+          >
+            <span className="flex items-center gap-2">
+              <ArchiveBoxIcon className="w-5 h-5 text-sky-600" />
+              {isOpen && "Medicines"}
+            </span>
+            {isOpen && <ChevronDownIcon className={`w-4 h-4 transform transition ${openInventory ? "rotate-180" : ""}`} />}
+          </button>
+          {openInventory && isOpen && (
+            <div className="ml-6 mt-1 space-y-1">
+              <NavLink to="/purchased-entry" className={navItemClass}>Purchased Entry</NavLink>
+              <NavLink to="/medicines-billing" className={navItemClass}>Billing</NavLink>
+              <NavLink to="/sales-record" className={navItemClass}>Sales Record</NavLink>
+              <NavLink to="/expiry-items" className={navItemClass}>Expiry Items</NavLink>
+            </div>
+          )}
+        </div>
       </div>
-
       {/* Footer */}
       <div className="border-t border-gray-100 p-2">
         <NavLink to="/login" className={navItemClass}>
           <UserPlusIcon className="w-5 h-5 text-sky-600" />
           {isOpen && "Login"}
         </NavLink>
-        <button 
-        onClick={handleLogout}
-        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-red-100 hover:text-red-600 transition">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-red-100 hover:text-red-600 transition">
           <ArrowRightOnRectangleIcon className="w-5 h-5" />
           {isOpen && "Logout"}
         </button>

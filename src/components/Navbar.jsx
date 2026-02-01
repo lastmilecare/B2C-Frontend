@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   UserCircleIcon,
+  ArchiveBoxIcon,
   BuildingOffice2Icon,
   ClipboardDocumentListIcon,
   UserPlusIcon,
@@ -18,6 +19,7 @@ const Navbar = () => {
   const [openPatient, setOpenPatient] = useState(false);
   const [openOpd, setOpenOpd] = useState(false);
   const [openPrescription, setOpenPrescription] = useState(false);
+  const [openInventory, setOpenInventory] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const handleLogout = () => {
@@ -117,7 +119,25 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-
+            {/* Inventory Menu - New Added */}
+            <div>
+          <button
+            onClick={() => setOpenInventory(!openInventory)}
+            className="flex justify-between items-center w-full px-2 py-2 font-medium text-gray-800 hover:bg-sky-100 rounded-md"
+          >
+            <span className="flex items-center gap-2">
+              <ArchiveBoxIcon className="w-5 h-5 text-sky-600" />
+              {isOpen && "Inventory"}
+            </span>
+            {isOpen && <ChevronDownIcon className={`w-4 h-4 transform transition ${openInventory ? "rotate-180" : ""}`} />}
+          </button>
+          {openInventory && isOpen && (
+            <div className="ml-6 mt-1 space-y-1">
+              <NavLink to="/inventory-overview" className={navItemClass}>Inventory List</NavLink>
+              <NavLink to="/add-inventory" className={navItemClass}>Add Item</NavLink>
+            </div>
+          )}
+        </div>
             {/* Signup / Logout */}
             <NavLink to="/login" className={navItemClass}>
               <UserPlusIcon className="w-5 h-5 text-sky-600" /> Login

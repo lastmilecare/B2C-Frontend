@@ -11,43 +11,48 @@ import PrescriptionForm from "./pages/PrescriptionForm";
 import PrescriptionList from "./pages/PrescriptionList";
 import PrintOpdForm from "./pages/PrintOpdForm";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import PurchsedEntry from "./pages/PurchasedEntry";
+import MedicineSalesRecord from "./pages/MedicineSalesRecord";
+import ExpiryItems from "./pages/ExpiryItems";
+import Billing from "./pages/Billing";
+
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route 
-        path="/login" 
-        element={<Login />} 
+        <Route
+          path="/login"
+          element={<Login />}
         />
         <Route
           path="/"
           element={
             <ProtectedRoute>
-               <Layout>
-              <PatientRegistration />
-            </Layout>
+              <Layout>
+                <PatientRegistration />
+              </Layout>
             </ProtectedRoute>
-           
+
           }
         />
         <Route
           path="/patient-registration"
           element={
             <ProtectedRoute>
-            <Layout>
-              <PatientRegistration />
-            </Layout>
+              <Layout>
+                <PatientRegistration />
+              </Layout>
             </ProtectedRoute>
-           
+
           }
         />
         <Route path="/patient-registration/:id"
           element={
             <ProtectedRoute>
               <Layout>
-              <PatientRegistration />
-            </Layout>
+                <PatientRegistration />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -57,8 +62,8 @@ function App() {
           element={
             <ProtectedRoute>
               <Layout>
-              <PatientList />
-            </Layout>
+                <PatientList />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -66,9 +71,9 @@ function App() {
           path="/opd-form"
           element={
             <ProtectedRoute>
-               <Layout>
-              <OpdForm />
-            </Layout>
+              <Layout>
+                <OpdForm />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -76,9 +81,9 @@ function App() {
           path="/opd-form/:ID"
           element={
             <ProtectedRoute>
-               <Layout>
-              <OpdForm />
-            </Layout>
+              <Layout>
+                <OpdForm />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -89,19 +94,19 @@ function App() {
           element={
             <ProtectedRoute>
               <Layout>
-              <PrescriptionForm />
-            </Layout>
+                <PrescriptionForm />
+              </Layout>
             </ProtectedRoute>
-                      }
+          }
         />
 
         <Route
           path="/prescription-list"
           element={
             <ProtectedRoute>
-                <Layout>
-              <PrescriptionList />
-            </Layout>
+              <Layout>
+                <PrescriptionList />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -109,9 +114,9 @@ function App() {
           path="/prescription/edit/:id"
           element={
             <ProtectedRoute>
-               <Layout>
-              <PrescriptionForm />
-            </Layout>
+              <Layout>
+                <PrescriptionForm />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -121,13 +126,53 @@ function App() {
           element={
             <ProtectedRoute>
               <Layout>
-              <OpdBilling />
-            </Layout>
+                <OpdBilling />
+              </Layout>
             </ProtectedRoute>
           }
         />
-        <Route path="/print-opd-form" 
-        element={<PrintOpdForm />} />
+        <Route
+          path="/purchased-entry"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <PurchsedEntry />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sales-record"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <MedicineSalesRecord />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/expiry-items"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ExpiryItems />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/medicines-billing"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Billing />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/print-opd-form"
+          element={<PrintOpdForm />} />
 
         {/* <Route path="/signup" element={<Signup />} /> */}
         {/* <Route path="/login" element={<Login />} /> */}

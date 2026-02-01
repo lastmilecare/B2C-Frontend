@@ -27,7 +27,7 @@ const axiosBaseQuery =
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
-  tagTypes: ["Bill"],
+  tagTypes: ["Bill", "Inventory"],
   endpoints: (build) => ({
     login: build.mutation({
       query: (body) => ({ url: import.meta.env.VITE_AUTH_URL, method: "POST", data: body }),
@@ -248,13 +248,99 @@ updatePatient: build.mutation({
   invalidatesTags: ["Bill"],
 }),
 
+
     registerPatients: build.mutation({
       query: (pData) => ({
         url: "/patient/register",
         method: "POST",
         data: pData,
       }),
-    })
+    }),
+    getMedicineSales: build.query({
+  query: ({
+    patientName,
+    medicineName,
+    startDate,
+    endDate,
+    issuedBy
+  } = {}) => ({
+    url: "/medicine-sales/view", 
+    method: "GET",
+    params: {
+      patientName,
+      medicineName,
+      startDate,
+      endDate,
+      issuedBy
+    }
+  }),
+}),
+
+    getInventory: build.query({
+      query: (params) => ({
+        url: "/inventory/view",
+        method: "GET",
+        params: params, 
+      }),
+      providesTags: ["Inventory"],
+    }),
+
+    // 2. Add New Inventory Item
+    createInventoryItem: build.mutation({
+      query: (body) => ({
+        url: "/inventory/add",
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Inventory"], 
+    }),
+
+    // 3. Update Inventory Item
+    updateInventoryItem: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/inventory/update/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+      invalidatesTags: ["Inventory"],
+    }),
+
+    // 4. Delete Inventory Item
+    deleteInventoryItem: build.mutation({
+      query: (id) => ({
+        url: `/inventory/delete/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Inventory"],
+    }),
+    // 🔍 1. Search OPD Bill No (autosuggest)
+searchOpdBillNo: build.query({
+  query: (bill_no) => ({
+    url: "/billing/search-bill-no",
+    method: "GET",
+    params: { bill_no },
+  }),
+}),
+
+// 📄 2. Get billing details by bill no
+getBillingByBillNo: build.query({
+  query: (bill_no) => ({
+    url: "/billing/by-bill-no",
+    method: "GET",
+    params: { bill_no },
+  }),
+}),
+
+// 💾 3. Create medicine bill
+createMedicineBill: build.mutation({
+  query: (data) => ({
+    url: "/billing",
+    method: "POST",
+    data,
+  }),
+  invalidatesTags: ["Bill", "Inventory"],
+}),
+
   }),
 
 });
@@ -265,4 +351,7 @@ export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSear
   useGetPatientsByUhidQuery, useSearchUHIDQuery,
   useGetServiceMastersQuery, useCreateBillMutation, useRegisterPatientsMutation, useGetPatientByIdQuery,
   useUpdatePatientMutation, useUpdateBillMutation, useDeleteOpdBillMutation, useGetOpdBillByIdQuery,
+  useGetInventoryQuery, useCreateInventoryItemMutation, useUpdateInventoryItemMutation, useDeleteInventoryItemMutation,
+  useLazyGetMedicineSalesQuery, useSearchOpdBillNoQuery, useGetBillingByBillNoQuery, useCreateMedicineBillMutation,
+  useLazyGetBillingByBillNoQuery, useGetMedicineSalesQuery, 
 } = api;
