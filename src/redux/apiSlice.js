@@ -30,27 +30,11 @@ export const api = createApi({
   tagTypes: ["Bill", "Inventory"],
   endpoints: (build) => ({
     login: build.mutation({
-      query: (body) => ({ url: import.meta.env.VITE_AUTH_URL, method: "POST", data: body }),
+      query: (body) => ({ url: "/auth/login", method: "post", data: body }),
     }),
       // signup: build.mutation({
       //   query: (body) => ({ url: "/auth/signup", method: "post", data: body }),
       // }),
-      getPatientById: build.query({
-  query: (id) => ({
-    url: "/patient/by-id",
-    method: "GET",
-    params: {
-      patientId: id, 
-    },
-  }),
-}),
-updatePatient: build.mutation({
-  query: ({ id, body }) => ({
-    url: `/patient/update-patient/${id}`,
-    method: "PUT",
-    data: body,
-  }),
-}),
     getPatients: build.query({
       query: ({
         page = 1,

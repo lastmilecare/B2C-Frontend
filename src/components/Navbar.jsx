@@ -225,8 +225,7 @@ const Navbar = () => {
 
           {/* Signup / Logout */}
           <NavLink to="/login" className={navItemClass}>
-            <UserPlusIcon className="w-5 h-5 text-sky-600" /> 
-            Login
+            <UserPlusIcon className="w-5 h-5 text-sky-600" /> <Login></Login>
           </NavLink>
           <button 
           onClick={handleLogout}

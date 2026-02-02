@@ -406,13 +406,13 @@ const OpdBilling = () => {
 
 
   // Future logic for the calcuation of due
-  // useEffect(() => {
-  //   const total = Number(formik.values.TotalAmount) || 0;
-  //   const paid = Number(formik.values.PaidAmount) || 0;
-  //   const due = total - paid;
-  //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
-  // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
-
+      // useEffect(() => {
+      //   const total = Number(formik.values.TotalAmount) || 0;
+      //   const paid = Number(formik.values.PaidAmount) || 0;
+      //   const due = total - paid;
+      //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
+      // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
+      
   useEffect(() => {
     const total = Number(formik.values.TotalAmount) || 0;
     const paid = Number(formik.values.PaidAmount) || 0;
