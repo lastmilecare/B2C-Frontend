@@ -3,11 +3,11 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ArrowPathIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { RELATIONSHIP_OPTIONS, TITLES, BLOOD_GROUPS, RESIDENTAL_STATUS, OCCUPATION_OPTIONS, IDENTIFICATION_TYPES } from "../utils/constants";
-import { useRegisterPatientsMutation } from "../redux/apiSlice";
+import { useRegisterPatientsMutation, useGetPatientByIdQuery, useUpdatePatientMutation } from "../redux/apiSlice";
 import DiseaseSelect from "../components/DiseaseSelect";
 import { useLocationData } from "../services/locationApi";
 import { healthAlerts } from "../utils/healthSwal";
-
+import { useParams, useNavigate } from "react-router-dom";
 
 const baseInput =
   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
@@ -24,8 +24,7 @@ const Input = ({ label, required, error, ...props }) => (
     )}
     <input
       {...props}
-      className={`${baseInput} ${error ? "border-red-500 ring-red-300" : "border-gray-300"
-        }`}
+      className={`${baseInput} ${error ? "border-red-500 ring-red-300" : "border-gray-300"}`}
     />
     {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
   </div>
@@ -41,8 +40,7 @@ const Select = ({ label, required, error, children, ...props }) => (
     )}
     <select
       {...props}
-      className={`${baseInput} ${error ? "border-red-500 ring-red-300" : "border-gray-300"
-        }`}
+      className={`${baseInput} ${error ? "border-red-500 ring-red-300" : "border-gray-300"}`}
     >
       {children}
     </select>
@@ -63,12 +61,21 @@ const Button = ({ variant = "sky", children, ...props }) => {
 };
 
 const PatientRegistration = () => {
-  const [age, setAge] = useState("");
+  const { id } = useParams();
+  const isEdit = Boolean(id);
+  const navigate = useNavigate();
+
+  // API Queries & Mutations
+  const { data: patientApiResponse, isLoading: isFetching } = useGetPatientByIdQuery(id, {
+    skip: !isEdit,
+  });
+  const [createPatient, { isLoading: isCreating }] = useRegisterPatientsMutation();
+  const [updatePatient, { isLoading: isUpdating }] = useUpdatePatientMutation();
+
   const [countryId, setCountryId] = useState("");
   const [stateId, setStateId] = useState("");
 
   const { countries, states, districts } = useLocationData(countryId, stateId);
-  const [createPatient, { isLoading: isCreating, error: createError }] = useRegisterPatientsMutation();
 
   const formik = useFormik({
     initialValues: {
@@ -80,7 +87,6 @@ const PatientRegistration = () => {
       relationship: "",
       gender: "",
       contactNumber: "",
-      // email: "",
       residentialstatus: "",
       fincat: "",
       country: "",
@@ -97,8 +103,8 @@ const PatientRegistration = () => {
       creditamount: "",
       idProof_number: "",
       idProof_name: "",
-
     },
+    enableReinitialize: true,
     validationSchema: Yup.object({
       title: Yup.string().required("Title is required"),
       name: Yup.string().required("Full Name is required"),
@@ -110,49 +116,80 @@ const PatientRegistration = () => {
       country: Yup.string().required("Country is required"),
       localAddressState: Yup.string().required("State is required"),
       occupation: Yup.string().required("Occupation is required"),
-      // email: Yup.string().email("Invalid email"),
       CO: Yup.string().required("Co is required")
     }),
     onSubmit: async (values) => {
       try {
         const payload = buildPayload(values);
         if (!payload) {
-           healthAlerts.error("Patient detail missing please verify before procceding.", "error")
+          healthAlerts.error("Patient detail missing please verify before proceeding.", "Error");
           return;
         }
-        const response = await createPatient(payload).unwrap();
-        healthAlerts.success("Patient Data Saved Successfully", "Patient Saved")
-        formik.resetForm();
-        setSelectedServices([]);
-        setSelectedUhid("");
-        resetForm();
-        setAge("");
-      } catch (err) {
-        healthAlert({
-          title: "Patient",
-          text: err?.data?.message,
-          icon: "error",
-        });
-      }
 
+        if (isEdit) {
+          await updatePatient({ id, body: payload }).unwrap();
+          healthAlerts.success("Patient Updated Successfully", "Patient Updated");
+          navigate("/patient-list"); 
+        } else {
+          await createPatient(payload).unwrap();
+          healthAlerts.success("Patient Data Saved Successfully", "Patient Saved");
+          handleReset();
+        }
+      } catch (err) {
+        error.message("Submit error:", err);
+        healthAlerts.error(err?.data?.message || "Operation failed", "Patient");
+      }
     },
   });
-  useEffect(() => { }, [formik.errors])
 
+
+  useEffect(() => {
+    if (isEdit && patientApiResponse) {
+      const p = patientApiResponse.data || patientApiResponse; 
+
+      formik.setValues({
+        title: p.title || "",
+        name: p.name || "",
+        dob: p.dateOfBirthOrAge?.split("T")[0] || "",
+        age: p.age ? `${p.age}y ${p.imonth || 0}m ${p.idays || 0}d` : "",
+        CO: p.co || "",
+        relationship: p.relationship || "",
+        gender: p.gender || "",
+        contactNumber: p.contactNumber || "",
+        residentialstatus: p.residentialstatus || "",
+        fincat: p.category || "",
+        country: String(p.country_id || ""),
+        localAddressState: String(p.state_id || ""),
+        localAddressDistrict: String(p.district_id || ""),
+        occupation: p.occupation || "",
+        healthCardNumber: p.healthCardNumber || "",
+        localAddress: p.localAddress || "",
+        pin: p.pin || "",
+        emergencyContactName: p.emergencyContactName || "",
+        emergencyContactNumber: p.emergencyContactNumber || "",
+        blood_group: p.blood_group || "",
+        diseases: p.diseases || [],
+        creditamount: p.creditamount || 0,
+        idProof_number: p.idProof_number || "",
+        idProof_name: p.idProof_name || "",
+      });
+
+      // Update local state to trigger address dropdowns
+      setCountryId(p.country_id || "");
+      setStateId(p.state_id || "");
+    }
+  }, [patientApiResponse, isEdit]);
 
   const buildPayload = (values) => {
-    debugger;
     if (!values) return null;
     const ageValue = values?.age?.split(" ") ?? [];
+    const iage = parseInt(ageValue[0], 10) || 0;
+    const imonth = parseInt(ageValue[1], 10) || 0;
+    const iday = parseInt(ageValue[2], 10) || 0;
 
-    const iage = parseInt(ageValue[0], 10);
-    const imonth = parseInt(ageValue[1], 10);
-    const iday = parseInt(ageValue[2], 10);
+    const disease_ids = values?.diseases.map(d => d.id) || [];
 
-    const disease_ids = values?.diseases.map(d => d.id);
-
-
-    let payload = {
+    const payload = {
       name: values.name,
       healthCardNumber: values.healthCardNumber,
       gender: values.gender,
@@ -163,7 +200,6 @@ const PatientRegistration = () => {
       idProof_number: values.idProof_number,
       dateOfBirthOrAge: values.dob,
       idProof_name: values.idProof_name,
-      createdBy: "88", // this need to change with user id
       blood_group: values.blood_group,
       age: iage,
       comingFromWebsite: 'B2B',
@@ -171,7 +207,7 @@ const PatientRegistration = () => {
       iage: iage,
       idays: iday,
       imonth: imonth,
-      disease_ids: disease_ids || [],
+      disease_ids: disease_ids,
       country_id: Number(values.country),
       state_id: Number(values.localAddressState),
       district_id: Number(values.localAddressDistrict),
@@ -181,20 +217,33 @@ const PatientRegistration = () => {
       title: values.title,
       co: values.CO,
       relationship: values.relationship
-    }
-    console.log(payload, "this is final value")
-    return payload;
-  }
+    };
 
-  // 🎂 Auto Age Calculation
+    if (!isEdit) {
+      payload.createdBy = "88";
+    }
+
+    return payload;
+  };
+
+  const handleReset = () => {
+    formik.resetForm();
+    setCountryId("");
+    setStateId("");
+  };
+
   const handleDOBChange = (e) => {
-    formik.handleChange(e);
-    const dob = new Date(e.target.value);
-    if (isNaN(dob)) return;
+    const dob = e.target.value;
+    formik.setFieldValue("dob", dob);
+    if (!dob) {
+      formik.setFieldValue("age", "");
+      return;
+    }
+    const birth = new Date(dob);
     const today = new Date();
-    let years = today.getFullYear() - dob.getFullYear();
-    let months = today.getMonth() - dob.getMonth();
-    let days = today.getDate() - dob.getDate();
+    let years = today.getFullYear() - birth.getFullYear();
+    let months = today.getMonth() - birth.getMonth();
+    let days = today.getDate() - birth.getDate();
     if (days < 0) {
       months -= 1;
       days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
@@ -203,15 +252,17 @@ const PatientRegistration = () => {
       years -= 1;
       months += 12;
     }
-    const ageString = `${years}y ${months}m ${days}d`;
-    setAge(ageString);
-    formik.setFieldValue("age", ageString);
+    formik.setFieldValue("age", `${years}y ${months}m ${days}d`);
   };
+
+  if (isEdit && isFetching) {
+    return <div className="text-center mt-10 font-bold text-sky-700">Loading Patient Data...</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto mt-8 bg-white p-6 rounded-2xl shadow-md border border-gray-100">
       <h2 className="text-2xl font-bold text-sky-700 mb-5 text-center">
-        🏥 Patient Registration
+        🏥 {isEdit ? "Edit Patient" : "Patient Registration"}
       </h2>
 
       <form onSubmit={formik.handleSubmit} className="space-y-6">
@@ -250,19 +301,22 @@ const PatientRegistration = () => {
 
             <Input
               label="Age"
-              value={age}
+              value={formik.values.age}
               readOnly
               className="bg-gray-100 text-gray-600 cursor-not-allowed"
             />
 
-            <Input {...formik.getFieldProps("CO")} label="C/O" required error={formik.touched.name && formik.errors.name} />
+            <Input
+            {...formik.getFieldProps("CO")} 
+            label="C/O" 
+            required 
+            error={formik.touched.CO && formik.errors.CO} />
 
             <Select {...formik.getFieldProps("relationship")} label="Relationship">
               <option value="">Select</option>
               {RELATIONSHIP_OPTIONS.map((relation) => (
                 <option key={relation}>{relation}</option>
               ))}
-
             </Select>
 
             <Select
@@ -283,16 +337,9 @@ const PatientRegistration = () => {
               required
               error={formik.touched.contactNumber && formik.errors.contactNumber}
             />
-
-            {/* <Input
-              {...formik.getFieldProps("email")}
-              label="Email"
-              error={formik.touched.email && formik.errors.email}
-            /> */}
           </div>
         </section>
 
-        {/* ================= ADDRESS DETAILS ================= */}
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Address Details
@@ -317,32 +364,15 @@ const PatientRegistration = () => {
               <option>BPL</option>
             </Select>
 
-            {/* <Input
-              {...formik.getFieldProps("country")}
-              label="Country"
-              required
-              error={formik.touched.country && formik.errors.country}
-            /> */}
-
-
-            {/* <Input
-              {...formik.getFieldProps("localAddressState")}
-              label="State"
-              required
-              error={formik.touched.localAddressState && formik.errors.localAddressState}
-            /> */}
-
-            {/* <Input {...formik.getFieldProps("localAddressDistrict")} label="District" /> */}
-
             <Select
               label="Country"
               required
-              value={countryId}
+              {...formik.getFieldProps("country")}
               onChange={(e) => {
                 const value = e.target.value;
-                setCountryId(value);
                 formik.setFieldValue("country", value);
-                setStateId(""); // reset when country changes
+                setCountryId(value);
+                setStateId("");
                 formik.setFieldValue("localAddressState", "");
                 formik.setFieldValue("localAddressDistrict", "");
               }}
@@ -357,12 +387,12 @@ const PatientRegistration = () => {
             <Select
               label="State"
               required
-              value={stateId}
-              disabled={!countryId}
+              {...formik.getFieldProps("localAddressState")}
+              disabled={!formik.values.country}
               onChange={(e) => {
                 const value = e.target.value;
-                setStateId(value);
                 formik.setFieldValue("localAddressState", value);
+                setStateId(value);
                 formik.setFieldValue("localAddressDistrict", "");
               }}
               error={formik.touched.localAddressState && formik.errors.localAddressState}
@@ -375,8 +405,8 @@ const PatientRegistration = () => {
 
             <Select
               label="District"
-              value={formik.values.localAddressDistrict}
-              disabled={!stateId}
+              {...formik.getFieldProps("localAddressDistrict")}
+              disabled={!formik.values.localAddressState}
               onChange={(e) => formik.setFieldValue("localAddressDistrict", e.target.value)}
             >
               <option value="">Select District</option>
@@ -398,21 +428,14 @@ const PatientRegistration = () => {
           </div>
         </section>
 
-        {/* ================= EMERGENCY DETAILS ================= */}
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Emergency Details
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input
-              {...formik.getFieldProps("emergencyContactName")}
-              label="Emergency Contact Name"
-            />
-            <Input
-              {...formik.getFieldProps("emergencyContactNumber")}
-              label="Emergency Contact Number"
-            />
+            <Input {...formik.getFieldProps("emergencyContactName")} label="Emergency Contact Name" />
+            <Input {...formik.getFieldProps("emergencyContactNumber")} label="Emergency Contact Number" />
 
             <Select {...formik.getFieldProps("blood_group")} label="Blood Group">
               <option value="">Select</option>
@@ -428,16 +451,12 @@ const PatientRegistration = () => {
               required
             />
 
-
             <Select {...formik.getFieldProps("idProof_name")} label="Identification Type" required>
               <option value="">Select</option>
               {IDENTIFICATION_TYPES.map((b) => (
-                <option key={b.value} value={b.value}>
-                  {b.label}
-                </option>
+                <option key={b.value} value={b.value}>{b.label}</option>
               ))}
             </Select>
-
 
             {formik.values.idProof_name && (
               <Input
@@ -447,8 +466,6 @@ const PatientRegistration = () => {
                 error={formik.touched.idProof_number && formik.errors.idProof_number}
               />
             )}
-
-
           </div>
         </section>
 
@@ -456,19 +473,16 @@ const PatientRegistration = () => {
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Payment Details
           </h3>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-
             <Input {...formik.getFieldProps("creditamount")} label="Credit Amount" disabled />
           </div>
         </section>
 
-        {/* ================= ACTION BUTTONS ================= */}
         <div className="flex justify-center gap-4 pt-6 border-t border-gray-100">
           <Button type="submit" variant="sky">
-            <CheckCircleIcon className="w-5 h-5 inline mr-1" /> Save
+            <CheckCircleIcon className="w-5 h-5 inline mr-1" /> {isEdit ? "Update" : "Save"}
           </Button>
-          <Button type="button" variant="gray" onClick={formik.handleReset}>
+          <Button type="button" variant="gray" onClick={handleReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
           </Button>
         </div>

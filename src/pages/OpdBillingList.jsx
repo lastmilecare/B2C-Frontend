@@ -1,13 +1,64 @@
 import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
-import { useGetOpdBillingQuery, useGetComboQuery } from "../redux/apiSlice";
+import { useGetOpdBillingQuery, useGetComboQuery, useSearchUHIDQuery, useDeleteOpdBillMutation} from "../redux/apiSlice";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 import InvoiceTemplate from "./InvoicePage";
 import { healthAlert } from "../utils/healthSwal";
+import useDebounce from "../hooks/useDebounce";
+import { useNavigate } from "react-router-dom";
 
 const OpdBillingList = () => {
+  const navigate = useNavigate();
+  const [deleteOpdBill] = useDeleteOpdBillMutation();
+  const handleDelete = async (row) => {
+  if (!row || !row.bill_no) {
+    alert("Bill number not found");
+    return;
+  }
+  const confirm = window.confirm(
+    `Are you sure you want to delete OPD Bill No ${row.bill_no}?`
+  );
+  if (!confirm) return;
+
+  // 3️⃣ API call
+  try {
+    await deleteOpdBill(Number(row.bill_no)).unwrap();
+
+    healthAlert({
+  title: "Success",
+  text: "OPD Bill deleted successfully",
+  icon: "success",
+});   
+
+  } catch (error) {
+    alert("Delete failed");
+    error.message("DELETE ERROR:", error);
+  }
+};
+
+const handleEdit = (row) => {
+  if (!row || !row.bill_no) {
+    alert("Bill number not found");
+    return;
+  }
+
+   navigate(`/opd-form/${row.bill_no}`, {
+    state: {
+      editData: row,    
+    }
+  });
+};
+
+  
+  
+  const [uhidSearch, setUhidSearch] = useState("");
+  const debouncedUhid = useDebounce(uhidSearch, 500);
+  const { data: suggestions = [] } = useSearchUHIDQuery(
+    debouncedUhid,
+    { skip: debouncedUhid.length < 2 }
+  );
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [tempFilters, setTempFilters] = useState({
@@ -34,6 +85,7 @@ const OpdBillingList = () => {
     },
     { skip: !page || !limit }
   );
+
   const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
   const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
   const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
@@ -46,7 +98,13 @@ const OpdBillingList = () => {
     const { name, value } = e.target;
     setTempFilters((prev) => ({ ...prev, [name]: value }));
   };
-
+  const handleSelectSuggestion = (val) => {
+    setTempFilters(prev => ({ ...prev, external_id: val }));
+    setUhidSearch("");
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
   const handleApplyFilters = () => {
     const today = new Date().toISOString().split("T")[0];
     const { startDate, endDate } = tempFilters;
@@ -285,7 +343,7 @@ const OpdBillingList = () => {
     {
       name: "Srvc",
       title: "Service Name",
-      selector: (row) => safeString((row?.opd_billing_data || []).map((item, idx) => (item?.ServiceName ))),
+      selector: (row) => safeString((row?.opd_billing_data || []).map((item, idx) => (item?.ServiceName))),
       width: "120px",
     },
     {
@@ -356,10 +414,20 @@ const OpdBillingList = () => {
       <FilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
-        onChange={handleChange}
+        onChange={(e) => {
+          const { name, value } = e.target;
+          if (name === "external_id") {
+            setUhidSearch(value); 
+          }
+          handleChange(e); 
+        }}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
         onExport={() => console.log("Export clicked!")}
+        suggestions={suggestions}
+        uhidSearch={uhidSearch}
+        onSelectSuggestion={handleSelectSuggestion}
+
       />
       <CommonList
         title="💳 OPD Billing List"
@@ -376,6 +444,8 @@ const OpdBillingList = () => {
         enableActions
         isLoading={isLoading}
         actionButtons={["edit", "delete", "print", "printCS"]}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
         onPrintCS={onPrintCS}
         onPrint={onPrintInvoice}
       />

@@ -1,28 +1,12 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
-
-// axiosBaseQuery wrapper for RTK Query
-// const axiosBaseQuery =
-//   ({ baseUrl } = { baseUrl: "" }) =>
-//     async ({ url, method, data, params, responseType }) => {
-//       try {
-//         const result = await axiosClient({ url: baseUrl + url, method, data, params, responseType: responseType || "json", });
-//         return { data: result.data };
-//       } catch (error) {
-//         return {
-//           error: {
-//             status: error.response?.status,
-//             data: error.response?.data || error.message,
-//           },
-//         };
-//       }
-//     };
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
     async ({ url, method, data, params, responseType }) => {
       try {
+        const isAbsoluteUrl = url.startsWith("http");
         const result = await axiosClient({
-          url: baseUrl + url,
+          url: isAbsoluteUrl ? url : baseUrl + url,
           method,
           data,
           params,
@@ -43,6 +27,7 @@ const axiosBaseQuery =
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
+  tagTypes: ["Bill", "Inventory"],
   endpoints: (build) => ({
     login: build.mutation({
       query: (body) => ({ url: "/auth/login", method: "post", data: body }),
@@ -142,6 +127,7 @@ export const api = createApi({
           pay_mode
         },
       }),
+      providesTags: ["Bill"],
     }),
     getCombo: build.query({
       query: (type) => ({
@@ -213,6 +199,14 @@ export const api = createApi({
         },
       }),
     }),
+    getOpdBillById: build.query({
+  query: (id) => ({
+    url: `/opd-billing/${id}`,
+    method: "GET",
+  }),
+  providesTags: ["Bill"],
+}),
+
     createBill: build.mutation({
       query: (billData) => ({
         url: "/opd-billing",
@@ -221,15 +215,117 @@ export const api = createApi({
       }),
       invalidatesTags: ["Bill"],
     }),
+    updateBill: build.mutation({
+      query: ({ id, data}) => ({
+        url: `/opd-billing/${id}`,
+        method: "PUT",
+        data: data,
+      }),
+      invalidatesTags: ["Bill"],
+
+    }),
+    deleteOpdBill: build.mutation({
+  query: (id) => ({
+    url: `/opd-billing/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Bill"],
+}),
+
+
     registerPatients: build.mutation({
       query: (pData) => ({
         url: "/patient/register",
         method: "POST",
         data: pData,
       }),
-    })
+    }),
+    getMedicineSales: build.query({
+  query: ({
+    patientName,
+    medicineName,
+    startDate,
+    endDate,
+    issuedBy
+  } = {}) => ({
+    url: "/medicine-sales/view", 
+    method: "GET",
+    params: {
+      patientName,
+      medicineName,
+      startDate,
+      endDate,
+      issuedBy
+    }
   }),
+}),
 
+    getInventory: build.query({
+      query: (params) => ({
+        url: "/inventory/view",
+        method: "GET",
+        params: params, 
+      }),
+      providesTags: ["Inventory"],
+    }),
+
+    // 2. Add New Inventory Item
+    createInventoryItem: build.mutation({
+      query: (body) => ({
+        url: "/inventory/add",
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Inventory"], 
+    }),
+
+    // 3. Update Inventory Item
+    updateInventoryItem: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/inventory/update/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+      invalidatesTags: ["Inventory"],
+    }),
+
+    // 4. Delete Inventory Item
+    deleteInventoryItem: build.mutation({
+      query: (id) => ({
+        url: `/inventory/delete/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Inventory"],
+    }),
+    // 🔍 1. Search OPD Bill No (autosuggest)
+searchOpdBillNo: build.query({
+  query: (bill_no) => ({
+    url: "/billing/search-bill-no",
+    method: "GET",
+    params: { bill_no },
+  }),
+}),
+
+// 📄 2. Get billing details by bill no
+getBillingByBillNo: build.query({
+  query: (bill_no) => ({
+    url: "/billing/by-bill-no",
+    method: "GET",
+    params: { bill_no },
+  }),
+}),
+
+// 💾 3. Create medicine bill
+createMedicineBill: build.mutation({
+  query: (data) => ({
+    url: "/billing",
+    method: "POST",
+    data,
+  }),
+  invalidatesTags: ["Bill", "Inventory"],
+}),
+
+  }),
 
 });
 
@@ -237,5 +333,9 @@ export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSear
   useGetStatesByCountryQuery,
   useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery,
   useGetPatientsByUhidQuery, useSearchUHIDQuery,
-  useGetServiceMastersQuery, useCreateBillMutation, useRegisterPatientsMutation
+  useGetServiceMastersQuery, useCreateBillMutation, useRegisterPatientsMutation, useGetPatientByIdQuery,
+  useUpdatePatientMutation, useUpdateBillMutation, useDeleteOpdBillMutation, useGetOpdBillByIdQuery,
+  useGetInventoryQuery, useCreateInventoryItemMutation, useUpdateInventoryItemMutation, useDeleteInventoryItemMutation,
+  useLazyGetMedicineSalesQuery, useSearchOpdBillNoQuery, useGetBillingByBillNoQuery, useCreateMedicineBillMutation,
+  useLazyGetBillingByBillNoQuery, useGetMedicineSalesQuery, 
 } = api;

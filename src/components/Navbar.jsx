@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   UserCircleIcon,
+  ArchiveBoxIcon,
   BuildingOffice2Icon,
   ClipboardDocumentListIcon,
   UserPlusIcon,
@@ -9,13 +10,22 @@ import {
   Bars3Icon,
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../redux/authSlice";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openPatient, setOpenPatient] = useState(false);
   const [openOpd, setOpenOpd] = useState(false);
   const [openPrescription, setOpenPrescription] = useState(false);
-
+  const [openInventory, setOpenInventory] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
+  };
   const navItemClass = ({ isActive }) =>
     `flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
       isActive
@@ -109,12 +119,32 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-
+            {/* Inventory Menu - New Added */}
+            <div>
+          <button
+            onClick={() => setOpenInventory(!openInventory)}
+            className="flex justify-between items-center w-full px-2 py-2 font-medium text-gray-800 hover:bg-sky-100 rounded-md"
+          >
+            <span className="flex items-center gap-2">
+              <ArchiveBoxIcon className="w-5 h-5 text-sky-600" />
+              {isOpen && "Inventory"}
+            </span>
+            {isOpen && <ChevronDownIcon className={`w-4 h-4 transform transition ${openInventory ? "rotate-180" : ""}`} />}
+          </button>
+          {openInventory && isOpen && (
+            <div className="ml-6 mt-1 space-y-1">
+              <NavLink to="/inventory-overview" className={navItemClass}>Inventory List</NavLink>
+              <NavLink to="/add-inventory" className={navItemClass}>Add Item</NavLink>
+            </div>
+          )}
+        </div>
             {/* Signup / Logout */}
             <NavLink to="/login" className={navItemClass}>
               <UserPlusIcon className="w-5 h-5 text-sky-600" /> Login
             </NavLink>
-            <button className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 hover:text-red-600">
+            <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 hover:text-red-600">
               <ArrowRightOnRectangleIcon className="w-5 h-5" /> Logout
             </button>
           </div>
@@ -197,7 +227,9 @@ const Navbar = () => {
           <NavLink to="/login" className={navItemClass}>
             <UserPlusIcon className="w-5 h-5 text-sky-600" /> <Login></Login>
           </NavLink>
-          <button className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 hover:text-red-600">
+          <button 
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 hover:text-red-600">
             <ArrowRightOnRectangleIcon className="w-5 h-5" /> Logout
           </button>
         </div>

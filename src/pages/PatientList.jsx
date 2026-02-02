@@ -1,9 +1,16 @@
 import React, { useState } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
-import { useGetPatientsQuery } from "../redux/apiSlice";
-
+import { useGetPatientsQuery, useSearchUHIDQuery } from "../redux/apiSlice";
+import useDebounce from "../hooks/useDebounce";
+import { useNavigate } from "react-router-dom";
 const PatientList = () => {
+  const [uhidSearch, setUhidSearch] = useState("");
+  const debouncedUhid = useDebounce(uhidSearch, 500);
+  const { data: suggestions = [] } = useSearchUHIDQuery(
+    debouncedUhid,
+    { skip: debouncedUhid.length < 2 }
+  );
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [tempFilters, setTempFilters] = useState({
@@ -26,16 +33,27 @@ const PatientList = () => {
 
   const patients = data?.data || [];
   const pagination = data?.pagination || {};
-
+  const navigate = useNavigate();
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setTempFilters((prev) => ({ ...prev, [name]: value }));
+    const finalValue = name === "external_id" ? value.toUpperCase() : value;
+    setTempFilters((prev) => ({ ...prev, [name]: finalValue }));
+    if (name === "external_id") {
+      setUhidSearch(finalValue);
+    }
+  };
+  const handleSelectSuggestion = (val) => {
+    setTempFilters(prev => ({ ...prev, external_id: val }));
+    setUhidSearch("");
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   };
 
   const handleApplyFilters = () => {
     const today = new Date().toISOString().split("T")[0];
     const { startDate, endDate } = tempFilters;
-        
+
 
     if (endDate && endDate > today) {
       alert("End date cannot be greater than today.");
@@ -102,7 +120,7 @@ const PatientList = () => {
     { name: "UHID", selector: (row) => row.external_id, width: "120px", sortable: true },
     { name: "Gender", selector: (row) => row.gender },
     { name: "Age", selector: (row) => row.age, sortable: true },
-    { name: "Complaint", selector: (row) => row.Disease || "N/A"}, //this need to fix
+    { name: "Complaint", selector: (row) => row.Disease || "N/A" }, //this need to fix
     { name: "Credit Amt", selector: (row) => row.creditamount || 0 },
     { name: "Address", selector: (row) => row.localAddressDistrict },
     { name: "Category", selector: (row) => row.category, sortable: true },
@@ -133,6 +151,9 @@ const PatientList = () => {
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
         onExport={() => console.log("Export clicked!")}
+        suggestions={suggestions}
+        uhidSearch={uhidSearch}
+        onSelectSuggestion={handleSelectSuggestion}
       />
 
       <CommonList
@@ -150,6 +171,9 @@ const PatientList = () => {
         enableActions
         isLoading={isLoading}
         actionButtons={["edit"]}
+        onEdit={(row) => {
+          navigate(`/patient-registration/${row.id}`);
+        }}
       />
     </div>
   );

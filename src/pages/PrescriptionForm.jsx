@@ -16,9 +16,11 @@ import { healthAlert, healthAlerts } from "../utils/healthSwal";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-
+import { useParams } from "react-router-dom";
 const baseInput =
-  "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
+  "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
+  "focus:ring-2 focus:ring-sky-400 focus:border-sky-500 " +
+  "transition";
 const baseBtn =
   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
 
@@ -74,10 +76,10 @@ const PrescriptionForm = () => {
   const debouncedUhid = useDebounce(uhidSearch, 500);
   const [selectedUhid, setSelectedUhid] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
-  const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
-  const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
-  const { data: collectedBy, isLoading: collectedComboLoading } = useGetComboQuery("collectedBy");
-  const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
+  // const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
+  // const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
+  // const { data: collectedBy, isLoading: collectedComboLoading } = useGetComboQuery("collectedBy");
+  // const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
   const [prescriptionList, setPrescriptionList] = useState([]);
 
   // Track if we've already populated data for this UHID
@@ -85,6 +87,9 @@ const PrescriptionForm = () => {
 
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
+  // const { id } = useParams();
+  // const isEdit = Boolean(id);
+  // console.log("Edit ID:", id);
   useEffect(() => {
     if (printRow && printRef.current) {
       handlePrint();
@@ -109,7 +114,7 @@ const PrescriptionForm = () => {
       : skipToken
   );
 
-  const [createBill, { isLoading: isCreating, error: createError }] = useCreateBillMutation();
+  // const [createBill, { isLoading: isCreating, error: createError }] = useCreateBillMutation();
 
   const { data: suggestions = [] } = useSearchUHIDQuery(
     debouncedUhid,
@@ -130,21 +135,21 @@ const PrescriptionForm = () => {
 
   }, [suggestions, selectedUhid, uhidSearch]);
 
-  const parseDOB = (raw) => {
-    if (!raw || !raw.includes("-")) return "";
+  // const parseDOB = (raw) => {
+  //   if (!raw || !raw.includes("-")) return "";
 
-    const [dd, mm, yyyy] = raw.split("-");
-    return `${yyyy}-${mm}-${dd}`;
-  };
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
+  //   const [dd, mm, yyyy] = raw.split("-");
+  //   return `${yyyy}-${mm}-${dd}`;
+  // };
+  // const currentYear = new Date().getFullYear();
+  // const currentMonth = new Date().getMonth();
   const buildPayload = (values) => {
 
-    if (!patientData || !selectedServices.length) return null;
-    const finalAmount = selectedServices.reduce(
-      (sum, s) => sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
-      0
-    )
+    // if (!patientData || !selectedServices.length) return null;
+    // const finalAmount = selectedServices.reduce(
+    //   (sum, s) => sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
+    //   0
+    // )
     const chiefComplaintStr = Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
       ? values.ChiefComplaint.map((e) => e.name).join(", ")
       : "";
@@ -154,18 +159,18 @@ const PrescriptionForm = () => {
       Mobile: values.Mobile,
       ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
       PatientType: values.FinCategory == "BPL" ? 1 : 2,   // NEED TO CHECK VALUE
-      PaidAmount: Number(values.PaidAmount || 0),
-      CashAmount: Number(values.CashAmount || 0),
-      CardAmount: Number(values.CardAmount || 0),
-      PayMode: Number(values.PayMode),
-      DueAmount: Number(values.DueAmount || 0),
+      // PaidAmount: Number(values.PaidAmount || 0),
+      // CashAmount: Number(values.CashAmount || 0),
+      // CardAmount: Number(values.CardAmount || 0),
+      // PayMode: Number(values.PayMode),
+      // DueAmount: Number(values.DueAmount || 0),
       AddedBy: 178, // this need to add user id
-      DepartmentID: values.Department,
-      ConsultantDoctorID: Number(values.Doctor),
-      DoctorId: Number(values.Doctor),
-      TotalServiceAmount: finalAmount,
-      HospitalID: selectedServices[0]?.HospitalID || 1,
-      FinancialYearID: currentYear,
+      // DepartmentID: values.Department,
+      // ConsultantDoctorID: Number(values.Doctor),
+      // DoctorId: Number(values.Doctor),
+      // TotalServiceAmount: finalAmount,
+      // HospitalID: selectedServices[0]?.HospitalID || 1,
+      // FinancialYearID: currentYear,
       CenterID: 49, // Need to manage Center id
       ReferTo: Number(values.ReferBy || 0),
       IsActive: true,
@@ -183,11 +188,11 @@ const PrescriptionForm = () => {
       PatientID: patientData.id,
       NetServiceAmount: Number(s.quantity * s.price),
       PicasoNo: values.UHID || patientData.external_id,
-      HospitalCharge: 0,
-      DoctorCharge: 0,
-      Discount: 0,
-      Isdiscount: false,
-      DiscountBy: 0,
+      // HospitalCharge: 0,
+      // DoctorCharge: 0,
+      // Discount: 0,
+      // Isdiscount: false,
+      // DiscountBy: 0,
       DoctorID: Number(values.Doctor),
       AddedBy: 1, //Need to manage this
       MonthID: currentMonth,
@@ -210,21 +215,21 @@ const PrescriptionForm = () => {
       Department: 0,
       Doctor: 0,
       FinCategory: "",
-      ReferBy: "",
-      VisitType: "",
-      LastVisitDate: "",
+      // ReferBy: "",
+      // VisitType: "",
+      // LastVisitDate: "",
       Quantity: 1,
-      ServiceName: "",
-      PreviousDue: 0,
-      TotalAmount: 0,
-      PaidAmount: 0,
-      CreditBalance: 0,
-      AdjustWithBalance: false,
+      // ServiceName: "",
+      // PreviousDue: 0,
+      // TotalAmount: 0,
+      // PaidAmount: 0,
+      // CreditBalance: 0,
+      // AdjustWithBalance: false,
 
-      DueAmount: 0,
-      PayMode: "",
-      CashAmount: 0,
-      CardAmount: 0,
+      // DueAmount: 0,
+      // PayMode: "",
+      // CashAmount: 0,
+      // CardAmount: 0,
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -233,38 +238,41 @@ const PrescriptionForm = () => {
         .matches(/^[0-9]{10}$/, "Must be 10 digits")
         .required("Mobile is required"),
 
-      Department: Yup.number()
-        .min(1, "Department is required")
-        .required("Department is required"),
+      // Department: Yup.number()
+        // .min(1, "Department is required")
+        // .required("Department is required"),
 
-      Doctor: Yup.number()
-        .min(1, "Consulting doctor is required")
-        .required("Consulting doctor is required"),
-      PayMode: Yup.string().required("Payment Mode is required"),
+      // Doctor: Yup.number()
+        // .min(1, "Consulting doctor is required")
+        // .required("Consulting doctor is required"),
+      // PayMode: Yup.string().required("Payment Mode is required"),
     }),
     onSubmit: async (values) => {
+      console.log("Formik Values:", values);
+      console.log("Selected Service:", selectedServices);
+      console.log("Prescription List :", prescriptionList);
       try {
         const payload = buildPayload(values);
-        if (!payload) {
-          healthAlert({
-            title: "OPD Billing",
-            text: "Service or Patient detail missing please verify before procceding.",
-            icon: "error",
-          });
-          return;
-        }
-        const response = await createBill(payload).unwrap();
-        healthAlert({
-          title: "OPD Billing",
-          text: "OPD Billing Saved Successfully",
-          icon: "success",
-        });
+        // if (!payload) {
+        //   healthAlert({
+        //     title: "OPD Billing",
+        //     text: "Service or Patient detail missing please verify before procceding.",
+        //     icon: "error",
+        //   });
+        //   return;
+        // }
+        //   const response = await createBill(payload).unwrap();
+        // healthAlert({
+        //   title: "OPD Billing",
+        //   text: "OPD Billing Saved Successfully",
+        //   icon: "success",
+        // });
         formik.resetForm();
         setSelectedServices([]);
         setSelectedUhid("")
       } catch (err) {
         healthAlert({
-          title: "OPD Billing",
+          title: "Piscription Form",
           text: err?.data?.message,
           icon: "error",
         });
@@ -274,11 +282,11 @@ const PrescriptionForm = () => {
 
   });
   // Inside your component
-  useEffect(() => {
-    if (Object.keys(formik.errors).length > 0) {
-      console.log("Validation Errors:", formik.errors);
-    }
-  }, [formik.errors]);
+  // useEffect(() => {
+  //   if (Object.keys(formik.errors).length > 0) {
+  //     console.log("Validation Errors:", formik.errors);
+  //   }
+  // }, [formik.errors]);
 
 
   useEffect(() => {
@@ -293,54 +301,54 @@ const PrescriptionForm = () => {
       Gender: patientData.gender || "",
       Mobile: patientData.contactNumber || "",
       FinCategory: patientData.category || "",
-      LastVisitDate: patientData.createdAt ? new Date(patientData.createdAt).toISOString().split("T")[0] : "",
-      VisitType: patientData?.VisitType || "N/A"
+      // LastVisitDate: patientData.createdAt ? new Date(patientData.createdAt).toISOString().split("T")[0] : "",
+      // VisitType: patientData?.VisitType || "N/A"
     };
 
-    if (patientData.dateOfBirthOrAge) {
-      const dobValue = parseDOB(patientData.dateOfBirthOrAge);
-      updates.DOB = dobValue;
+    // if (patientData.dateOfBirthOrAge) {
+    //   const dobValue = parseDOB(patientData.dateOfBirthOrAge);
+    //   updates.DOB = dobValue;
 
-      const dob = new Date(dobValue);
-      const today = new Date();
-      let years = today.getFullYear() - dob.getFullYear();
-      let months = today.getMonth() - dob.getMonth();
-      let days = today.getDate() - dob.getDate();
+    //   const dob = new Date(dobValue);
+    //   const today = new Date();
+    //   let years = today.getFullYear() - dob.getFullYear();
+    //   let months = today.getMonth() - dob.getMonth();
+    //   let days = today.getDate() - dob.getDate();
 
-      if (days < 0) {
-        months -= 1;
-        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-      }
-      if (months < 0) {
-        years -= 1;
-        months += 12;
-      }
+    //   if (days < 0) {
+    //     months -= 1;
+    //     days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    //   }
+    //   if (months < 0) {
+    //     years -= 1;
+    //     months += 12;
+    //   }
 
-      updates.Age = `${years}y ${months}m ${days}d`;
-    }
+    //   updates.Age = `${years}y ${months}m ${days}d`;
+    // }
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedUhid]);
 
-  useEffect(() => {
-    const total = Number(formik.values.TotalAmount) || 0;
-    const paid = Number(formik.values.PaidAmount) || 0;
-    const credit = Number(formik.values.CreditBalance) || 0;
-    const isAdjusting = formik.values.AdjustWithBalance;
-    if (isAdjusting) {
-      let due = total - paid - credit;
-      if (due < 0) due = 0;
+  // useEffect(() => {
+  //   const total = Number(formik.values.TotalAmount) || 0;
+  //   const paid = Number(formik.values.PaidAmount) || 0;
+  //   const credit = Number(formik.values.CreditBalance) || 0;
+  //   const isAdjusting = formik.values.AdjustWithBalance;
+  //   if (isAdjusting) {
+  //     let due = total - paid - credit;
+  //     if (due < 0) due = 0;
 
-      formik.setFieldValue("DueAmount", due.toFixed(2));
-    } else {
-      formik.setFieldValue("DueAmount", "0.00");
-    }
+  //     formik.setFieldValue("DueAmount", due.toFixed(2));
+  //   } else {
+  //     formik.setFieldValue("DueAmount", "0.00");
+  //   }
 
-  }, [
-    formik.values.AdjustWithBalance,
-    formik.values.TotalAmount,
-    formik.values.PaidAmount,
-    formik.values.CreditBalance
-  ]);
+  // }, [
+  //   formik.values.AdjustWithBalance,
+  //   formik.values.TotalAmount,
+  //   formik.values.PaidAmount,
+  //   formik.values.CreditBalance
+  // ]);
   const handleAddPrescription = () => {
     const {
       medicine,
@@ -391,7 +399,7 @@ const PrescriptionForm = () => {
 
 
   return (
-    <div className="max-w-6xl mx-auto mt-8 bg-white p-5 rounded-2xl shadow-md border border-gray-100">
+    <div className="max-w-6xl mx-auto mt-8 bg-white p-6 rounded-2xl shadow border border-gray-200">
       <h2 className="text-2xl font-bold text-sky-700 mb-5 text-center">
         💳 Prescription Form
       </h2>
@@ -403,9 +411,9 @@ const PrescriptionForm = () => {
             Details
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div className="relative">
-              <label className="text-sm text-gray-600 block mb-1">Bill No <span className="text-red-500">*</span></label>
+              <label className="text-sm text-gray-600 block mb-1">UHID <span className="text-red-500">*</span></label>
 
               <input
                 type="text"
@@ -452,8 +460,8 @@ const PrescriptionForm = () => {
             />
 
             <Input
-              label="UHID"
-              {...formik.getFieldProps("uhid")}
+              label="Bill no"
+              {...formik.getFieldProps("Bill no")}
               readOnly
               className="bg-gray-100 cursor-not-allowed"
             >
@@ -489,7 +497,7 @@ const PrescriptionForm = () => {
             </Input>
 
 
-            <Input {...formik.getFieldProps("bpsystolic")} className="bg-gray-100 cursor-not-allowed" label="BP Systolic" >
+            {/* <Input {...formik.getFieldProps("bpsystolic")} className="bg-gray-100 cursor-not-allowed" label="BP Systolic" >
             </Input>
             <Input {...formik.getFieldProps("bpdiastolic")} className="bg-gray-100 cursor-not-allowed" label="BP Diastolic" >
             </Input>
@@ -502,26 +510,44 @@ const PrescriptionForm = () => {
             <Input {...formik.getFieldProps("height")} className="bg-gray-100 cursor-not-allowed" label="Height" >
             </Input>
             <Input {...formik.getFieldProps("weight")} className="bg-gray-100 cursor-not-allowed" label="Weight" >
-            </Input>
+            </Input> */}
+          </div>
+        </section>
+        <section className="mt-6">
+          <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
+            Vitals & Examination
+          </h3>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Input {...formik.getFieldProps("bpsystolic")} label="BP Systolic (mmHg)" />
+            <Input {...formik.getFieldProps("bpdiastolic")} label="BP Diastolic (mmHg)" />
+            <Input {...formik.getFieldProps("pulserate")} label="Pulse (bpm)" />
+            <Input {...formik.getFieldProps("spo2")} label="SPO2 (%)" />
+            <Input {...formik.getFieldProps("temprature")} label="Temperature (°C)" />
+            <Input {...formik.getFieldProps("height")} label="Height (cm)" />
+            <Input {...formik.getFieldProps("weight")} label="Weight (kg)" />
           </div>
         </section>
 
-        {/* ================= BILLING DETAILS ================= */}
-        <section>
+
+        {/* ================= BILLING DETAILS ================= */}        <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Prescription
             Details
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input {...formik.getFieldProps("otherinstrution")} placeholder="Other Instructions *" className="bg-gray-100 cursor-not-allowed" label="Other Instructions" />
+            <Input {...formik.getFieldProps("otherinstrution")}
+             placeholder="Other Instructions "  
+             label="Other Instructions" />
             <DiseaseSelect
               label="Complaint"
               value={formik.values.ChiefComplaint}
               onChange={(selected) => formik.setFieldValue("ChiefComplaint", selected)}
               required
             />
-            <Input {...formik.getFieldProps("labs")} placeholder="Labs" className="bg-gray-100 cursor-not-allowed" label="Labs" />
+            <Input {...formik.getFieldProps("labs")} placeholder="Labs" label="Labs" />
             <Input {...formik.getFieldProps("otherlabs")} placeholder="Other Labs" label="Other Labs" />
             <Input {...formik.getFieldProps("followup")} placeholder="Next Follow-up days" label="Next Follow-up days" />
             <Input {...formik.getFieldProps("advice")} placeholder="Preventive Advice" label="Preventive Advice" />
@@ -531,7 +557,7 @@ const PrescriptionForm = () => {
         {/* ================= Medical Prescription DETAILS ================= */}
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Medical Prescription DETAILS
+            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Medical Prescription
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -541,6 +567,9 @@ const PrescriptionForm = () => {
             <Input {...formik.getFieldProps("dosageinstructions")} placeholder="Instructions " label="Instructions *" />
             <Input {...formik.getFieldProps("preferredtime")} placeholder="Preferred Time" label="Preferred Time *" />
             <Input {...formik.getFieldProps("duration")} placeholder="Duration (in days)" label="Duration (in days) *" />
+          </div>
+          <div className="mt-3">
+
             <button
               type="button"
               onClick={handleAddPrescription}
@@ -551,64 +580,60 @@ const PrescriptionForm = () => {
             >
               <PlusIcon className="h-5 w-5" />
             </button>
-
-
-            {prescriptionList.length > 0 && (
-              <div className="mt-4 rounded-lg border bg-white shadow-sm">
-                <div className="px-4 py-2 font-semibold text-gray-700 border-b bg-gray-50">
-                  Added Medicines
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th className="px-3 py-2 text-left">SL No</th>
-                        <th className="px-3 py-2 text-left">Medicine</th>
-                        <th className="px-3 py-2 text-left">Type</th>
-                        <th className="px-3 py-2 text-left">Dosage</th>
-                        <th className="px-3 py-2 text-left">Time</th>
-                        <th className="px-3 py-2 text-left">Days</th>
-                        <th className="px-3 py-2 text-center">Delete</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {prescriptionList.map((item, index) => (
-                        <tr
-                          key={index}
-                          className="border-t hover:bg-gray-50"
-                        >
-                          <td className="px-3 py-2">{index + 1}</td>
-                          <td className="px-3 py-2 font-medium">
-                            {item.medicine}
-                          </td>
-                          <td className="px-3 py-2">{item.type}</td>
-                          <td className="px-3 py-2">{item.dosage}</td>
-                          <td className="px-3 py-2">{item.preferredTime || "-"}</td>
-                          <td className="px-3 py-2">{item.duration}</td>
-                          <td className="px-3 py-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => handleDeletePrescription(index)}
-                              className="text-red-500 hover:text-red-700"
-                              title="Delete"
-                            >
-                              🗑
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-
-
-
           </div>
+
+
+          {prescriptionList.length > 0 && (
+            <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+              <div className="px-4 py-2 font-semibold text-sky-700 border-b bg-sky--50">
+                Prescribed Medicines
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left">SL No</th>
+                      <th className="px-4 py-3 text-left">Medicine</th>
+                      <th className="px-4 py-3 text-left">Type</th>
+                      <th className="px-4 py-3 text-left">Dosage</th>
+                      <th className="px-4 py-3 text-left">Time</th>
+                      <th className="px-4 py-3 text-left">Days</th>
+                      <th className="px-4 py-3 text-center">Delete</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {prescriptionList.map((item, index) => (
+                      <tr
+                        key={index}
+                        className="border-t hover:bg-gray-50"
+                      >
+                        <td className="px-4 py-3">{index + 1}</td>
+                        <td className="px-4 py-3 font-medium">
+                          {item.medicine}
+                        </td>
+                        <td className="px-4 py-3">{item.type}</td>
+                        <td className="px-4 py-3">{item.dosage}</td>
+                        <td className="px-4 py-3">{item.preferredTime || "-"}</td>
+                        <td className="px-4 py-3">{item.duration}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePrescription(index)}
+                            className="text-red-500 hover:text-red-700"
+                            title="Delete"
+                          >
+                            🗑
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </section>
 
         <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">
