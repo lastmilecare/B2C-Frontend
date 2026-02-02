@@ -4,7 +4,7 @@ import PatientRegistration from "./pages/PatientForm";
 import PatientList from "./pages/PatientList";
 import OpdForm from "./pages/OpdBillingForm";
 import OpdBilling from "./pages/OpdBillingList";
-import Signup from "./pages/Signup";
+  // import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PrescriptionForm from "./pages/PrescriptionForm";
@@ -74,7 +74,7 @@ function App() {
         />
         <Route path="/print-opd-form" element={<PrintOpdForm />} />
 
-        <Route path="/signup" element={<Signup />} />
+          {/* <Route path="/signup" element={<Signup />} /> */}
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
