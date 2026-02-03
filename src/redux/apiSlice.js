@@ -2,39 +2,39 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
-    async ({ url, method, data, params, responseType }) => {
-      try {
-        const isAbsoluteUrl = url.startsWith("http");
-        const result = await axiosClient({
-          url: isAbsoluteUrl ? url : baseUrl + url,
-          method,
-          data,
-          params,
-          responseType: responseType || "json",
-        });
+  async ({ url, method, data, params, responseType }) => {
+    try {
+      const isAbsoluteUrl = url.startsWith("http");
+      const result = await axiosClient({
+        url: isAbsoluteUrl ? url : baseUrl + url,
+        method,
+        data,
+        params,
+        responseType: responseType || "json",
+      });
 
-        return { data: result.data };
-      } catch (error) {
-        return {
-          error: {
-            status: error.response?.status,
-            data: error.response?.data || error.message,
-          },
-        };
-      }
-    };
-
+      return { data: result.data };
+    } catch (error) {
+      return {
+        error: {
+          status: error.response?.status,
+          data: error.response?.data || error.message,
+        },
+      };
+    }
+  };
+const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
   tagTypes: ["Bill", "Inventory"],
   endpoints: (build) => ({
     login: build.mutation({
-      query: (body) => ({ url: "/auth/login", method: "post", data: body }),
+      query: (body) => ({ url: VITE_AUTH_URL, method: "post", data: body }),
     }),
-      // signup: build.mutation({
-      //   query: (body) => ({ url: "/auth/signup", method: "post", data: body }),
-      // }),
+    signup: build.mutation({
+      query: (body) => ({ url: "/auth/signup", method: "post", data: body }),
+    }),
     getPatients: build.query({
       query: ({
         page = 1,
@@ -46,7 +46,7 @@ export const api = createApi({
         startDate,
         endDate,
         external_id,
-        idProof_number
+        idProof_number,
       } = {}) => ({
         url: "/patient",
         method: "get",
@@ -60,11 +60,10 @@ export const api = createApi({
           startDate,
           endDate,
           external_id,
-          idProof_number
+          idProof_number,
         },
       }),
     }),
-
 
     searchDiseases: build.query({
       query: ({ q, page = 1, limit = 20 }) => ({
@@ -106,7 +105,7 @@ export const api = createApi({
         bill_no,
         department,
         doctor_id,
-        pay_mode
+        pay_mode,
       } = {}) => ({
         url: "/opd-billing/view",
         method: "get",
@@ -124,7 +123,7 @@ export const api = createApi({
           bill_no,
           department,
           doctor_id,
-          pay_mode
+          pay_mode,
         },
       }),
       providesTags: ["Bill"],
@@ -174,13 +173,11 @@ export const api = createApi({
       transformResponse: (response) => response,
     }),
     getPatientsByUhid: build.query({
-      query: ({
-        uhid
-      } = {}) => ({
+      query: ({ uhid } = {}) => ({
         url: "/patient/by-uhid",
         method: "GET",
         params: {
-          uhid
+          uhid,
         },
       }),
     }),
@@ -200,12 +197,12 @@ export const api = createApi({
       }),
     }),
     getOpdBillById: build.query({
-  query: (id) => ({
-    url: `/opd-billing/${id}`,
-    method: "GET",
-  }),
-  providesTags: ["Bill"],
-}),
+      query: (id) => ({
+        url: `/opd-billing/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Bill"],
+    }),
 
     createBill: build.mutation({
       query: (billData) => ({
@@ -216,22 +213,20 @@ export const api = createApi({
       invalidatesTags: ["Bill"],
     }),
     updateBill: build.mutation({
-      query: ({ id, data}) => ({
+      query: ({ id, data }) => ({
         url: `/opd-billing/${id}`,
         method: "PUT",
         data: data,
       }),
       invalidatesTags: ["Bill"],
-
     }),
     deleteOpdBill: build.mutation({
-  query: (id) => ({
-    url: `/opd-billing/${id}`,
-    method: "DELETE",
-  }),
-  invalidatesTags: ["Bill"],
-}),
-
+      query: (id) => ({
+        url: `/opd-billing/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Bill"],
+    }),
 
     registerPatients: build.mutation({
       query: (pData) => ({
@@ -241,30 +236,30 @@ export const api = createApi({
       }),
     }),
     getMedicineSales: build.query({
-  query: ({
-    patientName,
-    medicineName,
-    startDate,
-    endDate,
-    issuedBy
-  } = {}) => ({
-    url: "/medicine-sales/view", 
-    method: "GET",
-    params: {
-      patientName,
-      medicineName,
-      startDate,
-      endDate,
-      issuedBy
-    }
-  }),
-}),
+      query: ({
+        patientName,
+        medicineName,
+        startDate,
+        endDate,
+        issuedBy,
+      } = {}) => ({
+        url: "/medicine-sales/view",
+        method: "GET",
+        params: {
+          patientName,
+          medicineName,
+          startDate,
+          endDate,
+          issuedBy,
+        },
+      }),
+    }),
 
     getInventory: build.query({
       query: (params) => ({
         url: "/inventory/view",
         method: "GET",
-        params: params, 
+        params: params,
       }),
       providesTags: ["Inventory"],
     }),
@@ -276,7 +271,7 @@ export const api = createApi({
         method: "POST",
         data: body,
       }),
-      invalidatesTags: ["Inventory"], 
+      invalidatesTags: ["Inventory"],
     }),
 
     // 3. Update Inventory Item
@@ -298,44 +293,83 @@ export const api = createApi({
       invalidatesTags: ["Inventory"],
     }),
     // 🔍 1. Search OPD Bill No (autosuggest)
-searchOpdBillNo: build.query({
-  query: (bill_no) => ({
-    url: "/billing/search-bill-no",
-    method: "GET",
-    params: { bill_no },
-  }),
-}),
+    searchOpdBillNo: build.query({
+      query: (bill_no) => ({
+        url: "/opd-billing",
+        method: "GET",
+        params: { bill_no },
+      }),
+    }),
 
-// 📄 2. Get billing details by bill no
-getBillingByBillNo: build.query({
-  query: (bill_no) => ({
-    url: "/billing/by-bill-no",
-    method: "GET",
-    params: { bill_no },
-  }),
-}),
+    // 📄 2. Get billing details by bill no
+    getBillingByBillNo: build.query({
+      query: (bill_no) => ({
+        url: "/billing/by-bill-no",
+        method: "GET",
+        params: { bill_no },
+      }),
+    }),
 
-// 💾 3. Create medicine bill
-createMedicineBill: build.mutation({
-  query: (data) => ({
-    url: "/billing",
-    method: "POST",
-    data,
-  }),
-  invalidatesTags: ["Bill", "Inventory"],
-}),
+    // 💾 3. Create medicine bill
+    createMedicineBill: build.mutation({
+      query: (data) => ({
+        url: "/billing",
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["Bill", "Inventory"],
+    }),
 
-  }),
+    getPatientById: build.query({
+      query: (id) => ({
+        url: "/patient/by-id",
+        method: "GET",
+        params: {
+          patientId: id,
+        },
+      }),
+    }),
 
+    updatePatient: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/patient/update-patient/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+    }),
+  }),
 });
 
-export const { useLoginMutation, useSignupMutation, useGetPatientsQuery, useSearchDiseasesQuery, useGetCountriesQuery,
+export const {
+  useLoginMutation,
+  useSignupMutation,
+  useGetPatientsQuery,
+  useSearchDiseasesQuery,
+  useGetCountriesQuery,
   useGetStatesByCountryQuery,
-  useGetDistrictsByStateQuery, useGetOpdBillingQuery, useGetComboQuery, useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery,
-  useGetPatientsByUhidQuery, useSearchUHIDQuery,
-  useGetServiceMastersQuery, useCreateBillMutation, useRegisterPatientsMutation, useGetPatientByIdQuery,
-  useUpdatePatientMutation, useUpdateBillMutation, useDeleteOpdBillMutation, useGetOpdBillByIdQuery,
-  useGetInventoryQuery, useCreateInventoryItemMutation, useUpdateInventoryItemMutation, useDeleteInventoryItemMutation,
-  useLazyGetMedicineSalesQuery, useSearchOpdBillNoQuery, useGetBillingByBillNoQuery, useCreateMedicineBillMutation,
-  useLazyGetBillingByBillNoQuery, useGetMedicineSalesQuery, 
+  useGetDistrictsByStateQuery,
+  useGetOpdBillingQuery,
+  useGetComboQuery,
+  useGetPrescriptionsQuery,
+  useLazyExportPrescriptionsExcelQuery,
+  useGetPatientsByUhidQuery,
+  useSearchUHIDQuery,
+  useGetServiceMastersQuery,
+  useCreateBillMutation,
+  useRegisterPatientsMutation,
+  useGetPatientByIdQuery,
+  useUpdatePatientMutation,
+  useUpdateBillMutation,
+  useDeleteOpdBillMutation,
+  useGetOpdBillByIdQuery,
+  useGetInventoryQuery,
+  useCreateInventoryItemMutation,
+  useUpdateInventoryItemMutation,
+  useDeleteInventoryItemMutation,
+  useLazyGetMedicineSalesQuery,
+  useSearchOpdBillNoQuery,
+  useGetBillingByBillNoQuery,
+  useCreateMedicineBillMutation,
+  useLazyGetBillingByBillNoQuery,
+  useGetMedicineSalesQuery,
 } = api;

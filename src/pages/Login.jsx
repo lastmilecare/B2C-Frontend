@@ -1,12 +1,35 @@
 import React, { useState } from "react";
 import { Button, Col, Form, Input, Row, Modal, Radio } from "antd";
-
+import { useLoginMutation } from "../redux/apiSlice";
+import { healthAlert } from "../utils/healthSwal";
+import { useNavigate } from "react-router-dom";
+import { setCredentials } from "../redux/authSlice";
+import { useDispatch } from "react-redux";
 const Login = () => {
   const [form] = Form.useForm();
   const [deleteForm] = Form.useForm();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [searchType, setSearchType] = useState("email");
+
+  const navigate = useNavigate();
+  const [login] = useLoginMutation();
+  const dispatch = useDispatch();
+
+  const onLoginFinish = async (values) => {
+    try {
+      const data = await login(values).unwrap();
+      debugger;
+      dispatch(setCredentials(data));
+      navigate("/patient-list");
+    } catch (error) {
+      healthAlert({
+        icon: "error",
+        title: "Login Failed",
+        text: error?.data?.message || "An error occurred during login.",
+      });
+    }
+  };
 
   return (
     <div className="login-container">
@@ -122,17 +145,12 @@ const Login = () => {
                 <img src="/images/LMC_logo.webp" alt="logo" />
               </div>
 
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={() => console.log("login submit")}
-              >
+              <Form form={form} layout="vertical" onFinish={onLoginFinish}>
                 <Form.Item
                   label={
                     <span className="custom-label">
                       Email <span className="required-star">*</span>
                     </span>
-
                   }
                   name="email"
                   rules={[{ required: true, message: "Email is required" }]}
@@ -147,7 +165,7 @@ const Login = () => {
                     </span>
                   }
                   name="password"
-                  rules={[{ required: true, message: "Password is required"  }]}
+                  rules={[{ required: true, message: "Password is required" }]}
                 >
                   <Input.Password />
                 </Form.Item>
