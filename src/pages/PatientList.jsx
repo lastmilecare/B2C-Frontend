@@ -122,7 +122,7 @@ const PatientList = () => {
     { name: "Age", selector: (row) => row.age, sortable: true },
     { name: "Complaint", selector: (row) => row.Disease || "N/A" }, //this need to fix
     { name: "Credit Amt", selector: (row) => row.creditamount || 0 },
-    { name: "Address", selector: (row) => row.localAddressDistrict },
+    { name: "Address", selector: (row) => row.localAddress },
     { name: "Category", selector: (row) => row.category, sortable: true },
     {
       name: "Added On",
