@@ -23,7 +23,7 @@ import { healthAlert, healthAlerts } from "../utils/healthSwal";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { useParams } from "react-router-dom";
+
 const baseInput =
   "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
   "focus:ring-2 focus:ring-sky-400 focus:border-sky-500 " +
@@ -107,7 +107,7 @@ const PrescriptionForm = () => {
   });
 
   const { data: patientData, isFetching } = useGetOpdBillByIdQuery(
-    selectedBill !== "" ? { billno: selectedBill } : skipToken,
+    selectedBill ? String(selectedBill) : skipToken,
   );
 
   const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedUhid, {
@@ -133,7 +133,7 @@ const PrescriptionForm = () => {
         : "";
     const header = {
       PatientID: patientData.id,
-      PicasoNo: values.UHID || patientData.external_id,
+      PicasoNo: values.UHID || patientData.PicasoNo,
       Mobile: values.Mobile,
       ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
       PatientType: values.FinCategory == "BPL" ? 1 : 2,
@@ -153,7 +153,7 @@ const PrescriptionForm = () => {
       FinancialYearID: currentYear,
       PatientID: patientData.id,
       NetServiceAmount: Number(s.quantity * s.price),
-      PicasoNo: values.UHID || patientData.external_id,
+      PicasoNo: values.UHID || patientData.PicasoNo,
       DoctorID: Number(values.Doctor),
       AddedBy: 1,
       MonthID: currentMonth,
@@ -185,6 +185,29 @@ const PrescriptionForm = () => {
       Mobile: Yup.string()
         .matches(/^[0-9]{10}$/, "Must be 10 digits")
         .required("Mobile is required"),
+      bpsystolic: Yup.number()
+        .min(70, "Too low for systolic BP")
+        .max(250, "Too high for systolic BP"),
+
+      bpdiastolic: Yup.number()
+        .min(40, "Too low for diastolic BP")
+        .max(150, "Too high for diastolic BP"),
+
+      pulserate: Yup.number()
+        .min(30, "Pulse too low")
+        .max(220, "Pulse too high"),
+
+      spo2: Yup.number()
+        .min(70, "Critically low SpO₂")
+        .max(100, "Invalid SpO₂ value"),
+
+      temprature: Yup.number()
+        .min(35, "Hypothermia risk")
+        .max(42, "Dangerously high temperature"),
+
+      height: Yup.number().min(30, "Invalid height").max(250, "Invalid height"),
+
+      weight: Yup.number().min(2, "Invalid weight").max(300, "Invalid weight"),
     }),
     onSubmit: async (values) => {
       console.log("Formik Values:", values);
@@ -207,16 +230,17 @@ const PrescriptionForm = () => {
 
   useEffect(() => {
     if (!patientData) return;
-    if (patientData.external_id !== selectedBill) return;
+    if (patientData.ID !== selectedBill) return;
     if (populatedUhidRef.current === selectedBill) return;
     populatedUhidRef.current = selectedBill;
 
     const updates = {
-      UHID: patientData.external_id,
-      Name: patientData.name || "",
-      Gender: patientData.gender || "",
-      Mobile: patientData.contactNumber || "",
-      FinCategory: patientData.category || "",
+      UHID: patientData.driverDetails[0]?.external_id || "",
+      Name: patientData.driverDetails[0]?.name || "",
+      Gender: patientData.driverDetails[0].gender || "",
+      Mobile: patientData.driverDetails[0]?.contactNumber || "",
+      FinCategory: patientData.driverDetails[0]?.category || "",
+      Age: patientData.driverDetails[0]?.age || "",
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
@@ -280,12 +304,14 @@ const PrescriptionForm = () => {
               </label>
 
               <input
-                type="Number"
+                type="text" // ✅ NOT number
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className={baseInput}
                 placeholder="Search Bill no (e.g., 123)"
-                value={billSearch || formik.values.billno}
+                value={billSearch}
                 onChange={(e) => {
-                  const val = e.target.value;
+                  const val = e.target.value.replace(/\D/g, "");
                   setBillSearch(val);
                   setSelectedBill("");
                   formik.setFieldValue("billno", "");
@@ -293,7 +319,6 @@ const PrescriptionForm = () => {
                   populatedUhidRef.current = "";
                 }}
                 autoComplete="off"
-                minvalue={1}
               />
 
               {suggestionsList.length > 0 && billSearch.length >= 1 && (
@@ -342,18 +367,13 @@ const PrescriptionForm = () => {
               readOnly
               className="bg-gray-100 cursor-not-allowed"
             ></Input>
-
             <Input
-              label={
-                <span>
-                  Mobile <span className="text-red-500">*</span>
-                </span>
-              }
+              label="Mobile"
               {...formik.getFieldProps("Mobile")}
               readOnly
               className="bg-gray-100 cursor-not-allowed"
-              error={formik.touched.Mobile && formik.errors.Mobile}
-            />
+            ></Input>
+
             <Input
               {...formik.getFieldProps("FinCategory")}
               className="bg-gray-100 cursor-not-allowed"
@@ -372,19 +392,55 @@ const PrescriptionForm = () => {
             <Input
               {...formik.getFieldProps("bpsystolic")}
               label="BP Systolic (mmHg)"
+              type="number"
+              inputProps={{ min: 70, max: 250 }}
             />
+
             <Input
               {...formik.getFieldProps("bpdiastolic")}
               label="BP Diastolic (mmHg)"
+              type="number"
+              inputProps={{ min: 40, max: 150 }}
             />
-            <Input {...formik.getFieldProps("pulserate")} label="Pulse (bpm)" />
-            <Input {...formik.getFieldProps("spo2")} label="SPO2 (%)" />
+
+            <Input
+              {...formik.getFieldProps("pulserate")}
+              label="Pulse (bpm)"
+              type="number"
+              inputProps={{ min: 30, max: 220 }}
+            />
+
+            <Input
+              {...formik.getFieldProps("spo2")}
+              label="SPO2 (%)"
+              type="number"
+              inputProps={{ min: 70, max: 100 }}
+            />
+
             <Input
               {...formik.getFieldProps("temprature")}
               label="Temperature (°C)"
+              type="number"
+              inputProps={{
+                step: "0.1",
+                min: 35,
+                max: 42,
+              }}
             />
-            <Input {...formik.getFieldProps("height")} label="Height (cm)" />
-            <Input {...formik.getFieldProps("weight")} label="Weight (kg)" />
+
+            <Input
+              {...formik.getFieldProps("height")}
+              label="Height (cm)"
+              type="number"
+              inputProps={{ min: 30, max: 250 }}
+            />
+
+            <Input
+              {...formik.getFieldProps("weight")}
+              label="Weight (kg)"
+              type="number"
+              inputProps={{ min: 1, max: 300 }}
+            />
           </div>
         </section>
         {/* ================= BILLING DETAILS ================= */}{" "}
