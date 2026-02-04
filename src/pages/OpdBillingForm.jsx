@@ -194,7 +194,7 @@ const OpdBilling = () => {
       ? values.ChiefComplaint.map((e) => e.name).join(", ")
       : "";
     const header = {
-  
+
       PatientID: pData.PatientID || pData.id,
       PicasoNo: values.UHID,
       Mobile: values.Mobile,
@@ -406,13 +406,13 @@ const OpdBilling = () => {
 
 
   // Future logic for the calcuation of due
-      // useEffect(() => {
-      //   const total = Number(formik.values.TotalAmount) || 0;
-      //   const paid = Number(formik.values.PaidAmount) || 0;
-      //   const due = total - paid;
-      //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
-      // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
-      
+  // useEffect(() => {
+  //   const total = Number(formik.values.TotalAmount) || 0;
+  //   const paid = Number(formik.values.PaidAmount) || 0;
+  //   const due = total - paid;
+  //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
+  // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
+
   useEffect(() => {
     const total = Number(formik.values.TotalAmount) || 0;
     const paid = Number(formik.values.PaidAmount) || 0;
@@ -647,8 +647,27 @@ const OpdBilling = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Input {...formik.getFieldProps("PreviousDue")} placeholder="Previous Due Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Previous Due" />
             <Input {...formik.getFieldProps("TotalAmount")} placeholder="Total Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Total Amount" />
-            <Input {...formik.getFieldProps("PaidAmount")} placeholder="Paid Amount" label="Paid Amount" />
-            <Input {...formik.getFieldProps("CreditBalance")} placeholder="Credit / Balance Amount" label="Credit Balance" />
+            <Input
+              label="Paid Amount"
+              inputMode="numeric"
+              type="text"
+              value={formik.values.PaidAmount}
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                formik.setFieldValue("PaidAmount", onlyNumbers);
+              }}
+            />
+            <Input
+              label="Credit Balance"
+              inputMode="numeric"
+              type="text"
+              value={formik.values.CreditBalance}
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                formik.setFieldValue("CreditBalance", onlyNumbers);
+              }}
+            />
+
 
             <label className="flex items-center gap-2 text-gray-700 text-sm mt-2">
               <input
@@ -691,8 +710,21 @@ const OpdBilling = () => {
               ))}
             </Select>
 
-            <Input {...formik.getFieldProps("CashAmount")} placeholder="Cash Amount" label="Cash Amount" />
-            <Input {...formik.getFieldProps("CardAmount")} placeholder="Card / Online / UPI Amount" label="Card / Online / UPI Amount" />
+            <Input
+              {...formik.getFieldProps("CashAmount")}
+              placeholder="Cash Amount"
+              label="Cash Amount"
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
+            />
+
+            <Input
+              {...formik.getFieldProps("CardAmount")}
+              placeholder="Card / Online / UPI Amount"
+              label="Card / Online / UPI Amount"
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
+            />
           </div>
         </section>
         <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">

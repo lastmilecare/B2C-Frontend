@@ -525,10 +525,16 @@ const PrescriptionForm = () => {
               label="Preferred Time *"
             />
             <Input
-              {...formik.getFieldProps("duration")}
-              placeholder="Duration (in days)"
               label="Duration (in days) *"
+              inputMode="numeric"
+              type="text"
+              value={formik.values.duration}
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                formik.setFieldValue("duration", onlyNumbers);
+              }}
             />
+
           </div>
           <div className="mt-3">
             <button

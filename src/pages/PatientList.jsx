@@ -34,14 +34,23 @@ const PatientList = () => {
   const patients = data?.data || [];
   const pagination = data?.pagination || {};
   const navigate = useNavigate();
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const finalValue = name === "external_id" ? value.toUpperCase() : value;
-    setTempFilters((prev) => ({ ...prev, [name]: finalValue }));
-    if (name === "external_id") {
-      setUhidSearch(finalValue);
-    }
-  };
+ const handleChange = (e) => {
+  const { name, value } = e.target;
+  let finalValue = value;
+  if (name === "external_id") {
+    finalValue = value.toUpperCase();
+    setUhidSearch(finalValue);
+  }
+  if (name === "contactNumber") {
+    finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
+  }
+
+  setTempFilters((prev) => ({
+    ...prev,
+    [name]: finalValue,
+  }));
+};
+
   const handleSelectSuggestion = (val) => {
     setTempFilters(prev => ({ ...prev, external_id: val }));
     setUhidSearch("");
