@@ -158,7 +158,7 @@ const OpdBilling = () => {
         PaidAmount: editData.PaidAmount || 0,
         DueAmount: editData.DueAmount || 0,
         PayMode: editData.PayMode || "",
-        VisitType: editData.VisitType || "N/A",
+        // VisitType: editData.VisitType || "N/A",
         ChiefComplaint: editData.Disease ? [{ name: editData.Disease }] : [],
       });
       if (editData.opd_billing_data) {
@@ -257,7 +257,7 @@ const OpdBilling = () => {
       Doctor: 0,
       FinCategory: "",
       ReferBy: "",
-      VisitType: "",
+      // VisitType: "",
       LastVisitDate: "",
       Quantity: 1,
       ServiceName: "",
@@ -358,7 +358,7 @@ const OpdBilling = () => {
       Mobile: patientData.contactNumber || "",
       FinCategory: patientData.category || "",
       LastVisitDate: patientData.createdAt ? new Date(patientData.createdAt).toISOString().split("T")[0] : "",
-      VisitType: patientData?.VisitType || "N/A"
+      // VisitType: patientData?.VisitType || "N/A"
     };
 
     if (patientData.dateOfBirthOrAge) {
@@ -545,6 +545,8 @@ const OpdBilling = () => {
               label="Date of Birth"
               type="date"
               {...formik.getFieldProps("DOB")}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
               onChange={handleDOBChange}
               max={new Date().toISOString().split("T")[0]}
             />
@@ -600,13 +602,13 @@ const OpdBilling = () => {
             </Select>
 
 
-            <Input
+            {/* <Input
               label="Visit Type"
               {...formik.getFieldProps("VisitType")}
               className="bg-gray-100 cursor-not-allowed"
               readOnly
             >
-            </Input>
+            </Input> */}
 
             <Input
               label="Last Visit Date"
