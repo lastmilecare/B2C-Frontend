@@ -15,7 +15,7 @@ const baseInput =
 const baseBtn =
   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
 
-const Input = ({ label, required, error, ...props }) => (
+const Input = ({ label, required, error,readOnly, className= "", ...props }) => (
   <div className="mb-2">
     {label && (
       <label className="text-sm text-gray-600 block mb-1">
@@ -25,10 +25,16 @@ const Input = ({ label, required, error, ...props }) => (
     )}
     <input
       {...props}
-      className={`${baseInput} ${
-        error ? "border-red-500" : "border-gray-300"
-      }`}
+      readOnly={readOnly}
+      className={`
+        ${baseInput}
+        ${error ? "border-red-500" : "border-gray-300"}
+        ${readOnly ? "bg-gray-100 cursor-not-allowed" : ""}
+        ${className}
+      `}
     />
+
+      
     {error && <p className="text-xs text-red-500">{error}</p>}
   </div>
 );
@@ -53,6 +59,22 @@ const Button = ({ variant = "sky", children, ...props }) => {
     </button>
   );
 };
+const NumericInput = ({ label, ...props }) => (
+  <Input
+    {...props}
+    label={label}
+    type="number"
+    inputMode="numeric"
+    onKeyDown={(e) => {
+      if (
+        ["e", "E", "+", "-", "."].includes(e.key)
+      ) {
+        e.preventDefault();
+      }
+    }}
+  />
+);
+
 
 /* ================= MAIN COMPONENT ================= */
 const PurchasedEntry = () => {
@@ -94,6 +116,16 @@ const PurchasedEntry = () => {
       invoiceDate: Yup.string().required("Required"),
       invoiceNo: Yup.string().required("Required"),
       supplier: Yup.string().required("Required"),
+      itemName: Yup.string().required("Required"),
+      mfgDate: Yup.string().required("Required"),      
+      expiryDate: Yup.string().required("Required"),
+      recvQty:Yup.string().required("Required"),
+      unitStrip: Yup.string().required("Required"),
+      qtyPerStrip: Yup.string().required("Required"),
+      mrp: Yup.string().required("Required"),
+      discountPer: Yup.string().required("Required"),
+      cgstPer: Yup.string().required("Required"),
+      sgstPer: Yup.string().required("Required"),
     }),
 
     onSubmit: (values) => {
@@ -269,15 +301,15 @@ const PurchasedEntry = () => {
             <Input label="Batch No" {...formik.getFieldProps("batchNo")} />
             <Input type="date" label="Mfg Date" {...formik.getFieldProps("mfgDate")} />
             <Input type="date" label="Expiry Date" {...formik.getFieldProps("expiryDate")} />
-            <Input label="Total Recv. Qty" {...formik.getFieldProps("recvQty")} />
-            <Input label="Free Qty" {...formik.getFieldProps("freeQty")} />
-            <Input label="Unit / Strip" {...formik.getFieldProps("unitStrip")} />
-            <Input label="Qty / Unit" {...formik.getFieldProps("qtyPerStrip")} />
-            <Input label="CP / Unit" {...formik.getFieldProps("cp")} />
-            <Input label="MRP / Unit" {...formik.getFieldProps("mrp")} />
-            <Input label="Discount %" {...formik.getFieldProps("discountPer")} />
-            <Input label="CGST %" {...formik.getFieldProps("cgstPer")} />
-            <Input label="SGST %" {...formik.getFieldProps("sgstPer")} />
+            <NumericInput label="Total Recv. Qty" {...formik.getFieldProps("recvQty")} />
+            <NumericInput label="Free Qty" {...formik.getFieldProps("freeQty")} />
+            <NumericInput label="Unit / Strip" {...formik.getFieldProps("unitStrip")} />
+            <NumericInput label="Qty / Unit" {...formik.getFieldProps("qtyPerStrip")} />
+            <NumericInput label="CP / Unit" {...formik.getFieldProps("cp")} />
+            <NumericInput label="MRP / Unit" {...formik.getFieldProps("mrp")} />
+            <NumericInput label="Discount %" {...formik.getFieldProps("discountPer")} />
+            <NumericInput label="CGST %" {...formik.getFieldProps("cgstPer")} />
+            <NumericInput label="SGST %" {...formik.getFieldProps("sgstPer")} />
           </div>
 
           <Button type="button" onClick={handleAddItem}>

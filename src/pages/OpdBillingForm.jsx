@@ -628,12 +628,20 @@ const OpdBilling = () => {
             consultingDoctor={formik.values.Doctor}
             payMode={formik.values.PayMode}
             setBillingTotals={(total) => {
-              const val = total?.toString() || "0";
-              formik.setFieldValue("TotalAmount", val);
-              if (!formik.values.AdjustWithBalance && formik.values.PaidAmount === "0") {
-                formik.setFieldValue("PaidAmount", val);
+              const amount = Number(total || 0);
+              formik.setFieldValue("TotalAmount", amount);
+              if (formik.values.PaidAmount === 0 || formik.values.PaidAmount === "") {
+                formik.setFieldValue("PaidAmount", amount);
+                if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
+                  formik.setFieldValue("CashAmount", amount);
+                  formik.setFieldValue("CardAmount", 0);
+                } else {
+                  formik.setFieldValue("CardAmount", amount);
+                  formik.setFieldValue("CashAmount", 0);
+                }
               }
             }}
+
           />
         </section>
 
@@ -654,7 +662,7 @@ const OpdBilling = () => {
               value={formik.values.PaidAmount}
               onChange={(e) => {
                 const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
-                formik.setFieldValue("PaidAmount", onlyNumbers);
+                formik.setFieldValue("PaidAmount", Number(onlyNumbers || 0));
               }}
             />
             <Input
@@ -664,7 +672,7 @@ const OpdBilling = () => {
               value={formik.values.CreditBalance}
               onChange={(e) => {
                 const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
-                formik.setFieldValue("CreditBalance", onlyNumbers);
+                formik.setFieldValue("CreditBalance", Number(onlyNumbers || 0));
               }}
             />
 

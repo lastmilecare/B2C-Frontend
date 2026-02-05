@@ -36,6 +36,12 @@ const PrescriptionList = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "billNumber") {
+    if (!/^\d*$/.test(value)) return;
+  }
+  if (name === "contactNumber") {
+    if (!/^\d*$/.test(value)) return;
+  }
     setTempFilters((prev) => ({ ...prev, [name]: value }));
   };
   const handleExport = async () => {
@@ -83,7 +89,7 @@ const PrescriptionList = () => {
     setPage(1);
   };
   const filtersConfig = [
-    { label: "Bill No", name: "billNumber", type: "text" },
+    { label: "Bill No", name: "billNumber", type: "text", inputMode: "numeric", pattern: "[0-9]*" },
     { label: "Name", name: "name", type: "text" },
     { label: "Start Date", name: "startDate", type: "date" },
     { label: "End Date", name: "endDate", type: "date" },
