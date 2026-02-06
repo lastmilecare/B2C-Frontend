@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
-import { useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery } from "../redux/apiSlice";
+import { useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery, useSearchOpdBillNoQuery } from "../redux/apiSlice";
 import { useReactToPrint } from "react-to-print";
 import PrescriptionPrint from "./PrescriptionPrint";
 import { px, wrap } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import useDebounce from "../hooks/useDebounce";
+
 
 const PrescriptionList = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
@@ -19,6 +21,13 @@ const PrescriptionList = () => {
     endDate: "",
     billNumber: ""
   });
+  const debouncedBillSearch = useDebounce(tempFilters.billNumber, 500);
+  const { data: billSuggestions = [] } = useSearchOpdBillNoQuery(debouncedBillSearch, {
+    skip: debouncedBillSearch.length < 1,
+  });
+  const handleSelectBillSuggestion = (billId) => {
+    setTempFilters((prev) => ({ ...prev, billNumber: String(billId) }));
+  }
   const [filters, setFilters] = useState({});
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
@@ -223,6 +232,8 @@ const PrescriptionList = () => {
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
         onExport={handleExport}
+        suggestions={billSuggestions}
+        onSelectSuggestion={handleSelectBillSuggestion}
       />
       <CommonList
         title="💳 Prescription List"

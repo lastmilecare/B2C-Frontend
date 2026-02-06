@@ -179,7 +179,7 @@ const PatientList = () => {
         }}
         enableActions
         isLoading={isLoading}
-        actionButtons={["edit"]}
+        actionButtons={["edit","delete"]}
         onEdit={(row) => {
           navigate(`/patient-registration/${row.id}`);
         }}
