@@ -120,6 +120,7 @@ const PatientRegistration = () => {
       occupation: Yup.string().required("Occupation is required"),
       CO: Yup.string().required("Co is required")
     }),
+    
     onSubmit: async (values) => {
       try {
         const payload = buildPayload(values);
@@ -143,7 +144,13 @@ const PatientRegistration = () => {
       }
     },
   });
-
+  useEffect(() => {
+    if (!id) {
+      formik.resetForm();
+      setCountryId("");
+      setStateId("");
+    }
+  }, [id]);
 
   useEffect(() => {
     if (isEdit && patientApiResponse) {

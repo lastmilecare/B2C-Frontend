@@ -75,6 +75,7 @@ const Button = ({ variant = "sky", children, ...props }) => {
 
 const OpdBilling = () => {
   const navigate = useNavigate();
+  const [isPaidManuallyEdited, setIsPaidManuallyEdited] = useState(false);
   const [selectedServices, setSelectedServices] = useState([]);
   const [uhidSearch, setUhidSearch] = useState("");
   const debouncedUhid = useDebounce(uhidSearch, 500);
@@ -141,6 +142,7 @@ const OpdBilling = () => {
   useEffect(() => {
     if (editData) {
       setUhidSearch(editData.uhid || "");
+      setIsPaidManuallyEdited(true);
       setSelectedUhid(editData.uhid || "");
       populatedUhidRef.current = editData.uhid || "";
 
@@ -337,6 +339,7 @@ const OpdBilling = () => {
     setSelectedUhid("");
     setSuggestionsList([]);
     populatedUhidRef.current = "";
+    setIsPaidManuallyEdited(false);
   };
   // Inside your component
   useEffect(() => {
@@ -350,7 +353,10 @@ const OpdBilling = () => {
     if (patientData.external_id !== selectedUhid) return;
     if (populatedUhidRef.current === selectedUhid) return;
     populatedUhidRef.current = selectedUhid;
-
+     formik.setFieldValue(
+    "PreviousDue",
+    Number(patientData.previousDue || patientData.DueAmount || 0)
+  );
     const updates = {
       UHID: patientData.external_id,
       Name: patientData.name || "",
@@ -630,7 +636,7 @@ const OpdBilling = () => {
             setBillingTotals={(total) => {
               const amount = Number(total || 0);
               formik.setFieldValue("TotalAmount", amount);
-              if (formik.values.PaidAmount === 0 || formik.values.PaidAmount === "") {
+              if (!editData && !isPaidManuallyEdited) {
                 formik.setFieldValue("PaidAmount", amount);
                 if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
                   formik.setFieldValue("CashAmount", amount);
@@ -662,6 +668,7 @@ const OpdBilling = () => {
               value={formik.values.PaidAmount}
               onChange={(e) => {
                 const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                setIsPaidManuallyEdited(true);
                 formik.setFieldValue("PaidAmount", Number(onlyNumbers || 0));
               }}
             />
