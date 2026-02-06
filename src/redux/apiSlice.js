@@ -337,6 +337,15 @@ export const api = createApi({
         data: body,
       }),
     }),
+    getMediceneList: build.query({
+      query: (id) => ({
+        url: "/medicine-inventory",
+        method: "GET",
+        params: {
+          medicineId: id,
+        },
+      }),
+    }),
   }),
 });
 
@@ -372,4 +381,5 @@ export const {
   useCreateMedicineBillMutation,
   useLazyGetBillingByBillNoQuery,
   useGetMedicineSalesQuery,
+  useGetMediceneListQuery,
 } = api;
