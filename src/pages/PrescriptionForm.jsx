@@ -525,10 +525,16 @@ const PrescriptionForm = () => {
               label="Preferred Time *"
             />
             <Input
-              {...formik.getFieldProps("duration")}
-              placeholder="Duration (in days)"
               label="Duration (in days) *"
+              inputMode="numeric"
+              type="text"
+              value={formik.values.duration}
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                formik.setFieldValue("duration", onlyNumbers);
+              }}
             />
+
           </div>
           <div className="mt-3">
             <button
@@ -544,14 +550,16 @@ const PrescriptionForm = () => {
           </div>
 
           {prescriptionList.length > 0 && (
-            <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
-              <div className="px-4 py-2 font-semibold text-sky-700 border-b bg-sky--50">
-                Prescribed Medicines
+            <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100">
+              <div className="px-4 py-3 border-b border-sky-100">
+                <h2 className="text-sky-700 font-semibold text-sm">
+                  Prescribed Medicines
+                </h2>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-100 text-gray-700">
+                  <thead className="bg-sky-40 text-sky-700">
                     <tr>
                       <th className="px-4 py-3 text-left">SL No</th>
                       <th className="px-4 py-3 text-left">Medicine</th>

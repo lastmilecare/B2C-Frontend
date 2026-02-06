@@ -75,6 +75,7 @@ const Button = ({ variant = "sky", children, ...props }) => {
 
 const OpdBilling = () => {
   const navigate = useNavigate();
+  const [isPaidManuallyEdited, setIsPaidManuallyEdited] = useState(false);
   const [selectedServices, setSelectedServices] = useState([]);
   const [uhidSearch, setUhidSearch] = useState("");
   const debouncedUhid = useDebounce(uhidSearch, 500);
@@ -141,6 +142,7 @@ const OpdBilling = () => {
   useEffect(() => {
     if (editData) {
       setUhidSearch(editData.uhid || "");
+      setIsPaidManuallyEdited(true);
       setSelectedUhid(editData.uhid || "");
       populatedUhidRef.current = editData.uhid || "";
 
@@ -158,7 +160,7 @@ const OpdBilling = () => {
         PaidAmount: editData.PaidAmount || 0,
         DueAmount: editData.DueAmount || 0,
         PayMode: editData.PayMode || "",
-        VisitType: editData.VisitType || "N/A",
+        // VisitType: editData.VisitType || "N/A",
         ChiefComplaint: editData.Disease ? [{ name: editData.Disease }] : [],
       });
       if (editData.opd_billing_data) {
@@ -194,7 +196,7 @@ const OpdBilling = () => {
       ? values.ChiefComplaint.map((e) => e.name).join(", ")
       : "";
     const header = {
-  
+
       PatientID: pData.PatientID || pData.id,
       PicasoNo: values.UHID,
       Mobile: values.Mobile,
@@ -257,7 +259,7 @@ const OpdBilling = () => {
       Doctor: 0,
       FinCategory: "",
       ReferBy: "",
-      VisitType: "",
+      // VisitType: "",
       LastVisitDate: "",
       Quantity: 1,
       ServiceName: "",
@@ -337,6 +339,7 @@ const OpdBilling = () => {
     setSelectedUhid("");
     setSuggestionsList([]);
     populatedUhidRef.current = "";
+    setIsPaidManuallyEdited(false);
   };
   // Inside your component
   useEffect(() => {
@@ -350,7 +353,10 @@ const OpdBilling = () => {
     if (patientData.external_id !== selectedUhid) return;
     if (populatedUhidRef.current === selectedUhid) return;
     populatedUhidRef.current = selectedUhid;
-
+     formik.setFieldValue(
+    "PreviousDue",
+    Number(patientData.previousDue || patientData.DueAmount || 0)
+  );
     const updates = {
       UHID: patientData.external_id,
       Name: patientData.name || "",
@@ -358,7 +364,7 @@ const OpdBilling = () => {
       Mobile: patientData.contactNumber || "",
       FinCategory: patientData.category || "",
       LastVisitDate: patientData.createdAt ? new Date(patientData.createdAt).toISOString().split("T")[0] : "",
-      VisitType: patientData?.VisitType || "N/A"
+      // VisitType: patientData?.VisitType || "N/A"
     };
 
     if (patientData.dateOfBirthOrAge) {
@@ -406,13 +412,13 @@ const OpdBilling = () => {
 
 
   // Future logic for the calcuation of due
-      // useEffect(() => {
-      //   const total = Number(formik.values.TotalAmount) || 0;
-      //   const paid = Number(formik.values.PaidAmount) || 0;
-      //   const due = total - paid;
-      //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
-      // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
-      
+  // useEffect(() => {
+  //   const total = Number(formik.values.TotalAmount) || 0;
+  //   const paid = Number(formik.values.PaidAmount) || 0;
+  //   const due = total - paid;
+  //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
+  // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
+
   useEffect(() => {
     const total = Number(formik.values.TotalAmount) || 0;
     const paid = Number(formik.values.PaidAmount) || 0;
@@ -545,6 +551,8 @@ const OpdBilling = () => {
               label="Date of Birth"
               type="date"
               {...formik.getFieldProps("DOB")}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
               onChange={handleDOBChange}
               max={new Date().toISOString().split("T")[0]}
             />
@@ -600,13 +608,13 @@ const OpdBilling = () => {
             </Select>
 
 
-            <Input
+            {/* <Input
               label="Visit Type"
               {...formik.getFieldProps("VisitType")}
               className="bg-gray-100 cursor-not-allowed"
               readOnly
             >
-            </Input>
+            </Input> */}
 
             <Input
               label="Last Visit Date"
@@ -626,12 +634,20 @@ const OpdBilling = () => {
             consultingDoctor={formik.values.Doctor}
             payMode={formik.values.PayMode}
             setBillingTotals={(total) => {
-              const val = total?.toString() || "0";
-              formik.setFieldValue("TotalAmount", val);
-              if (!formik.values.AdjustWithBalance && formik.values.PaidAmount === "0") {
-                formik.setFieldValue("PaidAmount", val);
+              const amount = Number(total || 0);
+              formik.setFieldValue("TotalAmount", amount);
+              if (!editData && !isPaidManuallyEdited) {
+                formik.setFieldValue("PaidAmount", amount);
+                if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
+                  formik.setFieldValue("CashAmount", amount);
+                  formik.setFieldValue("CardAmount", 0);
+                } else {
+                  formik.setFieldValue("CardAmount", amount);
+                  formik.setFieldValue("CashAmount", 0);
+                }
               }
             }}
+
           />
         </section>
 
@@ -645,8 +661,28 @@ const OpdBilling = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Input {...formik.getFieldProps("PreviousDue")} placeholder="Previous Due Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Previous Due" />
             <Input {...formik.getFieldProps("TotalAmount")} placeholder="Total Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Total Amount" />
-            <Input {...formik.getFieldProps("PaidAmount")} placeholder="Paid Amount" label="Paid Amount" />
-            <Input {...formik.getFieldProps("CreditBalance")} placeholder="Credit / Balance Amount" label="Credit Balance" />
+            <Input
+              label="Paid Amount"
+              inputMode="numeric"
+              type="text"
+              value={formik.values.PaidAmount}
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                setIsPaidManuallyEdited(true);
+                formik.setFieldValue("PaidAmount", Number(onlyNumbers || 0));
+              }}
+            />
+            <Input
+              label="Credit Balance"
+              inputMode="numeric"
+              type="text"
+              value={formik.values.CreditBalance}
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                formik.setFieldValue("CreditBalance", Number(onlyNumbers || 0));
+              }}
+            />
+
 
             <label className="flex items-center gap-2 text-gray-700 text-sm mt-2">
               <input
@@ -689,8 +725,21 @@ const OpdBilling = () => {
               ))}
             </Select>
 
-            <Input {...formik.getFieldProps("CashAmount")} placeholder="Cash Amount" label="Cash Amount" />
-            <Input {...formik.getFieldProps("CardAmount")} placeholder="Card / Online / UPI Amount" label="Card / Online / UPI Amount" />
+            <Input
+              {...formik.getFieldProps("CashAmount")}
+              placeholder="Cash Amount"
+              label="Cash Amount"
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
+            />
+
+            <Input
+              {...formik.getFieldProps("CardAmount")}
+              placeholder="Card / Online / UPI Amount"
+              label="Card / Online / UPI Amount"
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
+            />
           </div>
         </section>
         <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">

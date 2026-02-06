@@ -14,7 +14,7 @@ const baseInput =
 const baseBtn =
   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
 
-const Input = ({ label, required, error, ...props }) => (
+const Input = ({ label, required, error, className = "", ...props }) => (
   <div className="mb-2">
     {label && (
       <label className="text-sm text-gray-600 block mb-1">
@@ -24,7 +24,9 @@ const Input = ({ label, required, error, ...props }) => (
     )}
     <input
       {...props}
-      className={`${baseInput} ${error ? "border-red-500 ring-red-300" : "border-gray-300"}`}
+      className={`${baseInput} ${error ? "border-red-500 ring-red-300" : "border-gray-300"}
+      ${className}
+      `}
     />
     {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
   </div>
@@ -118,6 +120,7 @@ const PatientRegistration = () => {
       occupation: Yup.string().required("Occupation is required"),
       CO: Yup.string().required("Co is required")
     }),
+    
     onSubmit: async (values) => {
       try {
         const payload = buildPayload(values);
@@ -129,7 +132,7 @@ const PatientRegistration = () => {
         if (isEdit) {
           await updatePatient({ id, body: payload }).unwrap();
           healthAlerts.success("Patient Updated Successfully", "Patient Updated");
-          navigate("/patient-list"); 
+          navigate("/patient-list");
         } else {
           await createPatient(payload).unwrap();
           healthAlerts.success("Patient Data Saved Successfully", "Patient Saved");
@@ -141,11 +144,17 @@ const PatientRegistration = () => {
       }
     },
   });
-
+  useEffect(() => {
+    if (!id) {
+      formik.resetForm();
+      setCountryId("");
+      setStateId("");
+    }
+  }, [id]);
 
   useEffect(() => {
     if (isEdit && patientApiResponse) {
-      const p = patientApiResponse.data || patientApiResponse; 
+      const p = patientApiResponse.data || patientApiResponse;
 
       formik.setValues({
         title: p.title || "",
@@ -307,10 +316,10 @@ const PatientRegistration = () => {
             />
 
             <Input
-            {...formik.getFieldProps("CO")} 
-            label="C/O" 
-            required 
-            error={formik.touched.CO && formik.errors.CO} />
+              {...formik.getFieldProps("CO")}
+              label="C/O"
+              required
+              error={formik.touched.CO && formik.errors.CO} />
 
             <Select {...formik.getFieldProps("relationship")} label="Relationship">
               <option value="">Select</option>
@@ -330,13 +339,20 @@ const PatientRegistration = () => {
               <option>Female</option>
               <option>Other</option>
             </Select>
-
             <Input
-              {...formik.getFieldProps("contactNumber")}
               label="Contact Number"
               required
+              type="tel"
+              inputMode="numeric"
+              maxLength={10}
+              value={formik.values.contactNumber}
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                formik.setFieldValue("contactNumber", onlyNumbers);
+              }}
               error={formik.touched.contactNumber && formik.errors.contactNumber}
             />
+
           </div>
         </section>
 
@@ -435,7 +451,18 @@ const PatientRegistration = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Input {...formik.getFieldProps("emergencyContactName")} label="Emergency Contact Name" />
-            <Input {...formik.getFieldProps("emergencyContactNumber")} label="Emergency Contact Number" />
+            <Input
+              label="Emergency Contact Number"
+              type="tel"
+              inputMode="numeric"
+              maxLength={10}
+              value={formik.values.emergencyContactNumber}
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                formik.setFieldValue("emergencyContactNumber", onlyNumbers);
+              }}
+            />
+
 
             <Select {...formik.getFieldProps("blood_group")} label="Blood Group">
               <option value="">Select</option>
