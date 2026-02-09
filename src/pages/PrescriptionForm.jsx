@@ -17,6 +17,7 @@ import {
   useCreateBillMutation,
   useSearchOpdBillNoQuery,
   useGetOpdBillByIdQuery,
+  useGetMediceneListQuery
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert, healthAlerts } from "../utils/healthSwal";
@@ -31,7 +32,7 @@ const baseInput =
 const baseBtn =
   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
 
-const Input = ({ label, required, error, ...props }) => (
+const Input = ({ label, required, error,inputProps, ...props }) => (
   <div>
     {label && (
       <label className="text-sm text-gray-600 block mb-1">
@@ -40,6 +41,7 @@ const Input = ({ label, required, error, ...props }) => (
     )}
     <input
       {...props}
+      {...inputProps}
       className={`${baseInput} ${error ? "border-red-500" : ""} ${props.className || ""}`}
     />
     {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
@@ -60,7 +62,7 @@ const Select = ({ label, required, error, children, ...props }) => (
       {children}
     </select>
     {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-  </div>
+]  </div>
 );
 
 const Button = ({ variant = "sky", children, ...props }) => {
@@ -80,10 +82,14 @@ const Button = ({ variant = "sky", children, ...props }) => {
 const PrescriptionForm = () => {
   const [selectedServices, setSelectedServices] = useState([]);
   const [billSearch, setBillSearch] = useState("");
+  const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
+  const debouncedMedicine = useDebounce(medicineSearch, 500);
   const [selectedBill, setSelectedBill] = useState("");
+  const [selectedMedicine, setSelectedMedicine] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
   const [prescriptionList, setPrescriptionList] = useState([]);
+  const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const populatedUhidRef = useRef("");
 
   const [printRow, setPrintRow] = useState(null);
@@ -109,10 +115,16 @@ const PrescriptionForm = () => {
   const { data: patientData, isFetching } = useGetOpdBillByIdQuery(
     selectedBill ? String(selectedBill) : skipToken,
   );
-
+ const { data: medicineResponse } = useGetMediceneListQuery(
+  debouncedMedicine || skipToken, 
+  { skip: !debouncedMedicine || debouncedMedicine.length < 2 }
+);
+const medicineList = React.useMemo(() => medicineResponse?.data || [], [medicineResponse]);
   const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedUhid, {
     skip: debouncedUhid.length < 1,
   });
+
+
 
   useEffect(() => {
     if (selectedBill) return;
@@ -126,7 +138,24 @@ const PrescriptionForm = () => {
     }
   }, [suggestions, selectedBill, billSearch]);
 
-  const buildPayload = (values) => {
+useEffect(() => {
+  if (!debouncedMedicine) {
+    if (medicineSuggestions.length > 0) setMedicineSuggestions([]);
+    return;
+  }
+
+  if (medicineList && medicineList.length > 0) {
+    const currentDataStr = JSON.stringify(medicineList);
+    const existingDataStr = JSON.stringify(medicineSuggestions);
+
+    if (currentDataStr !== existingDataStr) {
+      setMedicineSuggestions(medicineList);
+    }
+  } else if (medicineList.length === 0 && medicineSuggestions.length > 0) {
+      setMedicineSuggestions([]);
+  }
+}, [medicineList, debouncedMedicine]); 
+ const buildPayload = (values) => {
     const chiefComplaintStr =
       Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
         ? values.ChiefComplaint.map((e) => e.name).join(", ")
@@ -178,6 +207,10 @@ const PrescriptionForm = () => {
       FinCategory: "",
       billno: "",
       Quantity: 1,
+      medicine: "",
+      typemedicine: "",
+      dosage: "",
+      duration: "",
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -304,7 +337,7 @@ const PrescriptionForm = () => {
               </label>
 
               <input
-                type="text" // ✅ NOT number
+                type="text" 
                 inputMode="numeric"
                 pattern="[0-9]*"
                 className={baseInput}
@@ -499,11 +532,49 @@ const PrescriptionForm = () => {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input
-              {...formik.getFieldProps("medicine")}
-              placeholder="Name of Medicine"
-              label="Name of Medicine *"
-            />
+            <div className="relative">
+              <label className="text-sm text-gray-600 block mb-1">
+                Medicine <span className="text-red-500">*</span>
+              </label>
+
+              <input
+                type="text"
+                className={baseInput}
+                placeholder="Search Medicine"
+                value={medicineSearch}
+                onChange={(e) => {
+                  setMedicineSearch(e.target.value);
+                  setSelectedMedicine(null);
+                  formik.setFieldValue("medicine", "");
+                }}
+                autoComplete="off"
+              />
+
+              {/* Medicine Search Suggestions List */}
+{medicineSuggestions.length > 0 && (
+  <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+    {medicineSuggestions.map((item) => (
+      <li
+        key={item.id}
+        onClick={() => {
+          setSelectedMedicine(item);
+          setMedicineSearch(item.descriptions); 
+          formik.setFieldValue("medicine", item.descriptions);
+          
+          formik.setFieldValue("typemedicine", item.itemType?.Descriptions || "");
+          setMedicineSuggestions([]);
+        }}
+        className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
+      >
+        {item.descriptions} 
+        <span className="text-xs text-gray-400 ml-2">({item.itemType?.Code})</span>
+      </li>
+    ))}
+  </ul>
+)}
+            </div>
+
+
             <Input
               {...formik.getFieldProps("typemedicine")}
               placeholder="Type of Medicine"
