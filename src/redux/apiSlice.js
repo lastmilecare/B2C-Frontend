@@ -346,19 +346,49 @@ export const api = createApi({
     //     },
     //   }),
     // }),
-    
-getMediceneList: build.query({
-  query: (searchTerm) => ({
-    url: "/medicine-inventory",
-    method: "GET",
-    params: {
-      search: searchTerm,
-      isActive: true,
-      sortBy: 'descriptions', 
-      sortOrder: 'ASC'
-    },
-  }),
-}),
+
+    getMediceneList: build.query({
+      query: (searchTerm) => ({
+        url: "/medicine-inventory",
+        method: "GET",
+        params: {
+          search: searchTerm,
+          isActive: true,
+          sortBy: "descriptions",
+          sortOrder: "ASC",
+        },
+      }),
+    }),
+
+    getPrescriptionsList: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        contactNumber,
+        billNumber,
+        startDate,
+        endDate,
+        status,
+      } = {}) => ({
+        url: "/picasoid-prescription",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          name,
+          contactNumber,
+          billNumber,
+          startDate,
+          endDate,
+          status,
+        },
+      }),
+      transformResponse: (response) => ({
+        data: response.data || [],
+        pagination: response.pagination || {},
+      }),
+    }),
   }),
 });
 
@@ -395,4 +425,5 @@ export const {
   useLazyGetBillingByBillNoQuery,
   useGetMedicineSalesQuery,
   useGetMediceneListQuery,
+  useGetPrescriptionsListQuery,
 } = api;

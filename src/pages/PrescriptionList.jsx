@@ -1,13 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
-import { useGetPrescriptionsQuery, useLazyExportPrescriptionsExcelQuery, useSearchOpdBillNoQuery } from "../redux/apiSlice";
+import {
+  useGetPrescriptionsQuery,
+  useLazyExportPrescriptionsExcelQuery,
+  useSearchOpdBillNoQuery,
+  useGetPrescriptionsListQuery,
+} from "../redux/apiSlice";
 import { useReactToPrint } from "react-to-print";
 import PrescriptionPrint from "./PrescriptionPrint";
 import { px, wrap } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import useDebounce from "../hooks/useDebounce";
-
 
 const PrescriptionList = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
@@ -15,44 +19,48 @@ const PrescriptionList = () => {
   const [limit, setLimit] = useState(10);
   const [tempFilters, setTempFilters] = useState({
     name: "",
-    contactNumber: "",
+    mobileno: "",
     category: "",
-    startDate: "",
-    endDate: "",
-    billNumber: ""
+    date_from: "",
+    date_to: "",
+    bill_no: "",
   });
-  const debouncedBillSearch = useDebounce(tempFilters.billNumber, 500);
-  const { data: billSuggestions = [] } = useSearchOpdBillNoQuery(debouncedBillSearch, {
-    skip: debouncedBillSearch.length < 1,
-  });
+  const debouncedBillSearch = useDebounce(tempFilters.bill_no, 500);
+  const { data: billSuggestions = [] } = useSearchOpdBillNoQuery(
+    debouncedBillSearch,
+    {
+      skip: debouncedBillSearch.length < 1,
+    },
+  );
   const handleSelectBillSuggestion = (billId) => {
-    setTempFilters((prev) => ({ ...prev, billNumber: String(billId) }));
-  }
+    setTempFilters((prev) => ({ ...prev, bill_no: String(billId) }));
+  };
   const [filters, setFilters] = useState({});
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
 
-  const { data, isLoading, isError, error } = useGetPrescriptionsQuery(
+  const { data, isLoading, isError, error } = useGetPrescriptionsListQuery(
     {
       page,
       limit,
       ...filters,
     },
-    { skip: !page || !limit }
+    { skip: !page || !limit },
   );
   const patients = data?.data || [];
   const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "billNumber") {
-    if (!/^\d*$/.test(value)) return;
-  }
-  if (name === "contactNumber") {
-    if (!/^\d*$/.test(value)) return;
-  }
+    if (name === "bill_no") {
+      if (!/^\d*$/.test(value)) return;
+    }
+    if (name === "mobileno") {
+      if (!/^\d*$/.test(value)) return;
+    }
     setTempFilters((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleExport = async () => {
     const blob = await exportExcel(filters).unwrap();
 
@@ -65,19 +73,16 @@ const PrescriptionList = () => {
     window.URL.revokeObjectURL(url);
   };
 
-
-
-
   const handleApplyFilters = () => {
     const today = new Date().toISOString().split("T")[0];
-    const { startDate, endDate } = tempFilters;
+    const { date_from, date_to } = tempFilters;
 
-    if (endDate && endDate > today) {
+    if (date_to && date_to > today) {
       alert("End date cannot be greater than today.");
       return;
     }
 
-    if (startDate && endDate && startDate > endDate) {
+    if (date_from && date_to && date_from > date_to) {
       alert("Start date cannot be after end date.");
       return;
     }
@@ -88,21 +93,29 @@ const PrescriptionList = () => {
 
   const handleResetFilters = () => {
     setTempFilters({
-      name: "",
-      contactNumber: "",
-      startDate: "",
-      endDate: "",
-      billNumber: ""
+      Name_: "",
+      mobileno: "",
+      date_from: "",
+      date_to: "",
+      bill_no: "",
+      status: "",
     });
     setFilters({});
     setPage(1);
   };
   const filtersConfig = [
-    { label: "Bill No", name: "billNumber", type: "text", inputMode: "numeric", pattern: "[0-9]*" },
-    { label: "Name", name: "name", type: "text" },
-    { label: "Start Date", name: "startDate", type: "date" },
-    { label: "End Date", name: "endDate", type: "date" },
-    { label: "Mobile", name: "contactNumber", type: "text" }
+    {
+      label: "Bill No",
+      name: "bill_no",
+      type: "text",
+      inputMode: "numeric",
+      pattern: "[0-9]*",
+    },
+    { label: "Name", name: "Name_", type: "text" },
+    { label: "Start Date", name: "date_from", type: "date" },
+    { label: "End Date", name: "date_to", type: "date" },
+    { label: "Mobile", name: "mobileno", type: "text" },
+    { label: "Status", name: "status", type: "select" },
   ];
   const safeString = (v, fallback = "-") =>
     v === null || v === undefined || v === "" ? fallback : String(v);
@@ -112,36 +125,30 @@ const PrescriptionList = () => {
       title: "Serial Number",
       selector: (row, i) => (page - 1) * limit + i + 1,
       width: "70px",
-      
     },
     {
       name: "Bill No",
       title: "Bill Number",
-      selector: (row) => safeString(row?.bill_no, "-"),
+      selector: (row) => safeString(row?.billNo, "-"),
       sortable: true,
       width: "110px",
-     
     },
     {
       name: "UHID",
       title: "Unique Health ID",
-      selector: (row) => safeString(row?.uhid, "-"),
+      selector: (row) => safeString(row?.picasoId, "-"),
       // width: "220px",/
       grow: 2,
       sortable: true,
-      center : true,
-      
+      center: true,
     },
     {
       name: "Name",
       title: "Patient Name",
-      selector: (row) => safeString(row?.patient_name, "-"),
+      selector: (row) => safeString(row?.patientName, "-"),
       sortable: true,
       grow: 2,
       center: true,
-      
-     
-      
     },
     {
       name: "Age",
@@ -149,9 +156,8 @@ const PrescriptionList = () => {
       selector: (row) => safeString(row?.age, "-"),
       sortable: true,
       // width: "80px",
-       grow: 1,
-       center: true,
-
+      grow: 1,
+      center: true,
     },
     {
       name: "Gender",
@@ -164,20 +170,20 @@ const PrescriptionList = () => {
     {
       name: "Phone",
       title: "Mobile Number",
-      selector: (row) => safeString(row?.contactNumber, "-"),
+      selector: (row) => safeString(row?.contactNo, "-"),
       // width: "150px",
       grow: 1,
-     
     },
     {
       name: "Added Date",
       title: "Added Date",
       selector: (row) =>
-        row?.createdAt ? new Date(row.createdAt).toISOString().split("T")[0] : "-",
+        row?.addedDate
+          ? new Date(row.addedDate).toISOString().split("T")[0]
+          : "-",
       sortable: true,
       // width: "150px",
       grow: 1,
-      
     },
     // {
     //   name: "Status",
@@ -186,26 +192,25 @@ const PrescriptionList = () => {
   ];
 
   const handleRowClick = (row) => {
-    alert(`Opening details for Prescription ID: ${row.prescription_id}`);
+    alert(`Opening details for Prescription ID: ${row.ID}`);
   };
 
   const navigate = useNavigate();
   const handleEdit = (row) => {
-    alert(`Editing prescription ID: ${row.prescription_id}`);
-        navigate(`/prescription/edit/${row.prescription_id}`);
+    alert(`Editing prescription ID: ${row.ID}`);
+    navigate(`/prescription/edit/${row.ID}`);
   };
 
   const handleDelete = (row) => {
     if (window.confirm("Are you sure you want to delete?")) {
-      alert(`Deleting ID: ${row.prescription_id}`);
+      alert(`Deleting ID: ${row.ID}`);
     }
   };
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: "Prescription"
+    documentTitle: "Prescription",
   });
-
 
   useEffect(() => {
     if (printRow && printRef.current) {
@@ -217,11 +222,9 @@ const PrescriptionList = () => {
     }
   }, [printRow]);
 
-
   const onPrint = (row) => {
     setPrintRow(row);
   };
-
 
   return (
     <div className="p-0">
@@ -253,14 +256,12 @@ const PrescriptionList = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onPrint={onPrint}
-
       />
       {printRow && (
-        <div style={{ display: 'none' }}>
+        <div style={{ display: "none" }}>
           <PrescriptionPrint ref={printRef} data={printRow} />
         </div>
       )}
-
     </div>
   );
 };
