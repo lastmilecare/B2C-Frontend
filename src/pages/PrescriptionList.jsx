@@ -115,7 +115,15 @@ const PrescriptionList = () => {
     { label: "Start Date", name: "date_from", type: "date" },
     { label: "End Date", name: "date_to", type: "date" },
     { label: "Mobile", name: "mobileno", type: "text" },
-    { label: "Status", name: "status", type: "select" },
+    {
+      label: "Status",
+      name: "status",
+      type: "select",
+      options: [
+        { label: "Active", value: "true" },
+        { label: "Inactive", value: "false" },
+      ],
+    },
   ];
   const safeString = (v, fallback = "-") =>
     v === null || v === undefined || v === "" ? fallback : String(v);
