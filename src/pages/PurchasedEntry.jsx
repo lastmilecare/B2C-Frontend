@@ -65,7 +65,7 @@ const NumericInput = ({ label, ...props }) => (
     inputMode="numeric"
     onKeyDown={(e) => {
       if (
-        ["e", "E", "+", "-", ].includes(e.key)
+        ["e", "E", "+", "-",].includes(e.key)
       ) {
         e.preventDefault();
       }
@@ -81,6 +81,18 @@ const PurchasedEntry = () => {
     "OINTMENT", "MOUTH GEL", "SPRAY", "INJECTION", "IV",
     "OTHERS", "SHAMPOO", "POWDER", "LOTION", "JELLY", "SOLUTION", "SYRINGE"
   ];
+  const [stockSummary, setStockSummary] = useState({
+    totalCp: "",
+    totalMrp: "",
+    recvQty: "",
+    freeQty: "",
+    salesAmount: "",
+    balanceQty: "",
+    salesQty: "",
+    remainingCp: "",
+    condQty: "",
+  });
+
 
   const [activeTab, setActiveTab] = useState("grn");
   const formik = useFormik({
@@ -127,7 +139,7 @@ const PurchasedEntry = () => {
       discountPer: Yup.string().required("Required"),
       cgstPer: Yup.string().required("Required"),
       sgstPer: Yup.string().required("Required"),
-    }), 
+    }),
 
     onSubmit: (values) => {
       if (values.items.length === 0) {
@@ -229,10 +241,6 @@ const PurchasedEntry = () => {
       total,
       cpQty: v.cp,
       mrpQty: v.mrp,
-      totalCp,
-      
-      cgstAmt,
-      sgstAmt,
     };
 
     formik.setFieldValue("items", [...formik.values.items, newItem]);
@@ -466,25 +474,63 @@ const PurchasedEntry = () => {
               </div>
 
               <div className="flex justify-end gap-3 mt-4">
-                <Button>Search</Button>
-                <Button variant="gray">Cancel</Button>
+                <Button
+                  type="button"
+                  onClick={() =>
+                    setStockSummary({
+                      totalCp: "—",
+                      totalMrp: "—",
+                      recvQty: "—",
+                      freeQty: "—",
+                      salesAmount: "—",
+                      balanceQty: "—",
+                      salesQty: "—",
+                      remainingCp: "—",
+                      condQty: "—",
+                    })
+                  }
+                >
+                  Search
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="gray"
+                  onClick={() =>
+                    setStockSummary({
+                      totalCp: "",
+                      totalMrp: "",
+                      recvQty: "",
+                      freeQty: "",
+                      salesAmount: "",
+                      balanceQty: "",
+                      salesQty: "",
+                      remainingCp: "",
+                      condQty: "",
+                    })
+                  }
+                >
+                  Cancel
+                </Button>
+
                 <Button variant="gray">Print</Button>
               </div>
             </section>
 
             {/* ===== STOCK SUMMARY (100% MATCH) ===== */}
             <section className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-6">
-              <Input label="Total Cost Price (₹)" value={totals.totalCp.toFixed(2)} readOnly />
-              <Input label="Total MRP (₹)" value="0.00" readOnly />
-              <Input label="Total Recv. Quantity" value={totals.qty} readOnly />
-              <Input label="Total Recv. Free Quantity" value={totals.freeQty} readOnly />
+              <Input label="Total Cost Price (₹)" value={stockSummary.totalCp} readOnly />
+              <Input label="Total MRP (₹)" value={stockSummary.totalMrp} readOnly />
+              <Input label="Total Recv. Quantity" value={stockSummary.recvQty} readOnly />
+              <Input label="Total Recv. Free Quantity" value={stockSummary.freeQty} readOnly />
 
-              <Input label="Total Sales Amount (₹)" value={totals.grand.toFixed(2)} readOnly />
-              <Input label="Total Balance Quantity" value={totals.qty - totals.salesQty} readOnly />
-              <Input label="Total Sales Quantity" value={totals.salesQty} readOnly />
-              <Input label="Remaining Cost Price (₹)" value={totals.totalCp.toFixed(2)} readOnly />
+              <Input label="Total Sales Amount (₹)" value={stockSummary.salesAmount} readOnly />
+              <Input label="Total Balance Quantity" value={stockSummary.balanceQty} readOnly />
+              <Input label="Total Sales Quantity" value={stockSummary.salesQty} readOnly />
+              <Input label="Remaining Cost Price (₹)" value={stockSummary.remainingCp} readOnly />
 
-              <Input label="Total Cond. Quantity" value={totals.condQty} readOnly />
+              <Input label="Total Cond. Quantity" value={stockSummary.condQty} readOnly />
+
             </section>
 
             {/* ===== UPDATE BUTTON ===== */}
