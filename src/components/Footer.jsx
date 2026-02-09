@@ -4,7 +4,14 @@ const Footer = () => {
             <div className="max-w-screen-xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-600">
 
                 <div className="flex items-center gap-2">
-                    <span className="text-sky-700 font-semibold">Last Mile Care</span>
+                    <a
+                        href="https://lastmilecare.in/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+
+                        className="text-sky-700 font-semibold hover:underline">
+                        Last Mile Care
+                    </a>
                     <span className="hidden sm:inline">|</span>
                     <a
                         href="mailto:info@lastmilecare.in"

@@ -337,15 +337,28 @@ export const api = createApi({
         data: body,
       }),
     }),
-    getMediceneList: build.query({
-      query: (id) => ({
-        url: "/medicine-inventory",
-        method: "GET",
-        params: {
-          medicineId: id,
-        },
-      }),
-    }),
+    // getMediceneList: build.query({
+    //   query: (id) => ({
+    //     url: "/medicine-inventory",
+    //     method: "GET",
+    //     params: {
+    //       medicineId: id,
+    //     },
+    //   }),
+    // }),
+    
+getMediceneList: build.query({
+  query: (searchTerm) => ({
+    url: "/medicine-inventory",
+    method: "GET",
+    params: {
+      search: searchTerm,
+      isActive: true,
+      sortBy: 'descriptions', 
+      sortOrder: 'ASC'
+    },
+  }),
+}),
   }),
 });
 

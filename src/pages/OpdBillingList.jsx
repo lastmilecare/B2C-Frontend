@@ -93,11 +93,19 @@ const handleEdit = (row) => {
 
   const patients = data?.data || [];
   const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  let finalValue = value;
+  if (name === "contactNumber") {
+    finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
+  }
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setTempFilters((prev) => ({ ...prev, [name]: value }));
-  };
+  setTempFilters((prev) => ({
+    ...prev,
+    [name]: finalValue,
+  }));
+};
+
   const handleSelectSuggestion = (val) => {
     setTempFilters(prev => ({ ...prev, external_id: val }));
     setUhidSearch("");

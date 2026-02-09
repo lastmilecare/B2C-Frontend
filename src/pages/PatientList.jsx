@@ -34,14 +34,23 @@ const PatientList = () => {
   const patients = data?.data || [];
   const pagination = data?.pagination || {};
   const navigate = useNavigate();
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const finalValue = name === "external_id" ? value.toUpperCase() : value;
-    setTempFilters((prev) => ({ ...prev, [name]: finalValue }));
-    if (name === "external_id") {
-      setUhidSearch(finalValue);
-    }
-  };
+ const handleChange = (e) => {
+  const { name, value } = e.target;
+  let finalValue = value;
+  if (name === "external_id") {
+    finalValue = value.toUpperCase();
+    setUhidSearch(finalValue);
+  }
+  if (name === "contactNumber") {
+    finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
+  }
+
+  setTempFilters((prev) => ({
+    ...prev,
+    [name]: finalValue,
+  }));
+};
+
   const handleSelectSuggestion = (val) => {
     setTempFilters(prev => ({ ...prev, external_id: val }));
     setUhidSearch("");
@@ -116,7 +125,7 @@ const PatientList = () => {
     { name: "S.No", selector: (row, i) => (page - 1) * limit + i + 1 },
     { name: "Name", selector: (row) => row.name, sortable: true },
     { name: "Mobile", selector: (row) => row.contactNumber, width: "120px" },
-    { name: "Centre", selector: (row) => row.driver_cetname },  // this will show based on the login
+    // { name: "Centre", selector: (row) => row.driver_cetname },  // this will show based on the login
     { name: "UHID", selector: (row) => row.external_id, width: "120px", sortable: true },
     { name: "Gender", selector: (row) => row.gender },
     { name: "Age", selector: (row) => row.age, sortable: true },
@@ -170,7 +179,7 @@ const PatientList = () => {
         }}
         enableActions
         isLoading={isLoading}
-        actionButtons={["edit"]}
+        actionButtons={["edit","delete"]}
         onEdit={(row) => {
           navigate(`/patient-registration/${row.id}`);
         }}
