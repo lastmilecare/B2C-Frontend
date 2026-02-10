@@ -24,7 +24,9 @@ import { healthAlert, healthAlerts } from "../utils/healthSwal";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-
+import { PILL_CONSUMPTION_TIMES } from "../utils/constants";
+import { useCreatePrescriptionMutation } from "../redux/apiSlice";
+import { formatISO } from "date-fns";
 const baseInput =
   "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
   "focus:ring-2 focus:ring-sky-400 focus:border-sky-500 " +
@@ -32,7 +34,7 @@ const baseInput =
 const baseBtn =
   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
 
-const Input = ({ label, required, error,inputProps, ...props }) => (
+const Input = ({ label, required, error, inputProps, ...props }) => (
   <div>
     {label && (
       <label className="text-sm text-gray-600 block mb-1">
@@ -62,7 +64,7 @@ const Select = ({ label, required, error, children, ...props }) => (
       {children}
     </select>
     {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-]  </div>
+  </div>
 );
 
 const Button = ({ variant = "sky", children, ...props }) => {
@@ -91,6 +93,8 @@ const PrescriptionForm = () => {
   const [prescriptionList, setPrescriptionList] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const populatedUhidRef = useRef("");
+  const [createPrescription, { isLoading }] =
+    useCreatePrescriptionMutation();
 
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
@@ -115,11 +119,11 @@ const PrescriptionForm = () => {
   const { data: patientData, isFetching } = useGetOpdBillByIdQuery(
     selectedBill ? String(selectedBill) : skipToken,
   );
- const { data: medicineResponse } = useGetMediceneListQuery(
-  debouncedMedicine || skipToken, 
-  { skip: !debouncedMedicine || debouncedMedicine.length < 2 }
-);
-const medicineList = React.useMemo(() => medicineResponse?.data || [], [medicineResponse]);
+  const { data: medicineResponse } = useGetMediceneListQuery(
+    debouncedMedicine || skipToken,
+    { skip: !debouncedMedicine || debouncedMedicine.length < 2 }
+  );
+  const medicineList = React.useMemo(() => medicineResponse?.data || [], [medicineResponse]);
   const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedUhid, {
     skip: debouncedUhid.length < 1,
   });
@@ -138,24 +142,24 @@ const medicineList = React.useMemo(() => medicineResponse?.data || [], [medicine
     }
   }, [suggestions, selectedBill, billSearch]);
 
-useEffect(() => {
-  if (!debouncedMedicine) {
-    if (medicineSuggestions.length > 0) setMedicineSuggestions([]);
-    return;
-  }
-
-  if (medicineList && medicineList.length > 0) {
-    const currentDataStr = JSON.stringify(medicineList);
-    const existingDataStr = JSON.stringify(medicineSuggestions);
-
-    if (currentDataStr !== existingDataStr) {
-      setMedicineSuggestions(medicineList);
+  useEffect(() => {
+    if (!debouncedMedicine) {
+      if (medicineSuggestions.length > 0) setMedicineSuggestions([]);
+      return;
     }
-  } else if (medicineList.length === 0 && medicineSuggestions.length > 0) {
+
+    if (medicineList && medicineList.length > 0) {
+      const currentDataStr = JSON.stringify(medicineList);
+      const existingDataStr = JSON.stringify(medicineSuggestions);
+
+      if (currentDataStr !== existingDataStr) {
+        setMedicineSuggestions(medicineList);
+      }
+    } else if (medicineList.length === 0 && medicineSuggestions.length > 0) {
       setMedicineSuggestions([]);
-  }
-}, [medicineList, debouncedMedicine]); 
- const buildPayload = (values) => {
+    }
+  }, [medicineList, debouncedMedicine]);
+  const buildPayload = (values) => {
     const chiefComplaintStr =
       Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
         ? values.ChiefComplaint.map((e) => e.name).join(", ")
@@ -191,7 +195,64 @@ useEffect(() => {
 
     return { header, details };
   };
+  const buildPrescriptionPayload = (values, prescriptionList) => {
+    const addedDate = formatISO(new Date());
 
+    return {
+      consultingId: 101, // TODO: FIX LATER
+      picasoId: values.UHID,
+      billNo: values.billno ? Number(values.billno) : null, patientName: values.Name,
+      contactNo: values.Mobile,
+      age: values.Age ? Number(values.Age) : null,
+      gender: values.Gender,
+      category: values.FinCategory,
+
+      bpSystolic: values.bpsystolic ? Number(values.bpsystolic) : null,
+      bpDiastolic: values.bpdiastolic ? Number(values.bpdiastolic) : null,
+      pulseRate: values.pulserate ? Number(values.pulserate) : null,
+      spo2: values.spo2 ? Number(values.spo2) : null,
+      temperature: values.temprature ? Number(values.temprature) : null,
+      height: values.height ? Number(values.height) : null,
+      weight: values.weight ? Number(values.weight) : null,
+
+      chiefComplaints: values.ChiefComplaint
+        ?.map((c) => c.name)
+        .join(", "),
+
+      history: values.history || "",
+      physicalFindings: "",// TODO: need to figure out
+      treatmentPlan: "", // TODO: need to figure out
+
+      labs: values.labs || "",
+      otherLabs: values.otherlabs || "",
+      preventiveAdvice: values.advice || "",
+      otherInstructions: values.otherinstrution || "",
+      nextFollowup: values.followup || "",
+      referrals: "",
+      remarks: "",
+      hospitalId: 2, // TODO: need to figure out
+      financialYearId: new Date().getFullYear(),
+      addedBy: 1,
+      addedDate,
+      isActive: true,
+
+      AdviceList: prescriptionList.map((item) => ({
+        picasoId: values.UHID,
+        consultingId: 101, // TODO
+        itemId: item.itemId || 0, 
+        item: item.medicine,
+        dosage: item.dosage,
+        pillsConsumption: item.preferredTime,
+        duration: Number(item.duration),
+        remarks: "",
+        typeOfMedicine: item.type,
+        addedBy: 1,
+        addedDate,
+        companyId: 10, // fix later
+        isActive: true,
+      })),
+    };
+  };
   const formik = useFormik({
     initialValues: {
       UHID: "",
@@ -211,6 +272,23 @@ useEffect(() => {
       typemedicine: "",
       dosage: "",
       duration: "",
+      medicineId: "",
+      ChiefComplaint: [],
+      otherinstrution: "",
+      labs: "",
+      otherlabs: "",
+      followup: "",
+      advice: "",
+      history: "",
+      bpsystolic: "",
+      bpdiastolic: "",
+      pulserate: "",
+      spo2: "",
+      temprature: "",
+      height: "",
+      weight: "",
+      dosageinstructions: "",
+      preferredtime: "",
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -243,22 +321,38 @@ useEffect(() => {
       weight: Yup.number().min(2, "Invalid weight").max(300, "Invalid weight"),
     }),
     onSubmit: async (values) => {
-      console.log("Formik Values:", values);
-      console.log("Selected Service:", selectedServices);
-      console.log("Prescription List :", prescriptionList);
+      if (prescriptionList.length === 0) {
+        healthAlerts.warning("Please add at least one medicine");
+        return;
+      }
+
+      const payload = buildPrescriptionPayload(values, prescriptionList);
+      
+
       try {
-        const payload = buildPayload(values);
+        await createPrescription(payload).unwrap();
+
+        healthAlerts.success("Prescription saved successfully");
+
         formik.resetForm();
-        setSelectedServices([]);
+        setPrescriptionList([]);
         setSelectedBill("");
-      } catch (err) {
+        setBillSearch("");
+        setSuggestionsList([]);
+        setMedicineSearch("");
+        setMedicineSuggestions([]);
+        setSelectedMedicine(null);
+        populatedUhidRef.current = "";
+      } catch (error) {
         healthAlert({
-          title: "Piscription Form",
-          text: err?.data?.message,
+          title: "Prescription Error",
+          text: error?.data?.message || "Something went wrong",
           icon: "error",
         });
       }
     },
+
+
   });
 
   useEffect(() => {
@@ -275,12 +369,15 @@ useEffect(() => {
       FinCategory: patientData.driverDetails[0]?.category || "",
       Age: patientData.driverDetails[0]?.age || "",
     };
-    formik.setValues({ ...formik.values, ...updates }, false);
+       formik.setValues({ ...formik.values, ...updates }, false);
+
+
   }, [patientData, selectedBill]);
 
   const handleAddPrescription = () => {
     const {
       medicine,
+      medicineId,
       typemedicine,
       dosage,
       dosageinstructions,
@@ -293,6 +390,7 @@ useEffect(() => {
     }
 
     const newItem = {
+      itemId: medicineId,
       medicine,
       type: typemedicine,
       dosage,
@@ -306,12 +404,16 @@ useEffect(() => {
     formik.setValues({
       ...formik.values,
       medicine: "",
+      medicineId: null,
       typemedicine: "",
       dosage: "",
       dosageinstructions: "",
       preferredtime: "",
       duration: "",
     });
+    setMedicineSearch("");
+    setSelectedMedicine(null);
+    setMedicineSuggestions([]);
   };
   const handleDeletePrescription = (index) => {
     setPrescriptionList((prev) => prev.filter((_, i) => i !== index));
@@ -337,7 +439,7 @@ useEffect(() => {
               </label>
 
               <input
-                type="text" 
+                type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 className={baseInput}
@@ -551,27 +653,27 @@ useEffect(() => {
               />
 
               {/* Medicine Search Suggestions List */}
-{medicineSuggestions.length > 0 && (
-  <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-    {medicineSuggestions.map((item) => (
-      <li
-        key={item.id}
-        onClick={() => {
-          setSelectedMedicine(item);
-          setMedicineSearch(item.descriptions); 
-          formik.setFieldValue("medicine", item.descriptions);
-          
-          formik.setFieldValue("typemedicine", item.itemType?.Descriptions || "");
-          setMedicineSuggestions([]);
-        }}
-        className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
-      >
-        {item.descriptions} 
-        <span className="text-xs text-gray-400 ml-2">({item.itemType?.Code})</span>
-      </li>
-    ))}
-  </ul>
-)}
+              {medicineSuggestions.length > 0 && (
+                <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                  {medicineSuggestions.map((item) => (
+                    <li
+                      key={item.id}
+                      onClick={() => {
+                        setSelectedMedicine(item);
+                        setMedicineSearch(item.descriptions);
+                        formik.setFieldValue("medicine", item.descriptions);
+                        formik.setFieldValue("medicineId", item.id);
+                        formik.setFieldValue("typemedicine", item.itemType?.Descriptions || "");
+                        setMedicineSuggestions([]);
+                      }}
+                      className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
+                    >
+                      {item.descriptions}
+                      <span className="text-xs text-gray-400 ml-2">({item.itemType?.Code})</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
 
@@ -590,11 +692,23 @@ useEffect(() => {
               placeholder="Instructions "
               label="Instructions *"
             />
-            <Input
-              {...formik.getFieldProps("preferredtime")}
-              placeholder="Preferred Time"
+            <Select
               label="Preferred Time *"
-            />
+              required
+              value={formik.values.preferredtime}
+              onChange={(e) =>
+                formik.setFieldValue("preferredtime", e.target.value)
+              }
+              error={formik.touched.preferredtime && formik.errors.preferredtime}
+            >
+              <option value="">Select Time</option>
+              {PILL_CONSUMPTION_TIMES.map((time) => (
+                <option key={time.value} value={time.value}>
+                  {time.label}
+                </option>
+              ))}
+            </Select>
+
             <Input
               label="Duration (in days) *"
               inputMode="numeric"
@@ -674,8 +788,8 @@ useEffect(() => {
           )}
         </section>
         <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">
-          <Button type="submit" variant="sky">
-            <CheckCircleIcon className="w-5 h-5 inline mr-1" /> Save
+          <Button type="submit" variant="sky" disabled={isLoading}>
+            {isLoading ? "Saving..." : "Save"}
           </Button>
           <Button type="button" variant="gray" onClick={formik.handleReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset

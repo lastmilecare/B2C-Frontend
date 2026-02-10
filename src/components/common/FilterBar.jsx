@@ -49,21 +49,26 @@ const FilterBar = ({
                   className={`w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400 focus:bg-white outline-none shadow-none ${filter.name === "external_id" ? "uppercase" : ""
                     }`}
                 />
-                  {filter.name === "billNumber" && suggestions.length > 0 && tempFilters.billNumber.length >= 1 && (
-                   <ul className="absolute z-[1000] bg-white border border-gray-200 rounded-md shadow-lg w-full max-h-60 overflow-auto mt-1">
+                {suggestions.length > 0 &&
+                  tempFilters[filter.name]?.length >= 1 &&
+                  (filter.name === "billNumber" || filter.name === "external_id") && (
+                  <ul className="absolute z-[1000] bg-white border border-gray-200 rounded-md shadow-lg w-full max-h-60 overflow-auto mt-1">
                     {suggestions.map((item) => (
                       <li
                         key={item.id}
-                       onClick={() => onSelectSuggestion(item.ID)}
+                        onMouseDown={(e) => {
+                          e.preventDefault(); 
+                          const valueToSelect = item.ID || item.external_id || item.bill_no;
+                          onSelectSuggestion(filter.name, valueToSelect);
+                        }}
                         className="px-4 py-2.5 hover:bg-sky-50 cursor-pointer border-b border-gray-50 last:border-0 transition-all"
                       >
-                        {item.ID}
-                        <span className=" text-gray-700">{item.external_id}</span>
+                        <span className=" text-gray-700">{item.ID || item.external_id}</span>
                         <span className="ml-2 text-gray-500"> {item.name}</span>
                       </li>
                     ))}
                   </ul>
-                )}
+                  )}
               </div>
             )}
             {filter.type === "select" && (

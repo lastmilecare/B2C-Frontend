@@ -552,7 +552,7 @@ const OpdBilling = () => {
               type="date"
               {...formik.getFieldProps("DOB")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
               onChange={handleDOBChange}
               max={new Date().toISOString().split("T")[0]}
             />
