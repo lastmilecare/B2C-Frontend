@@ -165,7 +165,7 @@ export const api = createApi({
     }),
     exportPrescriptionsExcel: build.query({
       query: (filters = {}) => ({
-        url: "/prescriptions/export/excel",
+        url: "/picasoid-prescription/export/excel",
         method: "GET",
         params: filters,
         responseType: "blob",
@@ -389,14 +389,13 @@ export const api = createApi({
         pagination: response.pagination || {},
       }),
     }),
-     createPrescription: build.mutation({
-        query: (PrescriptionData) => ({
-          url: "/picasoid-prescription/create",
-          method: "POST",
-          data: PrescriptionData,
-        }),
-
+    createPrescription: build.mutation({
+      query: (PrescriptionData) => ({
+        url: "/picasoid-prescription/create",
+        method: "POST",
+        data: PrescriptionData,
       }),
+    }),
   }),
 });
 
@@ -435,5 +434,4 @@ export const {
   useGetMediceneListQuery,
   useGetPrescriptionsListQuery,
   useCreatePrescriptionMutation,
-
 } = api;

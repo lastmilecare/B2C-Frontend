@@ -17,7 +17,7 @@ import {
   useCreateBillMutation,
   useSearchOpdBillNoQuery,
   useGetOpdBillByIdQuery,
-  useGetMediceneListQuery
+  useGetMediceneListQuery,
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert, healthAlerts } from "../utils/healthSwal";
@@ -93,8 +93,7 @@ const PrescriptionForm = () => {
   const [prescriptionList, setPrescriptionList] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const populatedUhidRef = useRef("");
-  const [createPrescription, { isLoading }] =
-    useCreatePrescriptionMutation();
+  const [createPrescription, { isLoading }] = useCreatePrescriptionMutation();
 
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
@@ -121,14 +120,15 @@ const PrescriptionForm = () => {
   );
   const { data: medicineResponse } = useGetMediceneListQuery(
     debouncedMedicine || skipToken,
-    { skip: !debouncedMedicine || debouncedMedicine.length < 2 }
+    { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
   );
-  const medicineList = React.useMemo(() => medicineResponse?.data || [], [medicineResponse]);
+  const medicineList = React.useMemo(
+    () => medicineResponse?.data || [],
+    [medicineResponse],
+  );
   const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedUhid, {
     skip: debouncedUhid.length < 1,
   });
-
-
 
   useEffect(() => {
     if (selectedBill) return;
@@ -159,54 +159,18 @@ const PrescriptionForm = () => {
       setMedicineSuggestions([]);
     }
   }, [medicineList, debouncedMedicine]);
-  const buildPayload = (values) => {
-    const chiefComplaintStr =
-      Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
-        ? values.ChiefComplaint.map((e) => e.name).join(", ")
-        : "";
-    const header = {
-      PatientID: patientData.id,
-      PicasoNo: values.UHID || patientData.PicasoNo,
-      Mobile: values.Mobile,
-      ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
-      PatientType: values.FinCategory == "BPL" ? 1 : 2,
-      AddedBy: 178,
-      ReferTo: Number(values.ReferBy || 0),
-      IsActive: true,
-      complaint: chiefComplaintStr,
-    };
 
-    const details = selectedServices.map((s) => ({
-      ServiceTypeID: s.ServiceTypeID || 1,
-      ServiceID: Number(s.id),
-      ServiceName: s.name,
-      ServiceAmount: Number(s.price),
-      Qty: Number(s.quantity || 1),
-      HospitalID: Number(s.HospitalID),
-      FinancialYearID: currentYear,
-      PatientID: patientData.id,
-      NetServiceAmount: Number(s.quantity * s.price),
-      PicasoNo: values.UHID || patientData.PicasoNo,
-      DoctorID: Number(values.Doctor),
-      AddedBy: 1,
-      MonthID: currentMonth,
-      IsActive: true,
-    }));
-
-    return { header, details };
-  };
   const buildPrescriptionPayload = (values, prescriptionList) => {
     const addedDate = formatISO(new Date());
-
     return {
-      consultingId: 101, // TODO: FIX LATER
+      consultingId: values.consultingId,
       picasoId: values.UHID,
-      billNo: values.billno ? Number(values.billno) : null, patientName: values.Name,
+      billNo: values.billno ? Number(values.billno) : null,
+      patientName: values.Name,
       contactNo: values.Mobile,
       age: values.Age ? Number(values.Age) : null,
       gender: values.Gender,
       category: values.FinCategory,
-
       bpSystolic: values.bpsystolic ? Number(values.bpsystolic) : null,
       bpDiastolic: values.bpdiastolic ? Number(values.bpdiastolic) : null,
       pulseRate: values.pulserate ? Number(values.pulserate) : null,
@@ -214,39 +178,33 @@ const PrescriptionForm = () => {
       temperature: values.temprature ? Number(values.temprature) : null,
       height: values.height ? Number(values.height) : null,
       weight: values.weight ? Number(values.weight) : null,
-
-      chiefComplaints: values.ChiefComplaint
-        ?.map((c) => c.name)
-        .join(", "),
-
+      chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
       history: values.history || "",
-      physicalFindings: "",// TODO: need to figure out
+      physicalFindings: "", // TODO: need to figure out
       treatmentPlan: "", // TODO: need to figure out
-
       labs: values.labs || "",
       otherLabs: values.otherlabs || "",
       preventiveAdvice: values.advice || "",
       otherInstructions: values.otherinstrution || "",
       nextFollowup: values.followup || "",
-      referrals: "",
-      remarks: "",
-      hospitalId: 2, // TODO: need to figure out
+      referrals: values.ReferTo,
+      remarks: values.Remarks,
+      hospitalId: values.hospitalId || 1,
       financialYearId: new Date().getFullYear(),
-      addedBy: 1,
+      addedBy: values.AddedBy,
       addedDate,
       isActive: true,
-
       AdviceList: prescriptionList.map((item) => ({
         picasoId: values.UHID,
-        consultingId: 101, // TODO
-        itemId: item.itemId || 0, 
+        consultingId: values.consultingId,
+        itemId: item.itemId || 0,
         item: item.medicine,
         dosage: item.dosage,
         pillsConsumption: item.preferredTime,
         duration: Number(item.duration),
-        remarks: "",
+        remarks: values.Remarks,
         typeOfMedicine: item.type,
-        addedBy: 1,
+        addedBy: values.AddedBy,
         addedDate,
         companyId: 10, // fix later
         isActive: true,
@@ -289,6 +247,10 @@ const PrescriptionForm = () => {
       weight: "",
       dosageinstructions: "",
       preferredtime: "",
+      consultingId: "",
+      hospitalId: "",
+      Remarks: "",
+      ReferTo: "",
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -327,7 +289,6 @@ const PrescriptionForm = () => {
       }
 
       const payload = buildPrescriptionPayload(values, prescriptionList);
-      
 
       try {
         await createPrescription(payload).unwrap();
@@ -351,8 +312,6 @@ const PrescriptionForm = () => {
         });
       }
     },
-
-
   });
 
   useEffect(() => {
@@ -362,16 +321,19 @@ const PrescriptionForm = () => {
     populatedUhidRef.current = selectedBill;
 
     const updates = {
-      UHID: patientData.driverDetails[0]?.external_id || "",
+      UHID: patientData.PicasoNo || "",
       Name: patientData.driverDetails[0]?.name || "",
       Gender: patientData.driverDetails[0].gender || "",
-      Mobile: patientData.driverDetails[0]?.contactNumber || "",
+      Mobile: patientData.Mobile || "",
       FinCategory: patientData.driverDetails[0]?.category || "",
       Age: patientData.driverDetails[0]?.age || "",
+      consultingId: patientData.ConsultantDoctorID || "",
+      hospitalId: patientData.HospitalID,
+      Remarks: patientData.Remarks,
+      ReferTo: patientData.ReferTo,
+      AddedBy: patientData.AddedBy,
     };
-       formik.setValues({ ...formik.values, ...updates }, false);
-
-
+    formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
 
   const handleAddPrescription = () => {
@@ -482,6 +444,7 @@ const PrescriptionForm = () => {
               readOnly
               className="bg-gray-100 cursor-not-allowed"
             />
+
             <Input
               label="UHID"
               {...formik.getFieldProps("UHID")}
@@ -663,19 +626,23 @@ const PrescriptionForm = () => {
                         setMedicineSearch(item.descriptions);
                         formik.setFieldValue("medicine", item.descriptions);
                         formik.setFieldValue("medicineId", item.id);
-                        formik.setFieldValue("typemedicine", item.itemType?.Descriptions || "");
+                        formik.setFieldValue(
+                          "typemedicine",
+                          item.itemType?.Descriptions || "",
+                        );
                         setMedicineSuggestions([]);
                       }}
                       className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
                     >
                       {item.descriptions}
-                      <span className="text-xs text-gray-400 ml-2">({item.itemType?.Code})</span>
+                      <span className="text-xs text-gray-400 ml-2">
+                        ({item.itemType?.Code})
+                      </span>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
-
 
             <Input
               {...formik.getFieldProps("typemedicine")}
@@ -699,7 +666,9 @@ const PrescriptionForm = () => {
               onChange={(e) =>
                 formik.setFieldValue("preferredtime", e.target.value)
               }
-              error={formik.touched.preferredtime && formik.errors.preferredtime}
+              error={
+                formik.touched.preferredtime && formik.errors.preferredtime
+              }
             >
               <option value="">Select Time</option>
               {PILL_CONSUMPTION_TIMES.map((time) => (
@@ -719,7 +688,6 @@ const PrescriptionForm = () => {
                 formik.setFieldValue("duration", onlyNumbers);
               }}
             />
-
           </div>
           <div className="mt-3">
             <button
