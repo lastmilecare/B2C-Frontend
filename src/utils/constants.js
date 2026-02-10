@@ -56,3 +56,11 @@ export const IDENTIFICATION_TYPES = [
     { value: "other", label: "Other" },
 ];
 
+export const PILL_CONSUMPTION_TIMES = [
+  { label: 'Early Morning', value: 'EARLY_MORNING' }, 
+  { label: 'Morning', value: 'MORNING' },             
+  { label: 'Afternoon', value: 'AFTERNOON' },         
+  { label: 'Evening', value: 'EVENING' },             
+  { label: 'Night', value: 'NIGHT' },                 
+  { label: 'Midnight', value: 'MIDNIGHT' },           
+];

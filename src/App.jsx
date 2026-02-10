@@ -15,6 +15,7 @@ import PurchsedEntry from "./pages/PurchasedEntry";
 import MedicineSalesRecord from "./pages/MedicineSalesRecord";
 import ExpiryItems from "./pages/ExpiryItems";
 import Billing from "./pages/Billing";
+import ItemMaster from "./pages/ItemMaster";
 
 
 function App() {
@@ -167,6 +168,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <Billing />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/items-master"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ItemMaster />
               </Layout>
             </ProtectedRoute>
           }

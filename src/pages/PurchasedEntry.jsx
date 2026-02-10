@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { healthAlerts } from "../utils/healthSwal";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 const baseInput =
   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
 const baseBtn =
@@ -76,6 +77,7 @@ const NumericInput = ({ label, ...props }) => (
 
 /* ================= MAIN COMPONENT ================= */
 const PurchasedEntry = () => {
+  const navigate = useNavigate();
   const ITEM_TYPES = [
     "DROP", "SYRUP", "SUSPENSION", "TABLET", "CAPSULE", "CREAM",
     "OINTMENT", "MOUTH GEL", "SPRAY", "INJECTION", "IV",
@@ -345,9 +347,20 @@ const PurchasedEntry = () => {
               </div>
             </section>
 
+
             {/* ITEM ENTRY */}
             <section>
-              <h3 className="text-sky-700 font-semibold mb-3">Item Entry</h3>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-sky-700 font-semibold">Item Entry</h3>
+
+                <Button
+                  type="button"
+                  onClick={() => navigate("/items-master")}
+                >
+                  <PlusIcon className="w-4 h-4 inline mr-1" /> Add New Item
+                </Button>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
                 <Input label="Item Name" {...formik.getFieldProps("itemName")} />
                 <Input label="Batch No" {...formik.getFieldProps("batchNo")} />

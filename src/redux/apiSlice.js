@@ -389,6 +389,14 @@ export const api = createApi({
         pagination: response.pagination || {},
       }),
     }),
+     createPrescription: build.mutation({
+        query: (PrescriptionData) => ({
+          url: "/picasoid-prescription/create",
+          method: "POST",
+          data: PrescriptionData,
+        }),
+
+      }),
   }),
 });
 
@@ -426,4 +434,6 @@ export const {
   useGetMedicineSalesQuery,
   useGetMediceneListQuery,
   useGetPrescriptionsListQuery,
+  useCreatePrescriptionMutation,
+
 } = api;
