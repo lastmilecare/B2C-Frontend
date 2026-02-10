@@ -170,7 +170,8 @@ export const api = createApi({
         params: filters,
         responseType: "blob",
       }),
-      transformResponse: (response) => response,
+      // transformResponse: (response) => response,
+      keepUnusedDataFor: 0,
     }),
     getPatientsByUhid: build.query({
       query: ({ uhid } = {}) => ({
@@ -370,6 +371,7 @@ export const api = createApi({
         date_to,
         bill_no,
         status,
+        ID,
       } = {}) => ({
         url: "/picasoid-prescription",
         method: "GET",
@@ -382,6 +384,7 @@ export const api = createApi({
           date_to,
           bill_no,
           status,
+          ID,
         },
       }),
       transformResponse: (response) => ({

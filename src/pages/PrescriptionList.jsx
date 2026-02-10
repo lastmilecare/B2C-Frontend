@@ -38,7 +38,6 @@ const PrescriptionList = () => {
   const [filters, setFilters] = useState({});
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
-
   const { data, isLoading, isError, error } = useGetPrescriptionsListQuery(
     {
       page,
@@ -47,6 +46,7 @@ const PrescriptionList = () => {
     },
     { skip: !page || !limit },
   );
+  
   const patients = data?.data || [];
   const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
 
@@ -63,30 +63,25 @@ const PrescriptionList = () => {
 
   const handleExport = async () => {
     const blob = await exportExcel(filters).unwrap();
-
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "prescriptions.xlsx";
     a.click();
-
     window.URL.revokeObjectURL(url);
   };
 
   const handleApplyFilters = () => {
     const today = new Date().toISOString().split("T")[0];
     const { date_from, date_to } = tempFilters;
-
     if (date_to && date_to > today) {
       alert("End date cannot be greater than today.");
       return;
     }
-
     if (date_from && date_to && date_from > date_to) {
       alert("Start date cannot be after end date.");
       return;
     }
-
     setFilters(tempFilters);
     setPage(1);
   };
@@ -193,19 +188,10 @@ const PrescriptionList = () => {
       // width: "150px",
       grow: 1,
     },
-    // {
-    //   name: "Status",
-    //   selector: (row) => (row.isReady ? "✅ Ready" : "🕓 Pending"),
-    // },
   ];
-
-  const handleRowClick = (row) => {
-    alert(`Opening details for Prescription ID: ${row.ID}`);
-  };
 
   const navigate = useNavigate();
   const handleEdit = (row) => {
-    alert(`Editing prescription ID: ${row.ID}`);
     navigate(`/prescription/edit/${row.ID}`);
   };
 

@@ -18,6 +18,7 @@ import {
   useSearchOpdBillNoQuery,
   useGetOpdBillByIdQuery,
   useGetMediceneListQuery,
+  useGetPrescriptionsListQuery,
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert, healthAlerts } from "../utils/healthSwal";
@@ -27,6 +28,8 @@ import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { PILL_CONSUMPTION_TIMES } from "../utils/constants";
 import { useCreatePrescriptionMutation } from "../redux/apiSlice";
 import { formatISO } from "date-fns";
+import { useParams } from "react-router-dom";
+
 const baseInput =
   "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
   "focus:ring-2 focus:ring-sky-400 focus:border-sky-500 " +
@@ -82,7 +85,6 @@ const Button = ({ variant = "sky", children, ...props }) => {
 };
 
 const PrescriptionForm = () => {
-  const [selectedServices, setSelectedServices] = useState([]);
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
@@ -94,7 +96,8 @@ const PrescriptionForm = () => {
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const populatedUhidRef = useRef("");
   const [createPrescription, { isLoading }] = useCreatePrescriptionMutation();
-
+  const { id } = useParams();
+  const [updatedBillNumber, setBillNumber] = useState("");
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
   useEffect(() => {
@@ -118,6 +121,7 @@ const PrescriptionForm = () => {
   const { data: patientData, isFetching } = useGetOpdBillByIdQuery(
     selectedBill ? String(selectedBill) : skipToken,
   );
+
   const { data: medicineResponse } = useGetMediceneListQuery(
     debouncedMedicine || skipToken,
     { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
@@ -336,6 +340,69 @@ const PrescriptionForm = () => {
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
 
+  const { data: patientDataUpdate } = useGetOpdBillByIdQuery();
+  const {
+    data: updateData,
+    isFetchings,
+    isSuccess,
+  } = useGetPrescriptionsListQuery(
+    {
+      page: 1,
+      limit: 1,
+      ID: id,
+    },
+    {
+      skip: !id, // IMPORTANT
+    },
+  );
+  useEffect(() => {
+    if (!isSuccess || !updateData?.data) return;
+    const pUpdateData = updateData?.data[0];
+    setBillNumber(pUpdateData.billNo); //
+    const updates = {
+      UHID: pUpdateData.picasoId || "",
+      Name: pUpdateData.driverDetails?.[0]?.name || "",
+      Gender: pUpdateData.driverDetails?.[0]?.gender || "",
+      Mobile: pUpdateData.Mobile || "",
+      FinCategory: pUpdateData.driverDetails?.[0]?.category || "",
+      Age: pUpdateData.driverDetails?.[0]?.age || "",
+      consultingId: pUpdateData.ConsultantDoctorID || "",
+      hospitalId: pUpdateData.HospitalID || "",
+      Remarks: pUpdateData.Remarks || "",
+      ReferTo: pUpdateData.ReferTo || "",
+      AddedBy: pUpdateData.AddedBy || "",
+      diseases: [],
+      DOB: "",
+      Department: 0,
+      Doctor: 0,
+      billno: "",
+      Quantity: 1,
+      medicine: "",
+      typemedicine: "",
+      dosage: "",
+      duration: "",
+      medicineId: "",
+      ChiefComplaint: [],
+      otherinstrution: "",
+      labs: "",
+      otherlabs: "",
+      followup: "",
+      advice: "",
+      history: "",
+      bpsystolic: "",
+      bpdiastolic: "",
+      pulserate: "",
+      spo2: "",
+      temprature: "",
+      height: "",
+      weight: "",
+      dosageinstructions: "",
+      preferredtime: "",
+    };
+
+    formik.setValues({ ...formik.values, ...updates }, false);
+  }, [isSuccess, updateData]);
+
   const handleAddPrescription = () => {
     const {
       medicine,
@@ -408,6 +475,7 @@ const PrescriptionForm = () => {
                 placeholder="Search Bill no (e.g., 123)"
                 value={billSearch}
                 onChange={(e) => {
+                  if (id) return;
                   const val = e.target.value.replace(/\D/g, "");
                   setBillSearch(val);
                   setSelectedBill("");
@@ -757,8 +825,9 @@ const PrescriptionForm = () => {
         </section>
         <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">
           <Button type="submit" variant="sky" disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save"}
+            {isLoading ? "Saving..." : id ? "Update" : "Save"}
           </Button>
+
           <Button type="button" variant="gray" onClick={formik.handleReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
           </Button>
