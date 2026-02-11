@@ -17,8 +17,7 @@ import {
   useCreateBillMutation,
   useSearchOpdBillNoQuery,
   useGetOpdBillByIdQuery,
-  useGetMediceneListQuery,
-  useGetPrescriptionsListQuery,
+  useGetMediceneListQuery
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert, healthAlerts } from "../utils/healthSwal";
@@ -28,11 +27,9 @@ import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { PILL_CONSUMPTION_TIMES } from "../utils/constants";
 import { useCreatePrescriptionMutation } from "../redux/apiSlice";
 import { formatISO } from "date-fns";
-import { useParams } from "react-router-dom";
-
 const baseInput =
   "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
-  "focus:ring-2 focus:ring-sky-400 focus:border-sky-500 " +
+  "focus:ring-2 focus:ring-sky-400 focus:outline-none " +
   "transition";
 const baseBtn =
   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
@@ -85,6 +82,7 @@ const Button = ({ variant = "sky", children, ...props }) => {
 };
 
 const PrescriptionForm = () => {
+  const [selectedServices, setSelectedServices] = useState([]);
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
@@ -95,9 +93,9 @@ const PrescriptionForm = () => {
   const [prescriptionList, setPrescriptionList] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const populatedUhidRef = useRef("");
-  const [createPrescription, { isLoading }] = useCreatePrescriptionMutation();
-  const { id } = useParams();
-  const [updatedBillNumber, setBillNumber] = useState("");
+  const [createPrescription, { isLoading }] =
+    useCreatePrescriptionMutation();
+
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
   useEffect(() => {
@@ -121,18 +119,16 @@ const PrescriptionForm = () => {
   const { data: patientData, isFetching } = useGetOpdBillByIdQuery(
     selectedBill ? String(selectedBill) : skipToken,
   );
-
   const { data: medicineResponse } = useGetMediceneListQuery(
     debouncedMedicine || skipToken,
-    { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
+    { skip: !debouncedMedicine || debouncedMedicine.length < 2 }
   );
-  const medicineList = React.useMemo(
-    () => medicineResponse?.data || [],
-    [medicineResponse],
-  );
+  const medicineList = React.useMemo(() => medicineResponse?.data || [], [medicineResponse]);
   const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedUhid, {
     skip: debouncedUhid.length < 1,
   });
+
+
 
   useEffect(() => {
     if (selectedBill) return;
@@ -163,18 +159,54 @@ const PrescriptionForm = () => {
       setMedicineSuggestions([]);
     }
   }, [medicineList, debouncedMedicine]);
+  const buildPayload = (values) => {
+    const chiefComplaintStr =
+      Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
+        ? values.ChiefComplaint.map((e) => e.name).join(", ")
+        : "";
+    const header = {
+      PatientID: patientData.id,
+      PicasoNo: values.UHID || patientData.PicasoNo,
+      Mobile: values.Mobile,
+      ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
+      PatientType: values.FinCategory == "BPL" ? 1 : 2,
+      AddedBy: 178,
+      ReferTo: Number(values.ReferBy || 0),
+      IsActive: true,
+      complaint: chiefComplaintStr,
+    };
 
+    const details = selectedServices.map((s) => ({
+      ServiceTypeID: s.ServiceTypeID || 1,
+      ServiceID: Number(s.id),
+      ServiceName: s.name,
+      ServiceAmount: Number(s.price),
+      Qty: Number(s.quantity || 1),
+      HospitalID: Number(s.HospitalID),
+      FinancialYearID: currentYear,
+      PatientID: patientData.id,
+      NetServiceAmount: Number(s.quantity * s.price),
+      PicasoNo: values.UHID || patientData.PicasoNo,
+      DoctorID: Number(values.Doctor),
+      AddedBy: 1,
+      MonthID: currentMonth,
+      IsActive: true,
+    }));
+
+    return { header, details };
+  };
   const buildPrescriptionPayload = (values, prescriptionList) => {
     const addedDate = formatISO(new Date());
+
     return {
-      consultingId: values.consultingId,
+      consultingId: 101, // TODO: FIX LATER
       picasoId: values.UHID,
-      billNo: values.billno ? Number(values.billno) : null,
-      patientName: values.Name,
+      billNo: values.billno ? Number(values.billno) : null, patientName: values.Name,
       contactNo: values.Mobile,
       age: values.Age ? Number(values.Age) : null,
       gender: values.Gender,
       category: values.FinCategory,
+
       bpSystolic: values.bpsystolic ? Number(values.bpsystolic) : null,
       bpDiastolic: values.bpdiastolic ? Number(values.bpdiastolic) : null,
       pulseRate: values.pulserate ? Number(values.pulserate) : null,
@@ -182,33 +214,39 @@ const PrescriptionForm = () => {
       temperature: values.temprature ? Number(values.temprature) : null,
       height: values.height ? Number(values.height) : null,
       weight: values.weight ? Number(values.weight) : null,
-      chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
+
+      chiefComplaints: values.ChiefComplaint
+        ?.map((c) => c.name)
+        .join(", "),
+
       history: values.history || "",
-      physicalFindings: "", // TODO: need to figure out
+      physicalFindings: "",// TODO: need to figure out
       treatmentPlan: "", // TODO: need to figure out
+
       labs: values.labs || "",
       otherLabs: values.otherlabs || "",
       preventiveAdvice: values.advice || "",
       otherInstructions: values.otherinstrution || "",
       nextFollowup: values.followup || "",
-      referrals: values.ReferTo,
-      remarks: values.Remarks,
-      hospitalId: values.hospitalId || 1,
+      referrals: "",
+      remarks: "",
+      hospitalId: 2, // TODO: need to figure out
       financialYearId: new Date().getFullYear(),
-      addedBy: values.AddedBy,
+      addedBy: 1,
       addedDate,
       isActive: true,
+
       AdviceList: prescriptionList.map((item) => ({
         picasoId: values.UHID,
-        consultingId: values.consultingId,
+        consultingId: 101, // TODO
         itemId: item.itemId || 0,
         item: item.medicine,
         dosage: item.dosage,
         pillsConsumption: item.preferredTime,
         duration: Number(item.duration),
-        remarks: values.Remarks,
+        remarks: "",
         typeOfMedicine: item.type,
-        addedBy: values.AddedBy,
+        addedBy: 1,
         addedDate,
         companyId: 10, // fix later
         isActive: true,
@@ -251,10 +289,6 @@ const PrescriptionForm = () => {
       weight: "",
       dosageinstructions: "",
       preferredtime: "",
-      consultingId: "",
-      hospitalId: "",
-      Remarks: "",
-      ReferTo: "",
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -294,6 +328,7 @@ const PrescriptionForm = () => {
 
       const payload = buildPrescriptionPayload(values, prescriptionList);
 
+
       try {
         await createPrescription(payload).unwrap();
 
@@ -316,6 +351,8 @@ const PrescriptionForm = () => {
         });
       }
     },
+
+
   });
 
   useEffect(() => {
@@ -325,83 +362,17 @@ const PrescriptionForm = () => {
     populatedUhidRef.current = selectedBill;
 
     const updates = {
-      UHID: patientData.PicasoNo || "",
+      UHID: patientData.driverDetails[0]?.external_id || "",
       Name: patientData.driverDetails[0]?.name || "",
       Gender: patientData.driverDetails[0].gender || "",
-      Mobile: patientData.Mobile || "",
+      Mobile: patientData.driverDetails[0]?.contactNumber || "",
       FinCategory: patientData.driverDetails[0]?.category || "",
       Age: patientData.driverDetails[0]?.age || "",
-      consultingId: patientData.ConsultantDoctorID || "",
-      hospitalId: patientData.HospitalID,
-      Remarks: patientData.Remarks,
-      ReferTo: patientData.ReferTo,
-      AddedBy: patientData.AddedBy,
     };
     formik.setValues({ ...formik.values, ...updates }, false);
+
+
   }, [patientData, selectedBill]);
-
-  const { data: patientDataUpdate } = useGetOpdBillByIdQuery();
-  const {
-    data: updateData,
-    isFetchings,
-    isSuccess,
-  } = useGetPrescriptionsListQuery(
-    {
-      page: 1,
-      limit: 1,
-      ID: id,
-    },
-    {
-      skip: !id, // IMPORTANT
-    },
-  );
-  useEffect(() => {
-    if (!isSuccess || !updateData?.data) return;
-    const pUpdateData = updateData?.data[0];
-    setBillNumber(pUpdateData.billNo); //
-    const updates = {
-      UHID: pUpdateData.picasoId || "",
-      Name: pUpdateData.driverDetails?.[0]?.name || "",
-      Gender: pUpdateData.driverDetails?.[0]?.gender || "",
-      Mobile: pUpdateData.Mobile || "",
-      FinCategory: pUpdateData.driverDetails?.[0]?.category || "",
-      Age: pUpdateData.driverDetails?.[0]?.age || "",
-      consultingId: pUpdateData.ConsultantDoctorID || "",
-      hospitalId: pUpdateData.HospitalID || "",
-      Remarks: pUpdateData.Remarks || "",
-      ReferTo: pUpdateData.ReferTo || "",
-      AddedBy: pUpdateData.AddedBy || "",
-      diseases: [],
-      DOB: "",
-      Department: 0,
-      Doctor: 0,
-      billno: "",
-      Quantity: 1,
-      medicine: "",
-      typemedicine: "",
-      dosage: "",
-      duration: "",
-      medicineId: "",
-      ChiefComplaint: [],
-      otherinstrution: "",
-      labs: "",
-      otherlabs: "",
-      followup: "",
-      advice: "",
-      history: "",
-      bpsystolic: "",
-      bpdiastolic: "",
-      pulserate: "",
-      spo2: "",
-      temprature: "",
-      height: "",
-      weight: "",
-      dosageinstructions: "",
-      preferredtime: "",
-    };
-
-    formik.setValues({ ...formik.values, ...updates }, false);
-  }, [isSuccess, updateData]);
 
   const handleAddPrescription = () => {
     const {
@@ -413,7 +384,7 @@ const PrescriptionForm = () => {
       preferredtime,
       duration,
     } = formik.values;
-    if (!medicine || !typemedicine || !dosage || !duration) {
+   if (!medicine || !typemedicine || !dosage || !dosageinstructions || !preferredtime || !duration) {
       healthAlerts.warning("Please fill all mandatory medicine fields");
       return;
     }
@@ -475,7 +446,6 @@ const PrescriptionForm = () => {
                 placeholder="Search Bill no (e.g., 123)"
                 value={billSearch}
                 onChange={(e) => {
-                  if (id) return;
                   const val = e.target.value.replace(/\D/g, "");
                   setBillSearch(val);
                   setSelectedBill("");
@@ -510,39 +480,38 @@ const PrescriptionForm = () => {
               label="Name"
               {...formik.getFieldProps("Name")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             />
-
             <Input
               label="UHID"
               {...formik.getFieldProps("UHID")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             ></Input>
 
             <Input
               label="Age"
               {...formik.getFieldProps("Age")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             />
 
             <Input
               label="Gender"
               {...formik.getFieldProps("Gender")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             ></Input>
             <Input
               label="Mobile"
               {...formik.getFieldProps("Mobile")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             ></Input>
 
             <Input
               {...formik.getFieldProps("FinCategory")}
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
               label="Category"
               readOnly
             ></Input>
@@ -672,13 +641,15 @@ const PrescriptionForm = () => {
 
               <input
                 type="text"
-                className={baseInput}
-                placeholder="Search Medicine"
+                className={`${baseInput} 
+        ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
+                placeholder={formik.values.billno ? "Search Medicine" : "First enter Bill No"}
                 value={medicineSearch}
+                disabled={!formik.values.billno}
                 onChange={(e) => {
                   setMedicineSearch(e.target.value);
                   setSelectedMedicine(null);
-                  formik.setFieldValue("medicine", "");
+                  formik.setFieldValue("medicine", val);
                 }}
                 autoComplete="off"
               />
@@ -694,38 +665,37 @@ const PrescriptionForm = () => {
                         setMedicineSearch(item.descriptions);
                         formik.setFieldValue("medicine", item.descriptions);
                         formik.setFieldValue("medicineId", item.id);
-                        formik.setFieldValue(
-                          "typemedicine",
-                          item.itemType?.Descriptions || "",
-                        );
+                        formik.setFieldValue("typemedicine", item.itemType?.Descriptions || "");
                         setMedicineSuggestions([]);
                       }}
                       className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
                     >
                       {item.descriptions}
-                      <span className="text-xs text-gray-400 ml-2">
-                        ({item.itemType?.Code})
-                      </span>
+                      <span className="text-xs text-gray-400 ml-2">({item.itemType?.Code})</span>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
 
+
             <Input
               {...formik.getFieldProps("typemedicine")}
               placeholder="Type of Medicine"
               label="Type of Medicine *"
+              disabled={!formik.values.billno}
             />
             <Input
               {...formik.getFieldProps("dosage")}
               placeholder="Dosage pills "
               label="Dosage pills*"
+              disabled={!formik.values.billno}
             />
             <Input
               {...formik.getFieldProps("dosageinstructions")}
               placeholder="Instructions "
               label="Instructions *"
+              disabled={!formik.values.billno}
             />
             <Select
               label="Preferred Time *"
@@ -734,9 +704,7 @@ const PrescriptionForm = () => {
               onChange={(e) =>
                 formik.setFieldValue("preferredtime", e.target.value)
               }
-              error={
-                formik.touched.preferredtime && formik.errors.preferredtime
-              }
+              error={formik.touched.preferredtime && formik.errors.preferredtime}
             >
               <option value="">Select Time</option>
               {PILL_CONSUMPTION_TIMES.map((time) => (
@@ -756,6 +724,7 @@ const PrescriptionForm = () => {
                 formik.setFieldValue("duration", onlyNumbers);
               }}
             />
+
           </div>
           <div className="mt-3">
             <button
@@ -825,10 +794,11 @@ const PrescriptionForm = () => {
         </section>
         <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">
           <Button type="submit" variant="sky" disabled={isLoading}>
-            {isLoading ? "Saving..." : id ? "Update" : "Save"}
+            {isLoading ? "Saving..." : "Save"}
           </Button>
-
-          <Button type="button" variant="gray" onClick={formik.handleReset}>
+          <Button type="button"
+           variant="gray"
+            onClick={formik.handleReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
           </Button>
           <Button type="button" variant="outline" onClick={onPrintCS}>

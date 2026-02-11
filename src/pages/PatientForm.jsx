@@ -312,7 +312,7 @@ const PatientRegistration = () => {
               label="Age"
               value={formik.values.age}
               readOnly
-              className="bg-gray-100 text-gray-600 cursor-not-allowed"
+              className="bg-sky-50 text-gray-600 cursor-not-allowed"
             />
 
             <Input

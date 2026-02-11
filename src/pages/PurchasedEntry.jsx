@@ -28,7 +28,7 @@ const Input = ({ label, required, error, readOnly, className = "", ...props }) =
       className={`
         ${baseInput}
         ${error ? "border-red-500" : "border-gray-300"}
-        ${readOnly ? "bg-gray-100 cursor-not-allowed" : ""}
+        ${readOnly ? "bg-sky-50 cursor-not-allowed" : ""}
         ${className}
       `}
     />

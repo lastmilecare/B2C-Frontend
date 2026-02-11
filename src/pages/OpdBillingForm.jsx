@@ -40,7 +40,7 @@ const Input = ({ label, required, error, ...props }) => (
   </div>
 );
 
-const Select = ({ label, required, error, children, ...props }) => (
+const Select = ({ label, required, error, children, className= "", ...props }) => (
   <div>
     {label && (
       <label className="text-sm text-gray-600 block mb-1">
@@ -49,7 +49,7 @@ const Select = ({ label, required, error, children, ...props }) => (
     )}
     <select
       {...props}
-      className={`${baseInput} ${error ? "border-red-500" : ""}`}
+      className={`${baseInput} ${error ? "border-red-500" : ""} ${className}`}
     >
       {children}
     </select>
@@ -477,7 +477,7 @@ const OpdBilling = () => {
 
               <input
                 type="text"
-                className={`${baseInput} ${editData ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                className={`${baseInput} ${editData ? "bg-sky-50 cursor-not-allowed" : ""}`}
                 placeholder="Search UHID (e.g., LMC-123)"
                 value={uhidSearch || formik.values.UHID}
                 readOnly={!!editData}
@@ -525,7 +525,7 @@ const OpdBilling = () => {
               label="Name"
               {...formik.getFieldProps("Name")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             />
             <Input
               label={
@@ -535,7 +535,7 @@ const OpdBilling = () => {
               }
               {...formik.getFieldProps("Mobile")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
               error={formik.touched.Mobile && formik.errors.Mobile}
             />
 
@@ -543,7 +543,7 @@ const OpdBilling = () => {
               label="Gender"
               {...formik.getFieldProps("Gender")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             >
             </Input>
 
@@ -560,7 +560,7 @@ const OpdBilling = () => {
               label="Age"
               {...formik.getFieldProps("Age")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             />
 
 
@@ -573,10 +573,12 @@ const OpdBilling = () => {
               }
 
               error={formik.touched.Department && formik.errors.Department}
+              
             >
               <option value="">Select Department</option>
               {department?.map((d) => (
                 <option key={d.id} value={d.id}>{d.name}</option>
+                
               ))}
             </Select>
 
@@ -586,17 +588,21 @@ const OpdBilling = () => {
                 Doctor <span className="text-red-500">*</span>
               </span>
             }
-              error={formik.touched.Doctor && formik.errors.Doctor}>
+              error={formik.touched.Doctor && formik.errors.Doctor}
+              
+              >
               <option value="">Consulting Doctor</option>
               {doctors?.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name || d.doctor_name}
+                  
                 </option>
+                
               ))}
             </Select>
 
 
-            <Input {...formik.getFieldProps("FinCategory")} className="bg-gray-100 cursor-not-allowed" label="Category" readOnly>
+            <Input {...formik.getFieldProps("FinCategory")} className="bg-sky-50 cursor-not-allowed" label="Category" readOnly>
 
             </Input>
 
@@ -621,7 +627,7 @@ const OpdBilling = () => {
               type="date"
               {...formik.getFieldProps("LastVisitDate")}
               max={new Date().toISOString().split("T")[0]}
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
               readOnly
             />
           </div>
@@ -659,8 +665,8 @@ const OpdBilling = () => {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input {...formik.getFieldProps("PreviousDue")} placeholder="Previous Due Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Previous Due" />
-            <Input {...formik.getFieldProps("TotalAmount")} placeholder="Total Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Total Amount" />
+            <Input {...formik.getFieldProps("PreviousDue")} placeholder="Previous Due Amount" className="bg-sky-50 cursor-not-allowed" disabled label="Previous Due" />
+            <Input {...formik.getFieldProps("TotalAmount")} placeholder="Total Amount" className="bg-sky-50 cursor-not-allowed" disabled label="Total Amount" />
             <Input
               label="Paid Amount"
               inputMode="numeric"
@@ -697,7 +703,7 @@ const OpdBilling = () => {
               Adjust with Balance
             </label>
 
-            <Input {...formik.getFieldProps("DueAmount")} placeholder="Due Amount" className="bg-gray-100 cursor-not-allowed" disabled label="Due Amount" />
+            <Input {...formik.getFieldProps("DueAmount")} placeholder="Due Amount" className="bg-sky-50 cursor-not-allowed" disabled label="Due Amount" />
 
             <Select {...formik.getFieldProps("PayMode")}
               label="Payment Mode"
@@ -730,7 +736,7 @@ const OpdBilling = () => {
               placeholder="Cash Amount"
               label="Cash Amount"
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             />
 
             <Input
@@ -738,7 +744,7 @@ const OpdBilling = () => {
               placeholder="Card / Online / UPI Amount"
               label="Card / Online / UPI Amount"
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             />
           </div>
         </section>
