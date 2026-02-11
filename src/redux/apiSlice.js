@@ -399,6 +399,13 @@ export const api = createApi({
         data: PrescriptionData,
       }),
     }),
+    updatePrescription: build.mutation({
+      query: ({ id, payload }) => ({
+        url: `/prescription/${id}`,
+        method: "PUT",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -437,4 +444,5 @@ export const {
   useGetMediceneListQuery,
   useGetPrescriptionsListQuery,
   useCreatePrescriptionMutation,
+  useUpdatePrescriptionMutation,
 } = api;

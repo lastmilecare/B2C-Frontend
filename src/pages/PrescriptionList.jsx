@@ -206,7 +206,11 @@ const PrescriptionList = () => {
 
   const navigate = useNavigate();
   const handleEdit = (row) => {
-    navigate(`/prescription/edit/${row.ID}`);
+    if (!row?.ID) return; 
+
+    navigate(`/prescription/edit/${row.ID}`, {
+      state: { row },
+    });
   };
 
   const handleDelete = (row) => {

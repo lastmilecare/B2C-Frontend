@@ -1,24 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
-import {
-  ArrowPathIcon,
-  PrinterIcon,
-  CheckCircleIcon,
-} from "@heroicons/react/24/outline";
-import ServiceSection from "../components/ServiceSection";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import DiseaseSelect from "../components/DiseaseSelect";
 import useDebounce from "../hooks/useDebounce";
-import { PAYMENT_TYPES } from "../utils/constants";
 import {
-  useGetPatientsByUhidQuery,
-  useSearchUHIDQuery,
-  useGetComboQuery,
-  useCreateBillMutation,
   useSearchOpdBillNoQuery,
   useGetOpdBillByIdQuery,
   useGetMediceneListQuery,
-  useGetPrescriptionsListQuery,
+  useSearchDiseasesQuery,
+  useUpdatePrescriptionMutation,
+  useGetComboQuery,
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert, healthAlerts } from "../utils/healthSwal";
@@ -28,7 +20,7 @@ import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { PILL_CONSUMPTION_TIMES } from "../utils/constants";
 import { useCreatePrescriptionMutation } from "../redux/apiSlice";
 import { formatISO } from "date-fns";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 
 const baseInput =
   "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
@@ -84,6 +76,15 @@ const Button = ({ variant = "sky", children, ...props }) => {
   );
 };
 
+const parseChiefComplaintNames = (value) => {
+  if (!value || typeof value !== "string") return [];
+
+  return value
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+};
+
 const PrescriptionForm = () => {
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
@@ -97,9 +98,18 @@ const PrescriptionForm = () => {
   const populatedUhidRef = useRef("");
   const [createPrescription, { isLoading }] = useCreatePrescriptionMutation();
   const { id } = useParams();
-  const [updatedBillNumber, setBillNumber] = useState("");
+  const location = useLocation();
+  const { data: diseaseSearchResponse } = useGetComboQuery("diseases-byname");
+  const row = location.state?.row ?? null;
+  const diseaseOptions = React.useMemo(
+    () => diseaseSearchResponse || [],
+    [diseaseSearchResponse],
+  );
+
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
+  const [updatePrescription] = useUpdatePrescriptionMutation();
+
   useEffect(() => {
     if (printRow && printRef.current) {
       handlePrint();
@@ -174,7 +184,7 @@ const PrescriptionForm = () => {
       contactNo: values.Mobile,
       age: values.Age ? Number(values.Age) : null,
       gender: values.Gender,
-      category: values.FinCategory,
+      patientType: values.FinCategory,
       bpSystolic: values.bpsystolic ? Number(values.bpsystolic) : null,
       bpDiastolic: values.bpdiastolic ? Number(values.bpdiastolic) : null,
       pulseRate: values.pulserate ? Number(values.pulserate) : null,
@@ -225,8 +235,6 @@ const PrescriptionForm = () => {
       Gender: "",
       Age: "",
       DOB: "",
-      Department: 0,
-      Doctor: 0,
       FinCategory: "",
       billno: "",
       Quantity: 1,
@@ -295,19 +303,13 @@ const PrescriptionForm = () => {
       const payload = buildPrescriptionPayload(values, prescriptionList);
 
       try {
-        await createPrescription(payload).unwrap();
-
-        healthAlerts.success("Prescription saved successfully");
-
-        formik.resetForm();
-        setPrescriptionList([]);
-        setSelectedBill("");
-        setBillSearch("");
-        setSuggestionsList([]);
-        setMedicineSearch("");
-        setMedicineSuggestions([]);
-        setSelectedMedicine(null);
-        populatedUhidRef.current = "";
+        if (id) {
+          await updatePrescription({ id, payload }).unwrap();
+          healthAlerts.success("Prescription updated successfully");
+        } else {
+          await createPrescription(payload).unwrap();
+          healthAlerts.success("Prescription saved successfully");
+        }
       } catch (error) {
         healthAlert({
           title: "Prescription Error",
@@ -340,68 +342,70 @@ const PrescriptionForm = () => {
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
 
-  const { data: patientDataUpdate } = useGetOpdBillByIdQuery();
-  const {
-    data: updateData,
-    isFetchings,
-    isSuccess,
-  } = useGetPrescriptionsListQuery(
-    {
-      page: 1,
-      limit: 1,
-      ID: id,
-    },
-    {
-      skip: !id, // IMPORTANT
-    },
-  );
   useEffect(() => {
-    if (!isSuccess || !updateData?.data) return;
-    const pUpdateData = updateData?.data[0];
-    setBillNumber(pUpdateData.billNo); //
+    if (!id || !row) return;
+    if (!diseaseOptions.length) return; // wait until diseases loaded
+
+    // Map advice list safely
+    const mappedAdviceList = Array.isArray(row.adviceList)
+      ? row.adviceList.map((item) => ({
+          itemId: item.itemId,
+          medicine: item.item,
+          type: item.typeOfMedicine,
+          dosage: item.dosage,
+          instructions: "",
+          preferredTime: item.pillsConsumption,
+          duration: item.duration,
+        }))
+      : [];
+
+    if (prescriptionList.length === 0) {
+      setPrescriptionList(mappedAdviceList);
+    }
+
+    // Convert DB string -> array of names
+    const complaintNames = parseChiefComplaintNames(row.chiefComplaints);
+
+    // Create lookup map (O(1))
+    const diseaseMap = new Map(
+      diseaseOptions.map((d) => [d.name?.toLowerCase().trim(), d]),
+    );
+
+    const mappedComplaints = complaintNames
+      .map((name) => diseaseMap.get(name.toLowerCase()))
+      .filter(Boolean);
+
     const updates = {
-      UHID: pUpdateData.picasoId || "",
-      Name: pUpdateData.driverDetails?.[0]?.name || "",
-      Gender: pUpdateData.driverDetails?.[0]?.gender || "",
-      Mobile: pUpdateData.Mobile || "",
-      FinCategory: pUpdateData.driverDetails?.[0]?.category || "",
-      Age: pUpdateData.driverDetails?.[0]?.age || "",
-      consultingId: pUpdateData.ConsultantDoctorID || "",
-      hospitalId: pUpdateData.HospitalID || "",
-      Remarks: pUpdateData.Remarks || "",
-      ReferTo: pUpdateData.ReferTo || "",
-      AddedBy: pUpdateData.AddedBy || "",
-      diseases: [],
-      DOB: "",
-      Department: 0,
-      Doctor: 0,
-      billno: "",
-      Quantity: 1,
-      medicine: "",
-      typemedicine: "",
-      dosage: "",
-      duration: "",
-      medicineId: "",
-      ChiefComplaint: [],
-      otherinstrution: "",
-      labs: "",
-      otherlabs: "",
-      followup: "",
-      advice: "",
-      history: "",
-      bpsystolic: "",
-      bpdiastolic: "",
-      pulserate: "",
-      spo2: "",
-      temprature: "",
-      height: "",
-      weight: "",
-      dosageinstructions: "",
-      preferredtime: "",
+      UHID: row.picasoId ?? "",
+      Name: row.patientName?.trim() ?? "",
+      Gender: row.gender ?? "",
+      Mobile: row.contactNo ?? "",
+      FinCategory: row.patientType ?? "",
+      Age: row.age ?? "",
+      consultingId: row.consultingId ?? "",
+      hospitalId: row.hospitalId ?? "",
+      Remarks: row.remarks ?? "",
+      ReferTo: row.referrals ?? "",
+      AddedBy: row.addedBy ?? "",
+      billno: Number(row.billNo) || "",
+      ChiefComplaint: mappedComplaints,
+      otherinstrution: row.otherInstructions ?? "",
+      labs: row.labs ?? "",
+      otherlabs: row.otherLabs ?? "",
+      followup: row.nextFollowup ?? "",
+      advice: row.preventiveAdvice ?? "",
+      history: row.history ?? "",
+      bpsystolic: row.bpSystolic ?? "",
+      bpdiastolic: row.bpDiastolic ?? "",
+      pulserate: row.pulseRate ?? "",
+      spo2: row.spo2 ?? "",
+      temprature: row.temperature ?? "",
+      height: row.height ?? "",
+      weight: row.weight ?? "",
     };
 
-    formik.setValues({ ...formik.values, ...updates }, false);
-  }, [isSuccess, updateData]);
+    formik.setValues((prev) => ({ ...prev, ...updates }), false);
+  }, [id, row, diseaseOptions]);
 
   const handleAddPrescription = () => {
     const {
@@ -691,7 +695,7 @@ const PrescriptionForm = () => {
                 onChange={(e) => {
                   setMedicineSearch(e.target.value);
                   setSelectedMedicine(null);
-                  formik.setFieldValue("medicine", val);
+                  formik.setFieldValue("medicine", e.target.value);
                 }}
                 autoComplete="off"
               />
@@ -729,7 +733,7 @@ const PrescriptionForm = () => {
               {...formik.getFieldProps("typemedicine")}
               placeholder="Type of Medicine"
               label="Type of Medicine *"
-               disabled={!formik.values.billno}
+              disabled={!formik.values.billno}
             />
             <Input
               {...formik.getFieldProps("dosage")}
