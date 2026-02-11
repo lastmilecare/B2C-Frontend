@@ -29,7 +29,7 @@ import { useCreatePrescriptionMutation } from "../redux/apiSlice";
 import { formatISO } from "date-fns";
 const baseInput =
   "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
-  "focus:ring-2 focus:ring-sky-400 focus:border-sky-500 " +
+  "focus:ring-2 focus:ring-sky-400 focus:outline-none " +
   "transition";
 const baseBtn =
   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
@@ -239,7 +239,7 @@ const PrescriptionForm = () => {
       AdviceList: prescriptionList.map((item) => ({
         picasoId: values.UHID,
         consultingId: 101, // TODO
-        itemId: item.itemId || 0, 
+        itemId: item.itemId || 0,
         item: item.medicine,
         dosage: item.dosage,
         pillsConsumption: item.preferredTime,
@@ -327,7 +327,7 @@ const PrescriptionForm = () => {
       }
 
       const payload = buildPrescriptionPayload(values, prescriptionList);
-      
+
 
       try {
         await createPrescription(payload).unwrap();
@@ -369,7 +369,7 @@ const PrescriptionForm = () => {
       FinCategory: patientData.driverDetails[0]?.category || "",
       Age: patientData.driverDetails[0]?.age || "",
     };
-       formik.setValues({ ...formik.values, ...updates }, false);
+    formik.setValues({ ...formik.values, ...updates }, false);
 
 
   }, [patientData, selectedBill]);
@@ -384,7 +384,7 @@ const PrescriptionForm = () => {
       preferredtime,
       duration,
     } = formik.values;
-    if (!medicine || !typemedicine || !dosage || !duration) {
+   if (!medicine || !typemedicine || !dosage || !dosageinstructions || !preferredtime || !duration) {
       healthAlerts.warning("Please fill all mandatory medicine fields");
       return;
     }
@@ -480,38 +480,38 @@ const PrescriptionForm = () => {
               label="Name"
               {...formik.getFieldProps("Name")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             />
             <Input
               label="UHID"
               {...formik.getFieldProps("UHID")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             ></Input>
 
             <Input
               label="Age"
               {...formik.getFieldProps("Age")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             />
 
             <Input
               label="Gender"
               {...formik.getFieldProps("Gender")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             ></Input>
             <Input
               label="Mobile"
               {...formik.getFieldProps("Mobile")}
               readOnly
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
             ></Input>
 
             <Input
               {...formik.getFieldProps("FinCategory")}
-              className="bg-gray-100 cursor-not-allowed"
+              className="bg-sky-50 cursor-not-allowed"
               label="Category"
               readOnly
             ></Input>
@@ -641,13 +641,15 @@ const PrescriptionForm = () => {
 
               <input
                 type="text"
-                className={baseInput}
-                placeholder="Search Medicine"
+                className={`${baseInput} 
+        ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
+                placeholder={formik.values.billno ? "Search Medicine" : "First enter Bill No"}
                 value={medicineSearch}
+                disabled={!formik.values.billno}
                 onChange={(e) => {
                   setMedicineSearch(e.target.value);
                   setSelectedMedicine(null);
-                  formik.setFieldValue("medicine", "");
+                  formik.setFieldValue("medicine", val);
                 }}
                 autoComplete="off"
               />
@@ -681,16 +683,19 @@ const PrescriptionForm = () => {
               {...formik.getFieldProps("typemedicine")}
               placeholder="Type of Medicine"
               label="Type of Medicine *"
+              disabled={!formik.values.billno}
             />
             <Input
               {...formik.getFieldProps("dosage")}
               placeholder="Dosage pills "
               label="Dosage pills*"
+              disabled={!formik.values.billno}
             />
             <Input
               {...formik.getFieldProps("dosageinstructions")}
               placeholder="Instructions "
               label="Instructions *"
+              disabled={!formik.values.billno}
             />
             <Select
               label="Preferred Time *"
@@ -791,7 +796,9 @@ const PrescriptionForm = () => {
           <Button type="submit" variant="sky" disabled={isLoading}>
             {isLoading ? "Saving..." : "Save"}
           </Button>
-          <Button type="button" variant="gray" onClick={formik.handleReset}>
+          <Button type="button"
+           variant="gray"
+            onClick={formik.handleReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
           </Button>
           <Button type="button" variant="outline" onClick={onPrintCS}>
