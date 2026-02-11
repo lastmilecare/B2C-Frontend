@@ -17,6 +17,7 @@ const PrescriptionList = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [billSearch, setBillSearch] = useState("");
   const [tempFilters, setTempFilters] = useState({
     name: "",
     mobileno: "",
@@ -25,16 +26,14 @@ const PrescriptionList = () => {
     date_to: "",
     bill_no: "",
   });
-  const debouncedBillSearch = useDebounce(tempFilters.bill_no, 500);
+  const debouncedBillSearch = useDebounce(billSearch, 500);
   const { data: billSuggestions = [] } = useSearchOpdBillNoQuery(
     debouncedBillSearch,
     {
       skip: debouncedBillSearch.length < 1,
     },
   );
-  const handleSelectBillSuggestion = (billId) => {
-    setTempFilters((prev) => ({ ...prev, bill_no: String(billId) }));
-  };
+
   const [filters, setFilters] = useState({});
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
@@ -46,7 +45,7 @@ const PrescriptionList = () => {
     },
     { skip: !page || !limit },
   );
-  
+
   const patients = data?.data || [];
   const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
 
@@ -58,7 +57,16 @@ const PrescriptionList = () => {
     if (name === "mobileno") {
       if (!/^\d*$/.test(value)) return;
     }
+
     setTempFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectBillSuggestion = (val) => {
+    setTempFilters((prev) => ({ ...prev, bill_no: val }));
+    setBillSearch("");
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   };
 
   const handleExport = async () => {
@@ -105,6 +113,12 @@ const PrescriptionList = () => {
       type: "text",
       inputMode: "numeric",
       pattern: "[0-9]*",
+      suggestionConfig: {
+        minLength: 1,
+        keyField: "ID",
+        valueField: "ID",
+        secondaryField: "name",
+      },
     },
     { label: "Name", name: "Name_", type: "text" },
     { label: "Start Date", name: "date_from", type: "date" },
@@ -225,7 +239,13 @@ const PrescriptionList = () => {
       <FilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
-        onChange={handleChange}
+        onChange={(e) => {
+          const { name, value } = e.target;
+          if (name === "bill_no") {
+            setBillSearch(value);
+          }
+          handleChange(e);
+        }}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
         onExport={handleExport}

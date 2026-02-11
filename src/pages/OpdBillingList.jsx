@@ -1,7 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
-import { useGetOpdBillingQuery, useGetComboQuery, useSearchUHIDQuery, useDeleteOpdBillMutation} from "../redux/apiSlice";
+import {
+  useGetOpdBillingQuery,
+  useGetComboQuery,
+  useSearchUHIDQuery,
+  useDeleteOpdBillMutation,
+} from "../redux/apiSlice";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 import InvoiceTemplate from "./InvoicePage";
@@ -13,52 +18,48 @@ const OpdBillingList = () => {
   const navigate = useNavigate();
   const [deleteOpdBill] = useDeleteOpdBillMutation();
   const handleDelete = async (row) => {
-  if (!row || !row.bill_no) {
-    alert("Bill number not found");
-    return;
-  }
-  const confirm = window.confirm(
-    `Are you sure you want to delete OPD Bill No ${row.bill_no}?`
-  );
-  if (!confirm) return;
-
-  // 3️⃣ API call
-  try {
-    await deleteOpdBill(Number(row.bill_no)).unwrap();
-
-    healthAlert({
-  title: "Success",
-  text: "OPD Bill deleted successfully",
-  icon: "success",
-});   
-
-  } catch (error) {
-    alert("Delete failed");
-    error.message("DELETE ERROR:", error);
-  }
-};
-
-const handleEdit = (row) => {
-  if (!row || !row.bill_no) {
-    alert("Bill number not found");
-    return;
-  }
-
-   navigate(`/opd-form/${row.bill_no}`, {
-    state: {
-      editData: row,    
+    if (!row || !row.bill_no) {
+      alert("Bill number not found");
+      return;
     }
-  });
-};
+    const confirm = window.confirm(
+      `Are you sure you want to delete OPD Bill No ${row.bill_no}?`,
+    );
+    if (!confirm) return;
 
-  
-  
+    // 3️⃣ API call
+    try {
+      await deleteOpdBill(Number(row.bill_no)).unwrap();
+
+      healthAlert({
+        title: "Success",
+        text: "OPD Bill deleted successfully",
+        icon: "success",
+      });
+    } catch (error) {
+      alert("Delete failed");
+      error.message("DELETE ERROR:", error);
+    }
+  };
+
+  const handleEdit = (row) => {
+    if (!row || !row.bill_no) {
+      alert("Bill number not found");
+      return;
+    }
+
+    navigate(`/opd-form/${row.bill_no}`, {
+      state: {
+        editData: row,
+      },
+    });
+  };
+
   const [uhidSearch, setUhidSearch] = useState("");
   const debouncedUhid = useDebounce(uhidSearch, 500);
-  const { data: suggestions = [] } = useSearchUHIDQuery(
-    debouncedUhid,
-    { skip: debouncedUhid.length < 2 }
-  );
+  const { data: suggestions = [] } = useSearchUHIDQuery(debouncedUhid, {
+    skip: debouncedUhid.length < 2,
+  });
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [tempFilters, setTempFilters] = useState({
@@ -83,31 +84,35 @@ const handleEdit = (row) => {
       limit,
       ...filters,
     },
-    { skip: !page || !limit }
+    { skip: !page || !limit },
   );
 
-  const { data: doctors, isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
-  const { data: department, isLoading: departmentComboLoading } = useGetComboQuery("department");
-  const { data: paymode, isLoading: paymodeComboLoading } = useGetComboQuery("paymode");
-  const { data: collectedBy, isLoading: collectedComboLoading } = useGetComboQuery("collectedBy");
+  const { data: doctors, isLoading: doctorsComboLoading } =
+    useGetComboQuery("doctor");
+  const { data: department, isLoading: departmentComboLoading } =
+    useGetComboQuery("department");
+  const { data: paymode, isLoading: paymodeComboLoading } =
+    useGetComboQuery("paymode");
+  const { data: collectedBy, isLoading: collectedComboLoading } =
+    useGetComboQuery("collectedBy");
 
   const patients = data?.data || [];
   const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
-const handleChange = (e) => {
-  const { name, value } = e.target;
-  let finalValue = value;
-  if (name === "contactNumber") {
-    finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
-  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let finalValue = value;
+    if (name === "contactNumber") {
+      finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
+    }
 
-  setTempFilters((prev) => ({
-    ...prev,
-    [name]: finalValue,
-  }));
-};
+    setTempFilters((prev) => ({
+      ...prev,
+      [name]: finalValue,
+    }));
+  };
 
   const handleSelectSuggestion = (val) => {
-    setTempFilters(prev => ({ ...prev, external_id: val }));
+    setTempFilters((prev) => ({ ...prev, external_id: val }));
     setUhidSearch("");
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
@@ -172,7 +177,17 @@ const handleChange = (e) => {
     v === null || v === undefined || v === "" ? fallback : String(v);
 
   const filtersConfig = [
-    { label: "UHID", name: "external_id", type: "text" },
+    {
+      label: "UHID",
+      name: "external_id",
+      type: "text",
+      suggestionConfig: {
+        minLength: 2,
+        keyField: "external_id",
+        valueField: "external_id",
+        secondaryField: "name",
+      },
+    },
     { label: "Bill No", name: "id", type: "text" },
     {
       label: "Department",
@@ -185,7 +200,11 @@ const handleChange = (e) => {
       label: "Doctor",
       name: "doctor",
       type: "select",
-      options: doctors?.map((d) => ({ label: d.name || d.doctor_name, value: d.id })) || [],
+      options:
+        doctors?.map((d) => ({
+          label: d.name || d.doctor_name,
+          value: d.id,
+        })) || [],
     },
 
     {
@@ -299,7 +318,7 @@ const handleChange = (e) => {
       name: "Ph",
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNumber, "-"),
-      width: "93px"
+      width: "93px",
     },
     {
       name: "P.Due",
@@ -351,7 +370,10 @@ const handleChange = (e) => {
     {
       name: "Srvc",
       title: "Service Name",
-      selector: (row) => safeString((row?.opd_billing_data || []).map((item, idx) => (item?.ServiceName))),
+      selector: (row) =>
+        safeString(
+          (row?.opd_billing_data || []).map((item, idx) => item?.ServiceName),
+        ),
       width: "120px",
     },
     {
@@ -369,18 +391,18 @@ const handleChange = (e) => {
       name: "B.Date",
       title: "Bill Date",
       selector: (row) =>
-        row?.AddedDate ? new Date(row.AddedDate).toISOString().split("T")[0] : "-",
+        row?.AddedDate
+          ? new Date(row.AddedDate).toISOString().split("T")[0]
+          : "-",
       sortable: true,
       width: "100px",
     },
   ];
 
-
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: "Opd"
+    documentTitle: "Opd",
   });
-
 
   useEffect(() => {
     if (printRow && printRef.current) {
@@ -398,9 +420,8 @@ const handleChange = (e) => {
 
   const handlePrint1 = useReactToPrint({
     contentRef: printRef1,
-    documentTitle: "Invoice"
+    documentTitle: "Invoice",
   });
-
 
   useEffect(() => {
     if (printRow1 && printRef1.current) {
@@ -416,7 +437,6 @@ const handleChange = (e) => {
     setPrintRow1(row);
   };
 
-
   return (
     <div className="p-0">
       <FilterBar
@@ -425,17 +445,15 @@ const handleChange = (e) => {
         onChange={(e) => {
           const { name, value } = e.target;
           if (name === "external_id") {
-            setUhidSearch(value); 
+            setUhidSearch(value);
           }
-          handleChange(e); 
+          handleChange(e);
         }}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
         onExport={() => console.log("Export clicked!")}
         suggestions={suggestions}
-        uhidSearch={uhidSearch}
         onSelectSuggestion={handleSelectSuggestion}
-
       />
       <CommonList
         title="💳 OPD Billing List"
@@ -458,7 +476,7 @@ const handleChange = (e) => {
         onPrint={onPrintInvoice}
       />
       {printRow && (
-        <div style={{ display: 'none' }}>
+        <div style={{ display: "none" }}>
           <PrintOpdForm ref={printRef} data={printRow} />
         </div>
       )}
@@ -467,7 +485,6 @@ const handleChange = (e) => {
           <InvoiceTemplate ref={printRef1} data={printRow1} />
         </div>
       )}
-
     </div>
   );
 };

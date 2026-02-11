@@ -8,7 +8,7 @@ const FilterBar = ({
   onApply,
   onReset,
   onExport,
-  suggestions = [],
+  suggestions,
   uhidSearch,
   onSelectSuggestion,
 }) => {
@@ -46,31 +46,47 @@ const FilterBar = ({
                   onChange={onChange}
                   autoComplete="none"
                   placeholder={filter.placeholder || `Enter ${filter.label}`}
-                  className={`w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400 focus:bg-white outline-none shadow-none ${filter.name === "external_id" ? "uppercase" : ""
-                    }`}
+                  className={`w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400 focus:bg-white outline-none shadow-none ${
+                    filter.name === "external_id" ? "uppercase" : ""
+                  }`}
                 />
-                {suggestions.length > 0 &&
-                  tempFilters[filter.name]?.length >= 1 &&
-                  (filter.name === "billNumber" || filter.name === "external_id") && (
-                  <ul className="absolute z-[1000] bg-white border border-gray-200 rounded-md shadow-lg w-full max-h-60 overflow-auto mt-1">
-                    {suggestions.map((item) => (
-                      <li
-                        key={item.id}
-                        onMouseDown={(e) => {
-                          e.preventDefault(); 
-                          const valueToSelect = item.ID || item.external_id || item.bill_no;
-                          onSelectSuggestion(filter.name, valueToSelect);
-                        }}
-                        className="px-4 py-2.5 hover:bg-sky-50 cursor-pointer border-b border-gray-50 last:border-0 transition-all"
-                      >
-                        <span className=" text-gray-700">{item.ID || item.external_id}</span>
-                        <span className="ml-2 text-gray-500"> {item.name}</span>
-                      </li>
-                    ))}
-                  </ul>
+
+                {/* ✅ Generic Suggestion Dropdown */}
+                {filter.suggestionConfig &&
+                  (tempFilters[filter.name] || "").length >=
+                    filter.suggestionConfig.minLength &&
+                  suggestions?.length > 0 && (
+                    <ul className="absolute z-[1000] bg-white border border-gray-200 rounded-md shadow-lg w-full max-h-60 overflow-auto mt-1">
+                      {suggestions.map((item) => {
+                        const { keyField, valueField, secondaryField } =
+                          filter.suggestionConfig;
+
+                        return (
+                          <li
+                            key={item[keyField]}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              onSelectSuggestion(item[valueField]);
+                            }}
+                            className="px-4 py-2.5 hover:bg-sky-50 cursor-pointer border-b border-gray-50 last:border-0 transition-all"
+                          >
+                            <span className="text-gray-700">
+                              {item[valueField]}
+                            </span>
+
+                            {secondaryField && (
+                              <span className="ml-2 text-gray-500">
+                                {item[secondaryField]}
+                              </span>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
                   )}
               </div>
             )}
+
             {filter.type === "select" && (
               <select
                 name={filter.name}
@@ -93,7 +109,11 @@ const FilterBar = ({
                 name={filter.name}
                 value={tempFilters[filter.name] || ""}
                 onChange={onChange}
-                max={filter.name === "endDate" ? today : tempFilters.endDate || today}
+                max={
+                  filter.name === "endDate"
+                    ? today
+                    : tempFilters.endDate || today
+                }
                 className="w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400"
               />
             )}
