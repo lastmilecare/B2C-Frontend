@@ -374,7 +374,10 @@ const PrescriptionForm = () => {
     const mappedComplaints = complaintNames
       .map((name) => diseaseMap.get(name.toLowerCase()))
       .filter(Boolean);
+    const billNumber = row.billNo ?? "";
 
+    setBillSearch(String(billNumber));
+    setSelectedBill(String(billNumber));
     const updates = {
       UHID: row.picasoId ?? "",
       Name: row.patientName?.trim() ?? "",
@@ -387,7 +390,7 @@ const PrescriptionForm = () => {
       Remarks: row.remarks ?? "",
       ReferTo: row.referrals ?? "",
       AddedBy: row.addedBy ?? "",
-      billno: Number(row.billNo) || "",
+      billno: billNumber || "",
       ChiefComplaint: mappedComplaints,
       otherinstrution: row.otherInstructions ?? "",
       labs: row.labs ?? "",
