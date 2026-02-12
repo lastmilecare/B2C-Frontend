@@ -19,7 +19,6 @@ const Login = () => {
   const onLoginFinish = async (values) => {
     try {
       const data = await login(values).unwrap();
-      debugger;
       dispatch(setCredentials(data));
       navigate("/patient-list");
     } catch (error) {
