@@ -8,59 +8,7 @@ import DiseaseSelect from "../components/DiseaseSelect";
 import { useLocationData } from "../services/locationApi";
 import { healthAlerts } from "../utils/healthSwal";
 import { useParams, useNavigate } from "react-router-dom";
-
-const baseInput =
-  "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
-const baseBtn =
-  "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
-
-const Input = ({ label, required, error, className = "", ...props }) => (
-  <div className="mb-2">
-    {label && (
-      <label className="text-sm text-gray-600 block mb-1">
-        {label}
-        {required && <span className="text-red-500 font-bold ml-1">*</span>}
-      </label>
-    )}
-    <input
-      {...props}
-      className={`${baseInput} ${error ? "border-red-500 ring-red-300" : "border-gray-300"}
-      ${className}
-      `}
-    />
-    {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-  </div>
-);
-
-const Select = ({ label, required, error, children, ...props }) => (
-  <div className="mb-2">
-    {label && (
-      <label className="text-sm text-gray-600 block mb-1">
-        {label}
-        {required && <span className="text-red-500 font-bold ml-1">*</span>}
-      </label>
-    )}
-    <select
-      {...props}
-      className={`${baseInput} ${error ? "border-red-500 ring-red-300" : "border-gray-300"}`}
-    >
-      {children}
-    </select>
-    {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-  </div>
-);
-
-const Button = ({ variant = "sky", children, ...props }) => {
-  const variants = {
-    sky: `${baseBtn} bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500`,
-    gray: `${baseBtn} bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-300`,
-  };
-  return (
-    <button {...props} className={variants[variant]}>
-      {children}
-    </button>
-  );
-};
+import { Input, Select, Button, baseInput } from "../components/FormControls";
 
 const PatientRegistration = () => {
   const { id } = useParams();

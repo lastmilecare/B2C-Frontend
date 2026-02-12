@@ -12,49 +12,49 @@ import {
   useLazyGetMedicineSalesQuery,
   useGetComboQuery,
 } from "../redux/apiSlice";
-
+import { Input, Select, Button, baseInput } from "../components/FormControls";
 /* ================== COMMON UI (SAME AS PATIENT PAGE) ================== */
 
-const baseInput =
-  "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
-const baseBtn =
-  "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
+// const baseInput =
+//   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
+// const baseBtn =
+//   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
 
-const Input = ({ label, required, error, ...props }) => (
-  <div>
-    <label className="text-sm text-gray-600 block mb-1">
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-    <input
-      {...props}
-      className={`${baseInput} ${
-        error ? "border-red-500" : "border-gray-300"
-      }`}
-    />
-    {error && <p className="text-xs text-red-500">{error}</p>}
-  </div>
-);
+// const Input = ({ label, required, error, ...props }) => (
+//   <div>
+//     <label className="text-sm text-gray-600 block mb-1">
+//       {label} {required && <span className="text-red-500">*</span>}
+//     </label>
+//     <input
+//       {...props}
+//       className={`${baseInput} ${
+//         error ? "border-red-500" : "border-gray-300"
+//       }`}
+//     />
+//     {error && <p className="text-xs text-red-500">{error}</p>}
+//   </div>
+// );
 
-const Select = ({ label, children, ...props }) => (
-  <div>
-    <label className="text-sm text-gray-600 block mb-1">{label}</label>
-    <select {...props} className={baseInput}>
-      {children}
-    </select>
-  </div>
-);
+// const Select = ({ label, children, ...props }) => (
+//   <div>
+//     <label className="text-sm text-gray-600 block mb-1">{label}</label>
+//     <select {...props} className={baseInput}>
+//       {children}
+//     </select>
+//   </div>
+// );
 
-const Button = ({ variant = "sky", children, ...props }) => {
-  const map = {
-    sky: `${baseBtn} bg-sky-600 text-white hover:bg-sky-700`,
-    gray: `${baseBtn} bg-gray-100 text-gray-700 hover:bg-gray-200`,
-  };
-  return (
-    <button {...props} className={map[variant]}>
-      {children}
-    </button>
-  );
-};
+// const Button = ({ variant = "sky", children, ...props }) => {
+//   const map = {
+//     sky: `${baseBtn} bg-sky-600 text-white hover:bg-sky-700`,
+//     gray: `${baseBtn} bg-gray-100 text-gray-700 hover:bg-gray-200`,
+//   };
+//   return (
+//     <button {...props} className={map[variant]}>
+//       {children}
+//     </button>
+//   );
+// };
 
 /* ================== PAGE ================== */
 
