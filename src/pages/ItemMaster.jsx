@@ -39,6 +39,7 @@ const ItemMaster = () => {
           itemType: values.itemType,
         },
       ]);
+      console.log("Form Submitted Successfully:", values);
 
       healthAlerts.success("Item Added Successfully", "Item Master");
       resetForm();
