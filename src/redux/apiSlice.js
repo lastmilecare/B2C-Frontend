@@ -400,10 +400,10 @@ export const api = createApi({
       }),
     }),
     updatePrescription: build.mutation({
-      query: ({ id, payload }) => ({
-        url: `/prescription/${id}`,
+      query: ({ id, ...body }) => ({
+        url: `/picasoid-prescription/${id}`,
         method: "PUT",
-        body: payload,
+        data: body,
       }),
     }),
   }),

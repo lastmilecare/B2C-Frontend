@@ -8,7 +8,7 @@ const authSlice = createSlice({
     setCredentials: (state, action) => {
       state.user = action.payload.data;
       state.token = action.payload.data.token;
-      cookie.set("token", action.payload.token);
+      cookie.set("token", action.payload.data.token);
       cookie.set("username", action.payload.data.username);
     },
     logout: (state) => {

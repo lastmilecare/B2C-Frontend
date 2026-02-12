@@ -17,10 +17,13 @@ import { healthAlert, healthAlerts } from "../utils/healthSwal";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { PILL_CONSUMPTION_TIMES } from "../utils/constants";
+import {
+  PILL_CONSUMPTION_TIMES,
+  MEDICINE_FREQUENCIES,
+} from "../utils/constants";
 import { useCreatePrescriptionMutation } from "../redux/apiSlice";
 import { formatISO } from "date-fns";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 const baseInput =
   "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
@@ -109,7 +112,7 @@ const PrescriptionForm = () => {
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
   const [updatePrescription] = useUpdatePrescriptionMutation();
-
+  const navigate = useNavigate();
   useEffect(() => {
     if (printRow && printRef.current) {
       handlePrint();
@@ -304,11 +307,13 @@ const PrescriptionForm = () => {
 
       try {
         if (id) {
-          await updatePrescription({ id, payload }).unwrap();
+          await updatePrescription({ id, ...payload }).unwrap();
           healthAlerts.success("Prescription updated successfully");
+          navigate(`/prescription-list`);
         } else {
           await createPrescription(payload).unwrap();
           healthAlerts.success("Prescription saved successfully");
+           navigate(`/prescription-list`);
         }
       } catch (error) {
         healthAlert({
@@ -769,7 +774,7 @@ const PrescriptionForm = () => {
               ))}
             </Select>
 
-            <Input
+            {/* <Input
               label="Duration (in days) *"
               inputMode="numeric"
               type="text"
@@ -778,7 +783,21 @@ const PrescriptionForm = () => {
                 const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
                 formik.setFieldValue("duration", onlyNumbers);
               }}
-            />
+            /> */}
+            <Select
+              label="Duration (in days) *"
+              required
+              value={formik.values.duration}
+              onChange={(e) => formik.setFieldValue("duration", e.target.value)}
+              error={formik.touched.duration && formik.errors.duration}
+            >
+              <option value="">Select Time</option>
+              {MEDICINE_FREQUENCIES.map((time) => (
+                <option key={time.value} value={time.value}>
+                  {time.label}
+                </option>
+              ))}
+            </Select>
           </div>
           <div className="mt-3">
             <button
