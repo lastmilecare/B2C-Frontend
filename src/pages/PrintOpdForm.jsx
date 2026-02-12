@@ -22,13 +22,6 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
           Last Mile Care Pvt Ltd
         </p>
       </div>
-      {/* <div style={{ textAlign: "center", marginBottom: "10px" }}>
-        <h2 style={{ color: "#00397A", margin: 0, fontWeight: "800" }}>MEDI KAVACH</h2>
-        <h3 style={{ color: "#4A6FA1", margin: 0, fontWeight: "600" }}>HEALTH CENTRE</h3>
-        <p style={{ fontSize: "11px", color: "#4A6FA1" }}>
-          {`Address: ${add ?? ""} • Phone: ${mobile ?? ""}`}
-        </p>
-      </div> */}
 
       <div className="text-center mb-6 border-b pb-6 pt-4">
         <h1 className="text-[#00397A] text-[32px] font-extrabold tracking-wide leading-none">
