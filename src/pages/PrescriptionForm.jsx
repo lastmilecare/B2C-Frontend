@@ -211,6 +211,9 @@ const PrescriptionForm = () => {
       addedBy: values.AddedBy,
       addedDate,
       isActive: true,
+      doctor_id:patientData.ConsultantDoctorID,
+      centerID:patientData.CenterID,
+      driver_id:patientData.PatientID,
       AdviceList: prescriptionList.map((item) => ({
         picasoId: values.UHID,
         consultingId: values.consultingId,
@@ -266,6 +269,9 @@ const PrescriptionForm = () => {
       hospitalId: "",
       Remarks: "",
       ReferTo: "",
+      ConsultantDoctorID:"",
+      CenterID:"",
+      PatientID:""
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -343,6 +349,9 @@ const PrescriptionForm = () => {
       Remarks: patientData.Remarks,
       ReferTo: patientData.ReferTo,
       AddedBy: patientData.AddedBy,
+      ConsultantDoctorID:patientData.ConsultantDoctorID,
+      CenterID:patientData.CenterID,
+      PatientID:patientData.PatientID
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
