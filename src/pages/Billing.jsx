@@ -32,7 +32,9 @@ const Input = ({ label, required, error, ...props }) => (
         {label} {required && <span className="text-red-500 ml-1">*</span>}
       </label>
     )}
-    <input {...props} className={`${baseInput} ${error ? "border-red-500" : ""}`} />
+    <input
+      {...props}
+      className={`${baseInput} ${props.readOnly ? "bg-sky-50 cursor-not-allowed" : "bg-white"} ${error ? "border-red-500" : ""}`} />
     {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
   </div>
 );
@@ -60,8 +62,6 @@ const Billing = () => {
   const debouncedBill = useDebounce(billSearch, 500);
   const [itemSearch, setItemSearch] = useState("");
   const debouncedItem = useDebounce(itemSearch, 500);
-
-  // History Filters State
   const [filters, setFilters] = useState({
     billNo: "",
     patientName: "",
@@ -69,8 +69,6 @@ const Billing = () => {
     endDate: "",
     status: "Active"
   });
-
-  // API Hooks
   const { data: billingList, refetch: refetchList } = useGetMedicineSalesQuery({
     billNumber: filters.billNo,
     patientName: filters.patientName,
@@ -94,6 +92,7 @@ const Billing = () => {
       taxableAmount: 0, totalAmount: 0, paidAmount: 0, dueAmount: 0, payMode: "",
     },
     onSubmit: async (values) => {
+      console.log("Submitting Billing Form Data:", values);
       if (values.items.length === 0) return healthAlert({ title: "Empty", text: "Please add items first", icon: "warning" });
       try {
         await createMedicineBill(values).unwrap();
@@ -189,7 +188,7 @@ const Billing = () => {
         <FormikProvider value={formik}>
           <form onSubmit={formik.handleSubmit} className="space-y-4">
             <h2 className="text-lg font-bold text-sky-700 text-center uppercase border-b pb-2">💳 Medicine Billing Form</h2>
-            
+
             {/* Detailed Patient Fields */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="relative">
@@ -201,7 +200,7 @@ const Billing = () => {
                 )}
               </div>
               <Input label="Name" {...formik.getFieldProps("patientName")} readOnly className="bg-gray-50 border rounded px-2 py-1.5 w-full text-xs" />
-              <Input label="UHID" {...formik.getFieldProps("uhid")} readOnly className="bg-gray-50 border rounded px-2 py-1.5 w-full text-xs" />
+              <Input label="UHID" {...formik.getFieldProps("uhid")} readOnly className="bg-sky-50 border rounded px-2 py-1.5 w-full text-xs" />
               <Input label="Age" {...formik.getFieldProps("age")} readOnly className="bg-gray-50 border rounded px-2 py-1.5 w-full text-xs" />
               <Input label="Sex" {...formik.getFieldProps("sex")} readOnly className="bg-gray-50 border rounded px-2 py-1.5 w-full text-xs" />
               <Input label="Mobile *" {...formik.getFieldProps("contactNo")} readOnly className="bg-gray-50 border rounded px-2 py-1.5 w-full text-xs" />
@@ -230,54 +229,92 @@ const Billing = () => {
                 <Input label="CP" {...formik.getFieldProps("cp")} readOnly />
                 <Input label="Discount (%)" {...formik.getFieldProps("discountPercent")} />
                 <Input label="Bill No" {...formik.getFieldProps("billNo")} />
-                <Button type="button" onClick={addItemToList}><PlusIcon className="w-4 h-4" /> Add Item</Button>
-              </div>
+                <button
+                  type="button"
+                  onClick={addItemToList}
+                  className="h-9 px-4 flex items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
+                >
+                  <PlusIcon className="w-4 h-4 mr-1" /> Add Item
+                </button>              
+                </div>
             </section>
 
-            {/* Detailed Item Table */}
             {formik.values.items.length > 0 && (
-              <div className="overflow-x-auto border border-sky-200 rounded-lg">
-                <table className="w-full text-[10px]">
-                  <thead className="bg-sky-600 text-white">
-                    <tr>
-                      <th className="p-2 border-r">SL</th>
-                      <th className="p-2 border-r text-left">Description</th>
-                      <th className="p-2 border-r">Qty</th>
-                      <th className="p-2 border-r">Batch</th>
-                      <th className="p-2 border-r">HSN</th>
-                      <th className="p-2 border-r">Exp</th>
-                      <th className="p-2 border-r">Rate</th>
-                      <th className="p-2 border-r">Disc Amt</th>
-                      <th className="p-2 border-r">Taxable</th>
-                      <th className="p-2 border-r font-bold">Total</th>
-                      <th className="p-2">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <FieldArray name="items">
-                      {({ remove }) => (
-                        formik.values.items.map((item, index) => (
-                          <tr key={index} className="border-b odd:bg-white even:bg-sky-50/20">
-                            <td className="p-1.5 text-center border-r">{index + 1}</td>
-                            <td className="p-1.5 font-medium border-r">{item.description}</td>
-                            <td className="p-1.5 text-center border-r">{item.qty}</td>
-                            <td className="p-1.5 text-center border-r">{item.batchNo}</td>
-                            <td className="p-1.5 text-center border-r">{item.hsn}</td>
-                            <td className="p-1.5 text-center border-r text-red-600">{item.expDate}</td>
-                            <td className="p-1.5 text-right border-r">₹{item.saleRate}</td>
-                            <td className="p-1.5 text-right border-r">{item.discAmt.toFixed(2)}</td>
-                            <td className="p-1.5 text-right border-r">{item.taxableAmt.toFixed(2)}</td>
-                            <td className="p-1.5 text-right border-r font-bold text-sky-700">₹{item.total.toFixed(2)}</td>
-                            <td className="p-1.5 text-center"><button type="button" onClick={() => remove(index)} className="text-red-500 hover:scale-110 transition-all"><TrashIcon className="w-4 h-4"/></button></td>
-                          </tr>
-                        ))
-                      )}
-                    </FieldArray>
-                  </tbody>
-                </table>
+              <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100 overflow-hidden">
+                <div className="px-4 py-3 border-b border-sky-100 bg-white">
+                  <h2 className="text-sky-700 font-semibold text-sm">
+                    Item List:
+                  </h2>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-sky-50 text-sky-700">
+                      <tr>
+                        <th className="px-3 py-3 text-left font-semibold">SL No</th>
+                        <th className="px-3 py-3 text-left font-semibold">Description</th>
+                        <th className="px-3 py-3 text-center font-semibold">Qty</th>
+                        <th className="px-3 py-3 text-center font-semibold">Batch</th>
+                        <th className="px-3 py-3 text-center font-semibold">HSN</th>
+                        <th className="px-3 py-3 text-center font-semibold">Exp</th>
+                        <th className="px-3 py-3 text-right font-semibold">Rate</th>
+                        <th className="px-3 py-3 text-right font-semibold">Disc Amt</th>
+                        <th className="px-3 py-3 text-right font-semibold">Taxable</th>
+                        <th className="px-3 py-3 text-right font-semibold">Total</th>
+                        <th className="px-3 py-3 text-center font-semibold">Delete</th>
+                      </tr>
+                    </thead>
+
+                    <tbody className="divide-y divide-gray-100">
+                      <FieldArray name="items">
+                        {({ remove }) =>
+                          formik.values.items.map((item, index) => (
+                            <tr key={index} className="hover:bg-gray-50 transition-colors">
+                              <td className="px-3 py-3 text-gray-600">{index + 1}</td>
+                              <td className="px-3 py-3 font-medium text-gray-900">
+                                {item.description}
+                              </td>
+                              <td className="px-3 py-3 text-center">{item.qty}</td>
+                              <td className="px-3 py-3 text-center text-gray-500 text-xs">
+                                {item.batchNo}
+                              </td>
+                              <td className="px-3 py-3 text-center text-gray-500 text-xs">
+                                {item.hsn}
+                              </td>
+                              <td className="px-3 py-3 text-center text-red-500 text-xs font-medium">
+                                {item.expDate}
+                              </td>
+                              <td className="px-3 py-3 text-right text-gray-700">
+                                ₹{item.saleRate}
+                              </td>
+                              <td className="px-3 py-3 text-right text-gray-500">
+                                {item.discAmt.toFixed(2)}
+                              </td>
+                              <td className="px-3 py-3 text-right text-gray-700">
+                                {item.taxableAmt.toFixed(2)}
+                              </td>
+                              <td className="px-3 py-3 text-right font-bold text-sky-700">
+                                ₹{item.total.toFixed(2)}
+                              </td>
+                              <td className="px-3 py-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => remove(index)}
+                                  className="text-red-400 hover:text-red-600 transition-all p-1"
+                                  title="Delete Item"
+                                >
+                                  <TrashIcon className="w-5 h-5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        }
+                      </FieldArray>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
-
             {/* Calculations Summary */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border">
               <div className="space-y-1">
@@ -300,7 +337,7 @@ const Billing = () => {
 
             <div className="flex justify-center items-end pb-1 gap-2">
               <Button type="submit"><CheckCircleIcon className="w-5 h-5" /> Save</Button>
-              <Button type="button" variant="gray" onClick={() => {formik.resetForm(); setBillSearch("");}}><ArrowPathIcon className="w-5 h-5" /> Reset</Button>
+              <Button type="button" variant="gray" onClick={() => { formik.resetForm(); setBillSearch(""); }}><ArrowPathIcon className="w-5 h-5" /> Reset</Button>
             </div>
           </form>
         </FormikProvider>
@@ -315,8 +352,8 @@ const Billing = () => {
               <Input type="date" label="From" name="startDate" value={filters.startDate} onChange={handleFilterChange} />
               <Input type="date" label="To" name="endDate" value={filters.endDate} onChange={handleFilterChange} />
               <div className="flex items-end gap-1 mb-1">
-                <Button onClick={refetchList}><MagnifyingGlassIcon className="w-4 h-4"/> Search</Button>
-                <Button variant="gray" onClick={() => setFilters({ billNo: "", patientName: "", startDate: "", endDate: "", status: "Active" })}><ArrowPathIcon className="w-4 h-4"/></Button>
+                <Button onClick={refetchList}><MagnifyingGlassIcon className="w-4 h-4" /> Search</Button>
+                <Button variant="gray" onClick={() => setFilters({ billNo: "", patientName: "", startDate: "", endDate: "", status: "Active" })}><ArrowPathIcon className="w-4 h-4" /></Button>
               </div>
             </div>
           </section>
@@ -355,9 +392,9 @@ const Billing = () => {
                     <td className="p-2 border-r text-right text-red-500 font-bold">₹{bill.dueAmount}</td>
                     <td className="p-2 text-center">
                       <div className="flex justify-center gap-2">
-                        <button className="text-sky-600 hover:scale-125 transition-all"><PencilSquareIcon className="w-4 h-4"/></button>
-                        <button onClick={() => deleteBill(bill.id)} className="text-red-500 hover:scale-125 transition-all"><TrashIcon className="w-4 h-4"/></button>
-                        <button className="text-gray-600 hover:scale-125 transition-all"><PrinterIcon className="w-4 h-4"/></button>
+                        <button className="text-sky-600 hover:scale-125 transition-all"><PencilSquareIcon className="w-4 h-4" /></button>
+                        <button onClick={() => deleteBill(bill.id)} className="text-red-500 hover:scale-125 transition-all"><TrashIcon className="w-4 h-4" /></button>
+                        <button className="text-gray-600 hover:scale-125 transition-all"><PrinterIcon className="w-4 h-4" /></button>
                       </div>
                     </td>
                   </tr>
@@ -365,13 +402,13 @@ const Billing = () => {
               </tbody>
             </table>
           </div>
-          
+
           {/* Summary footer with Total Paid Amount Fixed */}
           <div className="flex gap-4 text-[10px] font-bold text-sky-700 bg-sky-50 p-2.5 rounded-lg border shadow-sm overflow-x-auto whitespace-nowrap">
-            <span>Total Issued Qty: {billingList?.summary?.totalQty || 0}</span> 
+            <span>Total Issued Qty: {billingList?.summary?.totalQty || 0}</span>
             <span className="border-l border-sky-200 pl-4 text-emerald-700">Total Paid Amount: ₹ {billingList?.summary?.totalPaid || '0.00'}</span>
             <span className="border-l border-sky-200 pl-4">Total Discount: ₹ {billingList?.summary?.totalDisc || '0.00'}</span>
-            <span className="border-l border-sky-200 pl-4">Total Bill Amount: ₹ {billingList?.summary?.totalGross || '0.00'}</span> 
+            <span className="border-l border-sky-200 pl-4">Total Bill Amount: ₹ {billingList?.summary?.totalGross || '0.00'}</span>
             <span className="border-l border-sky-200 pl-4 text-red-600">Total Due Amount: ₹ {billingList?.summary?.totalDue || '0.00'}</span>
           </div>
         </div>
