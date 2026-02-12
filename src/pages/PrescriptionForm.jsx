@@ -24,60 +24,7 @@ import {
 import { useCreatePrescriptionMutation } from "../redux/apiSlice";
 import { formatISO } from "date-fns";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-
-const baseInput =
-  "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
-  "focus:ring-2 focus:ring-sky-400 focus:border-sky-500 " +
-  "transition";
-const baseBtn =
-  "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
-
-const Input = ({ label, required, error, inputProps, ...props }) => (
-  <div>
-    {label && (
-      <label className="text-sm text-gray-600 block mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-    )}
-    <input
-      {...props}
-      {...inputProps}
-      className={`${baseInput} ${error ? "border-red-500" : ""} ${props.className || ""}`}
-    />
-    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-  </div>
-);
-
-const Select = ({ label, required, error, children, ...props }) => (
-  <div>
-    {label && (
-      <label className="text-sm text-gray-600 block mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-    )}
-    <select
-      {...props}
-      className={`${baseInput} ${error ? "border-red-500" : ""}`}
-    >
-      {children}
-    </select>
-    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-  </div>
-);
-
-const Button = ({ variant = "sky", children, ...props }) => {
-  const variants = {
-    sky: `${baseBtn} bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500`,
-    gray: `${baseBtn} bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-300`,
-    green: `${baseBtn} bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500`,
-    outline: `${baseBtn} border border-gray-300 text-gray-700 hover:bg-gray-100`,
-  };
-  return (
-    <button {...props} className={variants[variant]}>
-      {children}
-    </button>
-  );
-};
+import { Input, Select, Button, baseInput } from "../components/FormControls";
 
 const parseChiefComplaintNames = (value) => {
   if (!value || typeof value !== "string") return [];

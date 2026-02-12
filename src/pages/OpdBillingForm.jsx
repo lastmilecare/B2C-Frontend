@@ -17,61 +17,7 @@ import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-
-
-
-const baseInput =
-  "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
-const baseBtn =
-  "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
-
-const Input = ({ label, required, error, ...props }) => (
-  <div>
-    {label && (
-      <label className="text-sm text-gray-600 block mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-    )}
-    <input
-      {...props}
-      className={`${baseInput} ${error ? "border-red-500" : ""} ${props.className || ""}`}
-    />
-    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-  </div>
-);
-
-const Select = ({ label, required, error, children, className= "", ...props }) => (
-  <div>
-    {label && (
-      <label className="text-sm text-gray-600 block mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-    )}
-    <select
-      {...props}
-      className={`${baseInput} ${error ? "border-red-500" : ""} ${className}`}
-    >
-      {children}
-    </select>
-    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-  </div>
-);
-
-const Button = ({ variant = "sky", children, ...props }) => {
-  const variants = {
-    sky: `${baseBtn} bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500`,
-    gray: `${baseBtn} bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-300`,
-    green: `${baseBtn} bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500`,
-    outline: `${baseBtn} border border-gray-300 text-gray-700 hover:bg-gray-100`,
-  };
-  return (
-    <button {...props} className={variants[variant]}>
-      {children}
-    </button>
-  );
-};
-
-
+import { Input, Select, Button, baseInput } from "../components/FormControls";
 
 const OpdBilling = () => {
   const navigate = useNavigate();
