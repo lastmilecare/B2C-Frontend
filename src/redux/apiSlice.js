@@ -406,6 +406,14 @@ export const api = createApi({
         data: body,
       }),
     }),
+    togglePrescriptionStatus: build.mutation({
+      query: (id) => ({
+        url: `/picasoid-prescription/${id}/toggle-status`,
+        method: "PATCH",
+        data: {}, // 👈 add empty body for axios safety
+      }),
+      invalidatesTags: ["PrescriptionDetail"],
+    }),
   }),
 });
 
@@ -445,4 +453,5 @@ export const {
   useGetPrescriptionsListQuery,
   useCreatePrescriptionMutation,
   useUpdatePrescriptionMutation,
+  useTogglePrescriptionStatusMutation,
 } = api;

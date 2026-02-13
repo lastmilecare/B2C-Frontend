@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
 import {
-  useGetPrescriptionsQuery,
+  useTogglePrescriptionStatusMutation,
   useLazyExportPrescriptionsExcelQuery,
   useSearchOpdBillNoQuery,
   useGetPrescriptionsListQuery,
@@ -12,7 +12,7 @@ import PrescriptionPrint from "./PrescriptionPrint";
 import { px, wrap } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import useDebounce from "../hooks/useDebounce";
-
+import { healthAlerts,healthAlert } from "../utils/healthSwal";
 const PrescriptionList = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
   const [page, setPage] = useState(1);
@@ -33,7 +33,7 @@ const PrescriptionList = () => {
       skip: debouncedBillSearch.length < 1,
     },
   );
-
+  const [toggleStatus] = useTogglePrescriptionStatusMutation();
   const [filters, setFilters] = useState({});
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
@@ -83,11 +83,11 @@ const PrescriptionList = () => {
     const today = new Date().toISOString().split("T")[0];
     const { date_from, date_to } = tempFilters;
     if (date_to && date_to > today) {
-      alert("End date cannot be greater than today.");
+      healthAlerts.success("End date cannot be greater than today.");
       return;
     }
     if (date_from && date_to && date_from > date_to) {
-      alert("Start date cannot be after end date.");
+      healthAlerts.warning("Start date cannot be after end date.");
       return;
     }
     setFilters(tempFilters);
@@ -206,16 +206,23 @@ const PrescriptionList = () => {
 
   const navigate = useNavigate();
   const handleEdit = (row) => {
-    if (!row?.ID) return; 
+    if (!row?.ID) return;
 
     navigate(`/prescription/edit/${row.ID}`, {
       state: { row },
     });
   };
 
-  const handleDelete = (row) => {
-    if (window.confirm("Are you sure you want to delete?")) {
-      alert(`Deleting ID: ${row.ID}`);
+  const handleDelete = async (row) => {
+    try {
+      await toggleStatus(row.ID).unwrap();
+      healthAlerts.warning("Prescription Inactive successfully");
+    } catch (error) {
+      healthAlert({
+        title: "Prescription Error",
+        text: error?.data?.message || "Something went wrong",
+        icon: "error",
+      });
     }
   };
 
