@@ -71,6 +71,11 @@ const OpdBillingList = () => {
     endDate: "",
     external_id: "",
     idProof_number: "",
+    department:"",
+    bill_no: "",
+    doctor:"",
+    payment_mode:"",
+    added_by:""
   });
   const [filters, setFilters] = useState({});
   const [printRow, setPrintRow] = useState(null);
@@ -153,7 +158,7 @@ const OpdBillingList = () => {
       startDate: "",
       endDate: "",
       external_id: "",
-      idProof_number: "",
+      idProof_number: ""
     });
     setFilters({});
     setPage(1);
@@ -188,12 +193,12 @@ const OpdBillingList = () => {
         secondaryField: "name",
       },
     },
-    { label: "Bill No", name: "id", type: "text" },
+    { label: "Bill No", name: "bill_no", type: "text" },
     {
       label: "Department",
       name: "department",
       type: "select",
-      options: department?.map((d) => ({ label: d.name, value: d.id })) || [],
+      options: department?.map((d) => ({ label: d.name, value: d.name })) || [],
     },
 
     {
@@ -203,7 +208,7 @@ const OpdBillingList = () => {
       options:
         doctors?.map((d) => ({
           label: d.name || d.doctor_name,
-          value: d.id,
+          value: d.name,
         })) || [],
     },
 
@@ -220,14 +225,14 @@ const OpdBillingList = () => {
       label: "Pay Mode",
       name: "payment_mode",
       type: "select",
-      options: paymode?.map((p) => ({ label: p.name, value: p.id })) || [],
+      options: paymode?.map((p) => ({ label: p.name, value: p.name })) || [],
     },
 
     {
       label: "Collected By",
-      name: "collected_by",
+      name: "added_by",
       type: "select",
-      options: collectedBy?.map((u) => ({ label: u.name, value: u.id })) || [],
+      options: collectedBy?.map((u) => ({ label: u.name, value: u.name })) || [],
     },
 
     { label: "Mobile", name: "contactNumber", type: "text" },
@@ -246,9 +251,7 @@ const OpdBillingList = () => {
     { label: "Date to", name: "endDate", type: "date" },
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
-  // const handlePrintForm = () => {
-  //   window.open("/print-opd-form", "_blank");
-  // };
+
   const columns = [
     {
       name: "S.No",

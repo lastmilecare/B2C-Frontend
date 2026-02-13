@@ -9,7 +9,6 @@ import {
 } from "../redux/apiSlice";
 import { useReactToPrint } from "react-to-print";
 import PrescriptionPrint from "./PrescriptionPrint";
-import { px, wrap } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlerts,healthAlert } from "../utils/healthSwal";
