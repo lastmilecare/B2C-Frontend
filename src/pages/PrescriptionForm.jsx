@@ -24,7 +24,7 @@ import {
 import { useCreatePrescriptionMutation } from "../redux/apiSlice";
 import { formatISO } from "date-fns";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-
+import { cookie } from "../utils/cookie";
 const baseInput =
   "border border-gray-300 rounded-lg px-3 py-2 w-full text-sm " +
   "focus:ring-2 focus:ring-sky-400 focus:border-sky-500 " +
@@ -108,7 +108,7 @@ const PrescriptionForm = () => {
     () => diseaseSearchResponse || [],
     [diseaseSearchResponse],
   );
-
+  const user_id = cookie.get("user_id");
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
   const [updatePrescription] = useUpdatePrescriptionMutation();
@@ -179,7 +179,7 @@ const PrescriptionForm = () => {
 
   const buildPrescriptionPayload = (values, prescriptionList) => {
     const addedDate = formatISO(new Date());
-    debugger;
+
     return {
       consultingId: values.consultingId,
       picasoId: values.UHID,
@@ -215,6 +215,8 @@ const PrescriptionForm = () => {
       doctor_id: patientData.ConsultantDoctorID,
       centerID: patientData.CenterID,
       driver_id: patientData.PatientID,
+      modifiedDate: addedDate,
+      modifiedBy: user_id,
       AdviceList: prescriptionList.map((item) => ({
         picasoId: values.UHID,
         consultingId: values.consultingId,

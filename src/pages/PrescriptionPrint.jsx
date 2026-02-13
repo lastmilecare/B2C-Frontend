@@ -9,14 +9,47 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
     const diffMs = followUpDate - today;
     followup_days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   }
-  function extractDate(val) {
-    if (!val || typeof val !== "string") return null;
-
-    const parts = val.split("T");
-    return parts.length > 0 ? parts[0] : null;
+  function formatToIST(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const formatted = date.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    return formatted;
   }
+  const rowLine = {
+    display: "flex",
+  };
 
-  const result = extractDate(data?.addedDate);
+  const label = {
+    width: "120px", // fixed width for alignment
+    fontWeight: "bold",
+    position: "relative",
+  };
+
+  const value = {
+    marginLeft: "5px",
+  };
+  const colon = {
+    marginRight: "8px",
+  };
+const colon1 = {
+    marginRight: "2px",
+  };
+  const rowBlock = {
+    display: "grid",
+    gridTemplateColumns: "200px 15px 1fr", // label | colon | value
+    alignItems: "start",
+    marginTop: "12px",
+  };
+
+  const result = formatToIST(data?.addedDate);
 
   const add = import.meta.env.VITE_CENTER_ADD;
   const mobile = import.meta.env.VITE_CENTER_MOBILE;
@@ -33,6 +66,7 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
         lineHeight: "1.45",
       }}
     >
+      <img src="/images/LMC_logo.webp" alt="logo" />
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: "10px" }}>
         <h2 style={{ color: "#00397A", margin: 0, fontWeight: "800" }}>
@@ -68,7 +102,6 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
         </div>
       </div>
 
-      {/* Patient & Doctor */}
       <div
         style={{
           display: "flex",
@@ -84,34 +117,73 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
         <tbody>
           <tr>
             <td style={td}>
-              <b>Name:</b> {data?.patientName}
+              <div style={rowLine}>
+                <span style={label}>Name</span>
+                <span style={colon}>:</span>
+                <span style={value}>{data?.patientName}</span>
+              </div>
             </td>
+
             <td style={td}>
-              <b>Doctor:</b> {data?.doctor_name}
-            </td>
-          </tr>
-          <tr>
-            <td style={td}>
-              <b>Age:</b> {data?.age}
-            </td>
-            <td style={td}>
-              <b>Qualification:</b> {data?.qualification}
-            </td>
-          </tr>
-          <tr>
-            <td style={td}>
-              <b>Gender:</b> {data?.gender}
-            </td>
-            <td style={td}>
-              <b>Reg No:</b> {data?.registration_number}
+              <div style={rowLine}>
+                <span style={label}>Doctor</span>
+                <span style={colon}>:</span>
+                <span style={value}>{data?.doctor?.name}</span>
+              </div>
             </td>
           </tr>
+
           <tr>
             <td style={td}>
-              <b>Contact:</b> {data?.contactNo}
+              <div style={rowLine}>
+                <span style={label}>Age</span>
+                <span style={colon}>:</span>
+                <span style={value}>{data?.age}</span>
+              </div>
             </td>
+
             <td style={td}>
-              <b>Category:</b> {data?.patientType}
+              <div style={rowLine}>
+                <span style={label}>Qualification</span>
+                <span style={colon}>:</span>
+                <span style={value}>{data?.doctor?.qualification}</span>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style={td}>
+              <div style={rowLine}>
+                <span style={label}>Gender</span>
+                <span style={colon}>:</span>
+                <span style={value}>{data?.gender}</span>
+              </div>
+            </td>
+
+            <td style={td}>
+              <div style={rowLine}>
+                <span style={label}>Reg No</span>
+                <span style={colon}>:</span>
+                <span style={value}>{data?.doctor?.registration_number}</span>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style={td}>
+              <div style={rowLine}>
+                <span style={label}>Contact</span>
+                <span style={colon}>:</span>
+                <span style={value}>{data?.contactNo}</span>
+              </div>
+            </td>
+
+            <td style={td}>
+              <div style={rowLine}>
+                <span style={label}>Category</span>
+                <span style={colon}>:</span>
+                <span style={value}>{data?.patientType}</span>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -137,7 +209,7 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody style={{ height: "30px" }}>
           <tr>
             <td style={tdCenter}>{data?.bpSystolic}</td>
             <td style={tdCenter}>{data?.bpDiastolic}</td>
@@ -171,7 +243,7 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
           </tr>
         </thead>
 
-        <tbody>
+        <tbody style={{ minHeight: "120px" }}>
           {data?.adviceList?.length > 0 ? (
             data.adviceList.map((m, i) => (
               <tr key={i}>
@@ -194,35 +266,58 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
         </tbody>
       </table>
 
-      <div style={{ marginTop: "20px" }}>
-        <b>Chief Complaints</b> {data?.chiefComplaints}
-      </div>
-      <div style={{ marginTop: "20px" }}>
-        <b>Lab Tests :</b> {data?.labs}
-      </div>
-      <div style={{ marginTop: "20px" }}>
-        <b>Other Lab:</b> {data?.otherLabs}
+      <div style={rowBlock}>
+        <span style={label}>Chief Complaints</span>
+        <span style={colon1}>:</span>
+        <span style={value}>{data?.chiefComplaints}</span>
       </div>
 
-      <div style={{ marginTop: "20px" }}>
-        <b>Follow-up After (Days):</b> {data?.nextFollowup}
+      <div style={rowBlock}>
+        <span style={label}>Lab Tests</span>
+        <span style={colon1}>:</span>
+        <span style={value}>{data?.labs}</span>
       </div>
 
-      <div style={{ marginTop: "20px" }}>
-        <b>Preventive Advice:</b> {data?.preventiveAdvice}
+      <div style={rowBlock}>
+        <span style={label}>Other Lab</span>
+        <span style={colon1}>:</span>
+        <span style={value}>{data?.otherLabs}</span>
       </div>
 
-      <div style={{ marginTop: "20px" }}>
-        <b>History:</b> {data?.history}
+      <div style={rowBlock}>
+        <span style={label}>Follow-up After (Days)</span>
+        <span style={colon1}>:</span>
+        <span style={value}>{data?.nextFollowup}</span>
       </div>
-      <div style={{ marginTop: "20px" }}>
-        <b>Other Instructions :</b> {data?.otherInstructions}
+
+      <div style={rowBlock}>
+        <span style={label}>Preventive Advice</span>
+        <span style={colon1}>:</span>
+        <span style={value}>{data?.preventiveAdvice}</span>
       </div>
+
+      <div style={rowBlock}>
+        <span style={label}>History</span>
+        <span style={colon1}>:</span>
+        <span style={value}>{data?.history}</span>
+      </div>
+
+      <div style={rowBlock}>
+        <span style={label}>Other Instructions</span>
+        <span style={colon1}>:</span>
+        <span style={value}>{data?.otherInstructions}</span>
+      </div>
+
       {/* Signature */}
       <div
         style={{ textAlign: "right", marginTop: "60px", fontWeight: "bold" }}
       >
-        Doctor's Signature
+        Doctor's Sign & Stamp
+      </div>
+      <div
+        style={{ textAlign: "right", marginTop: "10px", fontWeight: "bold" }}
+      >
+        {data?.doctor.name}
       </div>
     </div>
   );
