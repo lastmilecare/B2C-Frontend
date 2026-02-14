@@ -94,7 +94,14 @@ const PatientList = () => {
   };
 
   const filtersConfig = [
-    { label: "UHID", name: "external_id", type: "text" },
+    { label: "UHID", name: "external_id", type: "text",
+      suggestionConfig: {
+        minLength: 2,
+        keyField: "external_id",
+        valueField: "external_id",
+        secondaryField: "name",
+      },
+     },
     { label: "Patient Name", name: "name", type: "text" },
     { label: "Mobile", name: "contactNumber", type: "text" },
     {
