@@ -104,8 +104,9 @@ export const api = createApi({
         idProof_number,
         bill_no,
         department,
-        doctor_id,
-        pay_mode,
+        doctor,
+        payment_mode,
+        added_by,
       } = {}) => ({
         url: "/opd-billing/view",
         method: "get",
@@ -122,8 +123,9 @@ export const api = createApi({
           idProof_number,
           bill_no,
           department,
-          doctor_id,
-          pay_mode,
+          doctor,
+          payment_mode,
+          added_by,
         },
       }),
       providesTags: ["Bill"],
@@ -406,6 +408,14 @@ export const api = createApi({
         data: body,
       }),
     }),
+    togglePrescriptionStatus: build.mutation({
+      query: (id) => ({
+        url: `/picasoid-prescription/${id}/toggle-status`,
+        method: "PATCH",
+        data: {}, // 👈 add empty body for axios safety
+      }),
+      invalidatesTags: ["PrescriptionDetail"],
+    }),
   }),
 });
 
@@ -445,4 +455,5 @@ export const {
   useGetPrescriptionsListQuery,
   useCreatePrescriptionMutation,
   useUpdatePrescriptionMutation,
+  useTogglePrescriptionStatusMutation,
 } = api;

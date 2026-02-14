@@ -7,14 +7,15 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
   const mobile = import.meta.env.VITE_CENTER_MOBILE;
   const center = import.meta.env.VITE_CENTER_NAME;
   const billDate = data?.AddedDate
-    ? new Date(new Date(data.AddedDate).getTime() + 5.5 * 60 * 60 * 1000)
-      .toLocaleString("en-IN", {
+    ? new Date(
+        new Date(data.AddedDate).getTime() + 5.5 * 60 * 60 * 1000,
+      ).toLocaleString("en-IN", {
         day: "2-digit",
         month: "short",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
-        hour12: true
+        hour12: true,
       })
     : "";
 
@@ -23,14 +24,13 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
       ref={ref}
       className="relative w-[700px] mx-auto p-16 print:p-4 text-[11px] text-black font-sans bg-white"
     >
-
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
         <p className="text-[90px] font-extrabold text-gray-400 opacity-10 rotate-[-30deg] tracking-widest whitespace-nowrap">
           Last Mile Care Pvt Ltd
         </p>
       </div>
 
-
+      <img src="/images/LMC_logo.webp" alt="logo" />
       {/* MAIN CONTENT WRAPPER */}
       <div className="relative z-10">
         {/* Header */}
@@ -109,9 +109,13 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
                 <tr key={idx} className="odd:bg-white even:bg-gray-50">
                   <td className="border p-2 text-center">{idx + 1}</td>
                   <td className="border p-2">{item?.ServiceName}</td>
-                  <td className="border p-2 text-center">{safeFixed(item?.ServiceAmount)}</td>
+                  <td className="border p-2 text-center">
+                    {safeFixed(item?.ServiceAmount)}
+                  </td>
                   <td className="border p-2 text-center">{item?.Qty}</td>
-                  <td className="border p-2 text-center">{safeFixed(item?.ServiceAmount * item?.Qty)}</td>
+                  <td className="border p-2 text-center">
+                    {safeFixed(item?.ServiceAmount * item?.Qty)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -121,23 +125,56 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
         {/* Bottom Details */}
         <div className="grid grid-cols-2 gap-4 text-[11px]">
           <div className="space-y-1">
-            <p><span className="font-semibold">Fin. Category:</span> {data?.patient_type}</p>
-            <p><span className="font-semibold">Payment Mode:</span> {data?.payment_mode}</p>
-            <p><span className="font-semibold">Refer From:</span> {data?.referFrom}</p>
-            <p><span className="font-semibold">Chief Complaint:</span> {data?.complaint}</p>
-            <p><span className="font-semibold">Remarks:</span> {data?.Remarks || "just for testing"}</p>
+            <p>
+              <span className="font-semibold">Fin. Category:</span>{" "}
+              {data?.patient_type}
+            </p>
+            <p>
+              <span className="font-semibold">Payment Mode:</span>{" "}
+              {data?.payment_mode}
+            </p>
+            <p>
+              <span className="font-semibold">Refer From:</span>{" "}
+              {data?.referFrom}
+            </p>
+            <p>
+              <span className="font-semibold">Chief Complaint:</span>{" "}
+              {data?.complaint}
+            </p>
+            <p>
+              <span className="font-semibold">Remarks:</span>{" "}
+              {data?.Remarks || "just for testing"}
+            </p>
           </div>
 
           <div className="space-y-1 text-right">
-            <p><span className="font-semibold">Total Amount:</span> Rs {safeFixed(data?.TotalServiceAmount)}</p>
-            <p><span className="font-semibold">Balance Amount:</span> Rs {safeFixed(data?.balanceAmount)}</p>
-            <p><span className="font-semibold">Paid Amount:</span> Rs {safeFixed(data?.PaidAmount)}</p>
-            <p><span className="font-semibold">Due Amount:</span> Rs {safeFixed(data?.DueAmount)}</p>
+            <p>
+              <span className="font-semibold">Total Amount:</span> Rs{" "}
+              {safeFixed(data?.TotalServiceAmount)}
+            </p>
+            <p>
+              <span className="font-semibold">Balance Amount:</span> Rs{" "}
+              {safeFixed(data?.balanceAmount)}
+            </p>
+            <p>
+              <span className="font-semibold">Paid Amount:</span> Rs{" "}
+              {safeFixed(data?.PaidAmount)}
+            </p>
+            <p>
+              <span className="font-semibold">Due Amount:</span> Rs{" "}
+              {safeFixed(data?.DueAmount)}
+            </p>
 
             <hr className="my-2" />
 
-            <p><span className="font-semibold">Cash Amount:</span> Rs {safeFixed(data?.CashAmount)}</p>
-            <p><span className="font-semibold">UPI/Online:</span> Rs {safeFixed(data?.CardAmount)}</p>
+            <p>
+              <span className="font-semibold">Cash Amount:</span> Rs{" "}
+              {safeFixed(data?.CashAmount)}
+            </p>
+            <p>
+              <span className="font-semibold">UPI/Online:</span> Rs{" "}
+              {safeFixed(data?.CardAmount)}
+            </p>
           </div>
         </div>
 

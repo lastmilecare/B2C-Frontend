@@ -14,7 +14,7 @@ import {
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert, healthAlerts } from "../utils/healthSwal";
-import PrintOpdForm from "./PrintOpdForm";
+import PrescriptionPrint from "./PrescriptionPrint";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import {
@@ -26,6 +26,7 @@ import { formatISO } from "date-fns";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
 
+import { cookie } from "../utils/cookie";
 const parseChiefComplaintNames = (value) => {
   if (!value || typeof value !== "string") return [];
 
@@ -55,7 +56,7 @@ const PrescriptionForm = () => {
     () => diseaseSearchResponse || [],
     [diseaseSearchResponse],
   );
-
+  const user_id = cookie.get("user_id");
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
   const [updatePrescription] = useUpdatePrescriptionMutation();
@@ -126,6 +127,7 @@ const PrescriptionForm = () => {
 
   const buildPrescriptionPayload = (values, prescriptionList) => {
     const addedDate = formatISO(new Date());
+
     return {
       consultingId: values.consultingId,
       picasoId: values.UHID,
@@ -158,9 +160,11 @@ const PrescriptionForm = () => {
       addedBy: values.AddedBy,
       addedDate,
       isActive: true,
-      doctor_id:patientData.ConsultantDoctorID,
-      centerID:patientData.CenterID,
-      driver_id:patientData.PatientID,
+      doctor_id: patientData.ConsultantDoctorID,
+      centerID: patientData.CenterID,
+      driver_id: patientData.PatientID,
+      modifiedDate: addedDate,
+      modifiedBy: user_id,
       AdviceList: prescriptionList.map((item) => ({
         picasoId: values.UHID,
         consultingId: values.consultingId,
@@ -169,7 +173,7 @@ const PrescriptionForm = () => {
         dosage: item.dosage,
         pillsConsumption: item.preferredTime,
         duration: Number(item.duration),
-        remarks: values.Remarks,
+        remarks: item.instructions,
         typeOfMedicine: item.type,
         addedBy: values.AddedBy,
         addedDate,
@@ -216,9 +220,9 @@ const PrescriptionForm = () => {
       hospitalId: "",
       Remarks: "",
       ReferTo: "",
-      ConsultantDoctorID:"",
-      CenterID:"",
-      PatientID:""
+      ConsultantDoctorID: "",
+      CenterID: "",
+      PatientID: "",
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -266,7 +270,7 @@ const PrescriptionForm = () => {
         } else {
           await createPrescription(payload).unwrap();
           healthAlerts.success("Prescription saved successfully");
-           navigate(`/prescription-list`);
+          navigate(`/prescription-list`);
         }
       } catch (error) {
         healthAlert({
@@ -296,9 +300,9 @@ const PrescriptionForm = () => {
       Remarks: patientData.Remarks,
       ReferTo: patientData.ReferTo,
       AddedBy: patientData.AddedBy,
-      ConsultantDoctorID:patientData.ConsultantDoctorID,
-      CenterID:patientData.CenterID,
-      PatientID:patientData.PatientID
+      ConsultantDoctorID: patientData.ConsultantDoctorID,
+      CenterID: patientData.CenterID,
+      PatientID: patientData.PatientID,
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
@@ -829,14 +833,18 @@ const PrescriptionForm = () => {
           <Button type="button" variant="gray" onClick={formik.handleReset}>
             <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
           </Button>
-          <Button type="button" variant="outline" onClick={onPrintCS}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onPrintCS(row)}
+          >
             Print CS
           </Button>
         </div>
       </form>
       {printRow && (
         <div style={{ display: "none" }}>
-          <PrintOpdForm ref={printRef} data={printRow} />
+          <PrescriptionPrint ref={printRef} data={printRow} />
         </div>
       )}
     </div>
