@@ -11,6 +11,7 @@ const FilterBar = ({
   suggestions,
   uhidSearch,
   onSelectSuggestion,
+  onPrint
 }) => {
   const today = new Date().toISOString().split("T")[0];
 
@@ -140,6 +141,15 @@ const FilterBar = ({
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
             Export
+          </button>
+        )}
+        {onPrint && (
+          <button
+            onClick={onPrint}
+            className="inline-flex items-center gap-1 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            Print
           </button>
         )}
       </div>
