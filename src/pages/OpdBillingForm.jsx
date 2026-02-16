@@ -86,12 +86,15 @@ const OpdBilling = () => {
   }, [suggestions, selectedUhid, uhidSearch]);
 
   useEffect(() => {
-    if (editData) {
+    if (editData && department && doctors  && paymode) {
       setUhidSearch(editData.uhid || "");
       setIsPaidManuallyEdited(true);
       setSelectedUhid(editData.uhid || "");
       populatedUhidRef.current = editData.uhid || "";
+      const deptObj = department.find(d => d.name === editData.department_name);
+      const docObj = doctors.find(d => (d.name || d.doctor_name) === editData.doctor_name);
 
+      const payObj = paymode?.find(p => p.name === editData.payment_mode);
       formik.setValues({
         ...formik.initialValues,
         UHID: editData.uhid || "",
@@ -99,15 +102,18 @@ const OpdBilling = () => {
         Mobile: editData.contactNumber || "",
         Gender: editData.gender || "",
         Age: editData.age || "",
-        Department: editData.DepartmentID || 0,
-        Doctor: editData.ConsultantDoctorID || 0,
+        Department: deptObj ? deptObj.id : 0,
+        Doctor: docObj ? docObj.id : 0,
+        ReferBy: editData.ReferBy || "",
         FinCategory: editData.patient_type || "",
         TotalAmount: editData.TotalServiceAmount || 0,
         PaidAmount: editData.PaidAmount || 0,
         DueAmount: editData.DueAmount || 0,
-        PayMode: editData.PayMode || "",
+        PayMode: payObj ? payObj.id : "",
         // VisitType: editData.VisitType || "N/A",
-        ChiefComplaint: editData.Disease ? [{ name: editData.Disease }] : [],
+        ChiefComplaint: editData.complaint
+          ? editData.complaint.split(",").map(c => ({ name: c.trim() }))
+          : [],
       });
       if (editData.opd_billing_data) {
         const mapped = editData.opd_billing_data.map(s => ({
@@ -121,14 +127,25 @@ const OpdBilling = () => {
         setSelectedServices(mapped);
       }
     }
-  }, [editData]);
+  }, [editData, department, doctors, paymode]);
 
   const parseDOB = (raw) => {
-    if (!raw || !raw.includes("-")) return "";
+  if (!raw) return "";
 
+  
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  
+  if (/^\d{2}-\d{2}-\d{4}$/.test(raw)) {
     const [dd, mm, yyyy] = raw.split("-");
     return `${yyyy}-${mm}-${dd}`;
-  };
+  }
+
+  return "";
+};
+
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   const buildPayload = (values) => {
@@ -299,10 +316,10 @@ const OpdBilling = () => {
     if (patientData.external_id !== selectedUhid) return;
     if (populatedUhidRef.current === selectedUhid) return;
     populatedUhidRef.current = selectedUhid;
-     formik.setFieldValue(
-    "PreviousDue",
-    Number(patientData.previousDue || patientData.DueAmount || 0)
-  );
+    formik.setFieldValue(
+      "PreviousDue",
+      Number(patientData.previousDue || patientData.DueAmount || 0)
+    );
     const updates = {
       UHID: patientData.external_id,
       Name: patientData.name || "",
@@ -519,12 +536,12 @@ const OpdBilling = () => {
               }
 
               error={formik.touched.Department && formik.errors.Department}
-              
+
             >
               <option value="">Select Department</option>
               {department?.map((d) => (
                 <option key={d.id} value={d.id}>{d.name}</option>
-                
+
               ))}
             </Select>
 
@@ -535,15 +552,15 @@ const OpdBilling = () => {
               </span>
             }
               error={formik.touched.Doctor && formik.errors.Doctor}
-              
-              >
+
+            >
               <option value="">Consulting Doctor</option>
               {doctors?.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name || d.doctor_name}
-                  
+
                 </option>
-                
+
               ))}
             </Select>
 

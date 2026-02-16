@@ -13,10 +13,17 @@ import {
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
+import { useLocation } from "react-router-dom";
 
 const Sidebar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const handleNavClick = (path) => {
+  if (location.pathname === path) {
+    window.location.reload();
+  }
+};
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
@@ -85,10 +92,15 @@ const Sidebar = () => {
           </button>
           {openOpd && isOpen && (
             <div className="ml-6 mt-1 space-y-1">
-              <NavLink to="/opd-form" className={navItemClass}>
+              <NavLink to="/opd-form" className={navItemClass}
+                onClick={() => handleNavClick("/opd-form")}
+
+              >
                 OPD Form
               </NavLink>
-              <NavLink to="/opd-billing" className={navItemClass}>
+              <NavLink to="/opd-billing" className={navItemClass}
+                onClick={() => handleNavClick("/opd-billing")}
+              >
                 OPD Billing
               </NavLink>
             </div>
@@ -109,10 +121,16 @@ const Sidebar = () => {
           </button>
           {openPrescription && isOpen && (
             <div className="ml-6 mt-1 space-y-1">
-              <NavLink to="/prescription-form" className={navItemClass}>
+              <NavLink to="/prescription-form" className={navItemClass}
+                onClick={() => handleNavClick("/prescription-form")}
+
+              >
                 Prescription Form
               </NavLink>
-              <NavLink to="/prescription-list" className={navItemClass}>
+              <NavLink to="/prescription-list" className={navItemClass}
+              onClick={() => handleNavClick("/prescription-list")}
+
+              >
                 Prescription List
               </NavLink>
             </div>
@@ -132,10 +150,21 @@ const Sidebar = () => {
           </button>
           {openInventory && isOpen && (
             <div className="ml-6 mt-1 space-y-1">
-              <NavLink to="/purchased-entry" className={navItemClass}>Purchased Entry</NavLink>
-              <NavLink to="/medicines-billing" className={navItemClass}>Billing</NavLink>
-              <NavLink to="/sales-record" className={navItemClass}>Sales Record</NavLink>
-              <NavLink to="/expiry-items" className={navItemClass}>Expiry Items</NavLink>
+              <NavLink to="/purchased-entry" 
+              className={navItemClass}
+               onClick={() => handleNavClick("/purchased-entry")}
+                >
+                Purchased Entry</NavLink>
+              <NavLink to="/medicines-billing" className={navItemClass}
+                onClick={() => handleNavClick("/medicines-billing")}
+              >Billing</NavLink>
+              <NavLink to="/sales-record" className={navItemClass}
+                onClick={() => handleNavClick("/sales-record")}
+
+              >Sales Record</NavLink>
+              <NavLink to="/expiry-items" className={navItemClass}
+                onClick={() => handleNavClick("/expiry-items")}
+              >Expiry Items</NavLink>
             </div>
           )}
         </div>
