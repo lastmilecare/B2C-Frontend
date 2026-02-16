@@ -37,6 +37,7 @@ const StockDetails = () => {
           <Select label="Item Type" value={filters.itemType} onChange={(e) => setFilters({...filters, itemType: e.target.value})}>
             <option value="">-- All --</option>
             {ITEM_TYPES.map(t => <option key={t}>{t}</option>)}
+            
           </Select>
           <Input label="Item Name" value={filters.itemName} onChange={(e) => setFilters({...filters, itemName: e.target.value})} />
           <Input type="date" label="Date From" value={filters.dateFrom} onChange={(e) => setFilters({...filters, dateFrom: e.target.value})} />

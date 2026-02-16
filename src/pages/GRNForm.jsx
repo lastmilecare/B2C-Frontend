@@ -11,6 +11,7 @@ const GRNForm = () => {
   
   const validationSchema = Yup.object({
     invoiceDate: Yup.string().required("Required"),
+    
     invoiceNo: Yup.string().required("Required"),
     supplier: Yup.string().required("Required"),
   });
