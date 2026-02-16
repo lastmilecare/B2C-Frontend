@@ -11,14 +11,16 @@ const GRNForm = () => {
   
   const validationSchema = Yup.object({
     invoiceDate: Yup.string().required("Required"),
-    
+
     invoiceNo: Yup.string().required("Required"),
     supplier: Yup.string().required("Required"),
   });
 
   const formik = useFormik({
     initialValues: {
-      invoiceDate: "", invoiceNo: "", supplier: "", hsn: "", itemType: "", rackNo: "",
+      invoiceDate: "",
+       invoiceNo: "", 
+       supplier: "", hsn: "", itemType: "", rackNo: "",
       items: [], itemName: "", batchNo: "", mfgDate: "", expiryDate: "",
       unitStrip: "", qtyPerStrip: "", recvQty: "", freeQty: "",
       cp: "", mrp: "", discountPer: "", cgstPer: "", sgstPer: "",
