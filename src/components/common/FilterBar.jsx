@@ -47,15 +47,19 @@ const FilterBar = ({
                   onChange={onChange}
                   autoComplete="none"
                   placeholder={filter.placeholder || `Enter ${filter.label}`}
-                  className={`w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400 focus:bg-white outline-none shadow-none ${
-                    filter.name === "external_id" ? "uppercase" : ""
-                  }`}
+                  className={`w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400 focus:bg-white outline-none shadow-none ${filter.name === "external_id" ? "uppercase" : ""
+                    }`}
                 />
 
                 {/* ✅ Generic Suggestion Dropdown */}
                 {filter.suggestionConfig &&
-                  (tempFilters[filter.name] || "").length >=
-                    filter.suggestionConfig.minLength &&
+                  (
+                    (
+                      filter.name === "external_id"
+                        ? uhidSearch
+                        : tempFilters[filter.name]
+                    ) || ""
+                  ).length >= filter.suggestionConfig.minLength &&
                   suggestions?.length > 0 && (
                     <ul className="absolute z-[1000] bg-white border border-gray-200 rounded-md shadow-lg w-full max-h-60 overflow-auto mt-1">
                       {suggestions.map((item) => {

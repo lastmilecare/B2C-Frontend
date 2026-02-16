@@ -184,6 +184,7 @@ const OpdBillingList = () => {
     });
     setFilters({});
     setPage(1);
+    setUhidSearch("");
   };
   const formatCurrency = (value) => {
     if (value === null || value === undefined || value === "") return `₹0.00`;
@@ -468,6 +469,7 @@ const OpdBillingList = () => {
       <FilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
+        uhidSearch={uhidSearch}
         onChange={(e) => {
           const { name, value } = e.target;
           if (name === "external_id") {
