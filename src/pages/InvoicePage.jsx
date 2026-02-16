@@ -24,16 +24,32 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
       ref={ref}
       className="relative w-[700px] mx-auto p-16 print:p-4 text-[11px] text-black font-sans bg-white"
     >
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
+      {/* <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
         <p className="text-[90px] font-extrabold text-gray-400 opacity-10 rotate-[-30deg] tracking-widest whitespace-nowrap">
           Last Mile Care Pvt Ltd
         </p>
+      </div> */}
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%) rotate(-45deg)",
+          fontSize: "80px",
+          fontWeight: "900",
+          color: "#000",
+          opacity: 0.05,
+          pointerEvents: "none",
+          userSelect: "none",
+          whiteSpace: "nowrap",
+          zIndex: 0,
+        }}
+      >
+        Last Mile Care Pvt Ltd
       </div>
 
       <img src="/images/LMC_logo.webp" alt="logo" />
-      {/* MAIN CONTENT WRAPPER */}
       <div className="relative z-10">
-        {/* Header */}
         <div className="text-center mb-6 border-b pb-6 pt-4">
           <h1 className="text-[#00397A] text-[32px] font-extrabold tracking-wide leading-none">
             MEDI KAVACH
@@ -46,12 +62,10 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
           </p>
         </div>
 
-        {/* Section Title */}
         <h3 className="text-center text-[12px] font-bold mb-3 text-[#1A73E8] tracking-wide underline">
           Patient Invoice ({center})
         </h3>
 
-        {/* Patient Details Table */}
         <div className="rounded-md overflow-hidden shadow-sm border border-gray-300 mb-4 bg-white">
           <table className="w-full border-collapse text-[11px]">
             <tbody>

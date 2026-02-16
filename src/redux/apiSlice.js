@@ -416,6 +416,16 @@ export const api = createApi({
       }),
       invalidatesTags: ["PrescriptionDetail"],
     }),
+    exportOpdExcel: build.query({
+      query: (filters = {}) => ({
+        url: "/opd-billing/opd-billing-export",
+        method: "GET",
+        params: filters,
+        responseType: "blob",
+      }),
+      // transformResponse: (response) => response,
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -456,4 +466,5 @@ export const {
   useCreatePrescriptionMutation,
   useUpdatePrescriptionMutation,
   useTogglePrescriptionStatusMutation,
+  useLazyExportOpdExcelQuery,
 } = api;

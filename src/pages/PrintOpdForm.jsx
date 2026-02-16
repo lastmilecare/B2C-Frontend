@@ -58,11 +58,25 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
         lineHeight: "1.45",
       }}
     >
-      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 pointer-events-none select-none z-0">
-        <p className="text-[40px] font-extrabold text-gray-400 opacity-10 rotate-[310deg] tracking-widest">
-          Last Mile Care Pvt Ltd
-        </p>
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%) rotate(-45deg)",
+          fontSize: "80px",
+          fontWeight: "900",
+          color: "#000",
+          opacity: 0.05,
+          pointerEvents: "none",
+          userSelect: "none",
+          whiteSpace: "nowrap",
+          zIndex: 0,
+        }}
+      >
+        Last Mile Care Pvt Ltd
       </div>
+
       <img src="/images/LMC_logo.webp" alt="logo" />
       <div className="text-center mb-6 border-b pb-6 pt-4">
         <h1 className="text-[#00397A] text-[32px] font-extrabold tracking-wide leading-none">

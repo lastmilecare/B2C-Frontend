@@ -6,6 +6,7 @@ import {
   useGetComboQuery,
   useSearchUHIDQuery,
   useDeleteOpdBillMutation,
+  useLazyExportOpdExcelQuery,
 } from "../redux/apiSlice";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
@@ -13,8 +14,11 @@ import InvoiceTemplate from "./InvoicePage";
 import { healthAlert } from "../utils/healthSwal";
 import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
+import { generateFileName, downloadBlob } from "../utils/helper";
 
 const OpdBillingList = () => {
+  const [exportExcel] = useLazyExportOpdExcelQuery();
+
   const navigate = useNavigate();
   const [deleteOpdBill] = useDeleteOpdBillMutation();
   const handleDelete = async (row) => {
@@ -37,7 +41,6 @@ const OpdBillingList = () => {
         icon: "success",
       });
     } catch (error) {
-      alert("Delete failed");
       error.message("DELETE ERROR:", error);
     }
   };
@@ -71,11 +74,11 @@ const OpdBillingList = () => {
     endDate: "",
     external_id: "",
     idProof_number: "",
-    department:"",
+    department: "",
     bill_no: "",
-    doctor:"",
-    payment_mode:"",
-    added_by:""
+    doctor: "",
+    payment_mode: "",
+    added_by: "",
   });
   const [filters, setFilters] = useState({});
   const [printRow, setPrintRow] = useState(null);
@@ -149,6 +152,25 @@ const OpdBillingList = () => {
     setPage(1);
   };
 
+  const handleExport = async () => {
+    try {
+      const blob = await exportExcel(filters).unwrap();
+      const fileName = generateFileName("OpdBillingDetail", {
+        dateFrom: filters?.date_from,
+        dateTo: filters?.date_to,
+        extension: "xlsx",
+      });
+
+      downloadBlob(blob, fileName);
+    } catch (error) {
+      healthAlert({
+        title: "OPD Error",
+        text: error?.data?.message || "Something went wrong",
+        icon: "error",
+      });
+    }
+  };
+
   const handleResetFilters = () => {
     setTempFilters({
       name: "",
@@ -158,7 +180,7 @@ const OpdBillingList = () => {
       startDate: "",
       endDate: "",
       external_id: "",
-      idProof_number: ""
+      idProof_number: "",
     });
     setFilters({});
     setPage(1);
@@ -233,7 +255,8 @@ const OpdBillingList = () => {
       label: "Collected By",
       name: "added_by",
       type: "select",
-      options: collectedBy?.map((u) => ({ label: u.name, value: u.name })) || [],
+      options:
+        collectedBy?.map((u) => ({ label: u.name, value: u.name })) || [],
     },
 
     { label: "Mobile", name: "contactNumber", type: "text" },
@@ -456,7 +479,7 @@ const OpdBillingList = () => {
         }}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
-        onExport={() => console.log("Export clicked!")}
+        onExport={handleExport}
         suggestions={suggestions}
         onSelectSuggestion={handleSelectSuggestion}
       />

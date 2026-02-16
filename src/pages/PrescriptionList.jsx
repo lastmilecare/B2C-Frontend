@@ -11,7 +11,8 @@ import { useReactToPrint } from "react-to-print";
 import PrescriptionPrint from "./PrescriptionPrint";
 import { useNavigate } from "react-router-dom";
 import useDebounce from "../hooks/useDebounce";
-import { healthAlerts,healthAlert } from "../utils/healthSwal";
+import { healthAlerts, healthAlert } from "../utils/healthSwal";
+import { generateFileName, downloadBlob } from "../utils/helper";
 const PrescriptionList = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
   const [page, setPage] = useState(1);
@@ -69,15 +70,23 @@ const PrescriptionList = () => {
   };
 
   const handleExport = async () => {
-    const blob = await exportExcel(filters).unwrap();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "prescriptions.xlsx";
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
+    try {
+      const blob = await exportExcel(filters).unwrap();
+      const fileName = generateFileName("prescriptions", {
+        dateFrom: filters?.date_from,
+        dateTo: filters?.date_to,
+        extension: "xlsx",
+      });
 
+      downloadBlob(blob, fileName);
+    } catch (error) {
+      healthAlert({
+        title: "Prescriptions Error",
+        text: error?.data?.message || "Something went wrong",
+        icon: "error",
+      });
+    }
+  };
   const handleApplyFilters = () => {
     const today = new Date().toISOString().split("T")[0];
     const { date_from, date_to } = tempFilters;

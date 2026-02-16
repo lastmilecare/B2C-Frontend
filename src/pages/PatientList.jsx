@@ -4,13 +4,14 @@ import FilterBar from "../components/common/FilterBar";
 import { useGetPatientsQuery, useSearchUHIDQuery } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
+import { cookie } from "../utils/cookie";
+const username = cookie.get("username");
 const PatientList = () => {
   const [uhidSearch, setUhidSearch] = useState("");
   const debouncedUhid = useDebounce(uhidSearch, 500);
-  const { data: suggestions = [] } = useSearchUHIDQuery(
-    debouncedUhid,
-    { skip: debouncedUhid.length < 2 }
-  );
+  const { data: suggestions = [] } = useSearchUHIDQuery(debouncedUhid, {
+    skip: debouncedUhid.length < 2,
+  });
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [tempFilters, setTempFilters] = useState({
@@ -21,7 +22,7 @@ const PatientList = () => {
     startDate: "",
     endDate: "",
     external_id: "",
-    idProof_number: ""
+    idProof_number: "",
   });
   const [filters, setFilters] = useState({});
 
@@ -34,25 +35,25 @@ const PatientList = () => {
   const patients = data?.data || [];
   const pagination = data?.pagination || {};
   const navigate = useNavigate();
- const handleChange = (e) => {
-  const { name, value } = e.target;
-  let finalValue = value;
-  if (name === "external_id") {
-    finalValue = value.toUpperCase();
-    setUhidSearch(finalValue);
-  }
-  if (name === "contactNumber") {
-    finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
-  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let finalValue = value;
+    if (name === "external_id") {
+      finalValue = value.toUpperCase();
+      setUhidSearch(finalValue);
+    }
+    if (name === "contactNumber") {
+      finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
+    }
 
-  setTempFilters((prev) => ({
-    ...prev,
-    [name]: finalValue,
-  }));
-};
+    setTempFilters((prev) => ({
+      ...prev,
+      [name]: finalValue,
+    }));
+  };
 
   const handleSelectSuggestion = (val) => {
-    setTempFilters(prev => ({ ...prev, external_id: val }));
+    setTempFilters((prev) => ({ ...prev, external_id: val }));
     setUhidSearch("");
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
@@ -62,7 +63,6 @@ const PatientList = () => {
   const handleApplyFilters = () => {
     const today = new Date().toISOString().split("T")[0];
     const { startDate, endDate } = tempFilters;
-
 
     if (endDate && endDate > today) {
       alert("End date cannot be greater than today.");
@@ -87,7 +87,7 @@ const PatientList = () => {
       startDate: "",
       endDate: "",
       external_id: "",
-      idProof_number: ""
+      idProof_number: "",
     });
     setFilters({});
     setPage(1);
@@ -120,7 +120,7 @@ const PatientList = () => {
       type: "select",
       options: [
         { label: "APL", value: "apl" },
-        { label: "BPL", value: "bpl" }
+        { label: "BPL", value: "bpl" },
       ],
     },
     { label: "Date from", name: "startDate", type: "date" },
@@ -133,7 +133,12 @@ const PatientList = () => {
     { name: "Name", selector: (row) => row.name, sortable: true },
     { name: "Mobile", selector: (row) => row.contactNumber, width: "120px" },
     // { name: "Centre", selector: (row) => row.driver_cetname },  // this will show based on the login
-    { name: "UHID", selector: (row) => row.external_id, width: "120px", sortable: true },
+    {
+      name: "UHID",
+      selector: (row) => row.external_id,
+      width: "120px",
+      sortable: true,
+    },
     { name: "Gender", selector: (row) => row.gender },
     { name: "Age", selector: (row) => row.age, sortable: true },
     { name: "Complaint", selector: (row) => row.Disease || "N/A" }, //this need to fix
@@ -146,17 +151,132 @@ const PatientList = () => {
       sortable: true,
     },
     {
-      name: "Added By", selector: (row) => row.addedby,
+      name: "Added By",
+      selector: (row) => row.addedby,
 
       // width: "60px",
       // center: true,
       // minWidth: "200px",    we Have these option also to manage the column width here
-
     },
     {
-      name: "id", selector: (row) => row.id, hidden: true
+      name: "id",
+      selector: (row) => row.id,
+      hidden: true,
     },
   ];
+  const handlePrint = () => {
+    const today = new Date().toLocaleDateString();
+    const loginUser = username || "Admin";
+
+    const printWindow = window.open("", "", "width=1200,height=800");
+
+    const tableRows = patients
+      .map(
+        (row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${row.external_id || ""}</td>
+        <td>${row.name || ""}</td>
+        <td>${row.gender || ""}</td>
+        <td>${row.age || ""}</td>
+        <td>${row.category || ""}</td>
+        <td>${row.co || "N/A"}</td>
+        <td>${row.contactNumber || ""}</td>
+        <td>${row.localAddress || "N/A"}</td>
+        <td>${row.localAddressState || "N/A"}</td>
+        <td>${row.localAddressDistrict || "N/A"}</td>
+        <td>${row.idProof_number || "N/A"}</td>
+        <td>${new Date(row.createdAt).toLocaleDateString()}</td>
+      </tr>
+    `,
+      )
+      .join("");
+
+    printWindow.document.write(`
+    <html>
+      <head>
+        <title>OPD Patient List</title>
+        <style>
+          @page {
+            size: landscape;
+          }
+
+          body { 
+            font-family: Arial; 
+            padding: 20px; 
+          }
+
+          h2 { 
+            text-align: center; 
+            margin-bottom: 20px; 
+          }
+
+          table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+            font-size: 12px;
+          }
+
+          th, td { 
+            border: 1px solid #000; 
+            padding: 6px; 
+            text-align: left; 
+          }
+
+          th { 
+            background-color: #f2f2f2; 
+          }
+
+          .footer { 
+            margin-top: 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 13px; 
+          }
+        </style>
+      </head>
+      <body>
+
+        <h2>List of OPD Patient</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>UHID</th>
+              <th>Name</th>
+              <th>Gender</th>
+              <th>Age</th>
+              <th>Category</th>
+              <th>C/O</th>
+              <th>Mobile</th>
+              <th>Address</th>
+              <th>State</th>
+              <th>District</th>
+              <th>Identity No.</th>
+              <th>Added On</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <div><strong>Powered by : Last Mile Care</strong></div>
+          <div>Prepared By: ${loginUser}</div>
+          <div>Date: ${today}</div>
+        </div>
+
+      </body>
+    </html>
+  `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
 
   return (
     <div className="p-0">
@@ -166,10 +286,11 @@ const PatientList = () => {
         onChange={handleChange}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
-        onExport={() => console.log("Export clicked!")}
+        // onExport={() => console.log("Export clicked!")}
         suggestions={suggestions}
         uhidSearch={uhidSearch}
         onSelectSuggestion={handleSelectSuggestion}
+        onPrint={handlePrint}
       />
 
       <CommonList
@@ -186,7 +307,7 @@ const PatientList = () => {
         }}
         enableActions
         isLoading={isLoading}
-        actionButtons={["edit","delete"]}
+        actionButtons={["edit", "delete"]}
         onEdit={(row) => {
           navigate(`/patient-registration/${row.id}`);
         }}
