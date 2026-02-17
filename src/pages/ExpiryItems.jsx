@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import { ArrowPathIcon, PrinterIcon } from "@heroicons/react/24/outline";
 import { useGetInventoryQuery } from "../redux/apiSlice";
 import * as XLSX from "xlsx";
+import { healthAlert } from "../utils/healthSwal";
 
 /* ================== UI CLASSES ================== */
 const baseInput =
@@ -37,7 +38,11 @@ const ExpiryItems = () => {
   /* ================== EXPORT TO EXCEL ================== */
   const handleExportExcel = () => {
     if (!expiredItems.length) {
-      alert("No expired medicines available");
+      healthAlert({
+        title: "Export Failed",
+        text: "No expired medicines available to export.",
+        icon: "info",
+      });
       return;
     }
 
@@ -62,6 +67,12 @@ const ExpiryItems = () => {
     );
 
     XLSX.writeFile(workbook, "Expired_Medicines_Report.xlsx");
+    healthAlert({
+        title: "Exported!",
+        text: "Expired medicines report downloaded successfully.",
+        icon: "success",
+        timer: 2000
+    });
   };
 
   return (

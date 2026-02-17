@@ -23,38 +23,69 @@ const OpdBillingList = () => {
   const [deleteOpdBill] = useDeleteOpdBillMutation();
   const handleDelete = async (row) => {
     if (!row || !row.bill_no) {
-      alert("Bill number not found");
-      return;
-    }
-    const confirm = window.confirm(
-      `Are you sure you want to delete OPD Bill No ${row.bill_no}?`,
-    );
-    if (!confirm) return;
-
-    // 3️⃣ API call
-    try {
-      await deleteOpdBill(Number(row.bill_no)).unwrap();
-
       healthAlert({
-        title: "Success",
-        text: "OPD Bill deleted successfully",
-        icon: "success",
+        title: "Error",
+        text: "Bill number not found for this record.",
+        icon: "error",
       });
-    } catch (error) {
-      error.message("DELETE ERROR:", error);
-    }
-  };
-
-  const handleEdit = (row) => {
-    if (!row || !row.bill_no) {
-      alert("Bill number not found");
       return;
     }
 
-    navigate(`/opd-form/${row.bill_no}`, {
-      state: {
-        editData: row,
-      },
+    
+    healthAlert({
+      title: "Are you sure?",
+      text: `You are about to delete OPD Bill No: ${row.bill_no}. This action cannot be undone!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteOpdBill(Number(row.bill_no)).unwrap();
+          
+          healthAlert({
+            title: "Deleted!",
+            text: "OPD Bill has been deleted successfully.",
+            icon: "success",
+          });
+        } catch (error) {
+          healthAlert({
+            title: "Delete Error",
+            text: error?.data?.message || "Something went wrong while deleting.",
+            icon: "error",
+          });
+        }
+      }
+    });
+  };
+ const handleEdit = (row) => {
+    if (!row || !row.bill_no) {
+      healthAlert({
+        title: "Error",
+        text: "Bill number not found for this record.",
+        icon: "error",
+      });
+      return;
+    }
+    healthAlert({
+      title: "Edit Bill?",
+      text: `Do you want to edit OPD Bill No: ${row.bill_no}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#aaa",
+      confirmButtonText: "Yes, Edit it",
+      cancelButtonText: "No, stay here"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate(`/opd-form/${row.bill_no}`, {
+          state: {
+            editData: row,
+          },
+        });
+      }
     });
   };
 
