@@ -426,6 +426,13 @@ export const api = createApi({
       // transformResponse: (response) => response,
       keepUnusedDataFor: 0,
     }),
+    createMedicineStock: build.mutation({
+      query: (body = {}) => ({
+        url: "/medicine-inventory/stock",
+        method: "POST",
+        data: body,
+      }),
+    }),
   }),
 });
 
@@ -467,4 +474,5 @@ export const {
   useUpdatePrescriptionMutation,
   useTogglePrescriptionStatusMutation,
   useLazyExportOpdExcelQuery,
+  useCreateMedicineStockMutation,
 } = api;
