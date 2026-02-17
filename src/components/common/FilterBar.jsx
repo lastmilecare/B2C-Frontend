@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { healthAlert } from "../../utils/healthSwal";
 
 const FilterBar = ({
   filtersConfig = [],
@@ -20,11 +21,21 @@ const FilterBar = ({
     const endDate = tempFilters.endDate;
 
     if (endDate && endDate > today) {
-      alert("End date cannot be greater than today.");
+      
+      healthAlert({
+        title: "Invalid Date",
+        text: "End date cannot be greater than today.",
+        icon: "info",
+      });
       return;
     }
     if (startDate && endDate && startDate > endDate) {
-      alert("Start date cannot be after end date.");
+      
+      healthAlert({
+        title: "Date Range Error",
+        text: "Start date cannot be after end date.",
+        icon: "info",
+      });
       return;
     }
     onApply();

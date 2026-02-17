@@ -654,9 +654,9 @@ const PrescriptionForm = () => {
                 className={`${baseInput} 
         ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
                 placeholder={
-                  formik.values.billno
-                    ? "Search Medicine"
-                    : "First enter Bill No"
+                  
+                     "Search Medicine"
+                    
                 }
                 value={medicineSearch}
                 disabled={!formik.values.billno}

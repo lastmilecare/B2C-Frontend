@@ -5,6 +5,7 @@ import { useGetPatientsQuery, useSearchUHIDQuery } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { cookie } from "../utils/cookie";
+import { healthAlert } from "../utils/healthSwal";
 const username = cookie.get("username");
 const PatientList = () => {
   const [uhidSearch, setUhidSearch] = useState("");
@@ -65,12 +66,20 @@ const PatientList = () => {
     const { startDate, endDate } = tempFilters;
 
     if (endDate && endDate > today) {
-      alert("End date cannot be greater than today.");
+      healthAlert({
+        title: "Invalid Date",
+        text: "End date cannot be greater than today.",
+        icon: "info",
+      });
       return;
     }
 
     if (startDate && endDate && startDate > endDate) {
-      alert("Start date cannot be after end date.");
+     healthAlert({
+        title: "Date Range Error",
+        text: "Start date cannot be after end date.",
+        icon: "info",
+      });
       return;
     }
 

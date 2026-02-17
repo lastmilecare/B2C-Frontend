@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { createPortal } from "react-dom"; 
+import { createPortal } from "react-dom";
 import DataTable from "react-data-table-component";
 import { EllipsisVerticalIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { healthAlert } from "../utils/healthSwal";
 const CommonList = ({
   title = "Records",
   columns = [],
@@ -27,7 +28,7 @@ const CommonList = ({
   const [tempFilters, setTempFilters] = useState({});
   const [openMenuRow, setOpenMenuRow] = useState(null);
   const today = new Date().toISOString().split("T")[0];
-  
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setTempFilters((prev) => ({ ...prev, [name]: value }));
@@ -36,11 +37,22 @@ const CommonList = ({
   const handleApply = () => {
     const { startDate, endDate } = tempFilters;
     if (endDate && endDate > today) {
-      alert("End date cannot be greater than today.");
+
+      healthAlert({
+        title: "Invalid Date",
+        text: "End date cannot be greater than today.",
+        icon: "info",
+      });
+
       return;
     }
     if (startDate && endDate && startDate > endDate) {
-      alert("Start date cannot be after end date.");
+      
+       healthAlert({
+        title: "Date Range Error",
+        text: "Start date cannot be after end date.",
+        icon: "info",
+      });
       return;
     }
     onFilterApply(tempFilters);
@@ -116,7 +128,7 @@ const CommonList = ({
         width: "70px",
         center: true,
         ignoreRowClick: true,
-        
+
         cell: (row) => (
           <ActionMenu
             row={row}
@@ -129,11 +141,11 @@ const CommonList = ({
       },
     ];
   }, [
-    visibleColumns, 
-    enableActions, 
-    actionButtons, 
-    onEdit, onDelete, onView, onPrint, onPrintCS, 
-    openMenuRow 
+    visibleColumns,
+    enableActions,
+    actionButtons,
+    onEdit, onDelete, onView, onPrint, onPrintCS,
+    openMenuRow
   ]);
 
   return (
@@ -261,7 +273,7 @@ const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenu
       setOpenMenuRow(null);
       return;
     }
-    
+
     const rect = e.currentTarget.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -283,7 +295,7 @@ const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenu
     setOpenMenuRow(row);
   };
 
-  
+
   useEffect(() => {
     if (!isOpen) return;
     const closeMenu = () => setOpenMenuRow(null);
@@ -340,7 +352,7 @@ const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenu
       >
         <EllipsisVerticalIcon className="w-4 h-4 text-sky-600" />
       </button>
-      
+
       {isOpen && createPortal(menuContent, document.body)}
     </>
   );
