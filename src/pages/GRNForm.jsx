@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   PlusIcon,
   CheckCircleIcon,
@@ -8,24 +8,61 @@ import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { healthAlerts } from "../utils/healthSwal";
+import useDebounce from "../hooks/useDebounce";
 import {
   Input,
   NumericInput,
   Select,
   Button,
 } from "../components/UIComponents";
-import { useCreateMedicineStockMutation } from "../redux/apiSlice";
+import {
+  useCreateMedicineStockMutation,
+  useGetComboQuery,
+  useGetMediceneListQuery,
+} from "../redux/apiSlice";
+import { cookie } from "../utils/cookie";
+import { skipToken } from "@reduxjs/toolkit/query";
 
+const username = cookie.get("username"); // Ensure auth token is loaded for API calls
 const GRNForm = () => {
   const navigate = useNavigate();
   const [createMedicineStock, { isLoading }] = useCreateMedicineStockMutation();
-
+  const { data: itemType, isLoading: doctorsComboLoading } =
+    useGetComboQuery("medicine-type");
+  const { data: HSNCode, isLoading: HSNCodeLoading } =
+    useGetComboQuery("hsn-code");
+  const { data: Supplier, isLoading: SupplierLoading } =
+    useGetComboQuery("mediciene-supplier");
   const validationSchema = Yup.object({
     InvoiceDate: Yup.string().required("Required"),
 
     RecieptNo: Yup.string().required("Required"),
     SupplierName: Yup.string().required("Required"),
   });
+  const [medicineSuggestions, setMedicineSuggestions] = useState([]);
+
+  const [medicineSearch, setMedicineSearch] = useState("");
+  const debouncedMedicine = useDebounce(medicineSearch, 500);
+
+  const { data: medicineResponse } = useGetMediceneListQuery(
+    debouncedMedicine || skipToken,
+    { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
+  );
+  const medicineList = React.useMemo(
+    () => medicineResponse?.data || [],
+    [medicineResponse],
+  );
+  const medicineTypeOptions = itemType
+    ? itemType.map((t) => ({ value: t.id, label: t.name }))
+    : [];
+
+  const hsnCodeOptions = HSNCode
+    ? HSNCode.map((t) => ({ value: t.HSNID, label: t.HSNCode }))
+    : [];
+
+  const SupplierOptions = Supplier
+    ? Supplier.map((t) => ({ value: t.ID, label: t.name }))
+    : [];
 
   const formik = useFormik({
     initialValues: {
@@ -70,85 +107,121 @@ const GRNForm = () => {
       IsDeathStock: 0,
       Remarks: "",
       UserloginID: 0,
-      AddedBy: 0, // To be set from auth state
+      AddedBy: username,
       ModifiedDate: new Date(),
       ModifiedBy: 0, // To be set from auth state
       Isopen: false,
       StockStatus: 0,
+      items: [],
     },
     validationSchema,
-    onSubmit: async (values) => {
-      if (values.items.length === 0) {
+    onSubmit: async (values, { resetForm }) => {
+      if (!values.items?.length) {
         healthAlerts.error("Add at least one item", "GRN");
         return;
       }
+
       const payload = {
         ...values,
+        ModifiedDate: new Date(),
         items: values.items.map((item) => ({
           ...item,
-          recvQty: Number(item.recvQty),
-          freeQty: Number(item.freeQty || 0),
-          cp: Number(item.cp),
-          mrp: Number(item.mrp),
+          RecvQty: Number(item.RecvQty),
+          FreeRecvQty: Number(item.FreeRecvQty || 0),
+          CP: Number(item.CP),
+          MRP: Number(item.MRP),
         })),
       };
-      await createMedicineStock(payload);
 
-      healthAlerts.success("GRN Saved Successfully", "Inventory");
-      formik.resetForm();
+      try {
+        await createMedicineStock(payload).unwrap();
+
+        healthAlerts.success("GRN Saved Successfully", "Inventory");
+        resetForm();
+      } catch (error) {
+        console.error("GRN Save Failed:", error);
+        healthAlerts.error(
+          error?.data?.message || "Failed to save GRN",
+          "Inventory",
+        );
+      }
     },
   });
+  useEffect(() => {
+    if (!debouncedMedicine) {
+      if (medicineSuggestions.length > 0) setMedicineSuggestions([]);
+      return;
+    }
+
+    if (medicineList && medicineList.length > 0) {
+      const currentDataStr = JSON.stringify(medicineList);
+      const existingDataStr = JSON.stringify(medicineSuggestions);
+
+      if (currentDataStr !== existingDataStr) {
+        setMedicineSuggestions(medicineList);
+      }
+    } else if (medicineList.length === 0 && medicineSuggestions.length > 0) {
+      setMedicineSuggestions([]);
+    }
+  }, [medicineList, debouncedMedicine]);
 
   // Auto-calc Qty & Financials
   useEffect(() => {
-    const unit = Number(formik.values.unitStrip || 0);
-    const qty = Number(formik.values.qtyPerStrip || 0);
-    formik.setFieldValue("recvQty", unit * qty > 0 ? unit * qty : "");
-  }, [formik.values.unitStrip, formik.values.qtyPerStrip]);
+    const unit = Number(formik.values.NoStrip || 0);
+    const qty = Number(formik.values.NoQtyperStrip || 0);
+    formik.setFieldValue("RecvQty", unit * qty > 0 ? unit * qty : "");
+  }, [formik.values.NoStrip, formik.values.NoQtyperStrip]);
 
-  useEffect(() => {
-    const qty = Number(formik.values.recvQty || 0);
-    const cp = Number(formik.values.cp || 0);
-    const mrp = Number(formik.values.mrp || 0);
+  const calculatedValues = useMemo(() => {
+    const qty = Number(formik.values.RecvQty || 0);
+    const cp = Number(formik.values.CP || 0);
+    const mrp = Number(formik.values.MRP || 0);
+    const cgst = Number(formik.values.CGST || 0);
+    const sgst = Number(formik.values.SGST || 0);
+
     const totalCp = qty * cp;
-    formik.setValues({
-      ...formik.values,
-      cpQty: cp,
-      mrpQty: mrp,
-      totalCp: totalCp,
-      totalMrp: qty * mrp,
-      cgstAmt: (totalCp * Number(formik.values.cgstPer || 0)) / 100,
-      sgstAmt: (totalCp * Number(formik.values.sgstPer || 0)) / 100,
-    });
+    const totalMrp = qty * mrp;
+    const cgstAmt = (totalCp * cgst) / 100;
+    const sgstAmt = (totalCp * sgst) / 100;
+
+    return {
+      totalCp,
+      totalMrp,
+      cgstAmt,
+      sgstAmt,
+    };
   }, [
-    formik.values.recvQty,
-    formik.values.cp,
-    formik.values.mrp,
-    formik.values.cgstPer,
-    formik.values.sgstPer,
+    formik.values.RecvQty,
+    formik.values.CP,
+    formik.values.MRP,
+    formik.values.CGST,
+    formik.values.SGST,
   ]);
 
   const handleAddItem = () => {
     const v = formik.values;
-    if (!v.ItemName || !v.BatchNo || !v.cp)
+    if (!v.ItemName || !v.BatchNo || !v.CP)
       return healthAlerts.error("Missing Item Details", "Item");
 
-    const totalCp = Number(v.recvQty) * Number(v.cp);
-    const discountAmt = (totalCp * Number(v.discountPer || 0)) / 100;
+    const totalCp = Number(v.RecvQty) * Number(v.CP);
+    const discountPercent = Number(v.DiscountPCperitem || 0);
+    const discountAmt = (totalCp * discountPercent) / 100;
+
     const taxable = totalCp - discountAmt;
-    const cgstAmt = (taxable * Number(v.cgstPer || 0)) / 100;
-    const sgstAmt = (taxable * Number(v.sgstPer || 0)) / 100;
+    const cgstAmt = (taxable * Number(v.CGST || 0)) / 100;
+    const sgstAmt = (taxable * Number(v.SGST || 0)) / 100;
 
     const newItem = {
       ItemName: v.ItemName,
       BatchNo: v.BatchNo,
-      mfgDate: v.mfgDate,
-      expiryDate: v.expiryDate,
-      recvQty: Number(v.recvQty),
-      freeQty: Number(v.freeQty || 0) * Number(v.qtyPerStrip || 0),
-      cp: Number(v.cp),
-      mrp: Number(v.mrp),
-      discountAmt,
+      MenufacturingDate: v.MenufacturingDate,
+      ExpiryDate: v.ExpiryDate,
+      RecvQty: Number(v.RecvQty),
+      FreeRecvQty: Number(v.FreeRecvQty || 0) * Number(v.NoQtyperStrip || 0),
+      CP: Number(v.CP),
+      MRP: Number(v.MRP),
+      DiscountPercent: discountPercent,
+      DiscountAmt: discountAmt,
       totalGst: cgstAmt + sgstAmt,
       totalCp,
       total: taxable + cgstAmt + sgstAmt,
@@ -158,27 +231,27 @@ const GRNForm = () => {
     [
       "ItemName",
       "BatchNo",
-      "mfgDate",
-      "expiryDate",
-      "unitStrip",
-      "qtyPerStrip",
-      "recvQty",
-      "freeQty",
-      "cp",
-      "mrp",
-      "discountPer",
-      "cgstPer",
-      "sgstPer",
+      "MenufacturingDate",
+      "ExpiryDate",
+      "NoStrip",
+      "NoQtyperStrip",
+      "RecvQty",
+      "FreeRecvQty",
+      "CP",
+      "MRP",
+      "DiscountPCperitem",
+      "CGST",
+      "SGST",
     ].forEach((f) => formik.setFieldValue(f, ""));
   };
 
-  const totals = formik.values.items.reduce(
+  const totals = formik.values.items?.reduce(
     (acc, i) => {
-      acc.qty += i.recvQty;
-      acc.totalCp += i.totalCp;
-      acc.discount += i.discountAmt;
-      acc.gst += i.totalGst;
-      acc.grand += i.total;
+      acc.qty += i?.RecvQty;
+      acc.totalCp += i?.totalCp;
+      acc.discount += i.DiscountAmt || 0;
+      acc.gst += i?.totalGst;
+      acc.grand += i?.total;
       return acc;
     },
     { qty: 0, totalCp: 0, discount: 0, gst: 0, grand: 0 },
@@ -206,17 +279,15 @@ const GRNForm = () => {
             error={formik.touched.RecieptNo && formik.errors.RecieptNo}
             {...formik.getFieldProps("RecieptNo")}
           />
-          <Input
+          <Select
             label="SupplierName"
-            required
-            error={formik.touched.SupplierName && formik.errors.SupplierName}
             {...formik.getFieldProps("SupplierName")}
-          />
-          <Input label="HSNCode" {...formik.getFieldProps("HSNCode")} />
-          <Select label="Item Type" {...formik.getFieldProps("ItemTypeID")}>
-            <option value="">-- Select --</option>
-            <option>Medicine</option>
-            <option>Consumable</option>
+          >
+            {SupplierOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </Select>
           <Input label="Rack No" {...formik.getFieldProps("RagNo")} />
         </div>
@@ -231,9 +302,45 @@ const GRNForm = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
           <Input
-            label="Item Name"
+            type="text"
+            placeholder={"Search Medicine"}
+            value={medicineSearch}
+            onChange={(e) => {
+              setMedicineSearch(e.target.value);
+              formik.setFieldValue("ItemName", e.target.value);
+            }}
+            autoComplete="off"
+          />
+          {/* Medicine Search Suggestions List */}
+          {medicineSuggestions.length > 0 && (
+            <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+              {medicineSuggestions.map((item) => (
+                <li
+                  key={item.id}
+                  onClick={() => {
+                    setMedicineSearch(item.descriptions);
+                    formik.setFieldValue("ItemName", item.descriptions);
+                    formik.setFieldValue("medicineId", item.id);
+                    formik.setFieldValue(
+                      "typemedicine",
+                      item.itemType?.Descriptions || "",
+                    );
+                    setMedicineSuggestions([]);
+                  }}
+                  className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
+                >
+                  {item.descriptions}
+                  <span className="text-xs text-gray-400 ml-2">
+                    ({item.itemType?.Code})
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Input
+            label="Item Type"
             required
-            {...formik.getFieldProps("ItemName")}
+            {...formik.getFieldProps("ItemType")}
           />
           <Input
             label="Batch No"
@@ -244,78 +351,86 @@ const GRNForm = () => {
             type="date"
             label="Mfg Date"
             required
-            {...formik.getFieldProps("mfgDate")}
+            {...formik.getFieldProps("MenufacturingDate")}
           />
           <Input
             type="date"
             label="Expiry Date"
             required
-            {...formik.getFieldProps("expiryDate")}
+            {...formik.getFieldProps("ExpiryDate")}
           />
           <NumericInput
             label="Unit / Strip"
             required
-            {...formik.getFieldProps("unitStrip")}
+            {...formik.getFieldProps("NoStrip")}
           />
           <NumericInput
             label="Qty / Unit"
             required
-            {...formik.getFieldProps("qtyPerStrip")}
+            {...formik.getFieldProps("NoQtyperStrip")}
           />
           <Input
             label="Total Recv. Qty"
-            value={formik.values.recvQty}
+            value={formik.values.RecvQty}
             readOnly
           />
           <NumericInput
             label="Free Qty (Strips)"
-            {...formik.getFieldProps("freeQty")}
+            {...formik.getFieldProps("FreeRecvQty")}
           />
           <NumericInput
             label="CP / Unit"
             required
-            {...formik.getFieldProps("cp")}
+            {...formik.getFieldProps("CP")}
           />
           <NumericInput
             label="MRP / Unit"
             required
-            {...formik.getFieldProps("mrp")}
+            {...formik.getFieldProps("MRP")}
           />
           <NumericInput
             label="Discount %"
             required
-            {...formik.getFieldProps("discountPer")}
+            {...formik.getFieldProps("DiscountPCperitem")}
           />
+          <Select label="HSN Code" {...formik.getFieldProps("hsnCode")}>
+            {hsnCodeOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </Select>
           <NumericInput
             label="CGST %"
             required
-            {...formik.getFieldProps("cgstPer")}
+            {...formik.getFieldProps("CGST")}
           />
           <NumericInput
             label="SGST %"
             required
-            {...formik.getFieldProps("sgstPer")}
+            {...formik.getFieldProps("SGST")}
           />
-          <Input label="C.P / Qty" value={formik.values.cpQty} readOnly />
-          <Input label="M.R.P / Qty" value={formik.values.mrpQty} readOnly />
+          {/* <Input label="C.P / Qty" value={formik.values.cpQty} readOnly />
+          <Input label="M.R.P / Qty" value={formik.values.mrpQty} readOnly /> */}
           <Input
             label="Total C.P"
-            value={formik.values.totalCp.toFixed(2)}
+            value={calculatedValues.totalCp.toFixed(2)}
             readOnly
           />
+          ``
           <Input
             label="Total M.R.P"
-            value={formik.values.totalMrp.toFixed(2)}
+            value={calculatedValues.totalMrp.toFixed(2)}
             readOnly
           />
           <Input
             label="CGST Amount"
-            value={formik.values.cgstAmt.toFixed(2)}
+            value={calculatedValues.cgstAmt.toFixed(2)}
             readOnly
           />
           <Input
             label="SGST Amount"
-            value={formik.values.sgstAmt.toFixed(2)}
+            value={calculatedValues.sgstAmt.toFixed(2)}
             readOnly
           />
         </div>
@@ -345,7 +460,7 @@ const GRNForm = () => {
                     {item.BatchNo}
                   </td>
                   <td className="border px-2 py-2 text-right">
-                    {item.recvQty}
+                    {item.RecvQty}
                   </td>
                   <td className="border px-2 py-2 text-right">
                     ₹ {item.totalCp.toFixed(2)}
@@ -380,8 +495,14 @@ const GRNForm = () => {
       </section>
 
       <div className="flex justify-center gap-4 pt-4 border-t">
-        <Button type="submit">
-          <CheckCircleIcon className="w-5 h-5 mr-1" /> Save
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? (
+            "Saving..."
+          ) : (
+            <>
+              <CheckCircleIcon className="w-5 h-5 mr-1" /> Save
+            </>
+          )}
         </Button>
         <Button type="button" variant="gray" onClick={formik.resetForm}>
           <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
