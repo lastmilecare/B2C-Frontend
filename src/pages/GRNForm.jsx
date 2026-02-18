@@ -24,6 +24,7 @@ import { cookie } from "../utils/cookie";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 const username = cookie.get("username"); // Ensure auth token is loaded for API calls
+
 const GRNForm = () => {
   const navigate = useNavigate();
   const [createMedicineStock, { isLoading }] = useCreateMedicineStockMutation();
