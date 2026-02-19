@@ -433,6 +433,31 @@ export const api = createApi({
         data: body,
       }),
     }),
+    getStockDetails: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        RecieptNo,
+        ItemTypeID,
+        descriptions,
+        startDate,
+        endDate,
+        SupplierID,
+      } = {}) => ({
+        url: "/medicine-inventory/stock/view",
+        method: "get",
+        params: {
+          page,
+          limit,
+          RecieptNo,
+          ItemTypeID,
+          descriptions,
+          startDate,
+          endDate,
+          SupplierID,
+        },
+      }),
+    }),
   }),
 });
 
@@ -475,4 +500,5 @@ export const {
   useTogglePrescriptionStatusMutation,
   useLazyExportOpdExcelQuery,
   useCreateMedicineStockMutation,
+  useGetStockDetailsQuery
 } = api;
