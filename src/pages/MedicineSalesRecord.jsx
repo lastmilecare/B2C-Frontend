@@ -1,259 +1,344 @@
-import React, { useState, useMemo } from "react";
-import { useFormik } from "formik";
-import * as Yup from "yup";
+import React, { useState } from "react";
+import CommonList from "../components/CommonList";
+import FilterBar from "../components/common/FilterBar";
 import {
-  ArrowPathIcon,
-  PrinterIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
-
-import {
-  useSearchUHIDQuery,
-  useLazyGetMedicineSalesQuery,
+  useGetSalesStockDetailsQuery,
   useGetComboQuery,
+  useGetMediceneListQuery,
 } from "../redux/apiSlice";
-import { Input, Select, Button, baseInput } from "../components/FormControls";
-/* ================== COMMON UI (SAME AS PATIENT PAGE) ================== */
-
-// const baseInput =
-//   "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
-// const baseBtn =
-//   "px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-offset-2";
-
-// const Input = ({ label, required, error, ...props }) => (
-//   <div>
-//     <label className="text-sm text-gray-600 block mb-1">
-//       {label} {required && <span className="text-red-500">*</span>}
-//     </label>
-//     <input
-//       {...props}
-//       className={`${baseInput} ${
-//         error ? "border-red-500" : "border-gray-300"
-//       }`}
-//     />
-//     {error && <p className="text-xs text-red-500">{error}</p>}
-//   </div>
-// );
-
-// const Select = ({ label, children, ...props }) => (
-//   <div>
-//     <label className="text-sm text-gray-600 block mb-1">{label}</label>
-//     <select {...props} className={baseInput}>
-//       {children}
-//     </select>
-//   </div>
-// );
-
-// const Button = ({ variant = "sky", children, ...props }) => {
-//   const map = {
-//     sky: `${baseBtn} bg-sky-600 text-white hover:bg-sky-700`,
-//     gray: `${baseBtn} bg-gray-100 text-gray-700 hover:bg-gray-200`,
-//   };
-//   return (
-//     <button {...props} className={map[variant]}>
-//       {children}
-//     </button>
-//   );
-// };
-
-/* ================== PAGE ================== */
+import useDebounce from "../hooks/useDebounce";
+import { useNavigate } from "react-router-dom";
+import { cookie } from "../utils/cookie";
+import { healthAlert } from "../utils/healthSwal";
+const username = cookie.get("username");
 
 const MedicineSalesRecord = () => {
-  const [searchSales, { data, isFetching }] =
-    useLazyGetMedicineSalesQuery();
+  const [ItemSearch, ItemNameSearch] = useState("");
+  const debouncedItemSearch = useDebounce(ItemSearch, 500);
+  const { data: suggestions = [] } = useGetMediceneListQuery(
+    debouncedItemSearch,
+    {
+      skip: debouncedItemSearch.length < 2,
+    },
+  );
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const { data: itemType, isLoading: doctorsComboLoading } =
+    useGetComboQuery("medicine-type");
 
-  const [selectedUHID, setSelectedUHID] = useState("");
-
-  /* ---------- Patient Auto Suggest ---------- */
-  const { data: patientList } = useSearchUHIDQuery(selectedUHID, {
-    skip: selectedUHID.length < 2,
+  const { data: Supplier, isLoading: SupplierLoading } =
+    useGetComboQuery("mediciene-supplier");
+  const [tempFilters, setTempFilters] = useState({
+    RecieptNo: "",
+    ItemTypeID: "",
+    descriptions: "",
+    startDate: "",
+    endDate: "",
+    SupplierID: "",
   });
+  const [filters, setFilters] = useState({});
 
-  /* ---------- Issued By Combo ---------- */
-  const { data: staffList } = useGetComboQuery("STAFF");
+  const { data, isLoading } = useGetSalesStockDetailsQuery({
+    page,
+    limit,
+    ...filters,
+  });
+  const medicineTypeOptions = itemType
+    ? itemType.map((t) => ({ value: t.ID, label: t.Descriptions }))
+    : [];
+  const SupplierOptions = Supplier
+    ? Supplier.map((t) => ({ value: t.ID, label: t.name }))
+    : [];
 
-  /* ---------- Formik ---------- */
-  const formik = useFormik({
-    initialValues: {
-      patientName: "",
-      medicineName: "",
+  const Stock = data?.data || [];
+  const pagination = data?.pagination || {};
+  const navigate = useNavigate();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let finalValue = value;
+    if (name === "descriptions") {
+      finalValue = value.toUpperCase();
+      ItemNameSearch(finalValue);
+    }
+    setTempFilters((prev) => ({
+      ...prev,
+      [name]: finalValue,
+    }));
+  };
+
+  const handleSelectSuggestion = (val) => {
+    setTempFilters((prev) => ({ ...prev, descriptions: val }));
+    ItemNameSearch("");
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
+
+  const handleApplyFilters = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const { startDate, endDate } = tempFilters;
+    if (endDate && endDate > today) {
+      healthAlert({
+        title: "Invalid Date",
+        text: "End date cannot be greater than today.",
+        icon: "info",
+      });
+      return;
+    }
+
+    if (startDate && endDate && startDate > endDate) {
+      healthAlert({
+        title: "Date Range Error",
+        text: "Start date cannot be after end date.",
+        icon: "info",
+      });
+      return;
+    }
+
+    setFilters(tempFilters);
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setTempFilters({
+      PatientName: "",
+      ItemTypeID: "",
+      descriptions: "",
       startDate: "",
       endDate: "",
-      issuedBy: "",
-    },
-    validationSchema: Yup.object({}),
-    onSubmit: (values) => {
-      searchSales({
-        patientName: values.patientName,
-        medicineName: values.medicineName,
-        startDate: values.startDate,
-        endDate: values.endDate,
-        issuedBy: values.issuedBy,
-      });
-    },
-  });
-
-  /* ---------- Table Data ---------- */
-  const records = data?.data || [];
-
-  /* ---------- Totals ---------- */
-  const totals = useMemo(() => {
-    let qty = 0,
-      amount = 0;
-    records.forEach((r) => {
-      qty += Number(r.qty || 0);
-      amount += Number(r.netAmount || 0);
     });
-    return { qty, amount };
-  }, [records]);
+    setFilters({});
+    setPage(1);
+  };
 
-  return (
-    <div className="max-w-7xl mx-auto mt-8 bg-white p-6 rounded-2xl shadow border">
-      <h2 className="text-2xl font-bold text-sky-700 text-center mb-6">
-        💊 Medicine Sales Record
-      </h2>
+  const filtersConfig = [
+    {
+      label: "Patient Name",
+      name: "PatientName",
+      type: "text",
+    },
+    {
+      label: "Item Name",
+      name: "descriptions",
+      type: "text",
+      suggestionConfig: {
+        minLength: 2,
+        keyField: "descriptions",
+        valueField: "descriptions",
+        secondaryField: "name",
+      },
+    },
+    {
+      label: "Item Type",
+      name: "ItemTypeID",
+      type: "select",
+      options: medicineTypeOptions,
+    },
+    { label: "Date from", name: "startDate", type: "date" },
+    { label: "Date to", name: "endDate", type: "date" },
+  ];
+  // Bill No	UHID	Customer Name	Fin. Category	ItemName	Qty	Rate	NetAmount	Issue By	Bill Date
+  const columns = [
+    {
+      name: "S.No",
+      selector: (row, i) => (page - 1) * limit + i + 1,
+      width: "80px",
+    },
+    { name: "Bill No", selector: (row) => row.BillNo, width: "120px" },
+    { name: "UHID", selector: (row) => row.PicasoID, width: "180px" },
+    {
+      name: "Customer Name",
+      selector: (row) => row.CustommerName,
+      width: "120px",
+    },
+    {
+      name: "Fin. Category",
+      selector: (row) => row.PatientType,
+      width: "120px",
+    },
+    { name: "ItemName", selector: (row) => row.CGST, width: "120px" },
+    { name: "Qty", selector: (row) => row.TotalQty, width: "120px" },
+    { name: "Rate", selector: (row) => row.Rate, width: "120px" },
+    { name: "NetAmount", selector: (row) => row.TotalAmount, width: "120px" },
+    { name: "Issue By", selector: (row) => row.CPU, width: "120px" },
+    {
+      name: "Bill Date",
+      selector: (row) => new Date(row.AddedDate).toLocaleDateString(),
+      width: "120px",
+    },
+  ];
+  const handlePrint = () => {
+    const today = new Date().toLocaleDateString();
+    const loginUser = username || "Admin";
+    const printWindow = window.open("", "", "width=1200,height=800");
+    const tableRows = Stock.map(
+      (row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+       <td>${new Date(row.InvoiceDate).toLocaleDateString()}</td>
+        <td>${row.RecieptNo || ""}</td>
+        <td>${row.BatchNo || ""}</td>
+        <td>${row.RagNo || ""}</td>
+        <td>${row.HSNCode || ""}</td>
+        <td>${row.CGST || "N/A"}</td>
+        <td>${row.SGST || "N/A"}</td>
+        <td>${row.CP || "N/A"}</td>
+        <td>${row.MRP || "N/A"}</td>
+        <td>${row.CPU || "N/A"}</td>
+        <td>${row.MRPU || "N/A"}</td>
+        <td>${row.CondmQty || "N/A"}</td>
+        <td>${row.RecvQty || "N/A"}</td>
+        <td>${row.RecvQty - row.BalQty || "N/A"}</td>
+        <td>${row.BalQty || "N/A"}</td>
+        <td>${new Date(row.ExpiryDate).toLocaleDateString()}</td>
+        <td>${new Date(row.AddedDate).toLocaleDateString()}</td>
+        <td>${row.SupplierName || "N/A"}</td>
+      </tr>
+    `,
+    ).join("");
 
-      {/* ================= FILTER ================= */}
-      <form
-        onSubmit={formik.handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6"
-      >
-        {/* Patient Name */}
-        <div className="relative md:col-span-2">
-          <Input
-            label="Patient Name"
-            value={formik.values.patientName}
-            onChange={(e) => {
-              formik.setFieldValue("patientName", e.target.value);
-              setSelectedUHID(e.target.value);
-            }}
-          />
+    printWindow.document.write(`
+    <html>
+      <head>
+        <title>OPD Patient List</title>
+        <style>
+          @page {
+            size: landscape;
+          }
 
-          {patientList?.data?.length > 0 && (
-            <ul className="absolute z-10 bg-white border rounded shadow w-full">
-              {patientList.data.map((p) => (
-                <li
-                  key={p.uhid}
-                  className="px-3 py-2 text-sm hover:bg-sky-50 cursor-pointer"
-                  onClick={() => {
-                    formik.setFieldValue("patientName", p.name);
-                    setSelectedUHID("");
-                  }}
-                >
-                  {p.name} ({p.uhid})
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+          body { 
+            font-family: Arial; 
+            padding: 20px; 
+          }
 
-        <Input
-          label="Medicine Name"
-          {...formik.getFieldProps("medicineName")}
-        />
+          h2 { 
+            text-align: center; 
+            margin-bottom: 20px; 
+          }
 
-        <Input
-          label="Date From"
-          type="date"
-          {...formik.getFieldProps("startDate")}
-        />
+          table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+            font-size: 12px;
+          }
 
-        <Input
-          label="Date To"
-          type="date"
-          {...formik.getFieldProps("endDate")}
-        />
+          th, td { 
+            border: 1px solid #000; 
+            padding: 6px; 
+            text-align: left; 
+          }
 
-        <Select
-          label="Issued By"
-          {...formik.getFieldProps("issuedBy")}
-        >
-          <option value="">-- All --</option>
-          {staffList?.data?.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </Select>
+          th { 
+            background-color: #f2f2f2; 
+          }
 
-        {/* Buttons */}
-        <div className="md:col-span-5 flex justify-end gap-3">
-          <Button type="submit">
-            <MagnifyingGlassIcon className="w-4 h-4 inline mr-1" />
-            Search
-          </Button>
-          <Button
-            type="button"
-            variant="gray"
-            onClick={formik.resetForm}
-          >
-            <ArrowPathIcon className="w-4 h-4 inline mr-1" />
-            Reset
-          </Button>
-          <Button type="button" variant="gray" onClick={window.print}>
-            <PrinterIcon className="w-4 h-4 inline mr-1" />
-            Print
-          </Button>
-        </div>
-      </form>
+          .footer { 
+            margin-top: 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 13px; 
+          }
+        </style>
+      </head>
+      <body>
 
-      {/* ================= TABLE ================= */}
-      <div className="border rounded overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-sky-50 text-sky-700">
+        <h2>List of OPD Patient</h2>
+
+        <table>
+          <thead>
             <tr>
-              <th>SL</th>
-              <th>Bill No</th>
-              <th>UHID</th>
-              <th>Customer</th>
-              <th>Fin Cat</th>
-              <th>Item</th>
-              <th>Qty</th>
-              <th>Rate</th>
-              <th>Net</th>
-              <th>Issued By</th>
+              <th>S.No</th>
+              <th>Invoice Date</th>
+              <th>RecieptNo</th>
+              <th>Batch No</th>
+              <th>Rag No</th>
+              <th>HSN Code</th>
+              <th>CGST</th>
+              <th>SGST</th>
+              <th>CP</th>
+              <th>MRP</th>
+              <th>CPU</th>
+              <th>MRPU</th>
+              <th>Cond. Qty</th>
+              <th>Recv. Qty</th>
+              <th>Sales Qty</th>
+              <th>Bal Qty</th>
+              <th>Expiry Date</th>
               <th>Date</th>
+              <th>Supplier Name</th>
             </tr>
           </thead>
           <tbody>
-            {isFetching ? (
-              <tr>
-                <td colSpan="11" className="text-center p-4">
-                  Loading...
-                </td>
-              </tr>
-            ) : records.length === 0 ? (
-              <tr>
-                <td colSpan="11" className="text-center p-4 text-gray-500">
-                  No records found
-                </td>
-              </tr>
-            ) : (
-              records.map((r, i) => (
-                <tr key={i} className="border-t">
-                  <td>{i + 1}</td>
-                  <td>{r.billNo}</td>
-                  <td>{r.uhid}</td>
-                  <td>{r.customerName}</td>
-                  <td>{r.finCategory}</td>
-                  <td>{r.itemName}</td>
-                  <td>{r.qty}</td>
-                  <td>{r.rate}</td>
-                  <td>{r.netAmount}</td>
-                  <td>{r.issuedBy}</td>
-                  <td>{r.billDate}</td>
-                </tr>
-              ))
-            )}
+            ${tableRows}
           </tbody>
         </table>
-      </div>
 
-      {/* ================= TOTAL ================= */}
-      <div className="mt-4 text-right font-semibold text-sky-700">
-        Total Quantity: {totals.qty} | Total Bill Amount: ₹
-        {totals.amount.toFixed(2)}
-      </div>
+        <div class="footer">
+          <div><strong>Powered by : Last Mile Care</strong></div>
+          <div>Prepared By: ${loginUser}</div>
+          <div>Date: ${today}</div>
+        </div>
+
+      </body>
+    </html>
+  `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
+  const Stat = ({ label, value }) => {
+    return (
+      <span className="whitespace-nowrap">
+        <span className="text-gray-600">{label}:</span>{" "}
+        <span className="font-medium text-gray-800">
+          {Number(value || 0).toLocaleString("en-IN")}
+        </span>
+      </span>
+    );
+  };
+  return (
+    <div className="p-0">
+      <FilterBar
+        filtersConfig={filtersConfig}
+        tempFilters={tempFilters}
+        onChange={handleChange}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+        suggestions={suggestions?.data || []}
+        ItemSearch={ItemSearch}
+        onSelectSuggestion={handleSelectSuggestion}
+        onPrint={handlePrint}
+      />
+
+      <CommonList
+        title="Medicine Sales List"
+        columns={columns}
+        data={Stock}
+        totalRows={pagination.totalRecords || 0}
+        currentPage={pagination.currentPage || page}
+        perPage={limit}
+        onPageChange={(newPage) => setPage(newPage)}
+        onPerPageChange={(newLimit) => {
+          setLimit(newLimit);
+          setPage(1);
+        }}
+        isLoading={isLoading}
+      />
+      <section className="border-t bg-white text-[12px]">
+        <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-1">
+          <Stat label="Cost" value={0} />
+          <Stat label="MRP" value={0} />
+          <Stat label="Recv Qty" value={0} />
+          <Stat label="Free Qty" value={0} />
+          <Stat label="Sales Amt" value={0} />
+          <Stat label="Balance Qty" value={0} />
+          <Stat label="Sales Qty" value={0} />
+          <Stat label="Remain Cost" value={0} />
+          <Stat label="Cond Qty" value={0} />
+        </div>
+      </section>
     </div>
   );
 };

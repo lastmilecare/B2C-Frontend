@@ -468,6 +468,29 @@ export const api = createApi({
         },
       }),
     }),
+    getSalesStockDetails: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        descriptions,
+        startDate,
+        endDate,
+        AddedById,
+        patient,
+      } = {}) => ({
+        url: "/medicine-inventory/stock/view/sales",
+        method: "get",
+        params: {
+          page,
+          limit,
+          descriptions,
+          startDate,
+          endDate,
+          AddedById,
+          patient,
+        },
+      }),
+    }),
   }),
 });
 
@@ -512,4 +535,5 @@ export const {
   useCreateMedicineStockMutation,
   useGetStockDetailsQuery,
   useGetExpireStockDetailsQuery,
+  useGetSalesStockDetailsQuery,
 } = api;
