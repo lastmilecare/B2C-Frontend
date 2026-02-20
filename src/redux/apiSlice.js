@@ -27,6 +27,7 @@ const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
+  tagTypes: ["Bill", "Inventory"],
   tagTypes: ["Bill", "Inventory", "Patients"],
   endpoints: (build) => ({
     login: build.mutation({
@@ -437,6 +438,31 @@ export const api = createApi({
         data: body,
       }),
     }),
+    getStockDetails: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        RecieptNo,
+        ItemTypeID,
+        descriptions,
+        startDate,
+        endDate,
+        SupplierID,
+      } = {}) => ({
+        url: "/medicine-inventory/stock/view",
+        method: "get",
+        params: {
+          page,
+          limit,
+          RecieptNo,
+          ItemTypeID,
+          descriptions,
+          startDate,
+          endDate,
+          SupplierID,
+        },
+      }),
+    }),
   }),
 });
 
@@ -478,4 +504,7 @@ export const {
   useUpdatePrescriptionMutation,
   useTogglePrescriptionStatusMutation,
   useLazyExportOpdExcelQuery,
+  useCreateMedicineStockMutation,
+  useGetStockDetailsQuery,
+  useLazySearchDiseasesQuery,
 } = api;

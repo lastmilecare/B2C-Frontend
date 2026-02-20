@@ -54,7 +54,7 @@ const GRNForm = () => {
     [medicineResponse],
   );
   const medicineTypeOptions = itemType
-    ? itemType.map((t) => ({ value: t.id, label: t.name }))
+    ? itemType.map((t) => ({ value: t.ID, label: t.Descriptions }))
     : [];
 
   const hsnCodeOptions = HSNCode
