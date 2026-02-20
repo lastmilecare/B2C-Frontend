@@ -12,7 +12,6 @@ import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
 const username = cookie.get("username");
 const StockDetails = () => {
-
   const [ItemSearch, ItemNameSearch] = useState("");
   const debouncedItemSearch = useDebounce(ItemSearch, 500);
   const { data: suggestions = [] } = useGetMediceneListQuery(
@@ -197,9 +196,8 @@ const StockDetails = () => {
     const today = new Date().toLocaleDateString();
     const loginUser = username || "Admin";
     const printWindow = window.open("", "", "width=1200,height=800");
-    const tableRows = Stock
-      .map(
-        (row, index) => `
+    const tableRows = Stock.map(
+      (row, index) => `
       <tr>
         <td>${index + 1}</td>
        <td>${new Date(row.InvoiceDate).toLocaleDateString()}</td>
@@ -222,8 +220,7 @@ const StockDetails = () => {
         <td>${row.SupplierName || "N/A"}</td>
       </tr>
     `,
-      )
-      .join("");
+    ).join("");
 
     printWindow.document.write(`
     <html>
@@ -316,6 +313,16 @@ const StockDetails = () => {
     printWindow.focus();
     printWindow.print();
   };
+  const Stat = ({ label, value }) => {
+    return (
+      <span className="whitespace-nowrap">
+        <span className="text-gray-600">{label}:</span>{" "}
+        <span className="font-medium text-gray-800">
+          {Number(value || 0).toLocaleString("en-IN")}
+        </span>
+      </span>
+    );
+  };
   return (
     <div className="p-0">
       <FilterBar
@@ -349,28 +356,18 @@ const StockDetails = () => {
           navigate(`/patient-registration/${row.id}`);
         }}
       />
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-        {[
-          { label: "Total Cost Price (₹)", value: 0 },
-          { label: "Total MRP (₹)", value: 0 },
-          { label: "Total Recv. Quantity", value: 0 },
-          { label: "Total Recv. Free Quantity", value: 0 },
-          { label: "Total Sales Amount (₹)", value: 0 },
-          { label: "Total Balance Quantity", value: 0 },
-          { label: "Total Sales Quantity", value: 0 },
-          { label: "Remaining Cost Price (₹)", value: 0 },
-          { label: "Total Cond. Quantity", value: 0 },
-        ].map((item) => (
-          <div
-            key={item.label}
-            className="bg-gray-50 border rounded-lg p-3 flex flex-col justify-between"
-          >
-            <p className="text-gray-500 text-xs">{item.label}</p>
-            <p className="font-semibold text-gray-900">
-              {item.value.toLocaleString("en-IN")}
-            </p>
-          </div>
-        ))}
+      <section className="border-t bg-white text-[12px]">
+        <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-1">
+          <Stat label="Cost" value={0} />
+          <Stat label="MRP" value={0} />
+          <Stat label="Recv Qty" value={0} />
+          <Stat label="Free Qty" value={0} />
+          <Stat label="Sales Amt" value={0} />
+          <Stat label="Balance Qty" value={0} />
+          <Stat label="Sales Qty" value={0} />
+          <Stat label="Remain Cost" value={0} />
+          <Stat label="Cond Qty" value={0} />
+        </div>
       </section>
     </div>
   );
