@@ -458,6 +458,16 @@ export const api = createApi({
         },
       }),
     }),
+    getExpireStockDetails: build.query({
+      query: ({ page = 1, limit = 10 } = {}) => ({
+        url: "/medicine-inventory/stock/view/expiry",
+        method: "get",
+        params: {
+          page,
+          limit,
+        },
+      }),
+    }),
   }),
 });
 
@@ -500,5 +510,6 @@ export const {
   useTogglePrescriptionStatusMutation,
   useLazyExportOpdExcelQuery,
   useCreateMedicineStockMutation,
-  useGetStockDetailsQuery
+  useGetStockDetailsQuery,
+  useGetExpireStockDetailsQuery,
 } = api;
