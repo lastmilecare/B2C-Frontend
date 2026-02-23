@@ -28,6 +28,7 @@ export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
   tagTypes: ["Bill", "Inventory"],
+  tagTypes: ["Bill", "Inventory", "Patients"],
   endpoints: (build) => ({
     login: build.mutation({
       query: (body) => ({ url: VITE_AUTH_URL, method: "post", data: body }),
@@ -63,6 +64,7 @@ export const api = createApi({
           idProof_number,
         },
       }),
+      providesTags: ["Patients"],
     }),
 
     searchDiseases: build.query({
@@ -237,6 +239,7 @@ export const api = createApi({
         method: "POST",
         data: pData,
       }),
+      invalidatesTags: ["Patients"],
     }),
     getMedicineSales: build.query({
       query: ({
@@ -331,6 +334,7 @@ export const api = createApi({
           patientId: id,
         },
       }),
+      invalidatesTags: ["Patients"],
     }),
 
     updatePatient: build.mutation({
@@ -339,6 +343,7 @@ export const api = createApi({
         method: "PUT",
         data: body,
       }),
+       invalidatesTags: ["Patients"],
     }),
     // getMediceneList: build.query({
     //   query: (id) => ({
@@ -536,4 +541,4 @@ export const {
   useGetStockDetailsQuery,
   useGetExpireStockDetailsQuery,
   useGetSalesStockDetailsQuery,
-} = api;
+  useLazySearchDiseasesQuery,} = api;

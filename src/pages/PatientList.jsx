@@ -31,7 +31,10 @@ const PatientList = () => {
     page,
     limit,
     ...filters,
-  });
+  },{
+    refetchOnMountOrArgChange: true,
+  }
+);
 
   const patients = data?.data || [];
   const pagination = data?.pagination || {};
