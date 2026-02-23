@@ -1,181 +1,196 @@
-import React, { useMemo, useState } from "react";
-import { useFormik } from "formik";
-import { ArrowPathIcon, PrinterIcon } from "@heroicons/react/24/outline";
-import { useGetInventoryQuery } from "../redux/apiSlice";
-import * as XLSX from "xlsx";
-import { healthAlert } from "../utils/healthSwal";
-
-/* ================== UI CLASSES ================== */
-const baseInput =
-  "border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none";
-
-/* ================== COMPONENT ================== */
+import React, { useState } from "react";
+import CommonList from "../components/CommonList";
+import FilterBar from "../components/common/FilterBar";
+import { useGetExpireStockDetailsQuery } from "../redux/apiSlice";
+import { cookie } from "../utils/cookie";
+const username = cookie.get("username");
 const ExpiryItems = () => {
-  const [filters, setFilters] = useState({});
-
-  const { data, isLoading } = useGetInventoryQuery(filters);
-
-  /* ================== EXPIRED LOGIC ================== */
-  const expiredItems = useMemo(() => {
-    if (!data?.data) return [];
-    const today = new Date();
-    return data.data.filter(
-      (item) => new Date(item.expiryDate) < today
-    );
-  }, [data]);
-
-  /* ================== FORMIK ================== */
-  const formik = useFormik({
-    initialValues: {
-      fromDate: "",
-      toDate: "",
-    },
-    onSubmit: (values) => {
-      setFilters(values); // backend filters (optional)
-    },
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const { data, isLoading } = useGetExpireStockDetailsQuery({
+    page,
+    limit,
   });
 
-  /* ================== EXPORT TO EXCEL ================== */
-  const handleExportExcel = () => {
-    if (!expiredItems.length) {
-      healthAlert({
-        title: "Export Failed",
-        text: "No expired medicines available to export.",
-        icon: "info",
-      });
-      return;
-    }
+  const Stock = data?.data || [];
+  const pagination = data?.pagination || {};
 
-    const excelData = expiredItems.map((item, index) => ({
-      "SL No": index + 1,
-      "Batch No": item.batchNo,
-      "Supplier Name": item.supplierName,
-      "Receipt No": item.receiptNo,
-      "Item Name": item.itemName,
-      "C.P Rate": item.cpRate,
-      "MRP": item.mrp,
-      "Expiry Date": item.expiryDate,
-    }));
+  const columns = [
+    {
+      name: "S.No",
+      selector: (row, i) => (page - 1) * limit + i + 1,
+      width: "80px",
+    },
+    { name: "Batch No", selector: (row) => row.BatchNo, width: "150px" },
+    { name: "Supplier", selector: (row) => row.SupplierName, width: "350px" },
+    { name: "Reciept No", selector: (row) => row.RecieptNo, width: "150px" },
+    { name: "Item Name", selector: (row) => row.ItemName, width: "150px" },
+    { name: "CPU", selector: (row) => row.CPU, width: "150px" },
+    { name: "MRPU", selector: (row) => row.MRPU, width: "150px" },
+    {
+      name: "Expiry",
+      selector: (row) => {
+        const expiry = new Date(row.ExpiryDate);
+        const today = new Date();
+        const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
 
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    const workbook = XLSX.utils.book_new();
+        let colorClass = "text-amber-700"; 
 
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      "Expired Medicines"
-    );
+        if (diffDays <= 30) {
+          colorClass = "text-red-600 font-semibold"; // urgent
+        }
 
-    XLSX.writeFile(workbook, "Expired_Medicines_Report.xlsx");
-    healthAlert({
-        title: "Exported!",
-        text: "Expired medicines report downloaded successfully.",
-        icon: "success",
-        timer: 2000
-    });
+        return (
+          <span className={colorClass}>
+            {expiry.toISOString().split("T")[0]}
+          </span>
+        );
+      },
+      width: "150px",
+      sortFunction: (a, b) => new Date(a.ExpiryDate) - new Date(b.ExpiryDate),
+    },
+  ];
+  const handlePrint = () => {
+    const today = new Date().toLocaleDateString();
+    const loginUser = username || "Admin";
+    const printWindow = window.open("", "", "width=1200,height=800");
+    const tableRows = Stock.map(
+      (row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${row.BatchNo || ""}</td>
+        <td>${row.SupplierName || "N/A"}</td>
+        <td>${row.RecieptNo || "N/A"}</td>
+        <td>${row.ItemName || "N/A"}</td>
+        <td>${row.CPU || "N/A"}</td>
+        <td>${row.MRPU || "N/A"}</td>
+        <td>${new Date(row.ExpiryDate).toLocaleDateString()}</td>
+      </tr>
+    `,
+    ).join("");
+
+    printWindow.document.write(`
+    <html>
+      <head>
+        <title>Expired Medicines List</title>
+        <style>
+          @page {
+            size: landscape;
+          }
+
+          body { 
+            font-family: Arial; 
+            padding: 20px; 
+          }
+
+          h2 { 
+            text-align: center; 
+            margin-bottom: 20px; 
+          }
+
+          table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+            font-size: 12px;
+          }
+
+          th, td { 
+            border: 1px solid #000; 
+            padding: 6px; 
+            text-align: left; 
+          }
+
+          th { 
+            background-color: #f2f2f2; 
+          }
+
+          .footer { 
+            margin-top: 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 13px; 
+          }
+        </style>
+      </head>
+      <body>
+
+        <h2>List of Expired Medicines</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Batch No</th>
+              <th>Supplier Name</th>
+              <th>Reciept No</th>
+              <th>Item Name</th>
+              <th>CPU</th>
+              <th>MRPU</th>
+              <th>Expiry Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <div><strong>Powered by : Last Mile Care</strong></div>
+          <div>Prepared By: ${loginUser}</div>
+          <div>Date: ${today}</div>
+        </div>
+
+      </body>
+    </html>
+  `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
   };
 
+  const Stat = ({ label, value }) => {
+    return (
+      <span className="whitespace-nowrap">
+        <span className="text-gray-600">{label}:</span>{" "}
+        <span className="font-medium text-gray-800">
+          {Number(value || 0).toLocaleString("en-IN")}
+        </span>
+      </span>
+    );
+  };
   return (
-    <div className="max-w-6xl mx-auto mt-8 bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-      <h2 className="text-2xl font-bold text-sky-700 mb-6 text-center">
-        💊 Expired Medicines Report
-      </h2>
-
-      <form
-        onSubmit={formik.handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5"
-      >
-        <input
-          type="date"
-          {...formik.getFieldProps("fromDate")}
-          className={baseInput}
-        />
-
-        <input
-          type="date"
-          {...formik.getFieldProps("toDate")}
-          className={baseInput}
-        />
-
-        <button
-          type="submit"
-          className="bg-sky-600 text-white rounded-lg px-4 py-2 hover:bg-sky-700"
-        >
-          Search
-        </button>
-      </form>
-
-    
-      <div className="flex justify-end mb-3">
-        <button
-          onClick={handleExportExcel}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700"
-        >
-          <PrinterIcon className="w-4 h-4" />
-          Export to Excel / Print
-        </button>
-      </div>
-
-    
-      <div className="overflow-x-auto">
-        {isLoading ? (
-          <p className="text-center text-sky-600 font-medium">
-            Loading expired medicines...
-          </p>
-        ) : expiredItems.length === 0 ? (
-          <p className="text-center text-gray-500">
-            No expired medicines found
-          </p>
-        ) : (
-          <table className="w-full border border-gray-200 text-sm">
-            <thead className="bg-sky-50 text-sky-700">
-              <tr>
-                <th className="border px-2 py-2">SL</th>
-                <th className="border px-2">Batch No</th>
-                <th className="border px-2">Supplier</th>
-                <th className="border px-2">Receipt No</th>
-                <th className="border px-2">Item Name</th>
-                <th className="border px-2">C.P</th>
-                <th className="border px-2">MRP</th>
-                <th className="border px-2">Expiry Date</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {expiredItems.map((item, index) => (
-                <tr
-                  key={item.id}
-                  className="text-center hover:bg-red-50"
-                >
-                  <td className="border px-2 py-1">{index + 1}</td>
-                  <td className="border px-2">{item.batchNo}</td>
-                  <td className="border px-2">{item.supplierName}</td>
-                  <td className="border px-2">{item.receiptNo}</td>
-                  <td className="border px-2 font-semibold text-red-600">
-                    {item.itemName}
-                  </td>
-                  <td className="border px-2">{item.cpRate}</td>
-                  <td className="border px-2">{item.mrp}</td>
-                  <td className="border px-2 text-red-600 font-bold">
-                    {item.expiryDate}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-    
-      <div className="flex justify-center mt-6">
-        <button
-          onClick={() => formik.resetForm()}
-          className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200"
-        >
-          <ArrowPathIcon className="w-4 h-4" />
-          Reset
-        </button>
-      </div>
+    <div className="p-0">
+      <FilterBar
+        title="Medicine Expire Stock List"
+        onPrint={handlePrint}
+        showSearch={false}
+      />
+      <CommonList
+        title="Medicine Expire Stock List"
+        columns={columns}
+        data={Stock}
+        totalRows={pagination.totalRecords || 0}
+        currentPage={pagination.currentPage || page}
+        perPage={limit}
+        onPageChange={(newPage) => setPage(newPage)}
+        onPerPageChange={(newLimit) => {
+          setLimit(newLimit);
+          setPage(1);
+        }}
+        isLoading={isLoading}
+      />
+      <section className="border-t bg-amber-50 text-[12px]">
+        <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-2">
+          <span className="text-amber-800 font-medium">
+            Medicines expiring within 90 days:
+          </span>
+          <span className="font-semibold text-amber-900">
+            {Number(data?.total || 0).toLocaleString("en-IN")}
+          </span>
+        </div>
+      </section>
     </div>
   );
 };

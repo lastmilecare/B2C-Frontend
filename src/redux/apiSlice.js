@@ -463,6 +463,39 @@ export const api = createApi({
         },
       }),
     }),
+    getExpireStockDetails: build.query({
+      query: ({ page = 1, limit = 10 } = {}) => ({
+        url: "/medicine-inventory/stock/view/expiry",
+        method: "get",
+        params: {
+          page,
+          limit,
+        },
+      }),
+    }),
+    getSalesStockDetails: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        descriptions,
+        startDate,
+        endDate,
+        AddedById,
+        patient,
+      } = {}) => ({
+        url: "/medicine-inventory/stock/view/sales",
+        method: "get",
+        params: {
+          page,
+          limit,
+          descriptions,
+          startDate,
+          endDate,
+          AddedById,
+          patient,
+        },
+      }),
+    }),
   }),
 });
 
@@ -506,5 +539,6 @@ export const {
   useLazyExportOpdExcelQuery,
   useCreateMedicineStockMutation,
   useGetStockDetailsQuery,
-  useLazySearchDiseasesQuery,
-} = api;
+  useGetExpireStockDetailsQuery,
+  useGetSalesStockDetailsQuery,
+  useLazySearchDiseasesQuery,} = api;

@@ -12,7 +12,7 @@ const FilterBar = ({
   suggestions,
   uhidSearch,
   onSelectSuggestion,
-  onPrint
+  onPrint,
 }) => {
   const today = new Date().toISOString().split("T")[0];
 
@@ -21,7 +21,6 @@ const FilterBar = ({
     const endDate = tempFilters.endDate;
 
     if (endDate && endDate > today) {
-      
       healthAlert({
         title: "Invalid Date",
         text: "End date cannot be greater than today.",
@@ -30,7 +29,6 @@ const FilterBar = ({
       return;
     }
     if (startDate && endDate && startDate > endDate) {
-      
       healthAlert({
         title: "Date Range Error",
         text: "Start date cannot be after end date.",
@@ -58,18 +56,17 @@ const FilterBar = ({
                   onChange={onChange}
                   autoComplete="none"
                   placeholder={filter.placeholder || `Enter ${filter.label}`}
-                  className={`w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400 focus:bg-white outline-none shadow-none ${filter.name === "external_id" ? "uppercase" : ""
-                    }`}
+                  className={`w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400 focus:bg-white outline-none shadow-none ${
+                    filter.name === "external_id" ? "uppercase" : ""
+                  }`}
                 />
 
                 {/* ✅ Generic Suggestion Dropdown */}
                 {filter.suggestionConfig &&
                   (
-                    (
-                      filter.name === "external_id"
-                        ? uhidSearch
-                        : tempFilters[filter.name]
-                    ) || ""
+                    (filter.name === "external_id"
+                      ? uhidSearch
+                      : tempFilters[filter.name]) || ""
                   ).length >= filter.suggestionConfig.minLength &&
                   suggestions?.length > 0 && (
                     <ul className="absolute z-[1000] bg-white border border-gray-200 rounded-md shadow-lg w-full max-h-60 overflow-auto mt-1">
@@ -137,18 +134,24 @@ const FilterBar = ({
         ))}
       </div>
       <div className="flex flex-wrap justify-end gap-2 mt-3 border-t border-sky-100 pt-2">
-        <button
-          onClick={onReset}
-          className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs hover:bg-gray-300"
-        >
-          Reset
-        </button>
-        <button
-          onClick={handleApply}
-          className="bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
-        >
-          Apply
-        </button>
+        {onReset && (
+          <button
+            onClick={onReset}
+            className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs hover:bg-gray-300"
+          >
+            Reset
+          </button>
+        )}
+
+        {onApply && (
+          <button
+            onClick={handleApply}
+            className="bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
+          >
+            Apply
+          </button>
+        )}
+
         {onExport && (
           <button
             onClick={onExport}
@@ -158,10 +161,11 @@ const FilterBar = ({
             Export
           </button>
         )}
+
         {onPrint && (
           <button
             onClick={onPrint}
-            className="inline-flex items-center gap-1 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs"
+            className="inline-flex items-center gap-1 bg-slate-600 text-white px-3 py-1 rounded hover:bg-slate-700 text-xs"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
             Print
