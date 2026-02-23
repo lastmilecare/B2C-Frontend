@@ -26,15 +26,14 @@ const MedicineSalesRecord = () => {
   const { data: itemType, isLoading: doctorsComboLoading } =
     useGetComboQuery("medicine-type");
 
-  const { data: Supplier, isLoading: SupplierLoading } =
-    useGetComboQuery("mediciene-supplier");
+  const { data: User, isLoading: SupplierLoading } = useGetComboQuery("users");
   const [tempFilters, setTempFilters] = useState({
     RecieptNo: "",
     ItemTypeID: "",
     descriptions: "",
     startDate: "",
     endDate: "",
-    SupplierID: "",
+    AddedBy: "",
   });
   const [filters, setFilters] = useState({});
 
@@ -46,13 +45,13 @@ const MedicineSalesRecord = () => {
   const medicineTypeOptions = itemType
     ? itemType.map((t) => ({ value: t.ID, label: t.Descriptions }))
     : [];
-  const SupplierOptions = Supplier
-    ? Supplier.map((t) => ({ value: t.ID, label: t.name }))
+  const UserOptions = User
+    ? User.map((t) => ({ value: t.ID, label: t.username }))
     : [];
 
   const Stock = data?.data || [];
   const pagination = data?.pagination || {};
-  const navigate = useNavigate();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     let finalValue = value;
@@ -101,7 +100,7 @@ const MedicineSalesRecord = () => {
 
   const handleResetFilters = () => {
     setTempFilters({
-      PatientName: "",
+      CustommerName: "",
       ItemTypeID: "",
       descriptions: "",
       startDate: "",
@@ -114,7 +113,7 @@ const MedicineSalesRecord = () => {
   const filtersConfig = [
     {
       label: "Patient Name",
-      name: "PatientName",
+      name: "CustommerName",
       type: "text",
     },
     {
@@ -129,15 +128,15 @@ const MedicineSalesRecord = () => {
       },
     },
     {
-      label: "Item Type",
-      name: "ItemTypeID",
+      label: "Added By",
+      name: "AddedBy",
       type: "select",
-      options: medicineTypeOptions,
+      options: UserOptions,
     },
     { label: "Date from", name: "startDate", type: "date" },
     { label: "Date to", name: "endDate", type: "date" },
   ];
-  // Bill No	UHID	Customer Name	Fin. Category	ItemName	Qty	Rate	NetAmount	Issue By	Bill Date
+  console.log("vaaku", Stock[0]?.footerItems[0].ItemName); // Here getting data
   const columns = [
     {
       name: "S.No",
@@ -156,10 +155,26 @@ const MedicineSalesRecord = () => {
       selector: (row) => row.PatientType,
       width: "120px",
     },
-    { name: "ItemName", selector: (row) => row.CGST, width: "120px" },
-    { name: "Qty", selector: (row) => row.TotalQty, width: "120px" },
-    { name: "Rate", selector: (row) => row.Rate, width: "120px" },
-    { name: "NetAmount", selector: (row) => row.TotalAmount, width: "120px" },
+    {
+      name: "ItemName",
+      selector: (row) => row.footerItems[0]?.ItemName || "N/A",
+      width: "120px",
+    },
+    {
+      name: "Qty",
+      selector: (row) => row.footerItems[0]?.IssueQty,
+      width: "120px",
+    },
+    {
+      name: "Rate",
+      selector: (row) => row.footerItems[0]?.Rate || "N/A",
+      width: "120px",
+    },
+    {
+      name: "NetAmount",
+      selector: (row) => row.footerItems[0]?.NetAmount || "N/A",
+      width: "120px",
+    },
     { name: "Issue By", selector: (row) => row.CPU, width: "120px" },
     {
       name: "Bill Date",
@@ -175,24 +190,16 @@ const MedicineSalesRecord = () => {
       (row, index) => `
       <tr>
         <td>${index + 1}</td>
-       <td>${new Date(row.InvoiceDate).toLocaleDateString()}</td>
-        <td>${row.RecieptNo || ""}</td>
-        <td>${row.BatchNo || ""}</td>
-        <td>${row.RagNo || ""}</td>
-        <td>${row.HSNCode || ""}</td>
-        <td>${row.CGST || "N/A"}</td>
-        <td>${row.SGST || "N/A"}</td>
-        <td>${row.CP || "N/A"}</td>
-        <td>${row.MRP || "N/A"}</td>
-        <td>${row.CPU || "N/A"}</td>
-        <td>${row.MRPU || "N/A"}</td>
-        <td>${row.CondmQty || "N/A"}</td>
-        <td>${row.RecvQty || "N/A"}</td>
-        <td>${row.RecvQty - row.BalQty || "N/A"}</td>
-        <td>${row.BalQty || "N/A"}</td>
-        <td>${new Date(row.ExpiryDate).toLocaleDateString()}</td>
+       <td>${row.BillNo || ""}</td>
+        <td>${row.PicasoID || ""}</td>
+        <td>${row.CustommerName || ""}</td>
+        <td>${row.PatientType || ""}</td>
+        <td>${row.footerItems[0]?.ItemName || "N/A"}</td>
+        <td>${row.footerItems[0]?.IssueQty || "N/A"}</td>
+        <td>${row.footerItems[0]?.Rate || "N/A"}</td>
+        <td>${row.footerItems[0]?.NetAmount || "N/A"}</td>
+        <td>${row.CustommerName || "N/A"}</td>
         <td>${new Date(row.AddedDate).toLocaleDateString()}</td>
-        <td>${row.SupplierName || "N/A"}</td>
       </tr>
     `,
     ).join("");
@@ -200,7 +207,7 @@ const MedicineSalesRecord = () => {
     printWindow.document.write(`
     <html>
       <head>
-        <title>OPD Patient List</title>
+        <title>Medicine Sales List</title>
         <style>
           @page {
             size: landscape;
@@ -243,30 +250,22 @@ const MedicineSalesRecord = () => {
       </head>
       <body>
 
-        <h2>List of OPD Patient</h2>
+        <h2>Medicine Sales List</h2>
 
         <table>
           <thead>
             <tr>
               <th>S.No</th>
-              <th>Invoice Date</th>
-              <th>RecieptNo</th>
-              <th>Batch No</th>
-              <th>Rag No</th>
-              <th>HSN Code</th>
-              <th>CGST</th>
-              <th>SGST</th>
-              <th>CP</th>
-              <th>MRP</th>
-              <th>CPU</th>
-              <th>MRPU</th>
-              <th>Cond. Qty</th>
-              <th>Recv. Qty</th>
-              <th>Sales Qty</th>
-              <th>Bal Qty</th>
-              <th>Expiry Date</th>
-              <th>Date</th>
-              <th>Supplier Name</th>
+              <th>BillNo</th>
+              <th>Uhid</th>
+              <th>Custommer Name</th>
+              <th>Fin. Category</th>
+              <th>ItemName</th>
+              <th>IssueQty</th>
+              <th>Rate</th>
+              <th>Net Amount</th>
+              <th>Added By</th>
+              <th>Added Date</th>
             </tr>
           </thead>
           <tbody>
@@ -326,17 +325,11 @@ const MedicineSalesRecord = () => {
         }}
         isLoading={isLoading}
       />
+
       <section className="border-t bg-white text-[12px]">
         <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-1">
-          <Stat label="Cost" value={0} />
-          <Stat label="MRP" value={0} />
-          <Stat label="Recv Qty" value={0} />
-          <Stat label="Free Qty" value={0} />
-          <Stat label="Sales Amt" value={0} />
-          <Stat label="Balance Qty" value={0} />
-          <Stat label="Sales Qty" value={0} />
-          <Stat label="Remain Cost" value={0} />
-          <Stat label="Cond Qty" value={0} />
+          <Stat label="Total Amount" value={data?.totalSales} />
+          <Stat label="Total Qty" value={data?.totalQty} />
         </div>
       </section>
     </div>

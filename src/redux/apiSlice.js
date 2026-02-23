@@ -475,8 +475,8 @@ export const api = createApi({
         descriptions,
         startDate,
         endDate,
-        AddedById,
-        patient,
+        AddedBy,
+        CustommerName,
       } = {}) => ({
         url: "/medicine-inventory/stock/view/sales",
         method: "get",
@@ -486,8 +486,17 @@ export const api = createApi({
           descriptions,
           startDate,
           endDate,
-          AddedById,
-          patient,
+          AddedBy,
+          CustommerName,
+        },
+      }),
+    }),
+    getPatientNameFromSales: build.query({
+      query: ({ CustommerName } = {}) => ({
+        url: "/medicine-inventory/stock/view/sales/patient-name",
+        method: "get",
+        params: {
+          CustommerName,
         },
       }),
     }),
@@ -536,4 +545,5 @@ export const {
   useGetStockDetailsQuery,
   useGetExpireStockDetailsQuery,
   useGetSalesStockDetailsQuery,
+  useGetPatientNameFromSalesQuery,
 } = api;
