@@ -5,6 +5,7 @@ import {
   useGetSalesStockDetailsQuery,
   useGetComboQuery,
   useGetMediceneListQuery,
+  useGetPatientNameFromSalesQuery,
 } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
@@ -13,14 +14,22 @@ import { healthAlert } from "../utils/healthSwal";
 const username = cookie.get("username");
 
 const MedicineSalesRecord = () => {
-  const [ItemSearch, ItemNameSearch] = useState("");
-  const debouncedItemSearch = useDebounce(ItemSearch, 500);
-  const { data: suggestions = [] } = useGetMediceneListQuery(
-    debouncedItemSearch,
-    {
-      skip: debouncedItemSearch.length < 2,
-    },
+  const [searchTerms, setSearchTerms] = useState({
+    descriptions: "",
+    CustommerName: "",
+  });
+  const debouncedMedicine = useDebounce(searchTerms.descriptions, 500);
+  const debouncedPatient = useDebounce(searchTerms.CustommerName, 500);
+  const { data: medicineSuggestions = [] } = useGetMediceneListQuery(
+    debouncedMedicine,
+    { skip: debouncedMedicine.length < 2 },
   );
+
+  const { data: patientSuggestions = [] } = useGetPatientNameFromSalesQuery(
+    debouncedPatient,
+    { skip: debouncedPatient.length < 2 },
+  );
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const { data: itemType, isLoading: doctorsComboLoading } =
@@ -28,8 +37,7 @@ const MedicineSalesRecord = () => {
 
   const { data: User, isLoading: SupplierLoading } = useGetComboQuery("users");
   const [tempFilters, setTempFilters] = useState({
-    RecieptNo: "",
-    ItemTypeID: "",
+    CustommerName: "",
     descriptions: "",
     startDate: "",
     endDate: "",
@@ -42,34 +50,42 @@ const MedicineSalesRecord = () => {
     limit,
     ...filters,
   });
-  const medicineTypeOptions = itemType
-    ? itemType.map((t) => ({ value: t.ID, label: t.Descriptions }))
-    : [];
   const UserOptions = User
-    ? User.map((t) => ({ value: t.ID, label: t.username }))
+    ? User.map((t) => ({ value: t.id, label: t.username }))
     : [];
 
-  const Stock = data?.data || [];
+  const rawStock = data?.data || [];
+
+  const Stock = rawStock.flatMap((header) =>
+    (header.footerItems || []).map((footer) => ({
+      ...header,
+      ...footer,
+    })),
+  );
+  console.log("Stock data:", Stock);
   const pagination = data?.pagination || {};
+
+  const userLookup = React.useMemo(() => {
+    if (!User?.length) return {};
+
+    return User.reduce((acc, user) => {
+      acc[String(user.id)] = user.username;
+      return acc;
+    }, {});
+  }, [User]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    let finalValue = value;
-    if (name === "descriptions") {
-      finalValue = value.toUpperCase();
-      ItemNameSearch(finalValue);
-    }
+
     setTempFilters((prev) => ({
       ...prev,
-      [name]: finalValue,
+      [name]: value,
     }));
-  };
-
-  const handleSelectSuggestion = (val) => {
-    setTempFilters((prev) => ({ ...prev, descriptions: val }));
-    ItemNameSearch("");
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
+    if (name === "descriptions" || name === "CustommerName") {
+      setSearchTerms((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
   };
 
@@ -115,9 +131,14 @@ const MedicineSalesRecord = () => {
       label: "Patient Name",
       name: "CustommerName",
       type: "text",
+      suggestionConfig: {
+        minLength: 2,
+        keyField: "CustommerName",
+        valueField: "CustommerName",
+      },
     },
     {
-      label: "Item Name",
+      label: "Medicine Name",
       name: "descriptions",
       type: "text",
       suggestionConfig: {
@@ -136,7 +157,6 @@ const MedicineSalesRecord = () => {
     { label: "Date from", name: "startDate", type: "date" },
     { label: "Date to", name: "endDate", type: "date" },
   ];
-  console.log("vaaku", Stock[0]?.footerItems[0].ItemName); // Here getting data
   const columns = [
     {
       name: "S.No",
@@ -144,38 +164,44 @@ const MedicineSalesRecord = () => {
       width: "80px",
     },
     { name: "Bill No", selector: (row) => row.BillNo, width: "120px" },
-    { name: "UHID", selector: (row) => row.PicasoID, width: "180px" },
+    { name: "UHID", selector: (row) => row.PicasoID, width: "140px" },
     {
       name: "Customer Name",
       selector: (row) => row.CustommerName,
-      width: "120px",
+      width: "180px",
     },
     {
-      name: "Fin. Category",
+      name: "Category",
       selector: (row) => row.PatientType,
-      width: "120px",
+      width: "80px",
     },
     {
-      name: "ItemName",
-      selector: (row) => row.footerItems[0]?.ItemName || "N/A",
-      width: "120px",
+      name: "Medicine Name",
+      selector: (row) => row.ItemName || "N/A",
+      width: "180px",
     },
     {
       name: "Qty",
-      selector: (row) => row.footerItems[0]?.IssueQty,
-      width: "120px",
+      selector: (row) => row.IssueQty || 0,
+
+      width: "80px",
     },
     {
       name: "Rate",
-      selector: (row) => row.footerItems[0]?.Rate || "N/A",
+      selector: (row) => row.Rate || "N/A",
+
       width: "120px",
     },
     {
       name: "NetAmount",
-      selector: (row) => row.footerItems[0]?.NetAmount || "N/A",
+      selector: (row) => row.NetAmount || "N/A",
       width: "120px",
     },
-    { name: "Issue By", selector: (row) => row.CPU, width: "120px" },
+    {
+      name: "Added By",
+      selector: (row) => userLookup[row.AddedBy] || "N/A",
+      width: "180px",
+    },
     {
       name: "Bill Date",
       selector: (row) => new Date(row.AddedDate).toLocaleDateString(),
@@ -194,11 +220,11 @@ const MedicineSalesRecord = () => {
         <td>${row.PicasoID || ""}</td>
         <td>${row.CustommerName || ""}</td>
         <td>${row.PatientType || ""}</td>
-        <td>${row.footerItems[0]?.ItemName || "N/A"}</td>
-        <td>${row.footerItems[0]?.IssueQty || "N/A"}</td>
-        <td>${row.footerItems[0]?.Rate || "N/A"}</td>
-        <td>${row.footerItems[0]?.NetAmount || "N/A"}</td>
-        <td>${row.CustommerName || "N/A"}</td>
+        <td>${row.ItemName || "N/A"}</td>
+        <td>${row.IssueQty || 0}</td>
+        <td>${row.Rate || "N/A"}</td>
+        <td>${row.NetAmount || "N/A"}</td>
+        <td>${userLookup[row.AddedBy] || "N/A"}</td>
         <td>${new Date(row.AddedDate).toLocaleDateString()}</td>
       </tr>
     `,
@@ -287,16 +313,7 @@ const MedicineSalesRecord = () => {
     printWindow.focus();
     printWindow.print();
   };
-  const Stat = ({ label, value }) => {
-    return (
-      <span className="whitespace-nowrap">
-        <span className="text-gray-600">{label}:</span>{" "}
-        <span className="font-medium text-gray-800">
-          {Number(value || 0).toLocaleString("en-IN")}
-        </span>
-      </span>
-    );
-  };
+
   return (
     <div className="p-0">
       <FilterBar
@@ -305,9 +322,16 @@ const MedicineSalesRecord = () => {
         onChange={handleChange}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
-        suggestions={suggestions?.data || []}
-        ItemSearch={ItemSearch}
-        onSelectSuggestion={handleSelectSuggestion}
+        suggestionsMap={{
+          descriptions: medicineSuggestions?.data || [],
+          CustommerName: patientSuggestions?.data || [],
+        }}
+        onSelectSuggestion={(fieldName, value) => {
+          setTempFilters((prev) => ({
+            ...prev,
+            [fieldName]: value,
+          }));
+        }}
         onPrint={handlePrint}
       />
 
@@ -326,10 +350,16 @@ const MedicineSalesRecord = () => {
         isLoading={isLoading}
       />
 
-      <section className="border-t bg-white text-[12px]">
-        <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-1">
-          <Stat label="Total Amount" value={data?.totalSales} />
-          <Stat label="Total Qty" value={data?.totalQty} />
+      <section className="border-t bg-amber-50 text-[12px]">
+        <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-2">
+          <span className="text-amber-800 font-medium">Total Qty:</span>
+          <span className="font-semibold text-amber-900">
+            {Number(data?.totalQty || 0)}
+          </span>
+          <span className="text-amber-800 font-medium">Total Amount:</span>
+          <span className="font-semibold text-amber-900">
+            {data?.totalSales || 0}
+          </span>
         </div>
       </section>
     </div>

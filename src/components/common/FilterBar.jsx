@@ -13,6 +13,7 @@ const FilterBar = ({
   uhidSearch,
   onSelectSuggestion,
   onPrint,
+  suggestionsMap = {},
 }) => {
   const today = new Date().toISOString().split("T")[0];
 
@@ -63,40 +64,56 @@ const FilterBar = ({
 
                 {/* ✅ Generic Suggestion Dropdown */}
                 {filter.suggestionConfig &&
-                  (
-                    (filter.name === "external_id"
-                      ? uhidSearch
-                      : tempFilters[filter.name]) || ""
-                  ).length >= filter.suggestionConfig.minLength &&
-                  suggestions?.length > 0 && (
-                    <ul className="absolute z-[1000] bg-white border border-gray-200 rounded-md shadow-lg w-full max-h-60 overflow-auto mt-1">
-                      {suggestions.map((item) => {
-                        const { keyField, valueField, secondaryField } =
-                          filter.suggestionConfig;
+                  tempFilters[filter.name]?.length >=
+                    filter.suggestionConfig.minLength &&
+                  (() => {
+                    // 🔥 Decide which suggestion source to use
+                    const fieldSuggestions =
+                      suggestionsMap?.[filter.name] ?? suggestions ?? [];
 
-                        return (
-                          <li
-                            key={item[keyField]}
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              onSelectSuggestion(item[valueField]);
-                            }}
-                            className="px-4 py-2.5 hover:bg-sky-50 cursor-pointer border-b border-gray-50 last:border-0 transition-all"
-                          >
-                            <span className="text-gray-700">
-                              {item[valueField]}
-                            </span>
+                    if (!fieldSuggestions.length) return null;
 
-                            {secondaryField && (
-                              <span className="ml-2 text-gray-500">
-                                {item[secondaryField]}
+                    return (
+                      <ul className="absolute z-[1000] bg-white border border-gray-200 rounded-md shadow-lg w-full max-h-60 overflow-auto mt-1">
+                        {fieldSuggestions.map((item) => {
+                          const { keyField, valueField, secondaryField } =
+                            filter.suggestionConfig;
+
+                          return (
+                            <li
+                              key={item[keyField]}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+
+                                // ✅ If multi-field mode
+                                if (suggestionsMap?.[filter.name]) {
+                                  onSelectSuggestion(
+                                    filter.name,
+                                    item[valueField],
+                                  );
+                                }
+                                // ✅ If old single-field mode
+                                else {
+                                  onSelectSuggestion(item[valueField]);
+                                }
+                              }}
+                              className="px-4 py-2.5 hover:bg-sky-50 cursor-pointer border-b border-gray-50 last:border-0 transition-all"
+                            >
+                              <span className="text-gray-700">
+                                {item[valueField]}
                               </span>
-                            )}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
+
+                              {secondaryField && (
+                                <span className="ml-2 text-gray-500">
+                                  {item[secondaryField]}
+                                </span>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    );
+                  })()}
               </div>
             )}
 
