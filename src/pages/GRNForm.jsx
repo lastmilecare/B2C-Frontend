@@ -24,6 +24,7 @@ import { cookie } from "../utils/cookie";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 const username = cookie.get("username"); // Ensure auth token is loaded for API calls
+
 const GRNForm = () => {
   const navigate = useNavigate();
   const [createMedicineStock, { isLoading }] = useCreateMedicineStockMutation();
@@ -57,12 +58,13 @@ const GRNForm = () => {
     : [];
 
   const hsnCodeOptions = HSNCode
-    ? HSNCode.map((t) => ({ value: t.HSNID, label: t.HSNCode }))
+    ? HSNCode.map((t) => ({ value: t.HSNID, label: t.HSNCode, CGST: t.CGST, SGST: t.SGST }))
     : [];
 
   const SupplierOptions = Supplier
     ? Supplier.map((t) => ({ value: t.ID, label: t.name }))
     : [];
+
 
   const formik = useFormik({
     initialValues: {
@@ -71,6 +73,7 @@ const GRNForm = () => {
       StockNo: "",
       RecieptNo: "",
       ItemTypeID: 0,
+      ItemType: "",
       ItemID: 0,
       ItemName: "",
       BatchNo: "",
@@ -107,7 +110,7 @@ const GRNForm = () => {
       IsDeathStock: 0,
       Remarks: "",
       UserloginID: 0,
-      AddedBy: username,
+      AddedBy: Number(username) || 0,
       ModifiedDate: new Date(),
       ModifiedBy: 0, // To be set from auth state
       Isopen: false,
@@ -120,9 +123,27 @@ const GRNForm = () => {
         healthAlerts.error("Add at least one item", "GRN");
         return;
       }
+      const totalAmount = values.items.reduce(
+        (sum, item) => sum + Number(item.totalCp || 0),
+        0
+      );
+
+      const totalDiscount = values.items.reduce(
+        (sum, item) => sum + Number(item.DiscountAmt || 0),
+        0
+      );
+
+      const grandTotal = values.items.reduce(
+        (sum, item) => sum + Number(item.total || 0),
+        0
+      );
+
 
       const payload = {
         ...values,
+        TotalAmount: totalAmount,
+        TotalDiscount: totalDiscount,
+        GrandTotal: grandTotal,
         ModifiedDate: new Date(),
         items: values.items.map((item) => ({
           ...item,
@@ -225,11 +246,19 @@ const GRNForm = () => {
       totalGst: cgstAmt + sgstAmt,
       totalCp,
       total: taxable + cgstAmt + sgstAmt,
+      CGST: Number(v.CGST || 0),
+      SGST: Number(v.SGST || 0),
+      CGSTAmount: cgstAmt,
+      SGSTAmount: sgstAmt,
+      ItemID: v.ItemID,
+      ItemTypeID: v.ItemTypeID,
     };
 
     formik.setFieldValue("items", [...v.items, newItem]);
     [
       "ItemName",
+      "ItemTypeID",
+      "ItemType",
       "BatchNo",
       "MenufacturingDate",
       "ExpiryDate",
@@ -243,6 +272,7 @@ const GRNForm = () => {
       "CGST",
       "SGST",
     ].forEach((f) => formik.setFieldValue(f, ""));
+    setMedicineSearch("");
   };
 
   const totals = formik.values.items?.reduce(
@@ -280,9 +310,19 @@ const GRNForm = () => {
             {...formik.getFieldProps("RecieptNo")}
           />
           <Select
-            label="SupplierName"
-            {...formik.getFieldProps("SupplierName")}
+            label="Select Supplier"
+            value={formik.values.SupplierID}
+            onChange={(e) => {
+              const id = e.target.value;
+              const supplier = SupplierOptions.find(
+                (s) => s.value == id
+              );
+
+              formik.setFieldValue("SupplierID", Number(id));
+              formik.setFieldValue("SupplierName", supplier?.label || "");
+            }}
           >
+            <option value="">Select Supplier</option>
             {SupplierOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
@@ -301,45 +341,49 @@ const GRNForm = () => {
           </Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-          <Input
-            type="text"
-            placeholder={"Search Medicine"}
-            value={medicineSearch}
-            onChange={(e) => {
-              setMedicineSearch(e.target.value);
-              formik.setFieldValue("ItemName", e.target.value);
-            }}
-            autoComplete="off"
-          />
-          {/* Medicine Search Suggestions List */}
-          {medicineSuggestions.length > 0 && (
-            <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-              {medicineSuggestions.map((item) => (
-                <li
-                  key={item.id}
-                  onClick={() => {
-                    setMedicineSearch(item.descriptions);
-                    formik.setFieldValue("ItemName", item.descriptions);
-                    formik.setFieldValue("medicineId", item.id);
-                    formik.setFieldValue(
-                      "typemedicine",
-                      item.itemType?.Descriptions || "",
-                    );
-                    setMedicineSuggestions([]);
-                  }}
-                  className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
-                >
-                  {item.descriptions}
-                  <span className="text-xs text-gray-400 ml-2">
-                    ({item.itemType?.Code})
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <div className="relative">
+            <Input
+              label="Item Name"
+              type="text"
+              placeholder={"Search Medicine"}
+              value={medicineSearch}
+              onChange={(e) => {
+                setMedicineSearch(e.target.value);
+                formik.setFieldValue("ItemName", e.target.value);
+              }}
+              autoComplete="off"
+            />
+            {/* Medicine Search Suggestions List */}
+            {medicineSuggestions.length > 0 && (
+              <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                {medicineSuggestions.map((item) => (
+                  <li
+                    key={item.id}
+                    onClick={() => {
+                      setMedicineSearch(item.descriptions);
+                      formik.setFieldValue("ItemName", item.descriptions);
+                      formik.setFieldValue("ItemID", item.id);
+                      formik.setFieldValue("ItemTypeID", item.itemType?.id || 0);
+                      formik.setFieldValue(
+                        "ItemType",
+                        item.itemType?.Descriptions || ""
+                      );
+                      setMedicineSuggestions([]);
+                    }}
+                    className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
+                  >
+                    {item.descriptions}
+                    <span className="text-xs text-gray-400 ml-2">
+                      ({item.itemType?.Code})
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <Input
             label="Item Type"
-            required
+            readOnly
             {...formik.getFieldProps("ItemType")}
           />
           <Input
@@ -393,13 +437,32 @@ const GRNForm = () => {
             required
             {...formik.getFieldProps("DiscountPCperitem")}
           />
-          <Select label="HSN Code" {...formik.getFieldProps("hsnCode")}>
+          <Select
+            label="HSN Code"
+            value={formik.values.HSNCode}
+            onChange={(e) => {
+              const selectedId = e.target.value;
+
+              formik.setFieldValue("HSNCode", selectedId);
+
+              const selectedHSN = hsnCodeOptions.find(
+                (h) => h.value.toString() === selectedId.toString()
+              );
+
+              if (selectedHSN) {
+                formik.setFieldValue("CGST", selectedHSN.CGST);
+                formik.setFieldValue("SGST", selectedHSN.SGST);
+              }
+            }}
+          >
+            <option value="">Select HSN</option>
             {hsnCodeOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
             ))}
           </Select>
+
           <NumericInput
             label="CGST %"
             required
@@ -417,7 +480,7 @@ const GRNForm = () => {
             value={calculatedValues.totalCp.toFixed(2)}
             readOnly
           />
-          ``
+
           <Input
             label="Total M.R.P"
             value={calculatedValues.totalMrp.toFixed(2)}

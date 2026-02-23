@@ -546,4 +546,5 @@ export const {
   useGetExpireStockDetailsQuery,
   useGetSalesStockDetailsQuery,
   useGetPatientNameFromSalesQuery,
+  useLazySearchDiseasesQuery,
 } = api;

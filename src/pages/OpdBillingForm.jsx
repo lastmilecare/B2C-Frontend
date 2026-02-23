@@ -251,10 +251,19 @@ const OpdBilling = () => {
       Doctor: Yup.number()
         .min(1, "Consulting doctor is required")
         .required("Consulting doctor is required"),
-      PayMode: Yup.string().required("Payment Mode is required"),
+      // PayMode: Yup.string().required("Payment Mode is required"),
     }),
 
     onSubmit: async (values) => {
+      if (!values.PayMode || values.PayMode === "") {
+    healthAlert({
+      title: "Payment Mode Required",
+      text: "Please select a Payment Mode before saving the bill.",
+      icon: "warning",
+      confirmButtonColor: "#0ea5e9",
+    });
+    return; 
+  }
       try {
         const payload = buildPayload(values);
         if (!payload) {

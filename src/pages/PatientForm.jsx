@@ -9,8 +9,10 @@ import { useLocationData } from "../services/locationApi";
 import { healthAlerts } from "../utils/healthSwal";
 import { useParams, useNavigate } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
+import { useLazySearchDiseasesQuery } from "../redux/apiSlice";
 
 const PatientRegistration = () => {
+  const [searchDiseases] = useLazySearchDiseasesQuery();
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -68,7 +70,7 @@ const PatientRegistration = () => {
       occupation: Yup.string().required("Occupation is required"),
       CO: Yup.string().required("Co is required")
     }),
-    
+
     onSubmit: async (values) => {
       try {
         const payload = buildPayload(values);
@@ -103,34 +105,56 @@ const PatientRegistration = () => {
   useEffect(() => {
     if (isEdit && patientApiResponse) {
       const p = patientApiResponse.data || patientApiResponse;
+      const loadDiseases = async () => {
+        let formattedDiseases = [];
 
-      formik.setValues({
-        title: p.title || "",
-        name: p.name || "",
-        dob: p.dateOfBirthOrAge?.split("T")[0] || "",
-        age: p.age ? `${p.age}y ${p.imonth || 0}m ${p.idays || 0}d` : "",
-        CO: p.co || "",
-        relationship: p.relationship || "",
-        gender: p.gender || "",
-        contactNumber: p.contactNumber || "",
-        residentialstatus: p.residentialstatus || "",
-        fincat: p.category || "",
-        country: String(p.country_id || ""),
-        localAddressState: String(p.state_id || ""),
-        localAddressDistrict: String(p.district_id || ""),
-        occupation: p.occupation || "",
-        healthCardNumber: p.healthCardNumber || "",
-        localAddress: p.localAddress || "",
-        pin: p.pin || "",
-        emergencyContactName: p.emergencyContactName || "",
-        emergencyContactNumber: p.emergencyContactNumber || "",
-        blood_group: p.blood_group || "",
-        diseases: p.diseases || [],
-        creditamount: p.creditamount || 0,
-        idProof_number: p.idProof_number || "",
-        idProof_name: p.idProof_name || "",
-      });
+        if (p.disease_ids?.length) {
+          try {
+            const res = await searchDiseases({ q: "" }).unwrap();
 
+            const diseaseList = res?.data || [];
+
+            formattedDiseases = diseaseList
+              .filter(d => p.disease_ids?.includes(d.id))
+              .map(d => ({
+                id: d.id,
+                name: d.name
+              })) || [];
+
+          } catch (error) {
+          }
+        }
+
+        formik.setValues({
+          title: p.title || "",
+          name: p.name || "",
+          dob: p.dateOfBirthOrAge?.split("T")[0] || "",
+          age: p.age ? `${p.age}y ${p.imonth || 0}m ${p.idays || 0}d` : "",
+          CO: p.co || "",
+          relationship: p.relationship || "",
+          gender: p.gender || "",
+          contactNumber: p.contactNumber || "",
+          residentialstatus: p.residentialstatus || "",
+          fincat: p.category || "",
+          country: String(p.country_id || ""),
+          localAddressState: String(p.state_id || ""),
+          localAddressDistrict: String(p.district_id || ""),
+          occupation: p.occupation || "",
+          healthCardNumber: p.healthCardNumber || "",
+          localAddress: p.localAddress || "",
+          pin: p.pin || "",
+          emergencyContactName: p.emergencyContactName || "",
+          emergencyContactNumber: p.emergencyContactNumber || "",
+          blood_group: p.blood_group || "",
+          diseases: formattedDiseases,
+          creditamount: p.creditamount || 0,
+          idProof_number: p.idProof_number || "",
+          idProof_name: p.idProof_name || "",
+        });
+      };
+
+
+      loadDiseases();
       // Update local state to trigger address dropdowns
       setCountryId(p.country_id || "");
       setStateId(p.state_id || "");
