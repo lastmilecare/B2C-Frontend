@@ -324,12 +324,16 @@ const MedicineSalesRecord = () => {
         onReset={handleResetFilters}
         suggestionsMap={{
           descriptions: medicineSuggestions?.data || [],
-          CustommerName: patientSuggestions?.data || [],
+          CustommerName: patientSuggestions?.data?.data || patientSuggestions?.data || [],
         }}
         onSelectSuggestion={(fieldName, value) => {
           setTempFilters((prev) => ({
             ...prev,
             [fieldName]: value,
+          }));
+          setSearchTerms((prev) => ({
+            ...prev,
+            [fieldName]: "",   
           }));
         }}
         onPrint={handlePrint}
