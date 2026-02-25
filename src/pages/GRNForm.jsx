@@ -24,6 +24,7 @@ import { cookie } from "../utils/cookie";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 const username = cookie.get("username"); // Ensure auth token is loaded for API calls
+const userId = cookie.get("user_id");
 
 const GRNForm = () => {
   const navigate = useNavigate();
@@ -109,9 +110,9 @@ const GRNForm = () => {
       ReturnQty: 0,
       IsDeathStock: 0,
       Remarks: "",
-      UserloginID: 0,
-      AddedBy: Number(username) || 0,
-      ModifiedDate: new Date(),
+      UserloginID: Number(userId) || 0,
+      AddedBy: Number(userId) || 0,
+      ModifiedDate: new Date(),// figure out when i will edit
       ModifiedBy: 0, // To be set from auth state
       Isopen: false,
       StockStatus: 0,
@@ -252,6 +253,8 @@ const GRNForm = () => {
       SGSTAmount: sgstAmt,
       ItemID: v.ItemID,
       ItemTypeID: v.ItemTypeID,
+      NoQtyperStrip: Number(v.NoQtyperStrip),
+      NoStrip: Number(v.NoStrip),
     };
 
     formik.setFieldValue("items", [...v.items, newItem]);
