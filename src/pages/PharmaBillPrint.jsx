@@ -1,13 +1,14 @@
 import React, { forwardRef } from "react";
 import { cookie } from "../utils/cookie";
 import { cleanCurrency } from "../utils/helper";
+import { Picaso_Paymode_Options } from "../utils/constants";
 const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
   const username = cookie.get("username");
   if (!data) return null;
 
   const header = data;
   const items = data.footerItems || [];
-
+  const payObj = Picaso_Paymode_Options?.find((p) => p.id == data?.PayMode);
   function formatToIST(dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -35,6 +36,8 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
   const billDate = formatToIST(header.AddedDate);
   const add = import.meta.env.VITE_CENTER_ADD;
   const mobile = import.meta.env.VITE_CENTER_MOBILE;
+  const gst = import.meta.env.VITE_COMPANY_GST;
+  const license = import.meta.env.VITE_COMPANY_LICENSE_NO;
   return (
     <div
       ref={ref}
@@ -45,6 +48,24 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
         fontSize: "12px",
       }}
     >
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%) rotate(-45deg)",
+          fontSize: "80px",
+          fontWeight: "900",
+          color: "#000",
+          opacity: 0.05,
+          pointerEvents: "none",
+          userSelect: "none",
+          whiteSpace: "nowrap",
+          zIndex: 0,
+        }}
+      >
+        Last Mile Care Pvt Ltd
+      </div>
       <img src="/images/LMC_logo.webp" alt="logo" />
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: "10px" }}>
@@ -71,8 +92,7 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
       >
         <div>
           <div>
-            <b>GST :</b> {`02AAECL5886P1Z7`}{" "}
-            {/* Hardcoded as per GSTIN search */}
+            <b>GST :</b> {gst}
           </div>
           <div>
             <b>Bill No :</b> {header.BillNo}
@@ -90,8 +110,7 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
 
         <div>
           <div>
-            <b>Licence :</b> {`MCDS1234E56789`}{" "}
-            {/* Hardcoded as per GSTIN search */}
+            <b>Licence :</b> {license}
           </div>
           <div>
             <b>Date :</b> {billDate}
@@ -146,7 +165,7 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
 
       {/* TOTAL QTY */}
       <div style={{ textAlign: "center", marginTop: 5 }}>
-        <b>Total</b> {header.TotalQty}
+        <b>Total : </b> {header.TotalQty}
       </div>
 
       {/* SUMMARY */}
@@ -162,19 +181,18 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
             <b>Fin. Category :</b> {header.PatientType}
           </div>
           <div>
-            <b>Payment Mode :</b> {header.PayMode}
+            <b>Payment Mode :</b> {payObj?.name || "Unknown"}
           </div>
 
           <div style={{ marginTop: 15 }}>
             <b>Note :</b>
-            <div>
+            <div style={{ marginTop: 5, fontStyle: "italic" }}>
               Goods once sold cannot be return back or exchanged after 7 days of
               purchase.
             </div>
           </div>
           <div style={{ marginTop: 15 }}>
-            <b>Prepared By :</b>
-            {username || "Admin"}
+            <b>Prepared By : </b> {username || "Admin"}
           </div>
         </div>
 
@@ -194,7 +212,7 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
               key={label}
               style={{ display: "flex", justifyContent: "space-between" }}
             >
-              <span>{label}</span>
+              <span style={{ fontWeight: "bold" }}>{label}</span>
               <span>{value}</span>
             </div>
           ))}
@@ -209,12 +227,16 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
           marginTop: 40,
         }}
       >
-        <div>{formatToIST(new Date())}</div>
+        <div>
+          <b>{formatToIST(new Date())}</b>
+        </div>
         <div>
           {" "}
-          <b>This is a Computer Generated Invoice</b>
+          <b>This is a Computer Generated Invoice.</b>
         </div>
-        <div>Powered By : Last Mile Care</div>
+        <div>
+          <b>Powered By</b> : Last Mile Care
+        </div>
       </div>
     </div>
   );

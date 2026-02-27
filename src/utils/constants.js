@@ -73,3 +73,11 @@ export const MEDICINE_FREQUENCIES = Object.freeze([
   { label: "15 Days", value: 15 },
   { label: "30 Days", value: 30 },
 ]);
+
+export const Picaso_Paymode_Options = [
+  { id: "1", name: "Cash Payment" },
+  { id: "2", name: "Card Payment" },
+  { id: "3", name: "Cash/Online Payment" },
+  { id: "4", name: "UPI" },
+  { id: "5", name: "Cost Free" },
+];
