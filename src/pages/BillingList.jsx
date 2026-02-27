@@ -255,114 +255,6 @@ const BillingList = () => {
       hidden: true,
     },
   ];
-  // const handlePrint = () => {
-  //   const today = new Date().toLocaleDateString();
-  //   const loginUser = username || "Admin";
-  //   const printWindow = window.open("", "", "width=1200,height=800");
-  //   const tableRows = Stock.map(
-  //     (row, index) => `
-  //     <tr>
-  //       <td>${index + 1}</td>
-  //      <td>${row.BillNo || ""}</td>
-  //       <td>${row.PicasoID || ""}</td>
-  //       <td>${row.CustommerName || ""}</td>
-  //       <td>${row.ItemName || "N/A"}</td>
-  //       <td>${row.TotalQty || 0}</td>
-  //       <td>${row.TaxableAmount || 0}</td>
-  //       <td>${row.GrossAmount || 0}</td>
-  //       <td>${row.DiscountAmount || 0}</td>
-  //       <td>${row.PaidAmount || 0}</td>
-  //       <td>${row.DueAmount || 0}</td>
-  //       <td>${new Date(row.AddedDate).toLocaleDateString()}</td>
-  //     </tr>
-  //   `,
-  //   ).join("");
-
-  //   printWindow.document.write(`
-  //   <html>
-  //     <head>
-  //       <title>Medicine Sales List</title>
-  //       <style>
-  //         @page {
-  //           size: landscape;
-  //         }
-
-  //         body {
-  //           font-family: Arial;
-  //           padding: 20px;
-  //         }
-
-  //         h2 {
-  //           text-align: center;
-  //           margin-bottom: 20px;
-  //         }
-
-  //         table {
-  //           width: 100%;
-  //           border-collapse: collapse;
-  //           margin-top: 20px;
-  //           font-size: 12px;
-  //         }
-
-  //         th, td {
-  //           border: 1px solid #000;
-  //           padding: 6px;
-  //           text-align: left;
-  //         }
-
-  //         th {
-  //           background-color: #f2f2f2;
-  //         }
-
-  //         .footer {
-  //           margin-top: 30px;
-  //           display: flex;
-  //           justify-content: space-between;
-  //           font-size: 13px;
-  //         }
-  //       </style>
-  //     </head>
-  //     <body>
-
-  //       <h2>Medicine Sales List</h2>
-
-  //       <table>
-  //         <thead>
-  //           <tr>
-  //             <th>S.No</th>
-  //             <th>BillNo</th>
-  //             <th>Uhid</th>
-  //             <th>Custommer Name</th>
-  //             <th>ItemName</th>
-  //               <th>Qty</th>
-  //             <th>TaxableAmount</th>
-  //              <th>GrossAmount</th>
-  //               <th>DiscountAmount</th>
-  //                <th>PaidAmount</th>
-  //                 <th>DueAmount</th>
-  //             <th>Added Date</th>
-  //           </tr>
-  //         </thead>
-  //         <tbody>
-  //           ${tableRows}
-  //         </tbody>
-  //       </table>
-
-  //       <div class="footer">
-  //         <div><strong>Powered by : Last Mile Care</strong></div>
-  //         <div>Prepared By: ${loginUser}</div>
-  //         <div>Date: ${today}</div>
-  //       </div>
-
-  //     </body>
-  //   </html>
-  // `);
-
-  //   printWindow.document.close();
-  //   printWindow.focus();
-  //   printWindow.print();
-  // };
-
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: "Prescription",
@@ -399,7 +291,6 @@ const BillingList = () => {
             [fieldName]: value,
           }));
         }}
-        // onPrint={handlePrint}
       />
 
       <CommonList
@@ -425,13 +316,31 @@ const BillingList = () => {
 
       <section className="border-t bg-amber-50 text-[12px]">
         <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-2">
-          <span className="text-amber-800 font-medium">Total Qty:</span>
+          <span className="text-amber-800 font-medium">Total Issue Qty:</span>
           <span className="font-semibold text-amber-900">
             {Number(data?.totalQty || 0)}
           </span>
-          <span className="text-amber-800 font-medium">Total Amount:</span>
+          <span className="text-amber-800 font-medium">
+            Total Bill Amount :
+          </span>
           <span className="font-semibold text-amber-900">
             {data?.totalSales || 0}
+          </span>
+          <span className="text-amber-800 font-medium">
+            Total Discount Amount :
+          </span>
+          <span className="font-semibold text-amber-900">
+            {data?.totalDiscount || 0}
+          </span>
+          <span className="text-amber-800 font-medium">
+            Total Paid Amount :
+          </span>
+          <span className="font-semibold text-amber-900">
+            {data?.totalPaid || 0}
+          </span>
+          <span className="text-amber-800 font-medium">Total Due Amount :</span>
+          <span className="font-semibold text-amber-900">
+            {`${data?.totalDue || 0}`}<span style={{ color: "red" }}>*</span>
           </span>
         </div>
       </section>
