@@ -1,94 +1,451 @@
-import React, { useState } from "react";
-import { 
-  MagnifyingGlassIcon, ArrowPathIcon, PencilSquareIcon, TrashIcon, PrinterIcon 
-} from "@heroicons/react/24/outline";
-import { useGetMedicineSalesQuery, useDeleteOpdBillMutation } from "../redux/apiSlice";
-import { Input, Button } from "../components/UIComponents";
+import React, { useState, useRef, useEffect } from "react";
+import CommonList from "../components/CommonList";
+import FilterBar from "../components/common/FilterBar";
+import {
+  useGetSalesStockDetailsQuery,
+  useGetComboQuery,
+  useGetMediceneListQuery,
+  useGetPatientNameFromSalesQuery,
+} from "../redux/apiSlice";
+import useDebounce from "../hooks/useDebounce";
+import { useNavigate } from "react-router-dom";
+import { cookie } from "../utils/cookie";
+import { healthAlert } from "../utils/healthSwal";
+import PharmaBillPrint from "./PharmaBillPrint";
+import { useReactToPrint } from "react-to-print";
+const username = cookie.get("username");
 
 const BillingList = () => {
-  const [filters, setFilters] = useState({ billNo: "", patientName: "", startDate: "", endDate: "", status: "Active" });
-  const { data: billingList, refetch: refetchList } = useGetMedicineSalesQuery({
-    billNumber: filters.billNo, patientName: filters.patientName, startDate: filters.startDate, endDate: filters.endDate
+  const [searchTerms, setSearchTerms] = useState({
+    descriptions: "",
+    CustommerName: "",
   });
-  const [deleteBill] = useDeleteOpdBillMutation();
+  const debouncedMedicine = useDebounce(searchTerms.descriptions, 500);
+  const debouncedPatient = useDebounce(searchTerms.CustommerName, 500);
+  const { data: medicineSuggestions = [] } = useGetMediceneListQuery(
+    debouncedMedicine,
+    { skip: debouncedMedicine.length < 2 },
+  );
+  const [printRow, setPrintRow] = useState(null);
+  const printRef = useRef();
+  const { data: patientSuggestions = [] } = useGetPatientNameFromSalesQuery(
+    debouncedPatient,
+    { skip: debouncedPatient.length < 2 },
+  );
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  const { data: User, isLoading: SupplierLoading } = useGetComboQuery("users");
+  const [tempFilters, setTempFilters] = useState({
+    CustommerName: "",
+    BillNo: "",
+    startDate: "",
+    endDate: "",
+    AddedBy: "",
+  });
+  const [filters, setFilters] = useState({});
+
+  const { data, isLoading } = useGetSalesStockDetailsQuery({
+    page,
+    limit,
+    ...filters,
+  });
+  const UserOptions = User
+    ? User.map((t) => ({ value: t.id, label: t.username }))
+    : [];
+
+  const rawStock = data?.data || [];
+
+  const parseCurrency = (value) => {
+    if (!value) return 0;
+
+    // Remove $ and commas safely
+    const cleaned = value.replace(/[^0-9.-]+/g, "");
+    const parsed = Number(cleaned);
+
+    return isNaN(parsed) ? 0 : parsed;
   };
 
+  const formatCurrency = (num) => {
+    return `$${num.toFixed(2)}`;
+  };
+
+  const Stock = rawStock.map((header) => {
+    const footerItems = header.footerItems || [];
+
+    let totalTaxableAmount = 0;
+    let totalQty = 0;
+    const itemNames = [];
+    let DueAmount = 0;
+    for (const footer of footerItems) {
+      totalTaxableAmount += parseCurrency(footer.TaxableAmount);
+      totalQty += Number(footer.IssueQty) || 0;
+      DueAmount = parseCurrency(footer.DueAmount); // This did by intentianaliy kept as DueAmount because in some cases due amount is coming from backend and in some cases we need to calculate it by GrossAmount - PaidAmount. So to avoid confusion I kept the same name. We can change it later when we are sure about the data coming from backend.
+
+      if (footer.ItemName) {
+        itemNames.push(footer.ItemName);
+      }
+    }
+
+    return {
+      ...header,
+      // override aggregated fields
+      TaxableAmount: formatCurrency(totalTaxableAmount),
+      TotalQty: totalQty,
+      ItemName: itemNames.join(", "),
+      DueAmount: formatCurrency(DueAmount),
+      // footerItems: undefined,
+    };
+  });
+  console.log("Stock data:", Stock);
+  const pagination = data?.pagination || {};
+
+  const userLookup = React.useMemo(() => {
+    if (!User?.length) return {};
+
+    return User.reduce((acc, user) => {
+      acc[String(user.id)] = user.username;
+      return acc;
+    }, {});
+  }, [User]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setTempFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    if (name === "descriptions" || name === "CustommerName") {
+      setSearchTerms((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleApplyFilters = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const { startDate, endDate } = tempFilters;
+    if (endDate && endDate > today) {
+      healthAlert({
+        title: "Invalid Date",
+        text: "End date cannot be greater than today.",
+        icon: "info",
+      });
+      return;
+    }
+
+    if (startDate && endDate && startDate > endDate) {
+      healthAlert({
+        title: "Date Range Error",
+        text: "Start date cannot be after end date.",
+        icon: "info",
+      });
+      return;
+    }
+
+    setFilters(tempFilters);
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setTempFilters({
+      CustommerName: "",
+      ItemTypeID: "",
+      descriptions: "",
+      startDate: "",
+      endDate: "",
+    });
+    setFilters({});
+    setPage(1);
+  };
+
+  const filtersConfig = [
+    {
+      label: "Patient Name",
+      name: "CustommerName",
+      type: "text",
+      suggestionConfig: {
+        minLength: 2,
+        keyField: "CustommerName",
+        valueField: "CustommerName",
+      },
+    },
+    {
+      label: "Medicine Name",
+      name: "descriptions",
+      type: "text",
+      suggestionConfig: {
+        minLength: 2,
+        keyField: "descriptions",
+        valueField: "descriptions",
+        secondaryField: "name",
+      },
+    },
+    {
+      label: "Added By",
+      name: "AddedBy",
+      type: "select",
+      options: UserOptions,
+    },
+    { label: "Date from", name: "startDate", type: "date" },
+    { label: "Date to", name: "endDate", type: "date" },
+  ];
+  const columns = [
+    {
+      name: "S.No",
+      selector: (row, i) => (page - 1) * limit + i + 1,
+      width: "80px",
+    },
+    { name: "Bill No", selector: (row) => row.BillNo, width: "80px" },
+    { name: "UHID", selector: (row) => row.PicasoID, width: "140px" },
+    {
+      name: "Patient Name",
+      selector: (row) => row.CustommerName,
+      width: "140px",
+    },
+    {
+      name: "Opd Bill No",
+      selector: (row) => row.OPDBillNo,
+      width: "80px",
+    },
+    {
+      name: "Qty",
+      selector: (row) => row.TotalQty,
+      width: "60px",
+    },
+    {
+      name: "Item Name",
+      selector: (row) => row.ItemName || "N/A",
+      width: "180px",
+    },
+    {
+      name: "Taxable Amount",
+      selector: (row) => row.TaxableAmount || 0,
+
+      width: "80px",
+    },
+    {
+      name: "Gross Amount",
+      selector: (row) => row.GrossAmount || "N/A",
+
+      width: "80px",
+    },
+    {
+      name: "Discount Amount",
+      selector: (row) => row.DiscountAmount || "N/A",
+      width: "80px",
+    },
+    {
+      name: "Paid Amount",
+      selector: (row) => row.PaidAmount || "N/A",
+      width: "80px",
+    },
+    {
+      name: "Due Amount",
+      selector: (row) =>
+        // (row.GrossAmount || 0) - (row.PaidAmount || 0) || "N/A", // need to check picasoid logic
+        row.DueAmount || "N/A",
+      width: "80px",
+    },
+    {
+      name: "Date",
+      selector: (row) => new Date(row.AddedDate).toLocaleDateString(),
+      width: "100px",
+    },
+    {
+      name: "id",
+      selector: (row) => row.ID,
+      hidden: true,
+    },
+  ];
+  // const handlePrint = () => {
+  //   const today = new Date().toLocaleDateString();
+  //   const loginUser = username || "Admin";
+  //   const printWindow = window.open("", "", "width=1200,height=800");
+  //   const tableRows = Stock.map(
+  //     (row, index) => `
+  //     <tr>
+  //       <td>${index + 1}</td>
+  //      <td>${row.BillNo || ""}</td>
+  //       <td>${row.PicasoID || ""}</td>
+  //       <td>${row.CustommerName || ""}</td>
+  //       <td>${row.ItemName || "N/A"}</td>
+  //       <td>${row.TotalQty || 0}</td>
+  //       <td>${row.TaxableAmount || 0}</td>
+  //       <td>${row.GrossAmount || 0}</td>
+  //       <td>${row.DiscountAmount || 0}</td>
+  //       <td>${row.PaidAmount || 0}</td>
+  //       <td>${row.DueAmount || 0}</td>
+  //       <td>${new Date(row.AddedDate).toLocaleDateString()}</td>
+  //     </tr>
+  //   `,
+  //   ).join("");
+
+  //   printWindow.document.write(`
+  //   <html>
+  //     <head>
+  //       <title>Medicine Sales List</title>
+  //       <style>
+  //         @page {
+  //           size: landscape;
+  //         }
+
+  //         body {
+  //           font-family: Arial;
+  //           padding: 20px;
+  //         }
+
+  //         h2 {
+  //           text-align: center;
+  //           margin-bottom: 20px;
+  //         }
+
+  //         table {
+  //           width: 100%;
+  //           border-collapse: collapse;
+  //           margin-top: 20px;
+  //           font-size: 12px;
+  //         }
+
+  //         th, td {
+  //           border: 1px solid #000;
+  //           padding: 6px;
+  //           text-align: left;
+  //         }
+
+  //         th {
+  //           background-color: #f2f2f2;
+  //         }
+
+  //         .footer {
+  //           margin-top: 30px;
+  //           display: flex;
+  //           justify-content: space-between;
+  //           font-size: 13px;
+  //         }
+  //       </style>
+  //     </head>
+  //     <body>
+
+  //       <h2>Medicine Sales List</h2>
+
+  //       <table>
+  //         <thead>
+  //           <tr>
+  //             <th>S.No</th>
+  //             <th>BillNo</th>
+  //             <th>Uhid</th>
+  //             <th>Custommer Name</th>
+  //             <th>ItemName</th>
+  //               <th>Qty</th>
+  //             <th>TaxableAmount</th>
+  //              <th>GrossAmount</th>
+  //               <th>DiscountAmount</th>
+  //                <th>PaidAmount</th>
+  //                 <th>DueAmount</th>
+  //             <th>Added Date</th>
+  //           </tr>
+  //         </thead>
+  //         <tbody>
+  //           ${tableRows}
+  //         </tbody>
+  //       </table>
+
+  //       <div class="footer">
+  //         <div><strong>Powered by : Last Mile Care</strong></div>
+  //         <div>Prepared By: ${loginUser}</div>
+  //         <div>Date: ${today}</div>
+  //       </div>
+
+  //     </body>
+  //   </html>
+  // `);
+
+  //   printWindow.document.close();
+  //   printWindow.focus();
+  //   printWindow.print();
+  // };
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Prescription",
+  });
+
+  useEffect(() => {
+    if (printRow && printRef.current) {
+      handlePrint();
+
+      setTimeout(() => {
+        setPrintRow(null);
+      }, 300);
+    }
+  }, [printRow]);
+
+  const onPrint = (row) => {
+    setPrintRow(row);
+  };
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-bold text-sky-700 text-center uppercase tracking-wider">📑 Medicine Billing List</h2>
-      
-      {/* Search Filters Section */}
-      <section className="bg-sky-50 border rounded-lg p-3 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          <Input label="Bill No" name="billNo" value={filters.billNo} onChange={handleFilterChange} placeholder="Ex: 681" />
-          <Input label="Name" name="patientName" value={filters.patientName} onChange={handleFilterChange} placeholder="Ex: Sidhaesh" />
-          <Input type="date" label="From" name="startDate" value={filters.startDate} onChange={handleFilterChange} />
-          <Input type="date" label="To" name="endDate" value={filters.endDate} onChange={handleFilterChange} />
-          <div className="flex items-end gap-1 mb-1">
-            <Button onClick={refetchList}><MagnifyingGlassIcon className="w-4 h-4" /> Search</Button>
-            <Button variant="gray" onClick={() => setFilters({ billNo: "", patientName: "", startDate: "", endDate: "", status: "Active" })}><ArrowPathIcon className="w-4 h-4" /></Button>
-          </div>
+    <div className="p-0">
+      <FilterBar
+        filtersConfig={filtersConfig}
+        tempFilters={tempFilters}
+        onChange={handleChange}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+        suggestionsMap={{
+          descriptions: medicineSuggestions?.data || [],
+          CustommerName: patientSuggestions?.data || [],
+        }}
+        onSelectSuggestion={(fieldName, value) => {
+          setTempFilters((prev) => ({
+            ...prev,
+            [fieldName]: value,
+          }));
+        }}
+        // onPrint={handlePrint}
+      />
+
+      <CommonList
+        title="Pharamacy Billing List"
+        columns={columns}
+        data={Stock}
+        totalRows={pagination.totalRecords || 0}
+        currentPage={pagination.currentPage || page}
+        perPage={limit}
+        onPageChange={(newPage) => setPage(newPage)}
+        onPerPageChange={(newLimit) => {
+          setLimit(newLimit);
+          setPage(1);
+        }}
+        isLoading={isLoading}
+        enableActions
+        actionButtons={["edit", "delete", "print"]}
+        onEdit={(row) => {
+          navigate(`/patient-registration/${row.id}`);
+        }}
+        onPrint={onPrint}
+      />
+
+      <section className="border-t bg-amber-50 text-[12px]">
+        <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-2">
+          <span className="text-amber-800 font-medium">Total Qty:</span>
+          <span className="font-semibold text-amber-900">
+            {Number(data?.totalQty || 0)}
+          </span>
+          <span className="text-amber-800 font-medium">Total Amount:</span>
+          <span className="font-semibold text-amber-900">
+            {data?.totalSales || 0}
+          </span>
         </div>
       </section>
-
-      {/* Main Ledger Table */}
-      <div className="overflow-x-auto border rounded-lg shadow-md max-h-[400px]">
-        <table className="w-full text-[10px] text-left">
-          <thead className="bg-sky-600 text-white uppercase sticky top-0">
-            <tr>
-              <th className="p-2 border-r">SL</th>
-              <th className="p-2 border-r">Bill No</th>
-              <th className="p-2 border-r">UHID</th>
-              <th className="p-2 border-r text-center">OPD Bill</th>
-              <th className="p-2 border-r">Patient Name</th>
-              <th className="p-2 border-r text-center">Qty</th>
-              <th className="p-2 border-r text-right">Taxable</th>
-              <th className="p-2 border-r text-right">Disc</th>
-              <th className="p-2 border-r text-right">Gross Amt</th>
-              <th className="p-2 border-r text-right">Paid</th>
-              <th className="p-2 border-r text-right text-red-100">Due</th>
-              <th className="p-2 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {billingList?.data?.map((bill, index) => (
-              <tr key={bill.id} className="hover:bg-sky-50 transition-colors odd:bg-white even:bg-gray-50">
-                <td className="p-2 border-r text-center font-bold text-gray-500">{index + 1}</td>
-                <td className="p-2 border-r font-bold text-sky-800">{bill.billNumber}</td>
-                <td className="p-2 border-r">{bill.uhid || 'N/A'}</td>
-                <td className="p-2 border-r text-center">{bill.opdBillNo || 'N/A'}</td>
-                <td className="p-2 border-r font-medium">{bill.patientName}</td>
-                <td className="p-2 border-r text-center">{bill.totalQuantity || 0}</td>
-                <td className="p-2 border-r text-right">₹{bill.taxableAmount || '0.00'}</td>
-                <td className="p-2 border-r text-right text-gray-500">₹{bill.totalDiscount || '0.00'}</td>
-                <td className="p-2 border-r text-right font-bold text-gray-800">₹{bill.totalAmount}</td>
-                <td className="p-2 border-r text-right text-emerald-600 font-bold">₹{bill.paidAmount}</td>
-                <td className="p-2 border-r text-right text-red-500 font-bold">₹{bill.dueAmount}</td>
-                <td className="p-2 text-center">
-                  <div className="flex justify-center gap-2">
-                    <button className="text-sky-600"><PencilSquareIcon className="w-4 h-4" /></button>
-                    <button onClick={() => deleteBill(bill.id)} className="text-red-500"><TrashIcon className="w-4 h-4" /></button>
-                    <button className="text-gray-600"><PrinterIcon className="w-4 h-4" /></button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Summary Footer Bar */}
-      <div className="flex gap-4 text-[10px] font-bold text-sky-700 bg-sky-50 p-2.5 rounded-lg border shadow-sm overflow-x-auto whitespace-nowrap">
-        <span>Total Issued Qty: {billingList?.summary?.totalQty || 0}</span>
-        <span className="border-l border-sky-200 pl-4 text-emerald-700">Total Paid Amount: ₹ {billingList?.summary?.totalPaid || '0.00'}</span>
-        <span className="border-l border-sky-200 pl-4">Total Discount: ₹ {billingList?.summary?.totalDisc || '0.00'}</span>
-        <span className="border-l border-sky-200 pl-4">Total Bill Amount: ₹ {billingList?.summary?.totalGross || '0.00'}</span>
-        <span className="border-l border-sky-200 pl-4 text-red-600">Total Due Amount: ₹ {billingList?.summary?.totalDue || '0.00'}</span>
-      </div>
+      {printRow && (
+        <div style={{ display: "none" }}>
+          <PharmaBillPrint ref={printRef} data={printRow} />
+        </div>
+      )}
     </div>
   );
 };
