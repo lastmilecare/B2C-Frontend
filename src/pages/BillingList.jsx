@@ -153,10 +153,10 @@ const BillingList = () => {
   const handleResetFilters = () => {
     setTempFilters({
       CustommerName: "",
-      ItemTypeID: "",
-      descriptions: "",
+      BillNo: "",
       startDate: "",
       endDate: "",
+      AddedBy: "",
     });
     setFilters({});
     setPage(1);
@@ -174,15 +174,9 @@ const BillingList = () => {
       },
     },
     {
-      label: "Medicine Name",
-      name: "descriptions",
+      label: "Bill No",
+      name: "BillNo",
       type: "text",
-      suggestionConfig: {
-        minLength: 2,
-        keyField: "descriptions",
-        valueField: "descriptions",
-        secondaryField: "name",
-      },
     },
     {
       label: "Added By",
