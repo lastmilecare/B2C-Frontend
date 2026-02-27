@@ -59,3 +59,15 @@ export const downloadBlob = (blob, fileName) => {
 
   window.URL.revokeObjectURL(url);
 };
+
+export function cleanCurrency(value) {
+  if (value === null || value === undefined) return "0.00";
+
+  // Convert to string safely
+  const str = String(value);
+
+  // Remove $ and any extra spaces
+  const cleaned = str.replace(/\$/g, "").trim();
+
+  return cleaned;
+}

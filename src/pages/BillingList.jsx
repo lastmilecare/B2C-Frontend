@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
 import {
@@ -11,6 +11,8 @@ import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
+import PharmaBillPrint from "./PharmaBillPrint";
+import { useReactToPrint } from "react-to-print";
 const username = cookie.get("username");
 
 const BillingList = () => {
@@ -24,7 +26,8 @@ const BillingList = () => {
     debouncedMedicine,
     { skip: debouncedMedicine.length < 2 },
   );
-
+  const [printRow, setPrintRow] = useState(null);
+  const printRef = useRef();
   const { data: patientSuggestions = [] } = useGetPatientNameFromSalesQuery(
     debouncedPatient,
     { skip: debouncedPatient.length < 2 },
@@ -92,7 +95,7 @@ const BillingList = () => {
       TotalQty: totalQty,
       ItemName: itemNames.join(", "),
       DueAmount: formatCurrency(DueAmount),
-      footerItems: undefined,
+      // footerItems: undefined,
     };
   });
   console.log("Stock data:", Stock);
@@ -243,7 +246,7 @@ const BillingList = () => {
     {
       name: "Due Amount",
       selector: (row) =>
-        // (row.GrossAmount || 0) - (row.PaidAmount || 0) || "N/A", // need to check picasoid loci
+        // (row.GrossAmount || 0) - (row.PaidAmount || 0) || "N/A", // need to check picasoid logic
         row.DueAmount || "N/A",
       width: "80px",
     },
@@ -258,114 +261,132 @@ const BillingList = () => {
       hidden: true,
     },
   ];
-  const handlePrint = () => {
-    const today = new Date().toLocaleDateString();
-    const loginUser = username || "Admin";
-    const printWindow = window.open("", "", "width=1200,height=800");
-    const tableRows = Stock.map(
-      (row, index) => `
-      <tr>
-        <td>${index + 1}</td>
-       <td>${row.BillNo || ""}</td>
-        <td>${row.PicasoID || ""}</td>
-        <td>${row.CustommerName || ""}</td>
-        <td>${row.ItemName || "N/A"}</td>
-        <td>${row.TotalQty || 0}</td>
-        <td>${row.TaxableAmount || 0}</td>
-        <td>${row.GrossAmount || 0}</td>
-        <td>${row.DiscountAmount || 0}</td>
-        <td>${row.PaidAmount || 0}</td>
-        <td>${row.DueAmount || 0}</td>
-        <td>${new Date(row.AddedDate).toLocaleDateString()}</td>
-      </tr>
-    `,
-    ).join("");
+  // const handlePrint = () => {
+  //   const today = new Date().toLocaleDateString();
+  //   const loginUser = username || "Admin";
+  //   const printWindow = window.open("", "", "width=1200,height=800");
+  //   const tableRows = Stock.map(
+  //     (row, index) => `
+  //     <tr>
+  //       <td>${index + 1}</td>
+  //      <td>${row.BillNo || ""}</td>
+  //       <td>${row.PicasoID || ""}</td>
+  //       <td>${row.CustommerName || ""}</td>
+  //       <td>${row.ItemName || "N/A"}</td>
+  //       <td>${row.TotalQty || 0}</td>
+  //       <td>${row.TaxableAmount || 0}</td>
+  //       <td>${row.GrossAmount || 0}</td>
+  //       <td>${row.DiscountAmount || 0}</td>
+  //       <td>${row.PaidAmount || 0}</td>
+  //       <td>${row.DueAmount || 0}</td>
+  //       <td>${new Date(row.AddedDate).toLocaleDateString()}</td>
+  //     </tr>
+  //   `,
+  //   ).join("");
 
-    printWindow.document.write(`
-    <html>
-      <head>
-        <title>Medicine Sales List</title>
-        <style>
-          @page {
-            size: landscape;
-          }
+  //   printWindow.document.write(`
+  //   <html>
+  //     <head>
+  //       <title>Medicine Sales List</title>
+  //       <style>
+  //         @page {
+  //           size: landscape;
+  //         }
 
-          body { 
-            font-family: Arial; 
-            padding: 20px; 
-          }
+  //         body {
+  //           font-family: Arial;
+  //           padding: 20px;
+  //         }
 
-          h2 { 
-            text-align: center; 
-            margin-bottom: 20px; 
-          }
+  //         h2 {
+  //           text-align: center;
+  //           margin-bottom: 20px;
+  //         }
 
-          table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 20px; 
-            font-size: 12px;
-          }
+  //         table {
+  //           width: 100%;
+  //           border-collapse: collapse;
+  //           margin-top: 20px;
+  //           font-size: 12px;
+  //         }
 
-          th, td { 
-            border: 1px solid #000; 
-            padding: 6px; 
-            text-align: left; 
-          }
+  //         th, td {
+  //           border: 1px solid #000;
+  //           padding: 6px;
+  //           text-align: left;
+  //         }
 
-          th { 
-            background-color: #f2f2f2; 
-          }
+  //         th {
+  //           background-color: #f2f2f2;
+  //         }
 
-          .footer { 
-            margin-top: 30px; 
-            display: flex; 
-            justify-content: space-between; 
-            font-size: 13px; 
-          }
-        </style>
-      </head>
-      <body>
+  //         .footer {
+  //           margin-top: 30px;
+  //           display: flex;
+  //           justify-content: space-between;
+  //           font-size: 13px;
+  //         }
+  //       </style>
+  //     </head>
+  //     <body>
 
-        <h2>Medicine Sales List</h2>
+  //       <h2>Medicine Sales List</h2>
 
-        <table>
-          <thead>
-            <tr>
-              <th>S.No</th>
-              <th>BillNo</th>
-              <th>Uhid</th>
-              <th>Custommer Name</th>
-              <th>ItemName</th>
-                <th>Qty</th>
-              <th>TaxableAmount</th>
-               <th>GrossAmount</th>
-                <th>DiscountAmount</th>
-                 <th>PaidAmount</th>
-                  <th>DueAmount</th>
-              <th>Added Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRows}
-          </tbody>
-        </table>
+  //       <table>
+  //         <thead>
+  //           <tr>
+  //             <th>S.No</th>
+  //             <th>BillNo</th>
+  //             <th>Uhid</th>
+  //             <th>Custommer Name</th>
+  //             <th>ItemName</th>
+  //               <th>Qty</th>
+  //             <th>TaxableAmount</th>
+  //              <th>GrossAmount</th>
+  //               <th>DiscountAmount</th>
+  //                <th>PaidAmount</th>
+  //                 <th>DueAmount</th>
+  //             <th>Added Date</th>
+  //           </tr>
+  //         </thead>
+  //         <tbody>
+  //           ${tableRows}
+  //         </tbody>
+  //       </table>
 
-        <div class="footer">
-          <div><strong>Powered by : Last Mile Care</strong></div>
-          <div>Prepared By: ${loginUser}</div>
-          <div>Date: ${today}</div>
-        </div>
+  //       <div class="footer">
+  //         <div><strong>Powered by : Last Mile Care</strong></div>
+  //         <div>Prepared By: ${loginUser}</div>
+  //         <div>Date: ${today}</div>
+  //       </div>
 
-      </body>
-    </html>
-  `);
+  //     </body>
+  //   </html>
+  // `);
 
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+  //   printWindow.document.close();
+  //   printWindow.focus();
+  //   printWindow.print();
+  // };
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Prescription",
+  });
+
+  useEffect(() => {
+    if (printRow && printRef.current) {
+      handlePrint();
+
+      setTimeout(() => {
+        setPrintRow(null);
+      }, 300);
+    }
+  }, [printRow]);
+
+  const onPrint = (row) => {
+    setPrintRow(row);
   };
-
   return (
     <div className="p-0">
       <FilterBar
@@ -384,7 +405,7 @@ const BillingList = () => {
             [fieldName]: value,
           }));
         }}
-        onPrint={handlePrint}
+        // onPrint={handlePrint}
       />
 
       <CommonList
@@ -401,10 +422,11 @@ const BillingList = () => {
         }}
         isLoading={isLoading}
         enableActions
-        actionButtons={["edit", "delete"]}
+        actionButtons={["edit", "delete", "print"]}
         onEdit={(row) => {
           navigate(`/patient-registration/${row.id}`);
         }}
+        onPrint={onPrint}
       />
 
       <section className="border-t bg-amber-50 text-[12px]">
@@ -419,6 +441,11 @@ const BillingList = () => {
           </span>
         </div>
       </section>
+      {printRow && (
+        <div style={{ display: "none" }}>
+          <PharmaBillPrint ref={printRef} data={printRow} />
+        </div>
+      )}
     </div>
   );
 };
