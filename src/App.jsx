@@ -143,6 +143,16 @@ function App() {
           }
         />
         <Route
+          path="/purchased-entry/edit/:id"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <PurchsedEntry />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/sales-record"
           element={
             <ProtectedRoute>

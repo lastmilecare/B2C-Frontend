@@ -2,27 +2,27 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
-  async ({ url, method, data, params, responseType }) => {
-    try {
-      const isAbsoluteUrl = url.startsWith("http");
-      const result = await axiosClient({
-        url: isAbsoluteUrl ? url : baseUrl + url,
-        method,
-        data,
-        params,
-        responseType: responseType || "json",
-      });
+    async ({ url, method, data, params, responseType }) => {
+      try {
+        const isAbsoluteUrl = url.startsWith("http");
+        const result = await axiosClient({
+          url: isAbsoluteUrl ? url : baseUrl + url,
+          method,
+          data,
+          params,
+          responseType: responseType || "json",
+        });
 
-      return { data: result.data };
-    } catch (error) {
-      return {
-        error: {
-          status: error.response?.status,
-          data: error.response?.data || error.message,
-        },
-      };
-    }
-  };
+        return { data: result.data };
+      } catch (error) {
+        return {
+          error: {
+            status: error.response?.status,
+            data: error.response?.data || error.message,
+          },
+        };
+      }
+    };
 const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
 export const api = createApi({
   reducerPath: "api",
@@ -500,6 +500,14 @@ export const api = createApi({
         },
       }),
     }),
+    updateStockDetails: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/medicine-inventory/stock/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+      invalidatesTags: ["Inventory"], 
+    }),
   }),
 });
 
@@ -547,4 +555,5 @@ export const {
   useGetSalesStockDetailsQuery,
   useGetPatientNameFromSalesQuery,
   useLazySearchDiseasesQuery,
+  useUpdateStockDetailsMutation,
 } = api;

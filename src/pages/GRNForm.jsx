@@ -19,16 +19,23 @@ import {
   useCreateMedicineStockMutation,
   useGetComboQuery,
   useGetMediceneListQuery,
+  useUpdateStockDetailsMutation,
 } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 import { skipToken } from "@reduxjs/toolkit/query";
-
+import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 const username = cookie.get("username"); // Ensure auth token is loaded for API calls
 const userId = cookie.get("user_id");
-
 const GRNForm = () => {
+  const centerIdFromCookie = cookie.get("center_id");
   const navigate = useNavigate();
+  const location = useLocation();
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
+  const editData = location.state?.editData;
   const [createMedicineStock, { isLoading }] = useCreateMedicineStockMutation();
+  const [updateStockDetails] = useUpdateStockDetailsMutation();
   const { data: itemType, isLoading: doctorsComboLoading } =
     useGetComboQuery("medicine-type");
   const { data: HSNCode, isLoading: HSNCodeLoading } =
@@ -112,7 +119,7 @@ const GRNForm = () => {
       Remarks: "",
       UserloginID: Number(userId) || 0,
       AddedBy: Number(userId) || 0,
-      ModifiedDate: new Date(),// figure out when i will edit
+      ModifiedDate: new Date(),
       ModifiedBy: 0, // To be set from auth state
       Isopen: false,
       StockStatus: 0,
@@ -124,6 +131,7 @@ const GRNForm = () => {
         healthAlerts.error("Add at least one item", "GRN");
         return;
       }
+
       const totalAmount = values.items.reduce(
         (sum, item) => sum + Number(item.totalCp || 0),
         0
@@ -139,13 +147,13 @@ const GRNForm = () => {
         0
       );
 
-
       const payload = {
         ...values,
         TotalAmount: totalAmount,
         TotalDiscount: totalDiscount,
         GrandTotal: grandTotal,
         ModifiedDate: new Date(),
+        CentreID: values.CentreID || Number(cookie.get("center_id")),
         items: values.items.map((item) => ({
           ...item,
           RecvQty: Number(item.RecvQty),
@@ -156,36 +164,110 @@ const GRNForm = () => {
       };
 
       try {
-        await createMedicineStock(payload).unwrap();
+        let res;
 
-        healthAlerts.success("GRN Saved Successfully", "Inventory");
+        if (isEditMode) {
+          res = await updateStockDetails({
+            id,
+            body: payload,
+          }).unwrap();
+        } else {
+          res = await createMedicineStock(payload).unwrap();
+        }
+
+        healthAlerts.success(res.message, "Inventory");
+
         resetForm();
+        navigate("/purchased-entry", {
+          state: { goToStock: true },
+        });
+
       } catch (error) {
-        console.error("GRN Save Failed:", error);
         healthAlerts.error(
-          error?.data?.message || "Failed to save GRN",
-          "Inventory",
+          error?.data?.message || "Operation failed",
+          "Inventory"
         );
       }
-    },
+    }
   });
   useEffect(() => {
-    if (!debouncedMedicine) {
-      if (medicineSuggestions.length > 0) setMedicineSuggestions([]);
+    if (!editData) return;
+    const cleanNumber = (val) => {
+      if (!val) return 0;
+      return Number(String(val).replace(/[$,]/g, ""));
+    };
+
+    formik.setValues({
+      ...formik.initialValues,
+
+      InvoiceDate: editData.InvoiceDate?.split("T")[0] ?? "",
+      RecieptNo: editData.RecieptNo ?? "",
+      SupplierID: editData.SupplierID ?? 0,
+      SupplierName: editData.SupplierName ?? "",
+      RagNo: editData.RagNo ?? "",
+      CentreID: editData.CentreID ?? 0,
+      ItemID: editData.ItemID ?? 0,
+      ItemName: editData.ItemName ?? "",
+      ItemTypeID: editData.ItemTypeID ?? 0,
+      ItemType: "",
+      BatchNo: editData.BatchNo ?? "",
+      MenufacturingDate:
+        editData.MenufacturingDate?.split("T")[0] ?? "",
+      ExpiryDate:
+        editData.ExpiryDate?.split("T")[0] ?? "",
+
+      NoStrip: editData.NoStrip ?? 0,
+      NoQtyperStrip: editData.NoQtyperStrip ?? 0,
+      RecvQty: editData.RecvQty ?? 0,
+      FreeRecvQty: editData.FreeRecvQty ?? 0,
+
+      CP: cleanNumber(editData.CP),
+      MRP: cleanNumber(editData.MRP),
+
+      DiscountPCperitem: cleanNumber(editData.DiscountPCperitem),
+      Discountperitem: cleanNumber(editData.Discountperitem),
+
+      CGST: editData.CGST ?? 0,
+      SGST: editData.SGST ?? 0,
+      HSNCode: editData.HSNCode ?? "",
+
+      items: [],
+    });
+
+
+    setMedicineSearch(editData.ItemName ?? "");
+
+  }, [editData]);
+  useEffect(() => {
+    if (!medicineTypeOptions.length) return;
+    if (!formik.values.ItemTypeID) return;
+
+    const found = medicineTypeOptions.find(
+      (t) => t.value === formik.values.ItemTypeID
+    );
+
+    if (found && formik.values.ItemType !== found.label) {
+      formik.setFieldValue("ItemType", found.label);
+    }
+
+  }, [medicineTypeOptions, formik.values.ItemTypeID]);
+  useEffect(() => {
+
+    if (!debouncedMedicine || debouncedMedicine.length < 2) {
+      setMedicineSuggestions([]);
+      return;
+    }
+    if (debouncedMedicine === formik.values.ItemName && formik.values.ItemID !== 0) {
+      setMedicineSuggestions([]);
       return;
     }
 
     if (medicineList && medicineList.length > 0) {
-      const currentDataStr = JSON.stringify(medicineList);
-      const existingDataStr = JSON.stringify(medicineSuggestions);
-
-      if (currentDataStr !== existingDataStr) {
-        setMedicineSuggestions(medicineList);
-      }
-    } else if (medicineList.length === 0 && medicineSuggestions.length > 0) {
+      setMedicineSuggestions(medicineList);
+    } else {
       setMedicineSuggestions([]);
     }
-  }, [medicineList, debouncedMedicine]);
+  }, [medicineList, debouncedMedicine, formik.values.ItemName, formik.values.ItemID]);
 
   // Auto-calc Qty & Financials
   useEffect(() => {
@@ -219,6 +301,11 @@ const GRNForm = () => {
     formik.values.CGST,
     formik.values.SGST,
   ]);
+  useEffect(() => {
+    if (centerIdFromCookie) {
+      formik.setFieldValue("CentreID", Number(centerIdFromCookie));
+    }
+  }, [centerIdFromCookie]);
 
   const handleAddItem = () => {
     const v = formik.values;
@@ -303,6 +390,7 @@ const GRNForm = () => {
             type="date"
             label="Invoice Date"
             required
+            disabled={isEditMode}
             error={formik.touched.InvoiceDate && formik.errors.InvoiceDate}
             {...formik.getFieldProps("InvoiceDate")}
           />
@@ -315,6 +403,7 @@ const GRNForm = () => {
           <Select
             label="Select Supplier"
             value={formik.values.SupplierID}
+            disabled={isEditMode}
             onChange={(e) => {
               const id = e.target.value;
               const supplier = SupplierOptions.find(
@@ -350,6 +439,7 @@ const GRNForm = () => {
               type="text"
               placeholder={"Search Medicine"}
               value={medicineSearch}
+              disabled={isEditMode}
               onChange={(e) => {
                 setMedicineSearch(e.target.value);
                 formik.setFieldValue("ItemName", e.target.value);
@@ -357,20 +447,24 @@ const GRNForm = () => {
               autoComplete="off"
             />
             {/* Medicine Search Suggestions List */}
-            {medicineSuggestions.length > 0 && (
+            {!isEditMode && medicineSuggestions.length > 0 && (
               <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                 {medicineSuggestions.map((item) => (
                   <li
                     key={item.id}
                     onClick={() => {
+
                       setMedicineSearch(item.descriptions);
                       formik.setFieldValue("ItemName", item.descriptions);
                       formik.setFieldValue("ItemID", item.id);
-                      formik.setFieldValue("ItemTypeID", item.itemType?.id || 0);
-                      formik.setFieldValue(
-                        "ItemType",
-                        item.itemType?.Descriptions || ""
-                      );
+
+                      const typeId = item.itemType?.ID || 0;
+
+                      formik.setFieldValue("ItemTypeID", typeId);
+                      formik.setFieldValue("ItemType", item.itemType?.Descriptions || "");
+
+
+
                       setMedicineSuggestions([]);
                     }}
                     className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
@@ -426,12 +520,12 @@ const GRNForm = () => {
             {...formik.getFieldProps("FreeRecvQty")}
           />
           <NumericInput
-            label="CP / Unit"
+            label="CP / Strip"
             required
             {...formik.getFieldProps("CP")}
           />
           <NumericInput
-            label="MRP / Unit"
+            label="MRP / Strip"
             required
             {...formik.getFieldProps("MRP")}
           />

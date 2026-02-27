@@ -353,7 +353,12 @@ const StockDetails = () => {
         isLoading={isLoading}
         actionButtons={["edit", "delete"]}
         onEdit={(row) => {
-          navigate(`/patient-registration/${row.id}`);
+          if (!row?.ID) return;
+
+          navigate(`/purchased-entry/edit/${row.ID}`, {
+            state: { editData: row },
+
+          });
         }}
       />
       <section className="border-t bg-white text-[12px]">
