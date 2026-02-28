@@ -461,6 +461,7 @@ export const api = createApi({
           StockID,
         },
       }),
+       providesTags: ["Inventory"],
     }),
     getExpireStockDetails: build.query({
       query: ({ page = 1, limit = 10 } = {}) => ({
@@ -521,7 +522,6 @@ export const api = createApi({
         method: "POST",
         data: body,
       }),
-      invalidatesTags: ["Inventory"],
     }),
 
     updateItem: build.mutation({
@@ -530,8 +530,27 @@ export const api = createApi({
         method: "PUT",
         data: body,
       }),
-      invalidatesTags: ["Inventory"],
     }),
+    activateItem: build.mutation({
+      query: (id) => ({
+        url: `/medicine-inventory/items/${id}/active`,
+        method: "PATCH",
+      }),
+    }),
+
+    inactivateItem: build.mutation({
+      query: (id) => ({
+        url: `/medicine-inventory/items/${id}/inactive`,
+        method: "PATCH",
+      }),
+    }),
+    deleteitem: build.mutation({
+  query: (id) => ({
+    url: `/medicine-inventory/stock/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Inventory"],  
+}),
   }),
 });
 
@@ -583,4 +602,7 @@ export const {
   useCreateItemMutation,
   useUpdateItemMutation,
   useLazyGetMediceneListQuery,
+  useActivateItemMutation,
+  useInactivateItemMutation,
+  useDeleteitemMutation,
 } = api;

@@ -17,6 +17,7 @@ const CommonList = ({
   onEdit = () => { },
   onView = () => { },
   onDelete = () => { },
+  onStatus = () => {},
   onExport = () => { },
   onPrint = () => { },
   onPrintCS = () => { },
@@ -119,6 +120,7 @@ const CommonList = ({
       delete: { label: "Delete", color: "text-red-600", handler: onDelete },
       print: { label: "Print", color: "text-green-700", handler: onPrint },
       printCS: { label: "Print CS", color: "text-purple-700", handler: onPrintCS },
+      status: { label: "Status", color: "", handler: onStatus },
     };
 
     return [

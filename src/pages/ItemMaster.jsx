@@ -7,10 +7,14 @@ import {
   useUpdateItemMutation,
   useGetComboQuery,
   useLazyGetMediceneListQuery,
+  useActivateItemMutation,
+  useInactivateItemMutation,
 } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 import CommonList from "../components/CommonList";
 const ItemMaster = () => {
+  const [activateItem] = useActivateItemMutation();
+  const [inactivateItem] = useInactivateItemMutation();
   const [editId, setEditId] = useState(null);
   const [createItem] = useCreateItemMutation();
   const [updateItem] = useUpdateItemMutation();
@@ -54,7 +58,7 @@ const ItemMaster = () => {
         resetForm();
         formik.setFieldValue("userloginid", currentUserId);
         formik.setFieldValue("addedby", currentUserId);
-        
+
       } catch (error) {
         console.log(error);
         healthAlerts.error("Something went wrong");
@@ -200,10 +204,19 @@ const ItemMaster = () => {
                   selector: (row) =>
                     new Date(row.addeddate).toLocaleDateString(),
                 },
+                {
+                  name: "Status",
+                  selector: (row) =>
+                    row.isactive ? (
+                      <span className="text-green-600 font-semibold">Active</span>
+                    ) : (
+                      <span className="text-red-500 font-semibold">Inactive</span>
+                    ),
+                },
               ]}
               data={searchResult}
               enableActions
-              actionButtons={["edit", "delete"]}
+              actionButtons={["edit", "status"]}
               onEdit={(row) => {
                 formik.setValues({
                   itemCode: row.code,
@@ -214,13 +227,20 @@ const ItemMaster = () => {
                 });
                 setEditId(row.id);
               }}
-              onDelete={async (row) => {
+              onStatus={async (row) => {
                 try {
-                  // await deleteItem(row.id).unwrap();
-                  healthAlerts.success("Item Deleted Successfully");
-                  refetch();
+                  if (row.isactive) {
+                    await inactivateItem(row.id).unwrap();
+                    healthAlerts.success("Item Inactivated Successfully");
+                  } else {
+                    await activateItem(row.id).unwrap();
+                    healthAlerts.success("Item Activated Successfully");
+                  }
+
+                  handleSearch(); 
                 } catch (error) {
-                  healthAlerts.error("Delete Failed");
+                  console.log(error);
+                  healthAlerts.error("Operation Failed");
                 }
               }}
             />
