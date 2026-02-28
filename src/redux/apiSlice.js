@@ -351,11 +351,13 @@ export const api = createApi({
     // }),
 
     getMediceneList: build.query({
-      query: (searchTerm) => ({
+      query: ({ searchTerm, code, itemtypeid } = {}) => ({
         url: "/medicine-inventory",
         method: "GET",
         params: {
           search: searchTerm,
+          code,
+          itemTypeId: itemtypeid,
           isActive: true,
           sortBy: "descriptions",
           sortOrder: "ASC",
@@ -508,7 +510,25 @@ export const api = createApi({
         method: "PUT",
         data: body,
       }),
-      invalidatesTags: ["Inventory"], 
+      invalidatesTags: ["Inventory"],
+    }),
+
+    createItem: build.mutation({
+      query: (body) => ({
+        url: "/medicine-inventory/items",
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Inventory"],
+    }),
+
+    updateItem: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/medicine-inventory/items/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+      invalidatesTags: ["Inventory"],
     }),
   }),
 });
@@ -558,4 +578,7 @@ export const {
   useGetPatientNameFromSalesQuery,
   useLazySearchDiseasesQuery,
   useUpdateStockDetailsMutation,
+  useCreateItemMutation,
+  useUpdateItemMutation,
+  useLazyGetMediceneListQuery,
 } = api;

@@ -47,6 +47,7 @@ const GRNForm = () => {
 
     RecieptNo: Yup.string().required("Required"),
     SupplierName: Yup.string().required("Required"),
+    HSNCode: Yup.string().required("HSN Code is required"),
   });
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
 
@@ -536,7 +537,10 @@ const GRNForm = () => {
           />
           <Select
             label="HSN Code"
+            required
             value={formik.values.HSNCode}
+            error={formik.touched.HSNCode && formik.errors.HSNCode}   
+            onBlur={formik.handleBlur}
             onChange={(e) => {
               const selectedId = e.target.value;
 
