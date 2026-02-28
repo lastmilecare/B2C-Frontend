@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Formik, useFormik } from "formik";
+import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import DiseaseSelect from "../components/DiseaseSelect";
@@ -8,7 +8,6 @@ import {
   useSearchOpdBillNoQuery,
   useGetOpdBillByIdQuery,
   useGetMediceneListQuery,
-  useSearchDiseasesQuery,
   useUpdatePrescriptionMutation,
   useGetComboQuery,
 } from "../redux/apiSlice";
@@ -652,12 +651,8 @@ const PrescriptionForm = () => {
               <input
                 type="text"
                 className={`${baseInput} 
-        ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
-                placeholder={
-                  
-                     "Search Medicine"
-                    
-                }
+                  ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
+                placeholder={"Search Medicine"}
                 value={medicineSearch}
                 disabled={!formik.values.billno}
                 onChange={(e) => {
