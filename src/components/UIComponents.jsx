@@ -17,7 +17,8 @@ export const Input = ({ label, required, error, readOnly, className = "", ...pro
         className={`
           ${baseInput} 
           ${error ? "border-red-500" : "border-gray-300"} 
-          ${readOnly ? "bg-sky-50 cursor-not-allowed opacity-90" : "bg-white"}
+          ${(readOnly || props.disabled)
+             ? "bg-sky-50 cursor-not-allowed opacity-90" : "bg-white"}
           ${className}
         `}
       />
@@ -47,6 +48,7 @@ export const Select = ({ label, required, error, children, className = "", ...pr
       )}
       <select
         {...props}
+        disabled={props.disabled}
         className={`${baseInput} ${error ? "border-red-500" : "border-gray-300"} bg-white ${className}`}
       >
         {children}

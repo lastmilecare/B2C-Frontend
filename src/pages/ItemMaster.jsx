@@ -1,67 +1,92 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { healthAlerts } from "../utils/healthSwal";
-
+import {
+  useCreateItemMutation,
+  useUpdateItemMutation,
+  useGetComboQuery,
+  useLazyGetMediceneListQuery,
+  useActivateItemMutation,
+  useInactivateItemMutation,
+} from "../redux/apiSlice";
+import { cookie } from "../utils/cookie";
+import CommonList from "../components/CommonList";
 const ItemMaster = () => {
-  const [items, setItems] = useState([]);
+  const [activateItem] = useActivateItemMutation();
+  const [inactivateItem] = useInactivateItemMutation();
+  const [editId, setEditId] = useState(null);
+  const [createItem] = useCreateItemMutation();
+  const [updateItem] = useUpdateItemMutation();
   const [searchClicked, setSearchClicked] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
+  const getCookieUserId = () => {
+    const id = Number(cookie.get("user_id")) || 0;
+    return id;
+  };
   const formik = useFormik({
     initialValues: {
       itemCode: "",
       description: "",
-      itemType: "",
+      itemtypeid: "",
+      userloginid: 0,
+      addedby: 0,
     },
-
     validationSchema: Yup.object({
       itemCode: Yup.string().required("Item Code is required"),
       description: Yup.string().required("Description is required"),
-      itemType: Yup.string().required("Item Type is required"),
+      itemtypeid: Yup.string().required("Item Type is required"),
     }),
+    onSubmit: async (values, { resetForm }) => {
+      const currentUserId = getCookieUserId();
+      try {
+        const payload = {
+          code: values.itemCode,
+          descriptions: values.description,
+          itemtypeid: Number(values.itemtypeid),
+          userloginid: currentUserId,
+          addedby: currentUserId,
+        };
+        if (editId) {
+          await updateItem({ id: editId, body: payload }).unwrap();
+          healthAlerts.success("Item Updated Successfully");
+          setEditId(null);
+        } else {
+          await createItem(payload).unwrap();
+          healthAlerts.success("Item Added Successfully");
+        }
+        resetForm();
+        formik.setFieldValue("userloginid", currentUserId);
+        formik.setFieldValue("addedby", currentUserId);
 
-    onSubmit: (values, { resetForm }) => {
-      const exists = items.some(
-        (i) => i.itemCode.toLowerCase() === values.itemCode.toLowerCase()
-      );
-
-      if (exists) {
-        healthAlerts.error("Item Code already exists", "Item Master");
-        return;
+      } catch (error) {
+        console.log(error);
+        healthAlerts.error("Something went wrong");
       }
-
-      setItems((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          itemCode: values.itemCode,
-          description: values.description,
-          itemType: values.itemType,
-        },
-      ]);
-      console.log("Form Submitted Successfully:", values);
-
-      healthAlerts.success("Item Added Successfully", "Item Master");
-      resetForm();
     },
   });
-  const handleSearch = () => {
-    const { itemCode, description, itemType } = formik.values;
+  useEffect(() => {
+    const id = getCookieUserId();
+    if (id > 0) {
+      formik.setFieldValue("userloginid", id);
+      formik.setFieldValue("addedby", id);
+    }
+  }, []);
+  const { data: medicineTypes = [] } = useGetComboQuery("medicine-type");
+  const [fetchItems, { data }] = useLazyGetMediceneListQuery();
+  const handleSearch = async () => {
+    try {
+      const result = await fetchItems({
+        search: formik.values.description,
+        code: formik.values.itemCode,
+        itemtypeid: formik.values.itemtypeid,
+      }).unwrap();
 
-    const result = items.filter((i) => {
-      return (
-        (itemCode
-          ? i.itemCode.toLowerCase().includes(itemCode.toLowerCase())
-          : true) &&
-        (description
-          ? i.description.toLowerCase().includes(description.toLowerCase())
-          : true) &&
-        (itemType ? i.itemType === itemType : true)
-      );
-    });
-
-    setSearchResult(result);
-    setSearchClicked(true);
+      setSearchResult(result.data || []);
+      setSearchClicked(true);
+    } catch (err) {
+      healthAlerts.error("Search Failed");
+    }
   };
   return (
     <div className="max-w-6xl mx-auto mt-8 bg-white p-6 rounded-2xl shadow border">
@@ -110,27 +135,20 @@ const ItemMaster = () => {
               Item Type <span className="text-red-500">*</span>
             </label>
             <select
-              name="itemType"
-              value={formik.values.itemType}
+              name="itemtypeid"
+              value={formik.values.itemtypeid}
               onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
               className="border rounded-lg px-3 py-2 w-full"
             >
               <option value="">-- Select --</option>
-              <option>TABLET</option>
-              <option>SYRUP</option>
-              <option>INJECTION</option>
-              <option>IV</option>
-              <option>SOLUTION</option>
-              <option>OTHERS</option>
+              {medicineTypes?.map((type) => (
+                <option key={type.ID} value={type.ID}>
+                  {type.Descriptions}
+                </option>
+              ))}
             </select>
-            {formik.touched.itemType && formik.errors.itemType && (
-              <p className="text-xs text-red-500">
-                {formik.errors.itemType}
-              </p>
-            )}
+            {formik.touched.itemtypeid && formik.errors.itemtypeid}
           </div>
-
           <div className="flex items-end gap-2">
             <button
               type="submit"
@@ -138,7 +156,6 @@ const ItemMaster = () => {
             >
               Save
             </button>
-
             <button
               type="button"
               onClick={handleSearch}
@@ -146,7 +163,6 @@ const ItemMaster = () => {
             >
               Search
             </button>
-
             <button
               type="button"
               onClick={() => {
@@ -158,68 +174,80 @@ const ItemMaster = () => {
               Cancel
             </button>
           </div>
-
         </div>
       </form>
       {searchClicked && (
         <div className="mt-6 overflow-x-auto">
-          <table className="w-full border text-sm">
-            <thead className="bg-sky-100 text-sky-700">
-              <tr>
-                <th className="border px-2 py-2">ID</th>
-                <th className="border px-2 py-2">Item Code</th>
-                <th className="border px-2 py-2">Description</th>
-                <th className="border px-2 py-2">Item Type</th>
-                <th className="border px-2 py-2">Action</th>
-              </tr>
-            </thead>
+          {searchClicked && (
+            <CommonList
+              title="Item Master List"
+              columns={[
+                {
+                  name: "S.No",
+                  selector: (row, index) => index + 1,
+                  width: "80px",
+                },
+                {
+                  name: "Item Code",
+                  selector: (row) => row.code,
+                },
+                {
+                  name: "Description",
+                  selector: (row) => row.descriptions,
+                },
+                {
+                  name: "Item Type",
+                  selector: (row) => row.itemType?.Descriptions,
+                },
+                {
+                  name: "Added Date",
+                  selector: (row) =>
+                    new Date(row.addeddate).toLocaleDateString(),
+                },
+                {
+                  name: "Status",
+                  selector: (row) =>
+                    row.isactive ? (
+                      <span className="text-green-600 font-semibold">Active</span>
+                    ) : (
+                      <span className="text-red-500 font-semibold">Inactive</span>
+                    ),
+                },
+              ]}
+              data={searchResult}
+              enableActions
+              actionButtons={["edit", "status"]}
+              onEdit={(row) => {
+                formik.setValues({
+                  itemCode: row.code,
+                  description: row.descriptions,
+                  itemtypeid: row.itemtypeid,
+                  userloginid: formik.values.userloginid,
+                  addedby: formik.values.addedby,
+                });
+                setEditId(row.id);
+              }}
+              onStatus={async (row) => {
+                try {
+                  if (row.isactive) {
+                    await inactivateItem(row.id).unwrap();
+                    healthAlerts.success("Item Inactivated Successfully");
+                  } else {
+                    await activateItem(row.id).unwrap();
+                    healthAlerts.success("Item Activated Successfully");
+                  }
 
-            <tbody>
-              {searchResult.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="text-center py-4 text-gray-500"
-                  >
-                    No Items Found
-                  </td>
-                </tr>
-              ) : (
-                searchResult.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="border px-2 py-2 text-center">
-                      {index + 1}
-                    </td>
-                    <td className="border px-2 py-2">
-                      {item.itemCode}
-                    </td>
-                    <td className="border px-2 py-2">
-                      {item.description}
-                    </td>
-                    <td className="border px-2 py-2">
-                      {item.itemType}
-                    </td>
-                    <td className="border px-2 py-2 text-center">
-                      <button
-                        onClick={() =>
-                          setItems((prev) =>
-                            prev.filter((i) => i.id !== item.id)
-                          )
-                        }
-                        className="text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                  handleSearch(); 
+                } catch (error) {
+                  console.log(error);
+                  healthAlerts.error("Operation Failed");
+                }
+              }}
+            />
+          )}
         </div>
       )}
     </div>
   );
 };
-
 export default ItemMaster;
