@@ -444,6 +444,7 @@ export const api = createApi({
         endDate,
         SupplierID,
         StockID,
+        ItemID,
       } = {}) => ({
         url: "/medicine-inventory/stock/view",
         method: "get",
@@ -457,6 +458,7 @@ export const api = createApi({
           endDate,
           SupplierID,
           StockID,
+          ItemID,
         },
       }),
     }),

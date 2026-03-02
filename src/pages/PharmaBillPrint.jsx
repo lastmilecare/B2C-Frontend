@@ -260,3 +260,4 @@ const tdCenter = {
 };
 
 export default PharmaInvoicePrint;
+

@@ -51,9 +51,8 @@ const BillingForm = ({ refetchList }) => {
   const { data: paymodes } = useGetComboQuery("paymode");
   const [createMedicineBill] = useCreateMedicineBillMutation();
   const [triggerGetBillDetails] = useLazyGetBillingByBillNoQuery();
-
   const { data: stockDetails } = useGetStockDetailsQuery(
-    selectedMedicine ? String(selectedMedicine.id) : skipToken,
+    selectedMedicine ? { ItemID: String(selectedMedicine.id) } : skipToken,
     { skip: !selectedMedicine },
   );
 
@@ -168,12 +167,13 @@ const BillingForm = ({ refetchList }) => {
   }, [patientData, selectedBill]);
 
   useEffect(() => {
+    console.log(stockDetails, "stock details");
     const updates = {
-      cgst: stockDetails?.CGST || 0,
-      sgst: stockDetails?.SGST || 0,
-      discountPercent: stockDetails?.DiscountPCperitem || 0,
-      mrp: cleanCurrency(stockDetails?.MRP || 0),
-      cp: cleanCurrency(stockDetails?.CPU || 0),
+      cgst: stockDetails?.data[0].CGST || 0,
+      sgst: stockDetails?.data[0].SGST || 0,
+      discountPercent: stockDetails?.data[0].DiscountPCperitem || 0,
+      mrp: cleanCurrency(stockDetails?.data[0].MRP || 0),
+      cp: cleanCurrency(stockDetails?.data[0].CP || 0),
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [stockDetails]);
