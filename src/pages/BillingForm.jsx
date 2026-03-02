@@ -20,7 +20,7 @@ import { healthAlert } from "../utils/healthSwal";
 import { Input, Select, Button, baseInput } from "../components/UIComponents";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { cleanCurrency } from "../utils/helper";
+import { cleanCurrency, getPharmaSellingFromCP } from "../utils/helper";
 const BillingForm = ({ refetchList }) => {
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
@@ -29,7 +29,6 @@ const BillingForm = ({ refetchList }) => {
   const [selectedBill, setSelectedBill] = useState("");
   const [selectedMedicine, setSelectedMedicine] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
-  const [prescriptionList, setPrescriptionList] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const { id } = useParams();
   const populatedUhidRef = useRef("");
@@ -56,6 +55,7 @@ const BillingForm = ({ refetchList }) => {
     { skip: !selectedMedicine },
   );
 
+  const billingItemValues = [];
   useEffect(() => {
     if (selectedBill) return;
     if (billSearch.length < 1) return;
@@ -204,29 +204,47 @@ const BillingForm = ({ refetchList }) => {
     setItemSearch("");
   };
 
-  const addItemToList = () => {
-    if (!formik.values.itemName || !formik.values.quantity) return;
-    const qty = Number(formik.values.quantity);
-    const rate = Number(formik.values.mrp);
-    const discAmt = (rate * qty * Number(formik.values.discountPercent)) / 100;
-    const taxable = rate * qty - discAmt;
-    const cgstAmt = (taxable * formik.values.cgst) / 100;
-    const sgstAmt = (taxable * formik.values.sgst) / 100;
-
+  const addItemToList = async () => {
+    console.log("Adding item with values:", formik.values);
+    const canAdd =
+      formik.values.medicine && formik.values.quantity && formik.values.cp;
+    if (!canAdd) {
+      healthAlert({
+        title: "Missing Fields",
+        text: "Please select an item, quantity and cost price before adding",
+        icon: "warning",
+      });
+      return;
+    }
+    const item = {
+      CP: formik.values.cp,
+      CGST: formik.values.cgst,
+      SGST: formik.values.sgst,
+    };
+    const sellingItemCost = await getPharmaSellingFromCP(
+      item,
+      Number(formik.values.quantity),
+      Number(cleanCurrency(formik.values.discountPercent)),
+    );
+    console.log("Calculated selling item cost:", sellingItemCost);
+    const expDate = new Date(stockDetails?.data[0]?.ExpiryDate)
+      .toISOString()
+      .split("T")[0];
     const newItem = {
-      description: formik.values.itemName,
-      qty,
-      batchNo: "A24AM390",
-      hsn: "3004",
-      expDate: "01-10-2026",
-      saleRate: rate,
-      discAmt,
+      description: formik.values.medicine,
+      qty: sellingItemCost.qty,
+      batchNo: stockDetails?.data[0]?.BatchNo || "N/A",
+      hsn: stockDetails?.data[0]?.HSNCode || "N/A",
+      expDate: expDate || "N/A",
+      saleRate: sellingItemCost.total,
+      discAmt: sellingItemCost.discountAmount,
+      discountPercent: formik.values.discountPercent,
       cgstPercent: formik.values.cgst,
       sgstPercent: formik.values.sgst,
-      cgstAmt,
-      sgstAmt,
-      taxableAmt: taxable,
-      total: taxable + cgstAmt + sgstAmt,
+      cgstAmt: sellingItemCost.cgstAmount,
+      sgstAmt: sellingItemCost.sgstAmount,
+      taxableAmt: sellingItemCost.priceBeforeGST,
+      total: sellingItemCost.total,
       UHID: formik.values.UHID,
       opdBillNo: formik.values.opdBillNo,
     };
@@ -445,9 +463,14 @@ const BillingForm = ({ refetchList }) => {
                     <th className="px-3 py-3 text-center">Batch</th>
                     <th className="px-3 py-3 text-center">HSN</th>
                     <th className="px-3 py-3 text-center">Exp</th>
-                    <th className="px-3 py-3 text-right">Rate</th>
-                    <th className="px-3 py-3 text-right">Disc</th>
-                    <th className="px-3 py-3 text-right">Taxable</th>
+                    <th className="px-3 py-3 text-right">Sale Rate</th>
+                    <th className="px-3 py-3 text-right">Disc %</th>
+                    <th className="px-3 py-3 text-right">Disc Amt</th>
+                    <th className="px-3 py-3 text-right">CGST %</th>
+                    <th className="px-3 py-3 text-right">CGST Amt</th>
+                    <th className="px-3 py-3 text-right">SGST %</th>
+                    <th className="px-3 py-3 text-right">SGST Amt</th>
+                    <th className="px-3 py-3 text-right">Taxable Amt</th>
                     <th className="px-3 py-3 text-right">Total</th>
                     <th className="px-3 py-3 text-center">Action</th>
                   </tr>
@@ -478,6 +501,24 @@ const BillingForm = ({ refetchList }) => {
                           </td>
                           <td className="px-3 py-3 text-right">
                             ₹{item.saleRate}
+                          </td>
+                          <td className="px-3 py-3 text-right">
+                            {item.discountPercent}
+                          </td>
+                          <td className="px-3 py-3 text-right">
+                            ₹{item.discAmt}
+                          </td>
+                          <td className="px-3 py-3 text-right">
+                            {item.cgstPercent}
+                          </td>
+                          <td className="px-3 py-3 text-right">
+                            ₹{item.cgstAmt}
+                          </td>
+                          <td className="px-3 py-3 text-right">
+                            {item.sgstPercent}
+                          </td>
+                          <td className="px-3 py-3 text-right">
+                            ₹{item.sgstAmt}
                           </td>
                           <td className="px-3 py-3 text-right text-gray-500">
                             {item.discAmt.toFixed(2)}
