@@ -1,6 +1,7 @@
 import React from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { healthAlert } from "../../utils/healthSwal";
+import { useState } from "react";
 
 const FilterBar = ({
   filtersConfig = [],
@@ -16,7 +17,7 @@ const FilterBar = ({
   suggestionsMap = {},
 }) => {
   const today = new Date().toISOString().split("T")[0];
-
+  const [activeField, setActiveField] = useState(null);
   const handleApply = () => {
     const startDate = tempFilters.startDate;
     const endDate = tempFilters.endDate;
@@ -56,16 +57,17 @@ const FilterBar = ({
                   value={tempFilters[filter.name] || ""}
                   onChange={onChange}
                   autoComplete="none"
+                  onFocus={() => setActiveField(filter.name)}
                   placeholder={filter.placeholder || `Enter ${filter.label}`}
-                  className={`w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400 focus:bg-white outline-none shadow-none ${
-                    filter.name === "external_id" ? "uppercase" : ""
-                  }`}
+                  className={`w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400 focus:bg-white outline-none shadow-none ${filter.name === "external_id" ? "uppercase" : ""
+                    }`}
                 />
 
                 {/* ✅ Generic Suggestion Dropdown */}
                 {filter.suggestionConfig &&
+                  activeField === filter.name &&
                   tempFilters[filter.name]?.length >=
-                    filter.suggestionConfig.minLength &&
+                  filter.suggestionConfig.minLength &&
                   (() => {
                     // 🔥 Decide which suggestion source to use
                     const fieldSuggestions =
@@ -92,10 +94,12 @@ const FilterBar = ({
                                     item[valueField],
                                   );
                                 }
+                                
                                 // ✅ If old single-field mode
                                 else {
                                   onSelectSuggestion(item[valueField]);
                                 }
+                                 setActiveField(null);
                               }}
                               className="px-4 py-2.5 hover:bg-sky-50 cursor-pointer border-b border-gray-50 last:border-0 transition-all"
                             >

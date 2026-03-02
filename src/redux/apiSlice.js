@@ -2,27 +2,27 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
-  async ({ url, method, data, params, responseType }) => {
-    try {
-      const isAbsoluteUrl = url.startsWith("http");
-      const result = await axiosClient({
-        url: isAbsoluteUrl ? url : baseUrl + url,
-        method,
-        data,
-        params,
-        responseType: responseType || "json",
-      });
+    async ({ url, method, data, params, responseType }) => {
+      try {
+        const isAbsoluteUrl = url.startsWith("http");
+        const result = await axiosClient({
+          url: isAbsoluteUrl ? url : baseUrl + url,
+          method,
+          data,
+          params,
+          responseType: responseType || "json",
+        });
 
-      return { data: result.data };
-    } catch (error) {
-      return {
-        error: {
-          status: error.response?.status,
-          data: error.response?.data || error.message,
-        },
-      };
-    }
-  };
+        return { data: result.data };
+      } catch (error) {
+        return {
+          error: {
+            status: error.response?.status,
+            data: error.response?.data || error.message,
+          },
+        };
+      }
+    };
 const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
 export const api = createApi({
   reducerPath: "api",
@@ -351,11 +351,13 @@ export const api = createApi({
     // }),
 
     getMediceneList: build.query({
-      query: (searchTerm) => ({
+      query: ({ searchTerm, code, itemtypeid } = {}) => ({
         url: "/medicine-inventory",
         method: "GET",
         params: {
           search: searchTerm,
+          code,
+          itemTypeId: itemtypeid,
           isActive: true,
           sortBy: "descriptions",
           sortOrder: "ASC",
@@ -461,6 +463,7 @@ export const api = createApi({
           ItemID,
         },
       }),
+       providesTags: ["Inventory"],
     }),
     getExpireStockDetails: build.query({
       query: ({ page = 1, limit = 10 } = {}) => ({
@@ -506,6 +509,50 @@ export const api = createApi({
         },
       }),
     }),
+    updateStockDetails: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/medicine-inventory/stock/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+      invalidatesTags: ["Inventory"],
+    }),
+
+    createItem: build.mutation({
+      query: (body) => ({
+        url: "/medicine-inventory/items",
+        method: "POST",
+        data: body,
+      }),
+    }),
+
+    updateItem: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/medicine-inventory/items/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+    }),
+    activateItem: build.mutation({
+      query: (id) => ({
+        url: `/medicine-inventory/items/${id}/active`,
+        method: "PATCH",
+      }),
+    }),
+
+    inactivateItem: build.mutation({
+      query: (id) => ({
+        url: `/medicine-inventory/items/${id}/inactive`,
+        method: "PATCH",
+      }),
+    }),
+    deleteitem: build.mutation({
+  query: (id) => ({
+    url: `/medicine-inventory/stock/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Inventory"],  
+}),
   }),
 });
 
@@ -553,4 +600,11 @@ export const {
   useGetSalesStockDetailsQuery,
   useGetPatientNameFromSalesQuery,
   useLazySearchDiseasesQuery,
+  useUpdateStockDetailsMutation,
+  useCreateItemMutation,
+  useUpdateItemMutation,
+  useLazyGetMediceneListQuery,
+  useActivateItemMutation,
+  useInactivateItemMutation,
+  useDeleteitemMutation,
 } = api;
