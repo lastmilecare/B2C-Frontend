@@ -16,6 +16,7 @@ import MedicineSalesRecord from "./pages/MedicineSalesRecord";
 import ExpiryItems from "./pages/ExpiryItems";
 import Billing from "./pages/Billing";
 import ItemMaster from "./pages/ItemMaster";
+import CampBilling from "./pages/CampBilling";
 
 
 function App() {
@@ -188,6 +189,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <ItemMaster />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/camp-billing"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CampBilling />
               </Layout>
             </ProtectedRoute>
           }

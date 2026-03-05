@@ -313,15 +313,6 @@ export const api = createApi({
       }),
     }),
 
-    // 💾 3. Create medicine bill
-    createMedicineBill: build.mutation({
-      query: (data) => ({
-        url: "/billing",
-        method: "POST",
-        data,
-      }),
-      invalidatesTags: ["Bill", "Inventory"],
-    }),
 
     getPatientById: build.query({
       query: (id) => ({
@@ -552,6 +543,14 @@ export const api = createApi({
     method: "DELETE",
   }),
   invalidatesTags: ["Inventory"],  
+}),
+createMedicineBill: build.mutation({
+  query: (data) => ({
+    url: "/medicine-inventory/lastbill",  
+    method: "POST",
+    data,
+  }),
+  invalidatesTags: ["Bill", "Inventory"],
 }),
   }),
 });

@@ -403,6 +403,7 @@ const GRNForm = () => {
           />
           <Select
             label="Select Supplier"
+            required
             value={formik.values.SupplierID}
             disabled={isEditMode}
             onChange={(e) => {
@@ -440,6 +441,7 @@ const GRNForm = () => {
               type="text"
               placeholder={"Search Medicine"}
               value={medicineSearch}
+              required
               disabled={isEditMode}
               onChange={(e) => {
                 setMedicineSearch(e.target.value);

@@ -20,8 +20,8 @@ import { healthAlert } from "../utils/healthSwal";
 import { Input, Select, Button, baseInput } from "../components/UIComponents";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { cleanCurrency, getPharmaSellingFromCP } from "../utils/helper";
-const BillingForm = ({ refetchList }) => {
+import { cleanCurrency } from "../utils/helper";
+const CampBillingForm = ({ refetchList }) => {
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
@@ -29,6 +29,7 @@ const BillingForm = ({ refetchList }) => {
   const [selectedBill, setSelectedBill] = useState("");
   const [selectedMedicine, setSelectedMedicine] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
+  const [prescriptionList, setPrescriptionList] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const { id } = useParams();
   const populatedUhidRef = useRef("");
@@ -50,12 +51,12 @@ const BillingForm = ({ refetchList }) => {
   const { data: paymodes } = useGetComboQuery("paymode");
   const [createMedicineBill] = useCreateMedicineBillMutation();
   const [triggerGetBillDetails] = useLazyGetBillingByBillNoQuery();
+
   const { data: stockDetails } = useGetStockDetailsQuery(
-    selectedMedicine ? { ItemID: String(selectedMedicine.id) } : skipToken,
+    selectedMedicine ? String(selectedMedicine.id) : skipToken,
     { skip: !selectedMedicine },
   );
 
-  const billingItemValues = [];
   useEffect(() => {
     if (selectedBill) return;
     if (billSearch.length < 1) return;
@@ -114,9 +115,6 @@ const BillingForm = ({ refetchList }) => {
       paidAmount: 0,
       dueAmount: 0,
       payMode: "",
-      cashAmount: 0,
-      cardAmount: 0,
-      chequeAmount: 0,
     },
     onSubmit: async (values) => {
       if (values.items.length === 0)
@@ -125,22 +123,16 @@ const BillingForm = ({ refetchList }) => {
           text: "Please add items first",
           icon: "warning",
         });
-
       try {
-        const { items, ...headerOnly } = values;
-
-        await createMedicineBill(headerOnly).unwrap();
-
+        await createMedicineBill(values).unwrap();
         healthAlert({
           title: "Success",
-          text: "Bill Header Saved Successfully",
+          text: "Bill Saved Successfully",
           icon: "success",
         });
-
         formik.resetForm();
         setBillSearch("");
         if (refetchList) refetchList();
-
       } catch (err) {
         healthAlert({
           title: "Error",
@@ -176,13 +168,12 @@ const BillingForm = ({ refetchList }) => {
   }, [patientData, selectedBill]);
 
   useEffect(() => {
-    console.log(stockDetails, "stock details");
     const updates = {
-      cgst: stockDetails?.data[0].CGST || 0,
-      sgst: stockDetails?.data[0].SGST || 0,
-      discountPercent: stockDetails?.data[0].DiscountPCperitem || 0,
-      mrp: cleanCurrency(stockDetails?.data[0].MRP || 0),
-      cp: cleanCurrency(stockDetails?.data[0].CP || 0),
+      cgst: stockDetails?.CGST || 0,
+      sgst: stockDetails?.SGST || 0,
+      discountPercent: stockDetails?.DiscountPCperitem || 0,
+      mrp: cleanCurrency(stockDetails?.MRP || 0),
+      cp: cleanCurrency(stockDetails?.CPU || 0),
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [stockDetails]);
@@ -213,47 +204,29 @@ const BillingForm = ({ refetchList }) => {
     setItemSearch("");
   };
 
-  const addItemToList = async () => {
-    console.log("Adding item with values:", formik.values);
-    const canAdd =
-      formik.values.medicine && formik.values.quantity && formik.values.cp;
-    if (!canAdd) {
-      healthAlert({
-        title: "Missing Fields",
-        text: "Please select an item, quantity and cost price before adding",
-        icon: "warning",
-      });
-      return;
-    }
-    const item = {
-      CP: formik.values.cp,
-      CGST: formik.values.cgst,
-      SGST: formik.values.sgst,
-    };
-    const sellingItemCost = await getPharmaSellingFromCP(
-      item,
-      Number(formik.values.quantity),
-      Number(cleanCurrency(formik.values.discountPercent)),
-    );
-    console.log("Calculated selling item cost:", sellingItemCost);
-    const expDate = new Date(stockDetails?.data[0]?.ExpiryDate)
-      .toISOString()
-      .split("T")[0];
+  const addItemToList = () => {
+    if (!formik.values.itemName || !formik.values.quantity) return;
+    const qty = Number(formik.values.quantity);
+    const rate = Number(formik.values.mrp);
+    const discAmt = (rate * qty * Number(formik.values.discountPercent)) / 100;
+    const taxable = rate * qty - discAmt;
+    const cgstAmt = (taxable * formik.values.cgst) / 100;
+    const sgstAmt = (taxable * formik.values.sgst) / 100;
+
     const newItem = {
-      description: formik.values.medicine,
-      qty: sellingItemCost.qty,
-      batchNo: stockDetails?.data[0]?.BatchNo || "N/A",
-      hsn: stockDetails?.data[0]?.HSNCode || "N/A",
-      expDate: expDate || "N/A",
-      saleRate: sellingItemCost.total,
-      discAmt: sellingItemCost.discountAmount,
-      discountPercent: formik.values.discountPercent,
+      description: formik.values.itemName,
+      qty,
+      batchNo: "A24AM390",
+      hsn: "3004",
+      expDate: "01-10-2026",
+      saleRate: rate,
+      discAmt,
       cgstPercent: formik.values.cgst,
       sgstPercent: formik.values.sgst,
-      cgstAmt: sellingItemCost.cgstAmount,
-      sgstAmt: sellingItemCost.sgstAmount,
-      taxableAmt: sellingItemCost.priceBeforeGST,
-      total: sellingItemCost.total,
+      cgstAmt,
+      sgstAmt,
+      taxableAmt: taxable,
+      total: taxable + cgstAmt + sgstAmt,
       UHID: formik.values.UHID,
       opdBillNo: formik.values.opdBillNo,
     };
@@ -300,7 +273,7 @@ const BillingForm = ({ refetchList }) => {
     <FormikProvider value={formik}>
       <form onSubmit={formik.handleSubmit} className="space-y-4">
         <h2 className="text-lg font-bold text-sky-700 text-center uppercase border-b pb-2">
-          💳 Medicine Billing Form
+          💳 Medicine Camp Billing Form
         </h2>
 
         {/* Patient Details Section */}
@@ -336,7 +309,7 @@ const BillingForm = ({ refetchList }) => {
                     key={item.ID}
                     onClick={() => {
                       setSelectedBill(item.ID);
-                      formik.setFieldValue("opdBillNo", item.ID);
+                      formik.setFieldValue("billno", item.ID);
                       setBillSearch(item.ID);
                       setSuggestionsList([]);
                     }}
@@ -380,10 +353,10 @@ const BillingForm = ({ refetchList }) => {
               <input
                 type="text"
                 className={`${baseInput} 
-                             ${!formik.values.opdBillNo ? "bg-sky-50 cursor-not-allowed" : ""}`}
+                             ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
                 placeholder={"Search Medicine"}
                 value={medicineSearch}
-                disabled={!formik.values.opdBillNo}
+                disabled={!formik.values.billno}
                 onChange={(e) => {
                   setMedicineSearch(e.target.value);
                   setSelectedMedicine(null);
@@ -472,14 +445,9 @@ const BillingForm = ({ refetchList }) => {
                     <th className="px-3 py-3 text-center">Batch</th>
                     <th className="px-3 py-3 text-center">HSN</th>
                     <th className="px-3 py-3 text-center">Exp</th>
-                    <th className="px-3 py-3 text-right">Sale Rate</th>
-                    <th className="px-3 py-3 text-right">Disc %</th>
-                    <th className="px-3 py-3 text-right">Disc Amt</th>
-                    <th className="px-3 py-3 text-right">CGST %</th>
-                    <th className="px-3 py-3 text-right">CGST Amt</th>
-                    <th className="px-3 py-3 text-right">SGST %</th>
-                    <th className="px-3 py-3 text-right">SGST Amt</th>
-                    <th className="px-3 py-3 text-right">Taxable Amt</th>
+                    <th className="px-3 py-3 text-right">Rate</th>
+                    <th className="px-3 py-3 text-right">Disc</th>
+                    <th className="px-3 py-3 text-right">Taxable</th>
                     <th className="px-3 py-3 text-right">Total</th>
                     <th className="px-3 py-3 text-center">Action</th>
                   </tr>
@@ -510,24 +478,6 @@ const BillingForm = ({ refetchList }) => {
                           </td>
                           <td className="px-3 py-3 text-right">
                             ₹{item.saleRate}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            {item.discountPercent}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            ₹{item.discAmt}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            {item.cgstPercent}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            ₹{item.cgstAmt}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            {item.sgstPercent}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            ₹{item.sgstAmt}
                           </td>
                           <td className="px-3 py-3 text-right text-gray-500">
                             {item.discAmt.toFixed(2)}
@@ -639,4 +589,4 @@ const BillingForm = ({ refetchList }) => {
   );
 };
 
-export default BillingForm;
+export default CampBillingForm;
