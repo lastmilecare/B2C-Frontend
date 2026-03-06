@@ -14,6 +14,8 @@ import {
   useSearchOpdBillNoQuery,
   useGetMediceneListQuery,
   useGetStockDetailsQuery,
+  useGetMedicineBillByIdQuery,
+  useUpdateMedicineBillMutation,
 } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
@@ -21,20 +23,24 @@ import { Input, Select, Button, baseInput } from "../components/UIComponents";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { cleanCurrency, getPharmaSellingFromCP } from "../utils/helper";
+
 const BillingForm = ({ refetchList }) => {
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
   const debouncedMedicine = useDebounce(medicineSearch, 500);
   const [selectedBill, setSelectedBill] = useState("");
+  const { data: patientData } = useGetOpdBillByIdQuery(
+    selectedBill ? String(selectedBill) : skipToken
+  );
   const [selectedMedicine, setSelectedMedicine] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const { id } = useParams();
   const populatedUhidRef = useRef("");
-  const { data: patientData, isFetching } = useGetOpdBillByIdQuery(
-    selectedBill ? String(selectedBill) : skipToken,
-  );
+  const { data: billData } = useGetMedicineBillByIdQuery(id, {
+    skip: !id,
+  });
 
   const { data: medicineResponse } = useGetMediceneListQuery(
     debouncedMedicine || skipToken,
@@ -45,10 +51,11 @@ const BillingForm = ({ refetchList }) => {
     [medicineResponse],
   );
   const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedUhid, {
-    skip: debouncedUhid.length < 1,
+    skip: debouncedUhid.length < 1 || id,
   });
   const { data: paymodes } = useGetComboQuery("paymode");
   const [createMedicineBill] = useCreateMedicineBillMutation();
+  const [updateMedicineBill] = useUpdateMedicineBillMutation();
   const [triggerGetBillDetails] = useLazyGetBillingByBillNoQuery();
   const { data: stockDetails } = useGetStockDetailsQuery(
     selectedMedicine ? { ItemID: String(selectedMedicine.id) } : skipToken,
@@ -119,6 +126,7 @@ const BillingForm = ({ refetchList }) => {
       chequeAmount: 0,
     },
     onSubmit: async (values) => {
+
       if (values.items.length === 0)
         return healthAlert({
           title: "Empty",
@@ -127,29 +135,107 @@ const BillingForm = ({ refetchList }) => {
         });
 
       try {
-        const { items, ...headerOnly } = values;
 
-        await createMedicineBill(headerOnly).unwrap();
+        if (id) {
 
-        healthAlert({
-          title: "Success",
-          text: "Bill Header Saved Successfully",
-          icon: "success",
-        });
+          await updateMedicineBill({
+            id,
+            data: values,
+          }).unwrap();
 
-        formik.resetForm();
-        setBillSearch("");
-        if (refetchList) refetchList();
+          healthAlert({
+            title: "Updated",
+            text: "Bill Updated Successfully",
+            icon: "success",
+          });
+
+        } else {
+
+          await createMedicineBill(values).unwrap();
+
+          healthAlert({
+            title: "Success",
+            text: "Bill Saved Successfully",
+            icon: "success",
+          });
+
+        }
 
       } catch (err) {
+
         healthAlert({
           title: "Error",
-          text: err.data?.message || "Failed to save bill",
+          text: err.data?.message || "Failed",
           icon: "error",
         });
+
       }
-    },
+
+    }
   });
+  useEffect(() => {
+
+    if (!billData || !id) return;
+
+    const header = billData.header;
+
+    formik.setValues({
+      ...formik.values,
+
+      billNo: header.BillNo,
+      opdBillNo: header.OPDBillNo,
+
+      UHID: header.PicasoID,
+      Name: header.CustommerName,
+      Age: header.Ages,
+      Mobile: header.Mobileno,
+
+      Gender: header.Gender || "",
+
+      FinCategory: header.PatientType,
+
+      totalQuantity: header.TotalQty,
+      totalAmount: header.TotalAmount,
+      totalDiscount: header.DiscountAmount,
+      paidAmount: header.PaidAmount,
+
+      cgstAmount: header.CGSTAmount,
+      sgstAmount: header.SGSTAmount,
+      grossAmount: header.GrossAmount,
+      taxableAmount: header.TaxableAmount,
+
+      payMode: header.PayMode,
+
+      items: billData.items?.map((i) => ({
+        description: i.ItemName,
+        qty: Number(i.IssueQty),
+
+        batchNo: i.BatchNo,
+        hsn: i.HSNCode,
+        expDate: i.ExpiryDate,
+
+        saleRate: Number(i.Rate),
+
+        discountPercent: Number(i.DiscountPC),
+        discAmt: Number(i.DiscountAmt),
+
+        cgstPercent: Number(i.CGST),
+        sgstPercent: Number(i.SGST),
+
+        cgstAmt: Number(i.CGSTAmount),
+        sgstAmt: Number(i.SGSTAmount),
+
+        taxableAmt: Number(i.TaxableAmount),
+
+        total: Number(i.NetAmount),
+
+        stockId: i.StockID,
+        itemId: i.ItemID,
+        basePrice: i.Baseprice
+      })) || [],
+    });
+
+  }, [billData, id]);
   useEffect(() => {
     if (!patientData) return;
     if (patientData.ID !== selectedBill) return;
@@ -256,6 +342,12 @@ const BillingForm = ({ refetchList }) => {
       total: sellingItemCost.total,
       UHID: formik.values.UHID,
       opdBillNo: formik.values.opdBillNo,
+      itemId: selectedMedicine.id,
+      stockId: stockDetails?.data[0]?.StockID,
+      stockNo: stockDetails?.data[0]?.StockNo,
+      basePrice: cleanCurrency(stockDetails?.data[0]?.CP),
+
+
     };
     formik.setFieldValue("items", [...formik.values.items, newItem]);
     formik.setFieldValue("itemName", "");
@@ -445,7 +537,7 @@ const BillingForm = ({ refetchList }) => {
               label="Discount (%)"
               {...formik.getFieldProps("discountPercent")}
             />
-            <Input label="Bill No" {...formik.getFieldProps("billNo")} />
+            <Input label="Bill No" {...formik.getFieldProps("billNo")} readOnly />
             <Button
               type="button"
               onClick={addItemToList}

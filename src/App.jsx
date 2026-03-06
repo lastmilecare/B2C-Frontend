@@ -184,6 +184,16 @@ function App() {
           }
         />
         <Route
+          path="/medicine-billing/:id"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Billing />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/items-master"
           element={
             <ProtectedRoute>
@@ -193,7 +203,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/camp-billing"
           element={
             <ProtectedRoute>

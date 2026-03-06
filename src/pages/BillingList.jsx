@@ -16,6 +16,7 @@ import { useReactToPrint } from "react-to-print";
 const username = cookie.get("username");
 
 const BillingList = () => {
+  const navigate = useNavigate();
   const [searchTerms, setSearchTerms] = useState({
     descriptions: "",
     CustommerName: "",
@@ -309,7 +310,7 @@ const BillingList = () => {
         enableActions
         actionButtons={["edit", "delete", "print"]}
         onEdit={(row) => {
-          navigate(`/patient-registration/${row.id}`);
+          navigate(`/medicine-billing/${row.ID}`);
         }}
         onPrint={onPrint}
       />

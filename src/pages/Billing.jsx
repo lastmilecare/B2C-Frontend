@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import BillingForm from "./BillingForm";
 import BillingList from "./BillingList";
-
+import { useParams } from "react-router-dom";
 const Billing = () => {
-  const [activeTab, setActiveTab] = useState("billing");
+  const { id } = useParams();
+  const [activeTab, setActiveTab] = useState(id ? "billing" : "history");
 
+  useEffect(() => {
+    if (id) {
+      setActiveTab("billing");
+    }
+  }, [id]);
   return (
     <div className="max-w-[98%] mx-auto mt-6 bg-white p-4 rounded-xl shadow-lg border">
       <div className="flex justify-center mb-4">

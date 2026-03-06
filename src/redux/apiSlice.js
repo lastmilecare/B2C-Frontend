@@ -454,7 +454,7 @@ export const api = createApi({
           ItemID,
         },
       }),
-       providesTags: ["Inventory"],
+      providesTags: ["Inventory"],
     }),
     getExpireStockDetails: build.query({
       query: ({ page = 1, limit = 10 } = {}) => ({
@@ -538,20 +538,34 @@ export const api = createApi({
       }),
     }),
     deleteitem: build.mutation({
-  query: (id) => ({
-    url: `/medicine-inventory/stock/${id}`,
-    method: "DELETE",
-  }),
-  invalidatesTags: ["Inventory"],  
-}),
-createMedicineBill: build.mutation({
-  query: (data) => ({
-    url: "/medicine-inventory/lastbill",  
-    method: "POST",
-    data,
-  }),
-  invalidatesTags: ["Bill", "Inventory"],
-}),
+      query: (id) => ({
+        url: `/medicine-inventory/stock/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Inventory"],
+    }),
+    createMedicineBill: build.mutation({
+      query: (data) => ({
+        url: "/medicine-inventory/lastbill",
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["Bill", "Inventory"],
+    }),
+    getMedicineBillById: build.query({
+      query: (id) => ({
+        url: `/medicine-inventory/lastbill/${id}`,
+        method: "GET",
+      }),
+    }),
+    updateMedicineBill: build.mutation({
+      query: ({ id, data }) => ({
+        url: `/medicine-inventory/lastbill/${id}`,
+        method: "PUT",
+        data,
+      }),
+      invalidatesTags: ["Bill", "Inventory"],
+    }),
   }),
 });
 
@@ -606,4 +620,6 @@ export const {
   useActivateItemMutation,
   useInactivateItemMutation,
   useDeleteitemMutation,
+  useGetMedicineBillByIdQuery,
+  useUpdateMedicineBillMutation,
 } = api;
