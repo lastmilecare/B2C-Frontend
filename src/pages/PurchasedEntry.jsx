@@ -19,7 +19,7 @@ const PurchasedEntry = () => {
 
 
   return (
-    <div className="max-w-7xl mx-auto mt-8 bg-white p-6 rounded-2xl shadow border">
+   <div className="max-w-[1400px] mx-auto mt-10 bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
       <div className="flex justify-center mb-8">
         <div className="flex border border-sky-500 rounded-md overflow-hidden">
           <button

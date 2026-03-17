@@ -23,8 +23,10 @@ import { Input, Select, Button, baseInput } from "../components/UIComponents";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { cleanCurrency, getPharmaSellingFromCP } from "../utils/helper";
-
+import { Picaso_Paymode_Options } from "../utils/constants";
+import Swal from "sweetalert2";
 const BillingForm = ({ refetchList }) => {
+  const [editItems, setEditItems] = useState([]);
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
@@ -237,44 +239,41 @@ const BillingForm = ({ refetchList }) => {
 
     }
   });
- useEffect(() => {
+useEffect(() => {
   if (!billData || !id) return;
 
   const header = billData.header;
+
   const mappedItems = billData.items?.map((item) => {
     const qty = Number(item.IssueQty || 0);
-    const rate = Number(item.Rate || 0);
-    const discAmt = Number(item.DiscountAmt || 0);
-    const cgstAmt = Number(item.CGSTAmount || 0);
-    const sgstAmt = Number(item.SGSTAmount || 0);
-    const taxableAmt = Number(item.TaxableAmount || 0);
-    const netAmt = Number(item.NetAmount || 0);
-    const basePrice = Number(item.Baseprice || 0);
 
     return {
       description: item.ItemName || "N/A",
       qty: qty,
       batchNo: item.BatchNo || "N/A",
       hsn: item.HSNCode || "N/A",
-      // Date formatting for input type="date"
-      expDate: item.ExpiryDate ? new Date(item.ExpiryDate).toISOString().split("T")[0] : null,
-      saleRate: rate,
-      discAmt: discAmt,
+      expDate: item.ExpiryDate
+        ? new Date(item.ExpiryDate).toISOString().split("T")[0]
+        : null,
+      saleRate: Number(item.Rate || 0),
+      discAmt: Number(item.DiscountAmt || 0),
       discountPercent: Number(item.DiscountPC || 0),
       cgstPercent: Number(item.CGST || 0),
       sgstPercent: Number(item.SGST || 0),
-      cgstAmt: cgstAmt,
-      sgstAmt: sgstAmt,
-      taxableAmt: taxableAmt,
-      total: netAmt, 
+      cgstAmt: Number(item.CGSTAmount || 0),
+      sgstAmt: Number(item.SGSTAmount || 0),
+      taxableAmt: Number(item.TaxableAmount || 0),
+      total: Number(item.NetAmount || 0),
       itemId: item.ItemID,
       stockId: item.StockID,
       stockNo: item.StockNo || "N/A",
-      basePrice: basePrice,
-      UHID: header.PicasoID,
-      opdBillNo: header.OPDBillNo
+      basePrice: Number(item.Baseprice || 0),
     };
   }) || [];
+
+  setEditItems(mappedItems);
+
+  const firstItem = mappedItems[0];
 
   formik.setValues({
     ...formik.values,
@@ -286,8 +285,15 @@ const BillingForm = ({ refetchList }) => {
     Mobile: header.Mobileno,
     Gender: header.Gender || "",
     FinCategory: header.PatientType,
-    
-   
+
+    // 🔥 medicine section fill
+    medicine: firstItem?.description || "",
+    quantity: firstItem?.qty || "",
+    cp: firstItem?.basePrice || "",
+    cgst: firstItem?.cgstPercent || 0,
+    sgst: firstItem?.sgstPercent || 0,
+    discountPercent: firstItem?.discountPercent || 0,
+
     totalQuantity: Number(header.TotalQty || 0),
     totalAmount: Number(header.TotalAmount || 0).toFixed(2),
     totalDiscount: Number(header.DiscountAmount || 0).toFixed(2),
@@ -297,12 +303,13 @@ const BillingForm = ({ refetchList }) => {
     grossAmount: Number(header.GrossAmount || 0).toFixed(2),
     taxableAmount: Number(header.TaxableAmount || 0).toFixed(2),
     payMode: header.PayMode || "",
-    
-    items: mappedItems 
+
+    items: []
   });
 
- 
+  setMedicineSearch(firstItem?.description || "");
   setBillSearch(header.OPDBillNo || "");
+
 }, [billData, id]);
   useEffect(() => {
     if (!patientData) return;
@@ -368,57 +375,69 @@ const BillingForm = ({ refetchList }) => {
   };
 
   const addItemToList = async () => {
-    console.log("Adding item with values:", formik.values);
-    const canAdd =
-      formik.values.medicine && formik.values.quantity && formik.values.cp;
-    if (!canAdd) {
-      healthAlert({
-        title: "Missing Fields",
-        text: "Please select an item, quantity and cost price before adding",
-        icon: "warning",
-      });
-      return;
-    }
-    const item = {
-      CP: formik.values.cp,
-      CGST: formik.values.cgst,
-      SGST: formik.values.sgst,
-    };
-    const sellingItemCost = await getPharmaSellingFromCP(
-      item,
-      Number(formik.values.quantity),
-      Number(cleanCurrency(formik.values.discountPercent)),
-    );
-    console.log("Calculated selling item cost:", sellingItemCost);
-    const expDate = stockDetails?.data?.[0]?.ExpiryDate
-      ? new Date(stockDetails.data[0].ExpiryDate).toISOString().split("T")[0]
-      : null;
-    const newItem = {
-      description: formik.values.medicine,
-      qty: sellingItemCost.qty,
-      batchNo: stockDetails?.data[0]?.BatchNo || "N/A",
-      hsn: stockDetails?.data[0]?.HSNCode || "N/A",
-      expDate: expDate || null,
-      saleRate: sellingItemCost.total,
-      discAmt: sellingItemCost.discountAmount,
-      discountPercent: formik.values.discountPercent,
-      cgstPercent: formik.values.cgst,
-      sgstPercent: formik.values.sgst,
-      cgstAmt: sellingItemCost.cgstAmount,
-      sgstAmt: sellingItemCost.sgstAmount,
-      taxableAmt: sellingItemCost.priceBeforeGST,
-      total: sellingItemCost.total,
-      UHID: formik.values.UHID,
-      opdBillNo: formik.values.opdBillNo,
-      itemId: selectedMedicine.id,
-      stockId: stockDetails?.data[0]?.StockID,
-      stockNo: stockDetails?.data[0]?.StockNo,
-      basePrice: cleanCurrency(stockDetails?.data[0]?.CP),
-    };
-    formik.setFieldValue("items", [...formik.values.items, newItem]);
-    formik.setFieldValue("itemName", "");
-    formik.setFieldValue("quantity", "");
+
+  const canAdd =
+    formik.values.medicine && formik.values.quantity && formik.values.cp;
+
+  if (!canAdd) {
+    healthAlert({
+      title: "Missing Fields",
+      text: "Please select an item, quantity and cost price before adding",
+      icon: "warning",
+    });
+    return;
+  }
+
+  const item = {
+    CP: formik.values.cp,
+    CGST: formik.values.cgst,
+    SGST: formik.values.sgst,
   };
+
+  const sellingItemCost = await getPharmaSellingFromCP(
+    item,
+    Number(formik.values.quantity),
+    Number(cleanCurrency(formik.values.discountPercent))
+  );
+
+  const expDate = stockDetails?.data?.[0]?.ExpiryDate
+    ? new Date(stockDetails.data[0].ExpiryDate).toISOString().split("T")[0]
+    : null;
+
+  const newItem = {
+    description: formik.values.medicine,
+    qty: sellingItemCost.qty,
+    batchNo: stockDetails?.data[0]?.BatchNo || "N/A",
+    hsn: stockDetails?.data[0]?.HSNCode || "N/A",
+    expDate: expDate || null,
+    saleRate: sellingItemCost.total,
+    discAmt: sellingItemCost.discountAmount,
+    discountPercent: formik.values.discountPercent,
+    cgstPercent: formik.values.cgst,
+    sgstPercent: formik.values.sgst,
+    cgstAmt: sellingItemCost.cgstAmount,
+    sgstAmt: sellingItemCost.sgstAmount,
+    taxableAmt: sellingItemCost.priceBeforeGST,
+    total: sellingItemCost.total,
+    UHID: formik.values.UHID,
+    opdBillNo: formik.values.opdBillNo,
+    itemId: selectedMedicine?.id,
+    stockId: stockDetails?.data[0]?.StockID,
+    stockNo: stockDetails?.data[0]?.StockNo,
+    basePrice: cleanCurrency(stockDetails?.data[0]?.CP),
+  };
+
+  let existingItems = formik.values.items;
+
+  if (existingItems.length === 0 && editItems.length > 0) {
+    existingItems = editItems;
+  }
+
+  formik.setFieldValue("items", [...existingItems, newItem]);
+
+  formik.setFieldValue("medicine", "");
+  formik.setFieldValue("quantity", "");
+};
   useEffect(() => {
   let totals = formik.values.items.reduce(
     (acc, i) => ({
@@ -737,7 +756,7 @@ const BillingForm = ({ refetchList }) => {
             />
             <Select label="Pay Mode *" {...formik.getFieldProps("payMode")}>
               <option value="">-- Select --</option>
-              {paymodes?.map((m) => (
+              {Picaso_Paymode_Options.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name}
                 </option>

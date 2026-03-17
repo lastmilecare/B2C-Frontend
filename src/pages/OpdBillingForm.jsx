@@ -18,7 +18,7 @@ import { useReactToPrint } from "react-to-print";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
-
+import { Picaso_Paymode_Options } from "../utils/constants";
 const OpdBilling = () => {
   const navigate = useNavigate();
   const [isPaidManuallyEdited, setIsPaidManuallyEdited] = useState(false);
@@ -86,7 +86,7 @@ const OpdBilling = () => {
   }, [suggestions, selectedUhid, uhidSearch]);
 
   useEffect(() => {
-    if (editData && department && doctors  && paymode) {
+    if (editData && department && doctors && paymode) {
       setUhidSearch(editData.uhid || "");
       setIsPaidManuallyEdited(true);
       setSelectedUhid(editData.uhid || "");
@@ -94,7 +94,9 @@ const OpdBilling = () => {
       const deptObj = department.find(d => d.name === editData.department_name);
       const docObj = doctors.find(d => (d.name || d.doctor_name) === editData.doctor_name);
 
-      const payObj = paymode?.find(p => p.name === editData.payment_mode);
+      const payObj = Picaso_Paymode_Options.find(
+  (p) => p.name === editData.payment_mode
+);
       formik.setValues({
         ...formik.initialValues,
         UHID: editData.uhid || "",
@@ -130,21 +132,21 @@ const OpdBilling = () => {
   }, [editData, department, doctors, paymode]);
 
   const parseDOB = (raw) => {
-  if (!raw) return "";
+    if (!raw) return "";
 
-  
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    return raw;
-  }
 
-  
-  if (/^\d{2}-\d{2}-\d{4}$/.test(raw)) {
-    const [dd, mm, yyyy] = raw.split("-");
-    return `${yyyy}-${mm}-${dd}`;
-  }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return raw;
+    }
 
-  return "";
-};
+
+    if (/^\d{2}-\d{2}-\d{4}$/.test(raw)) {
+      const [dd, mm, yyyy] = raw.split("-");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    return "";
+  };
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
@@ -256,14 +258,14 @@ const OpdBilling = () => {
 
     onSubmit: async (values) => {
       if (!values.PayMode || values.PayMode === "") {
-    healthAlert({
-      title: "Payment Mode Required",
-      text: "Please select a Payment Mode before saving the bill.",
-      icon: "warning",
-      confirmButtonColor: "#0ea5e9",
-    });
-    return; 
-  }
+        healthAlert({
+          title: "Payment Mode Required",
+          text: "Please select a Payment Mode before saving the bill.",
+          icon: "warning",
+          confirmButtonColor: "#0ea5e9",
+        });
+        return;
+      }
       try {
         const payload = buildPayload(values);
         if (!payload) {
@@ -698,8 +700,10 @@ const OpdBilling = () => {
               }}
             >
               <option value="">Select Pay Mode</option>
-              {paymode?.map((u) => (
-                <option key={u.id} value={u.id}>{u.name}</option>
+              {Picaso_Paymode_Options.map((mode) => (
+                <option key={mode.id} value={mode.id}>
+                  {mode.name}
+                </option>
               ))}
             </Select>
 
