@@ -32,6 +32,7 @@ import PrescriptionListCopy from "./pages/PrescriptionListCopy";
 import ExpiryItemsCopy from "./pages/ExpiryItemsCopy";
 import PatientRegistrationCopy from "./pages/PatientFormCopy";
 import SalesRecordCopy from "./pages/salesrecordcopy";
+import AttendancePage from "./pages/AttendancePage";
 function App() {
   return (
     <BrowserRouter>
@@ -386,6 +387,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/attendance"
+  element={
+    <ProtectedRoute>
+      <CopyLayout>
+        <AttendancePage />
+      </CopyLayout>
+    </ProtectedRoute>
+  }
+/>
         <Route path="/print-opd-form"
           element={<PrintOpdForm />} />
 

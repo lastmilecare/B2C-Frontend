@@ -255,43 +255,36 @@ const BillingFormCopy = ({ refetchList }) => {
         if (!billData || !id) return;
 
         const header = billData.header;
-        const mappedItems = billData.items?.map((item) => {
-            const qty = Number(item.IssueQty || 0);
-            const rate = Number(item.Rate || 0);
-            const discAmt = Number(item.DiscountAmt || 0);
-            const cgstAmt = Number(item.CGSTAmount || 0);
-            const sgstAmt = Number(item.SGSTAmount || 0);
-            const taxableAmt = Number(item.TaxableAmount || 0);
-            const netAmt = Number(item.NetAmount || 0);
-            const basePrice = Number(item.Baseprice || 0);
 
-            return {
-                description: item.ItemName || "N/A",
-                qty: qty,
-                batchNo: item.BatchNo || "N/A",
-                hsn: item.HSNCode || "N/A",
-                
-                expDate: item.ExpiryDate ? new Date(item.ExpiryDate).toISOString().split("T")[0] : null,
-                saleRate: rate,
-                discAmt: discAmt,
-                discountPercent: Number(item.DiscountPC || 0),
-                cgstPercent: Number(item.CGST || 0),
-                sgstPercent: Number(item.SGST || 0),
-                cgstAmt: cgstAmt,
-                sgstAmt: sgstAmt,
-                taxableAmt: taxableAmt,
-                total: netAmt,
-                itemId: item.ItemID,
-                stockId: item.StockID,
-                stockNo: item.StockNo || "N/A",
-                basePrice: basePrice,
-                UHID: header.PicasoID,
-                opdBillNo: header.OPDBillNo
-            };
-        }) || [];
+        const mappedItems = billData.items?.map((item) => ({
+            description: item.ItemName || "",
+            qty: Number(item.IssueQty || 0),
+            batchNo: item.BatchNo || "",
+            hsn: item.HSNCode || "",
+            expDate: item.ExpiryDate
+                ? new Date(item.ExpiryDate).toISOString().split("T")[0]
+                : null,
+            saleRate: Number(item.Rate || 0),
+            discAmt: Number(item.DiscountAmt || 0),
+            discountPercent: Number(item.DiscountPC || 0),
+            cgstPercent: Number(item.CGST || 0),
+            sgstPercent: Number(item.SGST || 0),
+            cgstAmt: Number(item.CGSTAmount || 0),
+            sgstAmt: Number(item.SGSTAmount || 0),
+            taxableAmt: Number(item.TaxableAmount || 0),
+            total: Number(item.NetAmount || 0),
+            itemId: item.ItemID,
+            stockId: item.StockID,
+            stockNo: item.StockNo || "",
+            basePrice: Number(item.Baseprice || 0),
+        })) || [];
+
+        const firstItem = mappedItems[0];
 
         formik.setValues({
             ...formik.values,
+
+            
             billNo: header.BillNo,
             opdBillNo: header.OPDBillNo,
             UHID: header.PicasoID,
@@ -302,21 +295,31 @@ const BillingFormCopy = ({ refetchList }) => {
             FinCategory: header.PatientType,
 
 
+            medicine: firstItem?.description || "",
+            quantity: firstItem?.qty || "",
+            cp: firstItem?.basePrice || "",
+            cgst: firstItem?.cgstPercent || 0,
+            sgst: firstItem?.sgstPercent || 0,
+            discountPercent: firstItem?.discountPercent || 0,
+
+
             totalQuantity: Number(header.TotalQty || 0),
-            totalAmount: Number(header.TotalAmount || 0).toFixed(2),
-            totalDiscount: Number(header.DiscountAmount || 0).toFixed(2),
-            paidAmount: Number(header.PaidAmount || 0).toFixed(2),
-            cgstAmount: Number(header.CGSTAmount || 0).toFixed(2),
-            sgstAmount: Number(header.SGSTAmount || 0).toFixed(2),
-            grossAmount: Number(header.GrossAmount || 0).toFixed(2),
-            taxableAmount: Number(header.TaxableAmount || 0).toFixed(2),
+            totalAmount: Number(header.TotalAmount || 0),
+            totalDiscount: Number(header.DiscountAmount || 0),
+            paidAmount: Number(header.PaidAmount || 0),
+            cgstAmount: Number(header.CGSTAmount || 0),
+            sgstAmount: Number(header.SGSTAmount || 0),
+            grossAmount: Number(header.GrossAmount || 0),
+            taxableAmount: Number(header.TaxableAmount || 0),
             payMode: header.PayMode || "",
 
-            items: mappedItems
+
+            items: []
         });
 
-
+        setMedicineSearch(firstItem?.description || "");
         setBillSearch(header.OPDBillNo || "");
+
     }, [billData, id]);
     useEffect(() => {
         if (!patientData) return;
@@ -430,8 +433,15 @@ const BillingFormCopy = ({ refetchList }) => {
             basePrice: cleanCurrency(stockDetails?.data[0]?.CP),
         };
         formik.setFieldValue("items", [...formik.values.items, newItem]);
-        formik.setFieldValue("itemName", "");
+        formik.setFieldValue("medicine", "");
         formik.setFieldValue("quantity", "");
+        formik.setFieldValue("cp", "");
+        formik.setFieldValue("mrp", "");
+        formik.setFieldValue("discountPercent", 0);
+        formik.setFieldValue("cgst", 0);
+        formik.setFieldValue("sgst", 0);
+        setMedicineSearch("");
+        setSelectedMedicine(null);
     };
     useEffect(() => {
         let totals = formik.values.items.reduce(
@@ -457,11 +467,12 @@ const BillingFormCopy = ({ refetchList }) => {
         }, false);
     }, [formik.values.items]);
     useEffect(() => {
+        const total = Number(formik.values.totalAmount) || 0;
+        const paid = Number(formik.values.paidAmount) || 0;
+
         formik.setFieldValue(
             "dueAmount",
-            (
-                Number(formik.values.totalAmount) - Number(formik.values.paidAmount)
-            ).toFixed(2),
+            (total - paid).toFixed(2)
         );
     }, [formik.values.paidAmount, formik.values.totalAmount]);
 
@@ -521,7 +532,7 @@ ${activeStep === step.id
                         <form onSubmit={formik.handleSubmit} className="space-y-6 p-6">
 
 
-                   
+
                             {activeStep === 1 && (
                                 <section className="space-y-4">
 
@@ -601,7 +612,7 @@ ${activeStep === step.id
                                     </div>
                                 </section>
                             )}
-                            
+
                             {activeStep === 2 && (
                                 <section className="bg-sky-50/40 p-6 rounded-xl border border-sky-100 space-y-6 shadow-sm">
                                     <h3 className="text-sky-700 font-semibold mb-3">
@@ -628,7 +639,7 @@ ${activeStep === step.id
                                                 autoComplete="off"
                                             />
 
-                                            
+
                                             {medicineSuggestions.length > 0 && (
                                                 <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                                                     {medicineSuggestions.map((item) => (
@@ -692,7 +703,7 @@ ${activeStep === step.id
                                     </div>
                                 </section>
                             )}
-                           
+
                             {activeStep === 3 && (
 
                                 <section className="space-y-4">

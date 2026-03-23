@@ -260,11 +260,17 @@ className="bg-gray-700 hover:bg-gray-800 text-white p-4 rounded-xl shadow-sm tra
 >
 Billing
 </button>
+<button
+  onClick={() => navigate("/attendance")}
+  className="bg-yellow-600 hover:bg-yellow-700 text-white p-4 rounded-xl"
+>
+  Attendance
+</button>
 
 </div>
 
 
-            {/* TABLE AREA */}
+          
 
             <div className="grid grid-cols-2 gap-6">
 
