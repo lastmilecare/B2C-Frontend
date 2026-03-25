@@ -62,7 +62,7 @@ const AttendancePage = () => {
     if (alreadyMarked) {
       healthAlert({
         title: "Status: Active",
-        text: "Bhai, aapki aaj ki attendance pehle se hi recorded hai.",
+        text: "your attendence is already recorded",
         icon: "info"
       });
       return;
@@ -71,7 +71,7 @@ const AttendancePage = () => {
     setAttendance(prev => [...prev, { user: username, date: todayStr, status: "Present" }]);
     healthAlert({
       title: "Duty Initiated!",
-      text: `Jai Hind ${username}! Aapka session start ho chuka hai.`,
+      text: `  Duty  Start${username}`,
       icon: "success"
     });
   };
@@ -83,14 +83,14 @@ const AttendancePage = () => {
     if (!isStarted) {
       healthAlert({
         title: "Access Denied",
-        text: "Pehle duty start toh karo, tabhi toh end hogi!",
+        text: "please start duty first ",
         icon: "warning"
       });
       return;
     }
     healthAlert({
       title: "Duty Completed!",
-      text: "Shabash! Aaj ka session closed. Have a great evening!",
+      text: "Your Duty Close ",
       icon: "success"
     });
   };
@@ -304,16 +304,16 @@ const AttendancePage = () => {
     );
   }
   return (
-    <div className="p-8 space-y-8 animate-in zoom-in-65 duration-800">
-      <div className="bg-gradient-to-br from-slate-900 via-sky-900 to-indigo-950 p-8 rounded-[3rem] text-white shadow-3xl relative overflow-hidden group">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-center md:text-left">
-            <p className="text-[15px] font-black opacity-50 uppercase tracking-[0.5em] mb-2">Employee Attendance</p>
-            <h2 className="text-2xl font-black tracking-tighter uppercase leading-tight">
-              WELCOME , <br/>{username.toUpperCase()}!
+    <div className="p-8 space-y-8 animate-in zoom-in-95 duration-700">
+      <div className="bg-gradient-to-r from-slate-900 via-sky-900 to-indigo-950 px-10 py-6 rounded-[2.5rem] text-white shadow-3xl relative overflow-hidden group">
+        <div className="relative z-10 flex justify-between items-center">
+          <div className="text-left">
+            <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.4em] mb-1 text-sky-400">Employee Attendance</p>
+            <h2 className="text-2xl font-black tracking-tighter uppercase leading-none">
+              WELCOME , <span className="text-white opacity-100">{username.toUpperCase()}!</span>
             </h2>
           </div>
-          <div className="h-24 w-24 bg-white/10 rounded-[2rem] backdrop-blur-2xl border border-white/20 flex items-center justify-center text-4xl font-black shadow-2xl">
+          <div className="h-16 w-16 bg-white/10 rounded-full backdrop-blur-3xl border border-white/20 flex items-center justify-center text-2xl font-black shadow-2xl hover:scale-110 transition-transform cursor-default">
             {username[0]}
           </div>
         </div>
