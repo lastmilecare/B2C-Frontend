@@ -2,27 +2,27 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
-    async ({ url, method, data, params, responseType }) => {
-      try {
-        const isAbsoluteUrl = url.startsWith("http");
-        const result = await axiosClient({
-          url: isAbsoluteUrl ? url : baseUrl + url,
-          method,
-          data,
-          params,
-          responseType: responseType || "json",
-        });
+  async ({ url, method, data, params, responseType }) => {
+    try {
+      const isAbsoluteUrl = url.startsWith("http");
+      const result = await axiosClient({
+        url: isAbsoluteUrl ? url : baseUrl + url,
+        method,
+        data,
+        params,
+        responseType: responseType || "json",
+      });
 
-        return { data: result.data };
-      } catch (error) {
-        return {
-          error: {
-            status: error.response?.status,
-            data: error.response?.data || error.message,
-          },
-        };
-      }
-    };
+      return { data: result.data };
+    } catch (error) {
+      return {
+        error: {
+          status: error.response?.status,
+          data: error.response?.data || error.message,
+        },
+      };
+    }
+  };
 const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
 export const api = createApi({
   reducerPath: "api",
@@ -313,7 +313,6 @@ export const api = createApi({
       }),
     }),
 
-
     getPatientById: build.query({
       query: (id) => ({
         url: "/patient/by-id",
@@ -566,6 +565,50 @@ export const api = createApi({
       }),
       invalidatesTags: ["Bill", "Inventory"],
     }),
+    checkIn: build.mutation({
+      query: () => ({
+        url: `/attendance/check-in`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Attendance", "Dashboard"],
+    }),
+    checkOut: build.mutation({
+      query: () => ({
+        url: `/attendance/check-out`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Attendance", "Dashboard"],
+    }),
+    getAttendance: build.query({
+      query: (params) => ({
+        url: `/attendance`,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Attendance"],
+    }),
+    getMonthlyStats: build.query({
+      query: ({ month, year }) => ({
+        url: `/attendance/stats`,
+        method: "GET",
+        params: { month, year },
+      }),
+      providesTags: ["Attendance"],
+    }),
+    getAdminDashboard: build.query({
+      query: () => ({
+        url: `/attendance/admin/dashboard`,
+        method: "GET",
+      }),
+      providesTags: ["Dashboard"],
+    }),
+    getCalendarData: build.query({
+      query: ({ month, year }) => ({
+        url: `/attendance/calendar`,
+        method: "GET",
+        params: { month, year },
+      }),
+    }),
   }),
 });
 
@@ -622,4 +665,10 @@ export const {
   useDeleteitemMutation,
   useGetMedicineBillByIdQuery,
   useUpdateMedicineBillMutation,
+  useCheckInMutation,
+  useCheckOutMutation,
+  useGetAttendanceQuery,
+  useGetMonthlyStatsQuery,
+  useGetAdminDashboardQuery,
+  useGetCalendarDataQuery,
 } = api;
