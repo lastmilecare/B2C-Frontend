@@ -3,6 +3,10 @@ import {
   PlusIcon,
   CheckCircleIcon,
   ArrowPathIcon,
+   ClipboardDocumentIcon,
+  DocumentCheckIcon,
+  BeakerIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -25,9 +29,20 @@ import { cookie } from "../utils/cookie";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useLocation } from "react-router-dom";
 import { useParams } from "react-router-dom";
-const username = cookie.get("username"); // Ensure auth token is loaded for API calls
+import StepProgress from "../components/StepProgress";
+import PageLayout from "../components/PageLayout";
+const username = cookie.get("username"); 
 const userId = cookie.get("user_id");
-const GRNForm = () => {
+const GRNFormCopy = () => {
+    const [activeStep, setActiveStep] = useState(1)
+
+const nextStep = () => {
+  setActiveStep((prev) => prev + 1)
+}
+
+const prevStep = () => {
+  setActiveStep((prev) => prev - 1)
+}
   const centerIdFromCookie = cookie.get("center_id");
   const navigate = useNavigate();
   const location = useLocation();
@@ -179,7 +194,7 @@ const GRNForm = () => {
         healthAlerts.success(res.message, "Inventory");
 
         resetForm();
-        navigate("/purchased-entry", {
+        navigate("/purchased-entry-copy", {
           state: { goToStock: true },
         });
 
@@ -379,13 +394,68 @@ const GRNForm = () => {
   );
 
   return (
-    <form onSubmit={formik.handleSubmit} className="space-y-6">
-      <h2 className="text-2xl font-bold text-sky-700 text-center mb-6">
-        📦 Goods Received Note (GRN)
-      </h2>
+   
+<PageLayout
+title="Goods Received Note"
+icon={ClipboardDocumentIcon}
+rightContent={
+<StepProgress
+steps={["GRN Details","Item Entry","Items List","Summary"]}
+activeStep={activeStep}
+/>
+}
+>
 
+<div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+<div className="flex border-b">
+
+{[
+{ id:1,label:"GRN Details",icon:ClipboardDocumentIcon },
+{ id:2,label:"Item Entry",icon:BeakerIcon },
+{ id:3,label:"Items List",icon:CreditCardIcon },
+{ id:4,label:"Summary",icon:DocumentCheckIcon }
+].map((step)=>(
+
+<button
+key={step.id}
+type="button"
+onClick={()=>setActiveStep(step.id)}
+className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
+${activeStep===step.id
+? "bg-white text-blue-600 shadow"
+: "text-gray-400"}
+`}
+>
+
+<step.icon className="w-4 h-4"/>
+
+{step.label}
+
+</button>
+
+))}
+
+</div>
+<form onSubmit={formik.handleSubmit} className="space-y-10 p-10">
+      
+    {activeStep === 1 && (
       <section>
-        <h3 className="text-sky-700 font-semibold mb-3">GRN Details</h3>
+    <div className="flex justify-between items-center mb-10">
+
+<h3 className="text-sky-700 font-semibold">
+GRN Details
+</h3>
+
+<Button
+type="button"
+onClick={() => navigate("/items-master")}
+className="flex items-center gap-1"
+>
+<PlusIcon className="w-4"/>
+New Item
+</Button>
+
+</div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <Input
             type="date"
@@ -426,13 +496,12 @@ const GRNForm = () => {
           <Input label="Rack No" {...formik.getFieldProps("RagNo")} />
         </div>
       </section>
-
+    )}
+    {activeStep === 2 && (
       <section>
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex justify-between items-center mb-10">
           <h3 className="text-sky-700 font-semibold">Item Entry</h3>
-          <Button type="button" onClick={() => navigate("/items-master")}>
-            <PlusIcon className="w-4 h-4 mr-1" /> New Item
-          </Button>
+          
         </div>
         <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
           <div className="relative">
@@ -604,8 +673,17 @@ const GRNForm = () => {
           <PlusIcon className="w-4 h-4 mr-1" /> Add Item
         </Button>
       </section>
+    )}
+    {activeStep === 3 && (
 
+<section>
+    {formik.values.items.length === 0 && (
+<div className="text-center text-gray-400 py-10">
+No items added yet
+</div>
+)}
       {formik.values.items.length > 0 && (
+        
         <div className="overflow-x-auto border rounded-lg">
           <table className="w-full text-sm">
             <thead className="bg-sky-100 text-sky-700">
@@ -643,6 +721,9 @@ const GRNForm = () => {
           </table>
         </div>
       )}
+      </section>
+    )}
+{activeStep === 4 && (
 
       <section className="grid grid-cols-1 md:grid-cols-5 gap-3">
         <Input label="Total Qty" value={totals.qty} readOnly />
@@ -659,23 +740,45 @@ const GRNForm = () => {
         />
         <Input label="Grand Total" value={totals.grand.toFixed(2)} readOnly />
       </section>
+)}
+<div className="flex justify-between items-center pt-6 border-t">
 
-      <div className="flex justify-center gap-4 pt-4 border-t">
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
-            "Saving..."
-          ) : (
-            <>
-              <CheckCircleIcon className="w-5 h-5 mr-1" /> Save
-            </>
-          )}
-        </Button>
-        <Button type="button" variant="gray" onClick={formik.resetForm}>
-          <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
-        </Button>
-      </div>
+<div>
+{activeStep > 1 && (
+<Button type="button" variant="gray" onClick={prevStep}>
+Back
+</Button>
+)}
+</div>
+
+<div className="flex gap-3">
+
+<Button type="button" variant="gray" onClick={formik.handleReset}>
+<ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
+</Button>
+
+{activeStep < 4 ? (
+
+<Button type="button" variant="sky" onClick={nextStep}>
+Continue
+</Button>
+
+) : (
+
+<Button type="submit" variant="sky" disabled={isLoading}>
+{isLoading ? "Saving..." : "Save"}
+</Button>
+
+)}
+
+</div>
+
+</div>
     </form>
-  );
+</div>
+</PageLayout>
+
+);
 };
 
-export default GRNForm;
+export default GRNFormCopy;

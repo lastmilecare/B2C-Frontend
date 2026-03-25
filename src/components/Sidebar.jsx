@@ -165,6 +165,9 @@ const Sidebar = () => {
               <NavLink to="/expiry-items" className={navItemClass}
                 onClick={() => handleNavClick("/expiry-items")}
               >Expiry Items</NavLink>
+               <NavLink to="/camp-billing" className={navItemClass}
+                onClick={() => handleNavClick("/camp-billing")}
+              >Camp Billing</NavLink>
             </div>
           )}
         </div>

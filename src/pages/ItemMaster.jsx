@@ -27,10 +27,13 @@ const ItemMaster = () => {
   const formik = useFormik({
     initialValues: {
       itemCode: "",
+      itemid: "",
       description: "",
       itemtypeid: "",
       userloginid: 0,
       addedby: 0,
+      subgroupid: "",
+       storetype: "",
     },
     validationSchema: Yup.object({
       itemCode: Yup.string().required("Item Code is required"),
@@ -46,6 +49,8 @@ const ItemMaster = () => {
           itemtypeid: Number(values.itemtypeid),
           userloginid: currentUserId,
           addedby: currentUserId,
+          subgroupid: 0,
+          storetype: 0,
         };
         if (editId) {
           await updateItem({ id: editId, body: payload }).unwrap();

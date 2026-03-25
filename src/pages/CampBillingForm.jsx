@@ -14,35 +14,28 @@ import {
   useSearchOpdBillNoQuery,
   useGetMediceneListQuery,
   useGetStockDetailsQuery,
-  useGetMedicineBillByIdQuery,
-  useUpdateMedicineBillMutation,
 } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
 import { Input, Select, Button, baseInput } from "../components/UIComponents";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { cleanCurrency, getPharmaSellingFromCP } from "../utils/helper";
-import { Picaso_Paymode_Options } from "../utils/constants";
-import Swal from "sweetalert2";
-const BillingForm = ({ refetchList }) => {
-  const [editItems, setEditItems] = useState([]);
+import { cleanCurrency } from "../utils/helper";
+const CampBillingForm = ({ refetchList }) => {
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
   const debouncedMedicine = useDebounce(medicineSearch, 500);
   const [selectedBill, setSelectedBill] = useState("");
-  const { data: patientData } = useGetOpdBillByIdQuery(
-    selectedBill ? String(selectedBill) : skipToken
-  );
   const [selectedMedicine, setSelectedMedicine] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
+  const [prescriptionList, setPrescriptionList] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const { id } = useParams();
   const populatedUhidRef = useRef("");
-  const { data: billData } = useGetMedicineBillByIdQuery(id, {
-    skip: !id,
-  });
+  const { data: patientData, isFetching } = useGetOpdBillByIdQuery(
+    selectedBill ? String(selectedBill) : skipToken,
+  );
 
   const { data: medicineResponse } = useGetMediceneListQuery(
     debouncedMedicine || skipToken,
@@ -53,18 +46,17 @@ const BillingForm = ({ refetchList }) => {
     [medicineResponse],
   );
   const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedUhid, {
-    skip: debouncedUhid.length < 1 || id,
+    skip: debouncedUhid.length < 1,
   });
   const { data: paymodes } = useGetComboQuery("paymode");
   const [createMedicineBill] = useCreateMedicineBillMutation();
-  const [updateMedicineBill] = useUpdateMedicineBillMutation();
   const [triggerGetBillDetails] = useLazyGetBillingByBillNoQuery();
+
   const { data: stockDetails } = useGetStockDetailsQuery(
-    selectedMedicine ? { ItemID: String(selectedMedicine.id) } : skipToken,
+    selectedMedicine ? String(selectedMedicine.id) : skipToken,
     { skip: !selectedMedicine },
   );
 
-  const billingItemValues = [];
   useEffect(() => {
     if (selectedBill) return;
     if (billSearch.length < 1) return;
@@ -123,194 +115,33 @@ const BillingForm = ({ refetchList }) => {
       paidAmount: 0,
       dueAmount: 0,
       payMode: "",
-      cashAmount: 0,
-      cardAmount: 0,
-      chequeAmount: 0,
     },
     onSubmit: async (values) => {
-
-      if (values.items.length === 0) {
+      if (values.items.length === 0)
         return healthAlert({
           title: "Empty",
           text: "Please add items first",
           icon: "warning",
         });
-      }
-
-      const payload = {
-        ...values,
-        UHID: values.UHID || null,
-        Name: values.Name || "",
-        Age: values.Age || "",
-        Mobile: values.Mobile || "",
-        FinCategory: values.FinCategory || "",
-        opdBillNo: values.opdBillNo || "",
-
-        payMode: Number(values.payMode || 0),
-
-        totalQuantity: Number(values.totalQuantity || 0),
-        totalAmount: Number(values.totalAmount || 0),
-        totalDiscount: Number(values.totalDiscount || 0),
-
-        paidAmount: Number(values.paidAmount || 0),
-
-        cgstAmount: Number(values.cgstAmount || 0),
-        sgstAmount: Number(values.sgstAmount || 0),
-        grossAmount: Number(values.grossAmount || 0),
-        taxableAmount: Number(values.taxableAmount || 0),
-
-        cashAmount: Number(values.cashAmount || 0),
-        cardAmount: Number(values.cardAmount || 0),
-        chequeAmount: Number(values.chequeAmount || 0),
-
-        hospitalId: Number(values.hospitalId || 1),
-        finYearId: Number(values.finYearId || 1),
-
-        AddedBy: Number(values.AddedBy || 1),
-        items: values.items.map((i) => ({
-
-          itemId: Number(i.itemId || 0),
-          stockId: Number(i.stockId || 0),
-          stockNo: i.stockNo || "",
-
-          description: i.description || "",
-
-          batchNo: i.batchNo || "",
-          hsn: i.hsn || "",
-
-          expDate: i.expDate || null,
-
-          qty: Number(i.qty || 0),
-
-          saleRate: Number(i.saleRate || 0),
-          basePrice: Number(i.basePrice || 0),
-
-          discountPercent: Number(i.discountPercent || 0),
-          discAmt: Number(i.discAmt || 0),
-
-          cgstPercent: Number(i.cgstPercent || 0),
-          sgstPercent: Number(i.sgstPercent || 0),
-
-          cgstAmt: Number(i.cgstAmt || 0),
-          sgstAmt: Number(i.sgstAmt || 0),
-
-          taxableAmt: Number(i.taxableAmt || 0),
-
-          total: Number(i.total || 0),
-        })),
-      };
-
       try {
-
-        if (id) {
-
-          await updateMedicineBill({
-            id,
-            data: payload,
-          }).unwrap();
-
-          healthAlert({
-            title: "Updated",
-            text: "Bill Updated Successfully",
-            icon: "success",
-          });
-
-        } else {
-
-          await createMedicineBill(payload).unwrap();
-
-          healthAlert({
-            title: "Success",
-            text: "Bill Saved Successfully",
-            icon: "success",
-          });
-
-        }
-
+        await createMedicineBill(values).unwrap();
+        healthAlert({
+          title: "Success",
+          text: "Bill Saved Successfully",
+          icon: "success",
+        });
+        formik.resetForm();
+        setBillSearch("");
+        if (refetchList) refetchList();
       } catch (err) {
-
         healthAlert({
           title: "Error",
-          text: err.data?.message || "Failed",
+          text: err.data?.message || "Failed to save bill",
           icon: "error",
         });
-
       }
-
-    }
+    },
   });
-useEffect(() => {
-  if (!billData || !id) return;
-
-  const header = billData.header;
-
-  const mappedItems = billData.items?.map((item) => {
-    const qty = Number(item.IssueQty || 0);
-
-    return {
-      description: item.ItemName || "N/A",
-      qty: qty,
-      batchNo: item.BatchNo || "N/A",
-      hsn: item.HSNCode || "N/A",
-      expDate: item.ExpiryDate
-        ? new Date(item.ExpiryDate).toISOString().split("T")[0]
-        : null,
-      saleRate: Number(item.Rate || 0),
-      discAmt: Number(item.DiscountAmt || 0),
-      discountPercent: Number(item.DiscountPC || 0),
-      cgstPercent: Number(item.CGST || 0),
-      sgstPercent: Number(item.SGST || 0),
-      cgstAmt: Number(item.CGSTAmount || 0),
-      sgstAmt: Number(item.SGSTAmount || 0),
-      taxableAmt: Number(item.TaxableAmount || 0),
-      total: Number(item.NetAmount || 0),
-      itemId: item.ItemID,
-      stockId: item.StockID,
-      stockNo: item.StockNo || "N/A",
-      basePrice: Number(item.Baseprice || 0),
-    };
-  }) || [];
-
-  setEditItems(mappedItems);
-
-  const firstItem = mappedItems[0];
-
-  formik.setValues({
-    ...formik.values,
-    billNo: header.BillNo,
-    opdBillNo: header.OPDBillNo,
-    UHID: header.PicasoID,
-    Name: header.CustommerName,
-    Age: header.Ages,
-    Mobile: header.Mobileno,
-    Gender: header.Gender || "",
-    FinCategory: header.PatientType,
-
-    // 🔥 medicine section fill
-    medicine: firstItem?.description || "",
-    quantity: firstItem?.qty || "",
-    cp: firstItem?.basePrice || "",
-    cgst: firstItem?.cgstPercent || 0,
-    sgst: firstItem?.sgstPercent || 0,
-    discountPercent: firstItem?.discountPercent || 0,
-
-    totalQuantity: Number(header.TotalQty || 0),
-    totalAmount: Number(header.TotalAmount || 0).toFixed(2),
-    totalDiscount: Number(header.DiscountAmount || 0).toFixed(2),
-    paidAmount: Number(header.PaidAmount || 0).toFixed(2),
-    cgstAmount: Number(header.CGSTAmount || 0).toFixed(2),
-    sgstAmount: Number(header.SGSTAmount || 0).toFixed(2),
-    grossAmount: Number(header.GrossAmount || 0).toFixed(2),
-    taxableAmount: Number(header.TaxableAmount || 0).toFixed(2),
-    payMode: header.PayMode || "",
-
-    items: []
-  });
-
-  setMedicineSearch(firstItem?.description || "");
-  setBillSearch(header.OPDBillNo || "");
-
-}, [billData, id]);
   useEffect(() => {
     if (!patientData) return;
     if (patientData.ID !== selectedBill) return;
@@ -337,13 +168,12 @@ useEffect(() => {
   }, [patientData, selectedBill]);
 
   useEffect(() => {
-    console.log(stockDetails, "stock details");
     const updates = {
-      cgst: stockDetails?.data[0].CGST || 0,
-      sgst: stockDetails?.data[0].SGST || 0,
-      discountPercent: stockDetails?.data[0].DiscountPCperitem || 0,
-      mrp: cleanCurrency(stockDetails?.data[0].MRP || 0),
-      cp: cleanCurrency(stockDetails?.data[0].CP || 0),
+      cgst: stockDetails?.CGST || 0,
+      sgst: stockDetails?.SGST || 0,
+      discountPercent: stockDetails?.DiscountPCperitem || 0,
+      mrp: cleanCurrency(stockDetails?.MRP || 0),
+      cp: cleanCurrency(stockDetails?.CPU || 0),
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [stockDetails]);
@@ -374,93 +204,62 @@ useEffect(() => {
     setItemSearch("");
   };
 
-  const addItemToList = async () => {
+  const addItemToList = () => {
+    if (!formik.values.itemName || !formik.values.quantity) return;
+    const qty = Number(formik.values.quantity);
+    const rate = Number(formik.values.mrp);
+    const discAmt = (rate * qty * Number(formik.values.discountPercent)) / 100;
+    const taxable = rate * qty - discAmt;
+    const cgstAmt = (taxable * formik.values.cgst) / 100;
+    const sgstAmt = (taxable * formik.values.sgst) / 100;
 
-  const canAdd =
-    formik.values.medicine && formik.values.quantity && formik.values.cp;
-
-  if (!canAdd) {
-    healthAlert({
-      title: "Missing Fields",
-      text: "Please select an item, quantity and cost price before adding",
-      icon: "warning",
-    });
-    return;
-  }
-
-  const item = {
-    CP: formik.values.cp,
-    CGST: formik.values.cgst,
-    SGST: formik.values.sgst,
+    const newItem = {
+      description: formik.values.itemName,
+      qty,
+      batchNo: "A24AM390",
+      hsn: "3004",
+      expDate: "01-10-2026",
+      saleRate: rate,
+      discAmt,
+      cgstPercent: formik.values.cgst,
+      sgstPercent: formik.values.sgst,
+      cgstAmt,
+      sgstAmt,
+      taxableAmt: taxable,
+      total: taxable + cgstAmt + sgstAmt,
+      UHID: formik.values.UHID,
+      opdBillNo: formik.values.opdBillNo,
+    };
+    formik.setFieldValue("items", [...formik.values.items, newItem]);
+    formik.setFieldValue("itemName", "");
+    formik.setFieldValue("quantity", "");
   };
 
-  const sellingItemCost = await getPharmaSellingFromCP(
-    item,
-    Number(formik.values.quantity),
-    Number(cleanCurrency(formik.values.discountPercent))
-  );
-
-  const expDate = stockDetails?.data?.[0]?.ExpiryDate
-    ? new Date(stockDetails.data[0].ExpiryDate).toISOString().split("T")[0]
-    : null;
-
-  const newItem = {
-    description: formik.values.medicine,
-    qty: sellingItemCost.qty,
-    batchNo: stockDetails?.data[0]?.BatchNo || "N/A",
-    hsn: stockDetails?.data[0]?.HSNCode || "N/A",
-    expDate: expDate || null,
-    saleRate: sellingItemCost.total,
-    discAmt: sellingItemCost.discountAmount,
-    discountPercent: formik.values.discountPercent,
-    cgstPercent: formik.values.cgst,
-    sgstPercent: formik.values.sgst,
-    cgstAmt: sellingItemCost.cgstAmount,
-    sgstAmt: sellingItemCost.sgstAmount,
-    taxableAmt: sellingItemCost.priceBeforeGST,
-    total: sellingItemCost.total,
-    UHID: formik.values.UHID,
-    opdBillNo: formik.values.opdBillNo,
-    itemId: selectedMedicine?.id,
-    stockId: stockDetails?.data[0]?.StockID,
-    stockNo: stockDetails?.data[0]?.StockNo,
-    basePrice: cleanCurrency(stockDetails?.data[0]?.CP),
-  };
-
-  let existingItems = formik.values.items;
-
-  if (existingItems.length === 0 && editItems.length > 0) {
-    existingItems = editItems;
-  }
-
-  formik.setFieldValue("items", [...existingItems, newItem]);
-
-  formik.setFieldValue("medicine", "");
-  formik.setFieldValue("quantity", "");
-};
   useEffect(() => {
-  let totals = formik.values.items.reduce(
-    (acc, i) => ({
-      qty: acc.qty + (Number(i.qty) || 0),
-      disc: acc.disc + (Number(i.discAmt) || 0),
-      cgst: acc.cgst + (Number(i.cgstAmt) || 0),
-      sgst: acc.sgst + (Number(i.sgstAmt) || 0),
-      gross: acc.gross + (Number(i.total) || 0),
-    }),
-    { qty: 0, disc: 0, cgst: 0, sgst: 0, gross: 0 }
-  );
-  formik.setValues({
-    ...formik.values,
-    totalQuantity: totals.qty,
-    totalAmount: totals.gross.toFixed(2),
-    grossAmount: totals.gross.toFixed(2),
-    cgstAmount: totals.cgst.toFixed(2),
-    sgstAmount: totals.sgst.toFixed(2),
-    totalDiscount: totals.disc.toFixed(2),
-    taxableAmount: (totals.gross - totals.cgst - totals.sgst).toFixed(2),
-    paidAmount: id ? formik.values.paidAmount : totals.gross.toFixed(2), 
-  }, false);
-}, [formik.values.items]);
+    let totals = formik.values.items.reduce(
+      (acc, i) => ({
+        qty: acc.qty + i.qty,
+        disc: acc.disc + i.discAmt,
+        cgst: acc.cgst + i.cgstAmt,
+        sgst: acc.sgst + i.sgstAmt,
+        gross: acc.gross + i.total,
+      }),
+      { qty: 0, disc: 0, cgst: 0, sgst: 0, gross: 0 },
+    );
+
+    formik.setValues({
+      ...formik.values,
+      totalQuantity: totals.qty,
+      totalAmount: totals.gross.toFixed(2),
+      grossAmount: totals.gross.toFixed(2),
+      cgstAmount: totals.cgst.toFixed(2),
+      sgstAmount: totals.sgst.toFixed(2),
+      totalDiscount: totals.disc.toFixed(2),
+      taxableAmount: (totals.gross - totals.cgst - totals.sgst).toFixed(2),
+      paidAmount: totals.gross.toFixed(2),
+    });
+  }, [formik.values.items]);
+
   useEffect(() => {
     formik.setFieldValue(
       "dueAmount",
@@ -474,7 +273,7 @@ useEffect(() => {
     <FormikProvider value={formik}>
       <form onSubmit={formik.handleSubmit} className="space-y-4">
         <h2 className="text-lg font-bold text-sky-700 text-center uppercase border-b pb-2">
-          💳 Medicine Billing Form
+          💳 Medicine Camp Billing Form
         </h2>
 
         {/* Patient Details Section */}
@@ -490,7 +289,7 @@ useEffect(() => {
               pattern="[0-9]*"
               className={baseInput}
               placeholder="Search Bill no (e.g., 123)"
-              value={billSearch || formik.values.opdBillNo}
+              value={billSearch}
               onChange={(e) => {
                 if (id) return;
                 const val = e.target.value.replace(/\D/g, "");
@@ -510,12 +309,7 @@ useEffect(() => {
                     key={item.ID}
                     onClick={() => {
                       setSelectedBill(item.ID);
-
-                      formik.setValues({
-                        ...formik.values,
-                        opdBillNo: item.ID
-                      });
-
+                      formik.setFieldValue("billno", item.ID);
                       setBillSearch(item.ID);
                       setSuggestionsList([]);
                     }}
@@ -559,10 +353,10 @@ useEffect(() => {
               <input
                 type="text"
                 className={`${baseInput} 
-                             ${!formik.values.opdBillNo ? "bg-sky-50 cursor-not-allowed" : ""}`}
+                             ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
                 placeholder={"Search Medicine"}
-                value={medicineSearch || formik.values.medicine}
-                disabled={!formik.values.opdBillNo}
+                value={medicineSearch}
+                disabled={!formik.values.billno}
                 onChange={(e) => {
                   setMedicineSearch(e.target.value);
                   setSelectedMedicine(null);
@@ -624,7 +418,7 @@ useEffect(() => {
               label="Discount (%)"
               {...formik.getFieldProps("discountPercent")}
             />
-            <Input label="Bill No" {...formik.getFieldProps("billNo")} readOnly />
+            <Input label="Bill No" {...formik.getFieldProps("billNo")} />
             <Button
               type="button"
               onClick={addItemToList}
@@ -651,14 +445,9 @@ useEffect(() => {
                     <th className="px-3 py-3 text-center">Batch</th>
                     <th className="px-3 py-3 text-center">HSN</th>
                     <th className="px-3 py-3 text-center">Exp</th>
-                    <th className="px-3 py-3 text-right">Sale Rate</th>
-                    <th className="px-3 py-3 text-right">Disc %</th>
-                    <th className="px-3 py-3 text-right">Disc Amt</th>
-                    <th className="px-3 py-3 text-right">CGST %</th>
-                    <th className="px-3 py-3 text-right">CGST Amt</th>
-                    <th className="px-3 py-3 text-right">SGST %</th>
-                    <th className="px-3 py-3 text-right">SGST Amt</th>
-                    <th className="px-3 py-3 text-right">Taxable Amt</th>
+                    <th className="px-3 py-3 text-right">Rate</th>
+                    <th className="px-3 py-3 text-right">Disc</th>
+                    <th className="px-3 py-3 text-right">Taxable</th>
                     <th className="px-3 py-3 text-right">Total</th>
                     <th className="px-3 py-3 text-center">Action</th>
                   </tr>
@@ -690,29 +479,11 @@ useEffect(() => {
                           <td className="px-3 py-3 text-right">
                             ₹{item.saleRate}
                           </td>
-                          <td className="px-3 py-3 text-right">
-                            {item.discountPercent}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            ₹{item.discAmt}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            {item.cgstPercent}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            ₹{item.cgstAmt}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            {item.sgstPercent}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            ₹{item.sgstAmt}
-                          </td>
                           <td className="px-3 py-3 text-right text-gray-500">
-                            {Number(item.discAmt || 0).toFixed(2)}
+                            {item.discAmt.toFixed(2)}
                           </td>
                           <td className="px-3 py-3 text-right">
-                            {Number(item.taxableAmt || 0).toFixed(2)}
+                            {item.taxableAmt.toFixed(2)}
                           </td>
                           <td className="px-3 py-3 text-right font-bold text-sky-700">
                             ₹{item.total.toFixed(2)}
@@ -756,7 +527,7 @@ useEffect(() => {
             />
             <Select label="Pay Mode *" {...formik.getFieldProps("payMode")}>
               <option value="">-- Select --</option>
-              {Picaso_Paymode_Options.map((m) => (
+              {paymodes?.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name}
                 </option>
@@ -818,4 +589,4 @@ useEffect(() => {
   );
 };
 
-export default BillingForm;
+export default CampBillingForm;

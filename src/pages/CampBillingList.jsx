@@ -15,8 +15,7 @@ import PharmaBillPrint from "./PharmaBillPrint";
 import { useReactToPrint } from "react-to-print";
 const username = cookie.get("username");
 
-const BillingList = () => {
-  const navigate = useNavigate();
+const CampBillingList = () => {
   const [searchTerms, setSearchTerms] = useState({
     descriptions: "",
     CustommerName: "",
@@ -310,7 +309,7 @@ const BillingList = () => {
         enableActions
         actionButtons={["edit", "delete", "print"]}
         onEdit={(row) => {
-          navigate(`/medicine-billing/${row.ID}`);
+          navigate(`/patient-registration/${row.id}`);
         }}
         onPrint={onPrint}
       />
@@ -354,4 +353,4 @@ const BillingList = () => {
   );
 };
 
-export default BillingList;
+export default CampBillingList;

@@ -16,8 +16,23 @@ import MedicineSalesRecord from "./pages/MedicineSalesRecord";
 import ExpiryItems from "./pages/ExpiryItems";
 import Billing from "./pages/Billing";
 import ItemMaster from "./pages/ItemMaster";
+import CampBilling from "./pages/CampBilling";
 
+import PatientListCopy from "./pages/PatientListCopy";
+import CopyLayout from "./components/copy/CopyLayout";
+import DashboardCopy from "./pages/DashboardCopy";
+import OpdFormCopy from "./pages/OpdFormCopy";
+import PrescriptionFormCopy from "./pages/PrescriptionFormCopy";
 
+import PurchasedEntryCopy from "./pages/PurchasedEntryCopy";
+import BillingCopy from "./pages/BillingCopy";
+import CampBillingCopy from "./pages/CampBillingCopy";
+import OpdBillingListCopy from "./pages/OpdBillingListCopy";
+import PrescriptionListCopy from "./pages/PrescriptionListCopy";
+import ExpiryItemsCopy from "./pages/ExpiryItemsCopy";
+import PatientRegistrationCopy from "./pages/PatientFormCopy";
+import SalesRecordCopy from "./pages/salesrecordcopy";
+import AttendancePage from "./pages/AttendancePage";
 function App() {
   return (
     <BrowserRouter>
@@ -27,16 +42,15 @@ function App() {
           element={<Login />}
         />
         <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <PatientRegistration />
-              </Layout>
-            </ProtectedRoute>
-
-          }
-        />
+  path="/"
+  element={
+    <ProtectedRoute>
+      <CopyLayout>
+        <DashboardCopy />
+      </CopyLayout>
+    </ProtectedRoute>
+  }
+/>
         <Route
           path="/patient-registration"
           element={
@@ -183,6 +197,16 @@ function App() {
           }
         />
         <Route
+          path="/medicine-billing/:id"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Billing />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/items-master"
           element={
             <ProtectedRoute>
@@ -192,6 +216,187 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/camp-billing"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CampBilling />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        // App.jsx (Add this inside your Routes)
+        <Route
+          path="/patient-list-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <PatientListCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/patient-registration-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <PatientRegistrationCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <DashboardCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/opd-form-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <OpdFormCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/prescription-form-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <PrescriptionFormCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+       <Route
+  path="/purchased-entry-copy"
+  element={
+    <ProtectedRoute>
+      <CopyLayout>
+        <PurchasedEntryCopy />
+      </CopyLayout>
+    </ProtectedRoute>
+  }
+/> 
+        <Route
+          path="/billing-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <BillingCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/camp-billing-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <CampBillingCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/patient-registration-copy/:id"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <PatientRegistrationCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/opd-list-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <OpdBillingListCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/prescription-list-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <PrescriptionListCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/expiry-items-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <ExpiryItemsCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/prescription-form-copy/:id"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <PrescriptionFormCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+  path="/purchased-entry-copy/:id"
+  element={
+    <ProtectedRoute>
+      <CopyLayout>
+        <PurchasedEntryCopy />
+      </CopyLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/billing-copy/:id"
+  element={
+    <ProtectedRoute>
+      <CopyLayout>
+        <BillingCopy />
+      </CopyLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+          path="/sales-record-copy"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <SalesRecordCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+  path="/attendance"
+  element={
+    <ProtectedRoute>
+      <CopyLayout>
+        <AttendancePage />
+      </CopyLayout>
+    </ProtectedRoute>
+  }
+/>
         <Route path="/print-opd-form"
           element={<PrintOpdForm />} />
 
