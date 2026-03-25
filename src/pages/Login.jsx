@@ -20,7 +20,7 @@ const Login = () => {
     try {
       const data = await login(values).unwrap();
       dispatch(setCredentials(data));
-      navigate("/patient-list");
+      navigate("/");
     } catch (error) {
       healthAlert({
         icon: "error",
