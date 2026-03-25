@@ -62,7 +62,7 @@ const AttendancePage = () => {
     if (alreadyMarked) {
       healthAlert({
         title: "Status: Active",
-        text: "Bhai, aapki aaj ki attendance pehle se hi recorded hai.",
+        text: "your attendence is already recorded",
         icon: "info"
       });
       return;
