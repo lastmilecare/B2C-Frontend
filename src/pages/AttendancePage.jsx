@@ -71,7 +71,7 @@ const AttendancePage = () => {
     setAttendance(prev => [...prev, { user: username, date: todayStr, status: "Present" }]);
     healthAlert({
       title: "Duty Initiated!",
-      text: `Jai Hind ${username}! Aapka session start ho chuka hai.`,
+      text: `  Duty  Start${username}`,
       icon: "success"
     });
   };
@@ -83,14 +83,14 @@ const AttendancePage = () => {
     if (!isStarted) {
       healthAlert({
         title: "Access Denied",
-        text: "Pehle duty start toh karo, tabhi toh end hogi!",
+        text: "please start duty first ",
         icon: "warning"
       });
       return;
     }
     healthAlert({
       title: "Duty Completed!",
-      text: "Shabash! Aaj ka session closed. Have a great evening!",
+      text: "Your Duty Close ",
       icon: "success"
     });
   };
