@@ -122,7 +122,6 @@ const AttendancePage = () => {
     month: viewConfig.month + 1,
     year: viewConfig.year,
   });
-
   const calendarMap = useMemo(() => {
     const map = new Map();
     calendarData.forEach((d) => map.set(d.date, d));
@@ -550,7 +549,7 @@ const AttendancePage = () => {
             <div className="mt-8 p-4 bg-sky-500/5 rounded-2xl border border-sky-500/10 flex items-center gap-3">
               <MapPinIcon className="h-4 w-4 text-sky-500" />
               <p className="text-[10px] text-sky-700 font-bold uppercase tracking-tighter italic">
-                LMC  - Secured Zone Terminal
+                LMC - Secured Zone Terminal
               </p>
             </div>
           </div>
