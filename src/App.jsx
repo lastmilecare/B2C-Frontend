@@ -1,37 +1,37 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
-import PatientRegistration from "./pages/PatientForm";
-import PatientList from "./pages/PatientList";
-import OpdForm from "./pages/OpdBillingForm";
-import OpdBilling from "./pages/OpdBillingList";
+import PatientRegistration from "./pages/PatientForm_old";
+import PatientList from "./pages/PatientList_old";
+import OpdForm from "./pages/OpdBillingForm_old";
+import OpdBilling from "./pages/OpdBillingList_old";
 // import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
-import PrescriptionForm from "./pages/PrescriptionForm";
-import PrescriptionList from "./pages/PrescriptionList";
+import PrescriptionForm from "./pages/PrescriptionForm_old";
+import PrescriptionList from "./pages/PrescriptionList_old";
 import PrintOpdForm from "./pages/PrintOpdForm";
 import ProtectedRoute from "./routes/ProtectedRoute";
-import PurchsedEntry from "./pages/PurchasedEntry";
-import MedicineSalesRecord from "./pages/MedicineSalesRecord";
-import ExpiryItems from "./pages/ExpiryItems";
-import Billing from "./pages/Billing";
+import PurchsedEntry from "./pages/PurchasedEntry_old";
+import MedicineSalesRecord from "./pages/MedicineSalesRecord_old";
+import ExpiryItems from "./pages/ExpiryItems_old";
+import Billing from "./pages/Billing_old";
 import ItemMaster from "./pages/ItemMaster";
-import CampBilling from "./pages/CampBilling";
+import CampBilling from "./pages/CampBilling_old";
 
-import PatientListCopy from "./pages/PatientListCopy";
+import PatientListCopy from "./pages/PatientList";
 import CopyLayout from "./components/copy/CopyLayout";
-import DashboardCopy from "./pages/DashboardCopy";
-import OpdFormCopy from "./pages/OpdFormCopy";
-import PrescriptionFormCopy from "./pages/PrescriptionFormCopy";
+import DashboardCopy from "./pages/Dashboard";
+import OpdFormCopy from "./pages/OpdForm";
+import PrescriptionFormCopy from "./pages/PrescriptionForm";
 
-import PurchasedEntryCopy from "./pages/PurchasedEntryCopy";
-import BillingCopy from "./pages/BillingCopy";
-import CampBillingCopy from "./pages/CampBillingCopy";
-import OpdBillingListCopy from "./pages/OpdBillingListCopy";
-import PrescriptionListCopy from "./pages/PrescriptionListCopy";
-import ExpiryItemsCopy from "./pages/ExpiryItemsCopy";
-import PatientRegistrationCopy from "./pages/PatientFormCopy";
-import SalesRecordCopy from "./pages/salesrecordcopy";
+import PurchasedEntryCopy from "./pages/PurchasedEntry";
+import BillingCopy from "./pages/Billing";
+import CampBillingCopy from "./pages/CampBilling";
+import OpdBillingListCopy from "./pages/OpdBillingList";
+import PrescriptionListCopy from "./pages/PrescriptionList";
+import ExpiryItemsCopy from "./pages/ExpiryItems";
+import PatientRegistrationCopy from "./pages/PatientForm";
+import SalesRecordCopy from "./pages/salesrecord";
 import AttendancePage from "./pages/AttendancePage";
 function App() {
   return (
@@ -52,7 +52,7 @@ function App() {
   }
 />
         <Route
-          path="/patient-registration"
+          path="/patient-registration-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -62,7 +62,7 @@ function App() {
 
           }
         />
-        <Route path="/patient-registration/:id"
+        <Route path="/patient-registration-old/:id"
           element={
             <ProtectedRoute>
               <Layout>
@@ -73,7 +73,7 @@ function App() {
         />
 
         <Route
-          path="/patient-list"
+          path="/patient-list-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -83,7 +83,7 @@ function App() {
           }
         />
         <Route
-          path="/opd-form"
+          path="/opd-form-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -93,7 +93,7 @@ function App() {
           }
         />
         <Route
-          path="/opd-form/:ID"
+          path="/opd-form-old/:ID"
           element={
             <ProtectedRoute>
               <Layout>
@@ -105,7 +105,7 @@ function App() {
 
 
         <Route
-          path="/prescription-form"
+          path="/prescription-form-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -116,7 +116,7 @@ function App() {
         />
 
         <Route
-          path="/prescription-list"
+          path="/prescription-list-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -126,7 +126,7 @@ function App() {
           }
         />
         <Route
-          path="/prescription/edit/:id"
+          path="/prescription-old/edit/:id"
           element={
             <ProtectedRoute>
               <Layout>
@@ -137,7 +137,7 @@ function App() {
         />
 
         <Route
-          path="/opd-billing"
+          path="/opd-billing-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -147,7 +147,7 @@ function App() {
           }
         />
         <Route
-          path="/purchased-entry"
+          path="/purchased-entry-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -157,7 +157,7 @@ function App() {
           }
         />
         <Route
-          path="/purchased-entry/edit/:id"
+          path="/purchased-entry-old/edit/:id"
           element={
             <ProtectedRoute>
               <Layout>
@@ -167,7 +167,7 @@ function App() {
           }
         />
         <Route
-          path="/sales-record"
+          path="/sales-record-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -177,7 +177,7 @@ function App() {
           }
         />
         <Route
-          path="/expiry-items"
+          path="/expiry-items-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -187,7 +187,7 @@ function App() {
           }
         />
         <Route
-          path="/medicines-billing"
+          path="/medicines-billing-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -197,7 +197,7 @@ function App() {
           }
         />
         <Route
-          path="/medicine-billing/:id"
+          path="/medicine-billing-old/:id"
           element={
             <ProtectedRoute>
               <Layout>
@@ -207,7 +207,7 @@ function App() {
           }
         />
         <Route
-          path="/items-master"
+          path="/items-master-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -217,7 +217,7 @@ function App() {
           }
         />
         <Route
-          path="/camp-billing"
+          path="/camp-billing-old"
           element={
             <ProtectedRoute>
               <Layout>
@@ -228,7 +228,7 @@ function App() {
         />
         // App.jsx (Add this inside your Routes)
         <Route
-          path="/patient-list-copy"
+          path="/patient-list"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -239,7 +239,7 @@ function App() {
         />
 
         <Route
-          path="/patient-registration-copy"
+          path="/patient-registration"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -249,7 +249,7 @@ function App() {
           }
         />
         <Route
-          path="/dashboard-copy"
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -259,7 +259,17 @@ function App() {
           }
         />
         <Route
-          path="/opd-form-copy"
+          path="/opd-form"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <OpdFormCopy />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/opd-form/:ID"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -269,7 +279,7 @@ function App() {
           }
         />
         <Route
-          path="/prescription-form-copy"
+          path="/prescription-form"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -279,7 +289,7 @@ function App() {
           }
         />
        <Route
-  path="/purchased-entry-copy"
+  path="/purchased-entry"
   element={
     <ProtectedRoute>
       <CopyLayout>
@@ -289,7 +299,7 @@ function App() {
   }
 /> 
         <Route
-          path="/billing-copy"
+          path="/billing"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -299,7 +309,7 @@ function App() {
           }
         />
         <Route
-          path="/camp-billing-copy"
+          path="/camp-billing"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -308,7 +318,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/patient-registration-copy/:id"
+        <Route path="/patient-registration/:id"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -317,7 +327,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/opd-list-copy"
+        <Route path="/opd-list"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -327,7 +337,7 @@ function App() {
           }
         />
         <Route
-          path="/prescription-list-copy"
+          path="/prescription-list"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -337,7 +347,7 @@ function App() {
           }
         />
         <Route
-          path="/expiry-items-copy"
+          path="/expiry-items"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -348,7 +358,7 @@ function App() {
         />
         
         <Route
-          path="/prescription-form-copy/:id"
+          path="/prescription-form/:id"
           element={
             <ProtectedRoute>
               <CopyLayout>
@@ -358,7 +368,7 @@ function App() {
           }
         />
         <Route
-  path="/purchased-entry-copy/:id"
+  path="/purchased-entry/:id"
   element={
     <ProtectedRoute>
       <CopyLayout>
@@ -368,7 +378,7 @@ function App() {
   }
 />
 <Route
-  path="/billing-copy/:id"
+  path="/billing/:id"
   element={
     <ProtectedRoute>
       <CopyLayout>
@@ -378,7 +388,7 @@ function App() {
   }
 />
 <Route
-          path="/sales-record-copy"
+          path="/sales-record"
           element={
             <ProtectedRoute>
               <CopyLayout>

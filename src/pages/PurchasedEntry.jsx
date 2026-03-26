@@ -1,54 +1,78 @@
 import React, { useState, useEffect } from "react";
 import GRNForm from "./GRNForm";
-import StockDetails from "./StockDetails";
-import { useLocation } from "react-router-dom";
-import { useParams } from "react-router-dom";
-const PurchasedEntry = () => {
+import StockDetailsCopy from "./StockDetails";
+import { useLocation, useParams } from "react-router-dom";
+
+import {
+  ClipboardDocumentIcon,
+  CreditCardIcon,
+} from "@heroicons/react/24/outline";
+
+const PurchasedEntryCopy = () => {
+
   const location = useLocation();
   const { id } = useParams();
 
   const [activeTab, setActiveTab] = useState("grn");
 
   useEffect(() => {
-  if (location.state?.goToStock) {
-    setActiveTab("stock");
-  } else if (id) {
-    setActiveTab("grn");
-  }
-}, [id, location.state]);
-
+    if (location.state?.goToStock) {
+      setActiveTab("stock");
+    } else if (id) {
+      setActiveTab("grn");
+    }
+  }, [id, location.state]);
 
   return (
-   <div className="max-w-[1400px] mx-auto mt-10 bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+    <div className="max-w-[1400px] mx-auto mt-10">
+
+
       <div className="flex justify-center mb-8">
-        <div className="flex border border-sky-500 rounded-md overflow-hidden">
+
+        <div className="flex bg-white shadow-lg border rounded-xl overflow-hidden">
+
           <button
             onClick={() => setActiveTab("grn")}
-            className={`px-8 py-2 text-sm font-semibold ${
+            className={`px-8 py-3 text-sm font-semibold flex items-center gap-2 transition
+            ${
               activeTab === "grn"
-                ? "bg-sky-600 text-white"
-                : "text-sky-700"
+                ? "bg-blue-600 text-white"
+                : "text-gray-600 hover:bg-gray-50"
             }`}
           >
+            <ClipboardDocumentIcon className="w-4 h-4" />
             GRN Entry
           </button>
 
           <button
             onClick={() => setActiveTab("stock")}
-            className={`px-8 py-2 text-sm font-semibold ${
+            className={`px-8 py-3 text-sm font-semibold flex items-center gap-2 transition
+            ${
               activeTab === "stock"
-                ? "bg-sky-600 text-white"
-                : "text-sky-700"
+                ? "bg-blue-600 text-white"
+                : "text-gray-600 hover:bg-gray-50"
             }`}
           >
+            <CreditCardIcon className="w-4 h-4" />
             Stock View
           </button>
+
         </div>
       </div>
 
-      {activeTab === "grn" ? <GRNForm /> : <StockDetails />}
+
+      <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+
+        {activeTab === "grn" ? (
+          <GRNForm />
+        ) : (
+          <StockDetailsCopy />
+        )}
+
+      </div>
+
     </div>
   );
 };
 
-export default PurchasedEntry;
+export default PurchasedEntryCopy;

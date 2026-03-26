@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import {
-  ArrowPathIcon,
-  UserIcon,
-  ClipboardDocumentIcon,
-  CreditCardIcon,
-  DocumentCheckIcon,
-  BeakerIcon,
-  
-} from "@heroicons/react/24/outline";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import DiseaseSelect from "../components/DiseaseSelect";
 import useDebounce from "../hooks/useDebounce";
 import {
@@ -43,16 +35,7 @@ const parseChiefComplaintNames = (value) => {
     .filter(Boolean);
 };
 
-const PrescriptionFormCopy = () => {
-  const [activeStep, setActiveStep] = useState(1);
-
-const nextStep = () => {
-  setActiveStep((prev) => prev + 1);
-};
-
-const prevStep = () => {
-  setActiveStep((prev) => prev - 1);
-};
+const PrescriptionForm = () => {
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
@@ -282,11 +265,11 @@ const prevStep = () => {
         if (id) {
           await updatePrescription({ id, ...payload }).unwrap();
           healthAlerts.success("Prescription updated successfully");
-          navigate(`/prescription-list-copy`);
+          navigate(`/prescription-list`);
         } else {
           await createPrescription(payload).unwrap();
           healthAlerts.success("Prescription saved successfully");
-          navigate(`/prescription-list-copy`);
+          navigate(`/prescription-list`);
         }
       } catch (error) {
         healthAlert({
@@ -444,73 +427,19 @@ const prevStep = () => {
   };
 
   return (
-<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
-<div className="max-w-[1400px] mx-auto px-8">
-     <div className="flex justify-between items-center mb-10">
+    <div className="max-w-6xl mx-auto mt-8 bg-white p-6 rounded-2xl shadow border border-gray-200">
+      <h2 className="text-2xl font-bold text-sky-700 mb-5 text-center">
+        💳 Prescription Form
+      </h2>
 
-<h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
-<span className="bg-blue-100 p-2 rounded-xl">
-<ClipboardDocumentIcon className="w-6 text-blue-600"/>
-</span>
-
-Prescription
-
-</h1>
-
-<div className="flex gap-2">
-{[1,2,3,4,5].map((s)=>(
-<div
-key={s}
-className={`h-2 w-12 rounded-full ${
-activeStep >= s ? "bg-blue-600" : "bg-gray-200"
-}`}
-/>
-))}
-</div>
-
-</div>
-<div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-    <div className="flex border-b">
-
-{[
-{ id:1,label:"Patient",icon:UserIcon },
-{ id:2,label:"Vitals",icon:ClipboardDocumentIcon },
-{ id:3,label:"Prescription",icon:CreditCardIcon },
-{ id:4,label:"Medicine",icon:BeakerIcon  },
-{ id:5,label:"Confirm",icon:DocumentCheckIcon }
-].map((step)=>(
-    
-<button
-key={step.id}
-type="button"
-onClick={()=>setActiveStep(step.id)}
-className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
-${activeStep===step.id
-? "bg-white text-blue-600 shadow"
-: "text-gray-400"}
-`}
->
-
-<step.icon className="w-4 h-4"/>
-
-{step.label}
-
-</button>
-
-))}
-
-
-</div>
-
-      <form onSubmit={formik.handleSubmit}  className="space-y-8 p-9">
-        {activeStep === 1 && (
+      <form onSubmit={formik.handleSubmit} className="space-y-5">
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Patient
             Details
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div className="relative">
               <label className="text-sm text-gray-600 block mb-1">
                 Bill no <span className="text-red-500">*</span>
@@ -596,17 +525,14 @@ ${activeStep===step.id
               readOnly
             ></Input>
           </div>
-        
         </section>
-        )}
-        {activeStep === 2 && (
         <section className="mt-6">
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
             Vitals & Examination
           </h3>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Input
               {...formik.getFieldProps("bpsystolic")}
               label="BP Systolic (mmHg)"
@@ -661,16 +587,14 @@ ${activeStep===step.id
             />
           </div>
         </section>
-          )}
         {/* ================= BILLING DETAILS ================= */}{" "}
-        {activeStep === 3 && (
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
             Prescription Details
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Input
               {...formik.getFieldProps("otherinstrution")}
               placeholder="Other Instructions "
@@ -711,17 +635,14 @@ ${activeStep===step.id
             />
           </div>
         </section>
-        )}
         {/* ================= Medical Prescription DETAILS ================= */}
-        {activeStep === 4 && (
-            
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Medical
             Prescription
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="relative">
               <label className="text-sm text-gray-600 block mb-1">
                 Medicine <span className="text-red-500">*</span>
@@ -856,7 +777,7 @@ ${activeStep===step.id
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-sky-50 text-sky-700">
+                  <thead className="bg-sky-40 text-sky-700">
                     <tr>
                       <th className="px-4 py-3 text-left">SL No</th>
                       <th className="px-4 py-3 text-left">Medicine</th>
@@ -899,73 +820,30 @@ ${activeStep===step.id
             </div>
           )}
         </section>
-        )}
-       {activeStep === 5 && (
+        <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">
+          <Button type="submit" variant="sky" disabled={isLoading}>
+            {isLoading ? "Saving..." : id ? "Update" : "Save"}
+          </Button>
 
-<div className="bg-gray-50 p-6 rounded-lg space-y-4">
-
-<h3 className="text-lg font-semibold">
-Confirm Prescription
-</h3>
-
-<p>Patient : {formik.values.Name}</p>
-<p>Mobile : {formik.values.Mobile}</p>
-<p>Medicines : {prescriptionList.length}</p>
-
-<div className="flex gap-3 pt-4">
-
-<Button type="button" variant="gray" onClick={formik.handleReset}>
-<ArrowPathIcon className="w-5 h-5 inline mr-1"/>
-Reset
-</Button>
-
-<Button
-type="button"
-variant="outline"
-onClick={()=>onPrintCS(row)}
->
-Print CS
-</Button>
-
-</div>
-
-</div>
-
-)}
-<div className="flex justify-between pt-6 border-t">
-
-{activeStep > 1 && (
-<Button type="button" variant="gray" onClick={prevStep}>
-Back
-</Button>
-)}
-
-{activeStep < 5 ? (
-
-<Button type="button" variant="sky" onClick={nextStep}>
-Continue
-</Button>
-
-) : (
-
-<Button type="submit" variant="sky" disabled={isLoading}>
-{isLoading ? "Saving..." : id ? "Update" : "Save"}
-</Button>
-
-)}
-</div>
-
+          <Button type="button" variant="gray" onClick={formik.handleReset}>
+            <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onPrintCS(row)}
+          >
+            Print CS
+          </Button>
+        </div>
       </form>
-      </div>
-      </div>
       {printRow && (
         <div style={{ display: "none" }}>
           <PrescriptionPrint ref={printRef} data={printRow} />
         </div>
       )}
     </div>
-    
   );
 };
 
-export default PrescriptionFormCopy;
+export default PrescriptionForm;

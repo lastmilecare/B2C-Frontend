@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import CommonList from "../components/CommonList";
-import FilterBar from "../components/common/FilterBar";
+import CopyFilterBar from "../components/copy/CopyFilterBar";
 import {
   useGetStockDetailsQuery,
   useGetComboQuery,
@@ -12,50 +12,50 @@ import { useNavigate } from "react-router-dom";
 import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
 const username = cookie.get("username");
-const StockDetails = () => {
-const [deleteitemid] = useDeleteitemMutation();
- const handleDelete = async (row) => {
-  const id = row?.ID;  
+const StockDetailsCopy = () => {
+  const [deleteitemid] = useDeleteitemMutation();
+  const handleDelete = async (row) => {
+    const id = row?.ID;
 
-  if (!id) {
-    healthAlert({
-      title: "Error",
-      text: "ID number not found for this record.",
-      icon: "error",
-    });
-    return;
-  }
-
-  healthAlert({
-    title: "Are you sure?",
-    text: `You are about to delete item id: ${id}. This action cannot be undone!`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Yes, delete it!",
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      try {
-        await deleteitemid(id).unwrap();
-
-        healthAlert({
-          title: "Deleted!",
-          text: "Stock record deleted successfully.",
-          icon: "success",
-        });
-      } catch (error) {
-        healthAlert({
-          title: "Delete Error",
-          text:
-            error?.data?.message ||
-            "Something went wrong while deleting.",
-          icon: "error",
-        });
-      }
+    if (!id) {
+      healthAlert({
+        title: "Error",
+        text: "ID number not found for this record.",
+        icon: "error",
+      });
+      return;
     }
-  });
-};
+
+    healthAlert({
+      title: "Are you sure?",
+      text: `You are about to delete item id: ${id}. This action cannot be undone!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteitemid(id).unwrap();
+
+          healthAlert({
+            title: "Deleted!",
+            text: "Stock record deleted successfully.",
+            icon: "success",
+          });
+        } catch (error) {
+          healthAlert({
+            title: "Delete Error",
+            text:
+              error?.data?.message ||
+              "Something went wrong while deleting.",
+            icon: "error",
+          });
+        }
+      }
+    });
+  };
   const [ItemSearch, ItemNameSearch] = useState("");
   const debouncedItemSearch = useDebounce(ItemSearch, 500);
   const { data: suggestions = [] } = useGetMediceneListQuery(
@@ -201,35 +201,126 @@ const [deleteitemid] = useDeleteitemMutation();
       sortable: true,
       width: "120px",
     },
-    { name: "Invoice No", selector: (row) => row.RecieptNo, width: "120px" },
-    { name: "Batch No", selector: (row) => row.BatchNo, width: "120px" },
-    { name: "Rack No", selector: (row) => row.RagNo, width: "120px" },
+    {
+      name: "Invoice",
+      width: "120px",
+      center: true,
+      cell: (row) => (
+        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold">
+          #{row.RecieptNo}
+        </span>
+      )
+    },
+    {
+      name: "Rack",
+      width: "90px",
+      center: true,
+      cell: (row) => (
+        <span className="font-semibold text-indigo-600">
+          {row.RagNo}
+        </span>
+      )
+    },
     { name: "HSNCode", selector: (row) => row.HSNCode, width: "120px" },
     { name: "CGST", selector: (row) => row.CGST, width: "120px" },
     { name: "SGST", selector: (row) => row.SGST, width: "120px" },
-    { name: "CP", selector: (row) => row.CP, width: "120px" },
-    { name: "MRP", selector: (row) => row.MRP, width: "120px" },
+    {
+      name: "CP",
+      width: "110px",
+      right: true,
+      cell: (row) => (
+        <span className="font-semibold text-green-600">
+          ₹{row.CP}
+        </span>
+      )
+    },
+    {
+      name: "MRP",
+      width: "110px",
+      right: true,
+      cell: (row) => (
+        <span className="font-semibold text-blue-600">
+          ₹{row.MRP}
+        </span>
+      )
+    },
     { name: "CPU", selector: (row) => row.CPU, width: "120px" },
     { name: "MRPU", selector: (row) => row.MRPU, width: "120px" },
     { name: "Cnd.Qty", selector: (row) => row.CondmQty, width: "120px" },
-    { name: "Recv. Qty", selector: (row) => row.RecvQty, width: "120px" },
+    {
+      name: "Recv Qty",
+      width: "110px",
+      center: true,
+      cell: (row) => (
+        <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
+          {row.RecvQty}
+        </span>
+      )
+    },
     {
       name: "Sales Qty",
       selector: (row) => row.RecvQty - row.BalQty,
       width: "120px",
     },
-    { name: "Bal Qty", selector: (row) => row.BalQty, width: "120px" },
     {
+      name: "Bal Qty",
+      width: "110px",
+      center: true,
+      cell: (row) => {
+
+        const qty = row.BalQty
+
+        return (
+          <span className={`px-2 py-1 rounded text-xs font-semibold
+    ${qty < 5
+              ? "bg-red-100 text-red-700"
+              : "bg-green-100 text-green-700"
+            }`}>
+            {qty}
+          </span>
+        )
+
+      }
+    }, {
       name: "Expiry",
-      selector: (row) => new Date(row.ExpiryDate).toISOString().split("T")[0],
       width: "120px",
+      cell: (row) => {
+
+        const expiry = new Date(row.ExpiryDate)
+        const today = new Date()
+        const diff = (expiry - today) / (1000 * 60 * 60 * 24)
+
+        return (
+
+          <span className={`px-2 py-1 rounded text-xs font-semibold
+
+   ${diff < 30
+              ? "bg-red-100 text-red-700"
+              : "bg-gray-100 text-gray-700"
+            }`}>
+
+            {expiry.toISOString().split("T")[0]}
+
+          </span>
+
+        )
+
+      }
     },
     {
       name: "Date",
       selector: (row) => new Date(row.AddedDate).toISOString().split("T")[0],
       width: "120px",
     },
-    { name: "Supplier", selector: (row) => row.SupplierName, width: "120px" },
+    {
+      name: "Supplier",
+      width: "160px",
+      cell: (row) => (
+        <span className="text-gray-700 font-medium">
+          {row.SupplierName}
+        </span>
+      )
+    },
     {
       name: "ID",
       selector: (row) => row.ID,
@@ -368,8 +459,9 @@ const [deleteitemid] = useDeleteitemMutation();
     );
   };
   return (
+
     <div className="p-0">
-      <FilterBar
+      <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
         onChange={handleChange}
@@ -400,27 +492,51 @@ const [deleteitemid] = useDeleteitemMutation();
         onEdit={(row) => {
           if (!row?.ID) return;
 
-          navigate(`/purchased-entry/edit/${row.ID}`, {
+          navigate(`/purchased-entry/${row.ID}`, {
             state: { editData: row },
+
 
           });
         }}
       />
-      <section className="border-t bg-white text-[12px]">
-        <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-1">
-          <Stat label="Cost" value={0} />
-          <Stat label="MRP" value={0} />
-          <Stat label="Recv Qty" value={0} />
-          <Stat label="Free Qty" value={0} />
-          <Stat label="Sales Amt" value={0} />
-          <Stat label="Balance Qty" value={0} />
-          <Stat label="Sales Qty" value={0} />
-          <Stat label="Remain Cost" value={0} />
-          <Stat label="Cond Qty" value={0} />
+      <section className="grid grid-cols-2 md:grid-cols-5 gap-4">
+
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-xl shadow">
+          <p className="text-xs opacity-80">Total Stock</p>
+          <h2 className="text-xl font-bold">{Stock.length}</h2>
         </div>
+
+        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl shadow">
+          <p className="text-xs opacity-80">Received Qty</p>
+          <h2 className="text-xl font-bold">
+            {Stock.reduce((a, b) => a + (b.RecvQty || 0), 0)}
+          </h2>
+        </div>
+
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow">
+          <p className="text-xs opacity-80">Balance Qty</p>
+          <h2 className="text-xl font-bold">
+            {Stock.reduce((a, b) => a + (b.BalQty || 0), 0)}
+          </h2>
+        </div>
+
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-xl shadow">
+          <p className="text-xs opacity-80">Sales Qty</p>
+          <h2 className="text-xl font-bold">
+            {Stock.reduce((a, b) => a + ((b.RecvQty || 0) - (b.BalQty || 0)), 0)}
+          </h2>
+        </div>
+
+        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-xl shadow">
+          <p className="text-xs opacity-80">Low Stock</p>
+          <h2 className="text-xl font-bold">
+            {Stock.filter(i => i.BalQty < 5).length}
+          </h2>
+        </div>
+
       </section>
     </div>
   );
 };
 
-export default StockDetails;
+export default StockDetailsCopy;

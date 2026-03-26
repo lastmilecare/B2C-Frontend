@@ -3,10 +3,19 @@ import CommonList from "../components/CommonList";
 import FilterBar from "../components/common/FilterBar";
 import { useGetExpireStockDetailsQuery } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
+import { motion } from "framer-motion";
+import {
+  ExclamationTriangleIcon,
+  ClockIcon,
+  ArchiveBoxXMarkIcon,
+} from "@heroicons/react/24/outline";
+
 const username = cookie.get("username");
-const ExpiryItems = () => {
+
+const ExpiryItemsCopy = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+
   const { data, isLoading } = useGetExpireStockDetailsQuery({
     page,
     limit,
@@ -15,6 +24,25 @@ const ExpiryItems = () => {
   const Stock = data?.data || [];
   const pagination = data?.pagination || {};
 
+ 
+  const today = new Date();
+
+  const expired = Stock.filter(
+    (i) => new Date(i.ExpiryDate) < today
+  ).length;
+
+  const critical = Stock.filter((i) => {
+    const diff =
+      (new Date(i.ExpiryDate) - today) / (1000 * 60 * 60 * 24);
+    return diff <= 30 && diff > 0;
+  }).length;
+
+  const warning = Stock.filter((i) => {
+    const diff =
+      (new Date(i.ExpiryDate) - today) / (1000 * 60 * 60 * 24);
+    return diff > 30 && diff <= 90;
+  }).length;
+
   const columns = [
     {
       name: "S.No",
@@ -22,38 +50,49 @@ const ExpiryItems = () => {
       width: "80px",
     },
     { name: "Batch No", selector: (row) => row.BatchNo, width: "150px" },
-    { name: "Supplier", selector: (row) => row.SupplierName, width: "350px" },
-    { name: "Reciept No", selector: (row) => row.RecieptNo, width: "150px" },
-    { name: "Item Name", selector: (row) => row.ItemName, width: "150px" },
-    { name: "CPU", selector: (row) => row.CPU, width: "150px" },
-    { name: "MRPU", selector: (row) => row.MRPU, width: "150px" },
+    { name: "Supplier", selector: (row) => row.SupplierName, width: "300px" },
+    { name: "Receipt No", selector: (row) => row.RecieptNo, width: "150px" },
+    { name: "Item Name", selector: (row) => row.ItemName, width: "200px" },
+    { name: "CPU", selector: (row) => row.CPU, width: "120px" },
+    { name: "MRPU", selector: (row) => row.MRPU, width: "120px" },
+
     {
       name: "Expiry",
       selector: (row) => {
         const expiry = new Date(row.ExpiryDate);
-        const today = new Date();
-        const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+        const diffDays = Math.ceil(
+          (expiry - today) / (1000 * 60 * 60 * 24)
+        );
 
-        let colorClass = "text-amber-700"; 
+        let badge =
+          "bg-amber-100 text-amber-800";
 
-        if (diffDays <= 30) {
-          colorClass = "text-red-600 font-semibold"; // urgent
+        if (diffDays <= 0) {
+          badge = "bg-red-100 text-red-700";
+        } else if (diffDays <= 30) {
+          badge = "bg-orange-100 text-orange-700";
         }
 
         return (
-          <span className={colorClass}>
+          <span
+            className={`px-2 py-1 rounded-md text-xs font-semibold ${badge}`}
+          >
             {expiry.toISOString().split("T")[0]}
           </span>
         );
       },
       width: "150px",
-      sortFunction: (a, b) => new Date(a.ExpiryDate) - new Date(b.ExpiryDate),
+      sortFunction: (a, b) =>
+        new Date(a.ExpiryDate) - new Date(b.ExpiryDate),
     },
   ];
+
   const handlePrint = () => {
-    const today = new Date().toLocaleDateString();
+    const todayDate = new Date().toLocaleDateString();
     const loginUser = username || "Admin";
+
     const printWindow = window.open("", "", "width=1200,height=800");
+
     const tableRows = Stock.map(
       (row, index) => `
       <tr>
@@ -66,133 +105,171 @@ const ExpiryItems = () => {
         <td>${row.MRPU || "N/A"}</td>
         <td>${new Date(row.ExpiryDate).toLocaleDateString()}</td>
       </tr>
-    `,
+    `
     ).join("");
 
     printWindow.document.write(`
     <html>
-      <head>
-        <title>Expired Medicines List</title>
-        <style>
-          @page {
-            size: landscape;
-          }
+    <head>
+    <title>Expired Medicines List</title>
+    <style>
+      @page { size: landscape; }
 
-          body { 
-            font-family: Arial; 
-            padding: 20px; 
-          }
+      body{
+        font-family: Arial;
+        padding:20px;
+      }
 
-          h2 { 
-            text-align: center; 
-            margin-bottom: 20px; 
-          }
+      table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:20px;
+        font-size:12px;
+      }
 
-          table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 20px; 
-            font-size: 12px;
-          }
+      th,td{
+        border:1px solid #000;
+        padding:6px;
+      }
 
-          th, td { 
-            border: 1px solid #000; 
-            padding: 6px; 
-            text-align: left; 
-          }
+      th{
+        background:#f2f2f2;
+      }
 
-          th { 
-            background-color: #f2f2f2; 
-          }
+      h2{
+        text-align:center;
+      }
 
-          .footer { 
-            margin-top: 30px; 
-            display: flex; 
-            justify-content: space-between; 
-            font-size: 13px; 
-          }
-        </style>
-      </head>
-      <body>
+      .footer{
+        margin-top:30px;
+        display:flex;
+        justify-content:space-between;
+      }
 
-        <h2>List of Expired Medicines</h2>
+    </style>
+    </head>
 
-        <table>
-          <thead>
-            <tr>
-              <th>S.No</th>
-              <th>Batch No</th>
-              <th>Supplier Name</th>
-              <th>Reciept No</th>
-              <th>Item Name</th>
-              <th>CPU</th>
-              <th>MRPU</th>
-              <th>Expiry Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRows}
-          </tbody>
-        </table>
+    <body>
 
-        <div class="footer">
-          <div><strong>Powered by : Last Mile Care</strong></div>
-          <div>Prepared By: ${loginUser}</div>
-          <div>Date: ${today}</div>
-        </div>
+    <h2>Expired Medicines List</h2>
 
-      </body>
+    <table>
+    <thead>
+    <tr>
+    <th>S.No</th>
+    <th>Batch</th>
+    <th>Supplier</th>
+    <th>Receipt</th>
+    <th>Item</th>
+    <th>CPU</th>
+    <th>MRPU</th>
+    <th>Expiry</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    ${tableRows}
+    </tbody>
+
+    </table>
+
+    <div class="footer">
+      <div>Powered by Last Mile Care</div>
+      <div>Prepared By: ${loginUser}</div>
+      <div>Date: ${todayDate}</div>
+    </div>
+
+    </body>
     </html>
-  `);
+    `);
 
     printWindow.document.close();
-    printWindow.focus();
     printWindow.print();
   };
 
-  const Stat = ({ label, value }) => {
-    return (
-      <span className="whitespace-nowrap">
-        <span className="text-gray-600">{label}:</span>{" "}
-        <span className="font-medium text-gray-800">
-          {Number(value || 0).toLocaleString("en-IN")}
-        </span>
-      </span>
-    );
-  };
+  const StatCard = ({ icon: Icon, title, value, color }) => (
+    <motion.div
+      whileHover={{ scale: 1.03 }}
+      className={`flex items-center gap-3 p-4 rounded-xl shadow-sm border ${color}`}
+    >
+      <Icon className="w-6 h-6" />
+      <div>
+        <p className="text-xs opacity-80">{title}</p>
+        <p className="text-lg font-semibold">{value}</p>
+      </div>
+    </motion.div>
+  );
+
   return (
-    <div className="p-0">
+    <div className="space-y-4">
+
       <FilterBar
         title="Medicine Expire Stock List"
         onPrint={handlePrint}
         showSearch={false}
       />
-      <CommonList
-        title="Medicine Expire Stock List"
-        columns={columns}
-        data={Stock}
-        totalRows={pagination.totalRecords || 0}
-        currentPage={pagination.currentPage || page}
-        perPage={limit}
-        onPageChange={(newPage) => setPage(newPage)}
-        onPerPageChange={(newLimit) => {
-          setLimit(newLimit);
-          setPage(1);
-        }}
-        isLoading={isLoading}
-      />
-      <section className="border-t bg-amber-50 text-[12px]">
-        <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-2">
-          <span className="text-amber-800 font-medium">
-            Medicines expiring within 90 days:
-          </span>
-          <span className="font-semibold text-amber-900">
-            {Number(data?.total || 0).toLocaleString("en-IN")}
-          </span>
-        </div>
+
+      {/* SUMMARY CARDS */}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <StatCard
+          icon={ArchiveBoxXMarkIcon}
+          title="Expired Medicines"
+          value={expired}
+          color="bg-red-50 text-red-700 border-red-200"
+        />
+
+        <StatCard
+          icon={ExclamationTriangleIcon}
+          title="Expiring in 30 Days"
+          value={critical}
+          color="bg-orange-50 text-orange-700 border-orange-200"
+        />
+
+        <StatCard
+          icon={ClockIcon}
+          title="Expiring in 90 Days"
+          value={warning}
+          color="bg-amber-50 text-amber-700 border-amber-200"
+        />
+
+      </div>
+
+      {/* TABLE */}
+
+      <div className="bg-white rounded-xl shadow-sm border p-2">
+
+        <CommonList
+          title="Medicine Expire Stock List"
+          columns={columns}
+          data={Stock}
+          totalRows={pagination.totalRecords || 0}
+          currentPage={pagination.currentPage || page}
+          perPage={limit}
+          onPageChange={(newPage) => setPage(newPage)}
+          onPerPageChange={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
+          isLoading={isLoading}
+        />
+
+      </div>
+
+      {/* FOOTER */}
+
+      <section className="border rounded-lg bg-amber-50 text-xs p-3">
+        <span className="text-amber-800 font-medium">
+          Medicines expiring within 90 days :
+        </span>{" "}
+        <span className="font-bold text-amber-900">
+          {Number(data?.total || 0).toLocaleString("en-IN")}
+        </span>
       </section>
+
     </div>
   );
 };
 
-export default ExpiryItems;
+export default ExpiryItemsCopy;

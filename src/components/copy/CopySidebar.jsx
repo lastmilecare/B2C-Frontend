@@ -78,7 +78,7 @@ const CopySidebar = () => {
 
         
 
-        <NavLink to="/dashboard-copy" className={navItem}>
+        <NavLink to="/dashboard" className={navItem}>
           <HomeIcon className="w-5" />
           {open && "Dashboard"}
         </NavLink>
@@ -110,11 +110,11 @@ const CopySidebar = () => {
 
             <div className="ml-8 space-y-1">
 
-              <NavLink to="/patient-registration-copy" className={navItem}>
+              <NavLink to="/patient-registration" className={navItem}>
                 Patient Registration
               </NavLink>
 
-              <NavLink to="/patient-list-copy" className={navItem}>
+              <NavLink to="/patient-list" className={navItem}>
                 Patient List
               </NavLink>
 
@@ -151,11 +151,11 @@ const CopySidebar = () => {
 
             <div className="ml-8 space-y-1">
 
-              <NavLink to="/opd-form-copy" className={navItem}>
+              <NavLink to="/opd-form" className={navItem}>
                 OPD Form
               </NavLink>
 
-              <NavLink to="/opd-list-copy" className={navItem}>
+              <NavLink to="/opd-list" className={navItem}>
                 OPD Billing List
               </NavLink>
 
@@ -192,11 +192,11 @@ const CopySidebar = () => {
 
             <div className="ml-8 space-y-1">
 
-              <NavLink to="/prescription-form-copy" className={navItem}>
+              <NavLink to="/prescription-form" className={navItem}>
                 Prescription Form
               </NavLink>
 
-              <NavLink to="/prescription-list-copy" className={navItem}>
+              <NavLink to="/prescription-list" className={navItem}>
                 Prescription List
               </NavLink>
 
@@ -233,24 +233,24 @@ const CopySidebar = () => {
 
             <div className="ml-8 space-y-1">
 
-              <NavLink to="/purchased-entry-copy" className={navItem}>
+              <NavLink to="/purchased-entry" className={navItem}>
                 Purchased Entry
               </NavLink>
 
-              <NavLink to="/billing-copy" className={navItem}>
+              <NavLink to="/billing" className={navItem}>
                 Billing
               </NavLink>
 
               
 
-              <NavLink to="/expiry-items-copy" className={navItem}>
+              <NavLink to="/expiry-items" className={navItem}>
                 Expiry Items
               </NavLink>
 
-              <NavLink to="/camp-billing-copy" className={navItem}>
+              <NavLink to="/camp-billing" className={navItem}>
                 Camp Billing
               </NavLink>
-              <NavLink to="/sales-record-copy" className={navItem}>
+              <NavLink to="/sales-record" className={navItem}>
                 Sales Record
               </NavLink>
 

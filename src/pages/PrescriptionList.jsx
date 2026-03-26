@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import CommonList from "../components/CommonList";
-import FilterBar from "../components/common/FilterBar";
+import PatientTable from "../components/copy/PatientTable";
+import CopyFilterBar from "../components/copy/CopyFilterBar";
 import {
   useTogglePrescriptionStatusMutation,
   useLazyExportPrescriptionsExcelQuery,
@@ -13,7 +13,8 @@ import { useNavigate } from "react-router-dom";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlerts, healthAlert } from "../utils/healthSwal";
 import { generateFileName, downloadBlob } from "../utils/helper";
-const PrescriptionList = () => {
+import Avatar from "../components/common/Avatar";
+const PrescriptionListCopy = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -158,40 +159,78 @@ const PrescriptionList = () => {
       sortable: true,
       width: "110px",
     },
+   {
+ name:"Patient",
+ minWidth:"250px",
+
+ cell:(row)=>(
+
+  <div className="flex items-center gap-3">
+
+   <div className="relative">
+
+    <Avatar
+     name={row.patientName}
+     gender={row.gender}
+     age={row.age}
+    />
+
+    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+
+   </div>
+
+   <div className="leading-tight">
+
+    <p className="font-semibold text-gray-800">
+     {row.patientName || "-"}
+    </p>
+
+    <p className="text-xs text-gray-500">
+     UHID : {row.picasoId || "-"}
+    </p>
+
+   </div>
+
+  </div>
+
+ )
+},
     {
-      name: "UHID",
-      title: "Unique Health ID",
-      selector: (row) => safeString(row?.picasoId, "-"),
-      // width: "220px",/
-      grow: 2,
-      sortable: true,
-      center: true,
-    },
+ name:"Age",
+ cell:(row)=>(
+
+  <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+
+   {row.age} yrs
+
+  </span>
+
+ )
+},
     {
-      name: "Name",
-      title: "Patient Name",
-      selector: (row) => safeString(row?.patientName, "-"),
-      sortable: true,
-      grow: 2,
-      center: true,
-    },
-    {
-      name: "Age",
-      title: "Patient Age",
-      selector: (row) => safeString(row?.age, "-"),
-      sortable: true,
-      // width: "80px",
-      grow: 1,
-      center: true,
-    },
-    {
-      name: "Gender",
-      title: "Gender",
-      selector: (row) => safeString(row?.gender, "-"),
-      // width: "100px",
-      grow: 1,
-      // center: true,
-    },
+ name:"Gender",
+ cell:(row)=>{
+
+  const gender=row.gender?.toLowerCase()
+
+  return(
+
+   <span className={`px-2 py-1 text-xs rounded-full font-medium
+
+   ${gender==="male"
+    ?"bg-blue-100 text-blue-700"
+    :"bg-pink-100 text-pink-700"}
+
+   `}>
+
+   {gender==="male"?"👨 Male":"👩 Female"}
+
+   </span>
+
+  )
+
+ }
+},
     {
       name: "Phone",
       title: "Mobile Number",
@@ -199,27 +238,47 @@ const PrescriptionList = () => {
       // width: "150px",
       grow: 1,
     },
+   {
+ name:"Added Date",
+ selector:(row)=>
+ row?.addedDate
+ ?new Date(row.addedDate).toISOString().split("T")[0]
+ :"-"
+},
     {
-      name: "Added Date",
-      title: "Added Date",
-      selector: (row) =>
-        row?.addedDate
-          ? new Date(row.addedDate).toISOString().split("T")[0]
-          : "-",
-      sortable: true,
-      // width: "150px",
-      grow: 1,
-    },
+ name:"Status",
+ cell:(row)=>{
+
+  const active=row.status
+
+  return(
+
+   <span className={`px-2 py-1 rounded-full text-xs font-semibold
+
+   ${active
+    ?"bg-green-100 text-green-700"
+    :"bg-red-100 text-red-700"}
+
+   `}>
+
+   {active?"Active":"Inactive"}
+
+   </span>
+
+  )
+
+ }
+},
   ];
 
   const navigate = useNavigate();
-  const handleEdit = (row) => {
-    if (!row?.ID) return;
+ const handleEdit = (row) => {
+  if (!row?.ID) return;
 
-    navigate(`/prescription/edit/${row.ID}`, {
-      state: { row },
-    });
-  };
+  navigate(`/prescription-form/${row.ID}`, {
+    state: { row },
+  });
+};
 
   const handleDelete = async (row) => {
     try {
@@ -254,8 +313,12 @@ const PrescriptionList = () => {
   };
 
   return (
-    <div className="p-0">
-      <FilterBar
+    <div className="max-w-7xl mx-auto">
+
+<h1 className="text-2xl font-semibold text-gray-700 mb-6">
+Prescription List
+</h1>
+      <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
         onChange={(e) => {
@@ -271,25 +334,28 @@ const PrescriptionList = () => {
         suggestions={billSuggestions}
         onSelectSuggestion={handleSelectBillSuggestion}
       />
-      <CommonList
-        title="💳 Prescription List"
-        columns={columns}
-        data={patients}
-        totalRows={pagination.totalRecords || 0}
-        currentPage={pagination.currentPage || page}
-        perPage={limit}
-        onPageChange={(newPage) => setPage(newPage)}
-        onPerPageChange={(newLimit) => {
-          setLimit(newLimit);
-          setPage(1);
-        }}
-        enableActions
-        isLoading={isLoading}
-        actionButtons={["edit", "delete", "print"]}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onPrint={onPrint}
-      />
+      <PatientTable
+ data={patients}
+ columns={columns}
+
+ totalRows={pagination.totalRecords || 0}
+
+ currentPage={pagination.currentPage || page}
+ perPage={limit}
+
+ onPageChange={(p)=>setPage(p)}
+
+ onPerPageChange={(l)=>{
+  setLimit(l)
+  setPage(1)
+ }}
+
+ isLoading={isLoading}
+
+ onEdit={handleEdit}
+ onDelete={handleDelete}
+ onPrint={onPrint}
+/>
       {printRow && (
         <div style={{ display: "none" }}>
           <PrescriptionPrint ref={printRef} data={printRow} />
@@ -299,4 +365,4 @@ const PrescriptionList = () => {
   );
 };
 
-export default PrescriptionList;
+export default PrescriptionListCopy;
