@@ -38,7 +38,7 @@ const AttendancePage = () => {
   const { data: User, isLoading: SupplierLoading } =
     useGetComboQuery("b2c-users");
   const [tempFilters, setTempFilters] = useState({
-    user: "",
+    user_id: "",
     status: "",
     date: "",
   });
@@ -60,6 +60,7 @@ const AttendancePage = () => {
     });
   const [viewingEmployee, setViewingEmployee] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentEmpName, setCurrentEmpName] = useState(null);
 
   const UserOptions = User
     ? User.map((t) => ({ value: t.id, label: t.username }))
@@ -183,6 +184,7 @@ const AttendancePage = () => {
       year: date.getFullYear(),
     });
   };
+
   const filteredRecords = useMemo(() => {
     const todayStr = formatLocalDate(new Date());
     const targetDate = appliedFilters.date || todayStr;
@@ -190,7 +192,7 @@ const AttendancePage = () => {
     return attendance.filter((item) => {
       const matchDate = item.date === targetDate;
       const matchName = appliedFilters.user
-        ? item.user.toLowerCase().includes(appliedFilters.user.toLowerCase())
+        ? item.user_id === appliedFilters.user
         : true;
       const matchStatus = appliedFilters.status
         ? item.status === appliedFilters.status
@@ -199,20 +201,47 @@ const AttendancePage = () => {
     });
   }, [appliedFilters, attendance, formatLocalDate]);
 
+  const formatDateTime = (value) => {
+    if (!value) return "-";
+
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return "-";
+
+    return date.toLocaleString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const formatMinutes = (minutes) => {
+    if (!minutes && minutes !== 0) return "-";
+
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    return `${hrs}h ${mins}m`;
+  };
   if (role === "admin" && viewingEmployee) {
     return (
       <div className="p-8 space-y-10 animate-in slide-in-from-bottom-8 duration-700">
         <div className="flex justify-between items-center bg-white p-6 rounded-[2.5rem] shadow-xl border border-gray-100">
           <div className="flex items-center gap-6">
             <button
-              onClick={() => setViewingEmployee(null)}
+              onClick={() => {
+                setViewingEmployee(null);
+                setCurrentEmpName(null);
+              }}
               className="h-12 w-12 bg-sky-50 text-sky-600 rounded-2xl hover:bg-sky-600 hover:text-white transition-all flex items-center justify-center font-black shadow-inner"
             >
               <ChevronLeftIcon className="h-6 w-6" />
             </button>
             <div>
               <h2 className="text-3xl font-black text-gray-900 tracking-tight uppercase">
-                {viewingEmployee}
+                {currentEmpName}
               </h2>
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                 Yearly Performance Archive
@@ -329,6 +358,7 @@ const AttendancePage = () => {
       </div>
     );
   }
+
   if (role === "admin") {
     return (
       <div className="p-8 space-y-12 animate-in fade-in duration-1000">
@@ -352,7 +382,6 @@ const AttendancePage = () => {
             </p>
           </div>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <StatCard
             title="Active Staff"
@@ -377,12 +406,11 @@ const AttendancePage = () => {
             bg="bg-indigo-50"
           />
         </div>
-
         <CopyFilterBar
           filtersConfig={[
             {
               name: "user",
-              label: "Name",
+              label: "Staff Name",
               type: "select",
               options: UserOptions,
             },
@@ -414,7 +442,6 @@ const AttendancePage = () => {
             })
           }
         />
-
         <div className="bg-white rounded-[4rem] shadow-2xl border border-gray-50 overflow-hidden">
           <CommonListCopy
             title={
@@ -425,39 +452,67 @@ const AttendancePage = () => {
             columns={[
               {
                 name: "STAFF MEMBER",
-                selector: (r) => r.user.toUpperCase(),
+                selector: (r) => r?.user?.name || "-",
                 sortable: true,
               },
-              { name: "LOG DATE", selector: (r) => r.date, sortable: true },
+              {
+                name: "Check-In Time",
+                selector: (r) => formatDateTime(r?.check_in),
+                sortable: true,
+              },
+              {
+                name: "Check-Out Time",
+                selector: (r) => formatDateTime(r?.check_out),
+                sortable: true,
+              },
+              {
+                name: "Working Hours",
+                selector: (r) => formatMinutes(r?.working_minutes),
+                sortable: true,
+              },
+              {
+                name: "Mobile",
+                selector: (r) => r?.user?.phone || "-",
+                sortable: true,
+              },
               {
                 name: "STATUS",
                 cell: (r) => (
                   <span
-                    className={`px-5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${r.status === "Present" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                    className={`px-5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                      r.status === "PRESENT"
+                        ? "bg-green-100 text-green-700"
+                        : r.status === "WEEK_OFF"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : r.status === "HOLIDAY"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-red-100 text-red-700"
+                    }`}
                   >
                     {r.status}
                   </span>
                 ),
               },
             ]}
-            data={filteredRecords}
+            data={attendance}
             enableActions={true}
             actionButtons={["view"]}
-            onView={(row) => setViewingEmployee(row.user_id)}
+            onView={(row) => {
+              setViewingEmployee(row.user_id);
+              setCurrentEmpName(row?.user?.name || "Employee");
+            }}
           />
         </div>
       </div>
     );
   }
   return (
-    
     <div className="p-8 space-y-8 animate-in zoom-in-95 duration-700">
       <div className="bg-gradient-to-r from-emerald-600 via-emerald-450 to-emerald-600 px-10 py-6 rounded-[2.5rem] text-white shadow-3xl relative overflow-hidden group">
-        
         <div className="relative z-10 flex justify-between items-center">
           <div className="text-left">
             <p className="text-2xl font-black tracking-tighter uppercase leading-none">
-              Employee Attendance
+              Attendance
             </p>
             <h2 className="text-2xl font-black tracking-tighter uppercase leading-none">
               WELCOME ,{" "}
@@ -548,9 +603,7 @@ const AttendancePage = () => {
           <div className="bg-gradient-to-br from-white via-sky-50 to-indigo-50 p-10 rounded-[3.5rem] shadow-2xl border border-sky-100 flex-1 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-4 mb-8">
-                
                 <div>
-                 
                   <h4 className="text-lg font-black text-slate-800 uppercase">
                     Duty Marker
                   </h4>
