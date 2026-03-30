@@ -609,6 +609,15 @@ export const api = createApi({
         params: { month, year },
       }),
     }),
+    getAttendanceExport: build.query({
+      query: (params) => ({
+        url: `/attendance/export`,
+        method: "GET",
+        params,
+        responseType: "blob",
+      }),
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -671,4 +680,5 @@ export const {
   useGetMonthlyStatsQuery,
   useGetAdminDashboardQuery,
   useGetCalendarDataQuery,
+  useLazyGetAttendanceExportQuery
 } = api;

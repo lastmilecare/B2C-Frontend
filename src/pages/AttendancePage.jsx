@@ -28,7 +28,9 @@ import {
   useGetAdminDashboardQuery,
   useGetCalendarDataQuery,
   useGetComboQuery,
+  useLazyGetAttendanceExportQuery,
 } from "../redux/apiSlice";
+import { generateFileName, downloadBlob } from "../utils/helper";
 
 const AttendancePage = () => {
   const role = cookie.get("role") || "USER";
@@ -38,7 +40,7 @@ const AttendancePage = () => {
   const { data: User, isLoading: SupplierLoading } =
     useGetComboQuery("b2c-users");
   const [tempFilters, setTempFilters] = useState({
-    user_id: "",
+    user: "",
     status: "",
     date: "",
   });
@@ -61,7 +63,7 @@ const AttendancePage = () => {
   const [viewingEmployee, setViewingEmployee] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentEmpName, setCurrentEmpName] = useState(null);
-
+  const [exportExcel] = useLazyGetAttendanceExportQuery();
   const UserOptions = User
     ? User.map((t) => ({ value: t.id, label: t.username }))
     : [];
@@ -185,21 +187,21 @@ const AttendancePage = () => {
     });
   };
 
-  const filteredRecords = useMemo(() => {
-    const todayStr = formatLocalDate(new Date());
-    const targetDate = appliedFilters.date || todayStr;
+  // const filteredRecords = useMemo(() => {
+  //   const todayStr = formatLocalDate(new Date());
+  //   const targetDate = appliedFilters.date || todayStr;
 
-    return attendance.filter((item) => {
-      const matchDate = item.date === targetDate;
-      const matchName = appliedFilters.user
-        ? item.user_id === appliedFilters.user
-        : true;
-      const matchStatus = appliedFilters.status
-        ? item.status === appliedFilters.status
-        : true;
-      return matchDate && matchName && matchStatus;
-    });
-  }, [appliedFilters, attendance, formatLocalDate]);
+  //   return attendance.filter((item) => {
+  //     const matchDate = item.date === targetDate;
+  //     const matchName = appliedFilters.user
+  //       ? item.user_id === appliedFilters.user
+  //       : true;
+  //     const matchStatus = appliedFilters.status
+  //       ? item.status === appliedFilters.status
+  //       : true;
+  //     return matchDate && matchName && matchStatus;
+  //   });
+  // }, [appliedFilters, attendance, formatLocalDate]);
 
   const formatDateTime = (value) => {
     if (!value) return "-";
@@ -225,6 +227,33 @@ const AttendancePage = () => {
 
     return `${hrs}h ${mins}m`;
   };
+
+  const handleExport = async () => {
+    try {
+      const params = {
+        ...appliedFilters,
+        month: viewConfig.month + 1,
+        year: viewConfig.year,
+      };
+
+      const blob = await exportExcel(params).unwrap();
+
+      const fileName = generateFileName("Attendance Detail", {
+        ...params,
+        extension: "xlsx",
+      });
+
+      downloadBlob(blob, fileName);
+    } catch (error) {
+      debugger
+      healthAlert({
+        title: "Export Error",
+        text: error?.data?.message || "Something went wrong",
+        icon: "error",
+      });
+    }
+  };
+
   if (role === "admin" && viewingEmployee) {
     return (
       <div className="p-8 space-y-10 animate-in slide-in-from-bottom-8 duration-700">
@@ -434,20 +463,14 @@ const AttendancePage = () => {
             setTempFilters({ user: "", status: "", date: "" });
             setAppliedFilters({});
           }}
-          onExport={() =>
-            healthAlert({
-              title: "Exporting Data",
-              text: "Generating CSV report based on filters...",
-              icon: "success",
-            })
-          }
+          onExport={handleExport}
         />
-        <div className="bg-white rounded-[4rem] shadow-2xl border border-gray-50 overflow-hidden">
+        <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-50 overflow-hidden">
           <CommonListCopy
             title={
               appliedFilters.date
                 ? `REPORT FOR ${appliedFilters.date}`
-                : "LIVE ATTENDANCE FEED (TODAY)"
+                : "LIVE ATTENDANCE FEED"
             }
             columns={[
               {
