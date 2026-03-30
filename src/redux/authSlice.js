@@ -11,6 +11,7 @@ const authSlice = createSlice({
       cookie.set("token", action.payload.data.token);
       cookie.set("username", action.payload.data.username);
       cookie.set("user_id", action.payload.data.user_id);
+      cookie.set("role", action.payload.data.role);
     },
     logout: (state) => {
       state.user = null;
@@ -18,6 +19,7 @@ const authSlice = createSlice({
       cookie.remove("token");
       cookie.remove("username");
       cookie.remove("user_id");
+      cookie.remove("role");
     },
   },
 });

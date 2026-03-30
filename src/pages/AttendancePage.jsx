@@ -27,6 +27,7 @@ import {
   useGetMonthlyStatsQuery,
   useGetAdminDashboardQuery,
   useGetCalendarDataQuery,
+  useGetComboQuery,
 } from "../redux/apiSlice";
 
 const AttendancePage = () => {
@@ -34,21 +35,24 @@ const AttendancePage = () => {
   const username = cookie.get("username") || "Pooja Jaiswal";
   const [checkIn] = useCheckInMutation();
   const [checkOut] = useCheckOutMutation();
+  const { data: User, isLoading: SupplierLoading } =
+    useGetComboQuery("b2c-users");
   const [tempFilters, setTempFilters] = useState({
     user: "",
     status: "",
     date: "",
   });
   const [appliedFilters, setAppliedFilters] = useState({});
-  const { data: attendance = [] } = useGetAttendanceQuery({
-    date: appliedFilters?.date || "",
-    user: appliedFilters?.user || "",
-    status: appliedFilters?.status || "",
-  });
   const [viewConfig, setViewConfig] = useState({
     month: new Date().getMonth(),
     year: new Date().getFullYear(),
   });
+  const { data: attendance = [], isLoading: attendanceLoading } =
+    useGetAttendanceQuery({
+      ...appliedFilters,
+      month: viewConfig.month + 1,
+      year: viewConfig.year,
+    });
   const { refetch: refetchCalendar, data: calendarData = [] } =
     useGetCalendarDataQuery({
       month: viewConfig.month + 1,
@@ -56,6 +60,10 @@ const AttendancePage = () => {
     });
   const [viewingEmployee, setViewingEmployee] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const UserOptions = User
+    ? User.map((t) => ({ value: t.id, label: t.username }))
+    : [];
 
   const formatLocalDate = useCallback((dateObj) => {
     const y = dateObj.getFullYear();
@@ -119,11 +127,20 @@ const AttendancePage = () => {
       absent: 0,
       percent: 0,
     },
-  } = useGetMonthlyStatsQuery({
-    month: viewConfig.month + 1,
-    year: viewConfig.year,
-  });
-
+  } = useGetMonthlyStatsQuery(
+    {
+      userId: viewingEmployee || null,
+      month: viewConfig.month + 1,
+      year: viewConfig.year,
+    },
+    {
+      skip: role === "admin" && !viewingEmployee,
+    },
+    {
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
   const calendarMap = useMemo(() => {
     const map = new Map();
     calendarData.forEach((d) => map.set(d.date, d));
@@ -158,7 +175,14 @@ const AttendancePage = () => {
     },
     [calendarMap, formatLocalDate],
   );
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
 
+    setViewConfig({
+      month: date.getMonth(),
+      year: date.getFullYear(),
+    });
+  };
   const filteredRecords = useMemo(() => {
     const todayStr = formatLocalDate(new Date());
     const targetDate = appliedFilters.date || todayStr;
@@ -174,6 +198,7 @@ const AttendancePage = () => {
       return matchDate && matchName && matchStatus;
     });
   }, [appliedFilters, attendance, formatLocalDate]);
+
   if (role === "admin" && viewingEmployee) {
     return (
       <div className="p-8 space-y-10 animate-in slide-in-from-bottom-8 duration-700">
@@ -252,7 +277,14 @@ const AttendancePage = () => {
           <div className="bg-white p-10 rounded-[4rem] shadow-2xl border border-gray-100 h-fit max-w-fit flex-shrink-0">
             <Calendar
               activeStartDate={new Date(viewConfig.year, viewConfig.month, 1)}
-              value={null}
+              onActiveStartDateChange={({ activeStartDate }) => {
+                if (!activeStartDate) return;
+
+                setViewConfig({
+                  month: activeStartDate.getMonth(),
+                  year: activeStartDate.getFullYear(),
+                });
+              }}
               tileContent={getTileContent}
               maxDate={new Date()}
             />
@@ -350,9 +382,9 @@ const AttendancePage = () => {
           filtersConfig={[
             {
               name: "user",
-              label: "Staff Name",
-              type: "text",
-              placeholder: "Search member...",
+              label: "Name",
+              type: "select",
+              options: UserOptions,
             },
             {
               name: "status",
@@ -411,7 +443,7 @@ const AttendancePage = () => {
             data={filteredRecords}
             enableActions={true}
             actionButtons={["view"]}
-            onView={(row) => setViewingEmployee(row.user)}
+            onView={(row) => setViewingEmployee(row.user_id)}
           />
         </div>
       </div>
@@ -470,7 +502,15 @@ const AttendancePage = () => {
             </p>
           </div>
           <Calendar
-            onChange={setSelectedDate}
+            onChange={handleDateChange}
+            onActiveStartDateChange={({ activeStartDate }) => {
+              if (!activeStartDate) return;
+
+              setViewConfig({
+                month: activeStartDate.getMonth(),
+                year: activeStartDate.getFullYear(),
+              });
+            }}
             value={selectedDate}
             tileContent={getTileContent}
             maxDate={new Date()}
@@ -549,7 +589,7 @@ const AttendancePage = () => {
             <div className="mt-8 p-4 bg-sky-500/5 rounded-2xl border border-sky-500/10 flex items-center gap-3">
               <MapPinIcon className="h-4 w-4 text-sky-500" />
               <p className="text-[10px] text-sky-700 font-bold uppercase tracking-tighter italic">
-                LMC  - Secured Zone Terminal
+                LMC - Secured Zone Terminal
               </p>
             </div>
           </div>

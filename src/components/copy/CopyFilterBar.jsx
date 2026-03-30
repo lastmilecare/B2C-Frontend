@@ -55,7 +55,7 @@ rounded-xl border border-sky-100 shadow-sm p-4 mb-5">
 
         <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
           <MagnifyingGlassIcon className="w-4 h-4 text-sky-600"/>
-          Patient Filters
+          Filter Options
         </h3>
 
       </div>
