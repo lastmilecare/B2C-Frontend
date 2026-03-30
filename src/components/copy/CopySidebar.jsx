@@ -1,282 +1,130 @@
 import React, { useState } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
-
+import { NavLink } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  UserCircleIcon,
-  ArchiveBoxIcon,
-  BuildingOffice2Icon,
-  ClipboardDocumentListIcon,
-  ChevronDownIcon,
-  ArrowLeftStartOnRectangleIcon,
-  Bars3Icon,
-  HomeIcon
+  UserCircleIcon, ArchiveBoxIcon, BuildingOffice2Icon,
+  ClipboardDocumentListIcon, ChevronDownIcon, HomeIcon, XMarkIcon
 } from "@heroicons/react/24/outline";
-
-import { useDispatch } from "react-redux";
-import { logout } from "../../redux/authSlice";
 import logo from "../../assets/lmc-logo.png";
 
-const CopySidebar = () => {
+const CopySidebar = ({ isOpen, setIsOpen }) => {
+  
+  const [menus, setMenus] = useState({ 
+    patient: false, 
+    opd: false, 
+    prescription: false, 
+    inventory: false 
+  });
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const [open, setOpen] = useState(true);
-
-  const [patientMenu, setPatientMenu] = useState(false);
-  const [opdMenu, setOpdMenu] = useState(false);
-  const [prescriptionMenu, setPrescriptionMenu] = useState(false);
-  const [inventoryMenu, setInventoryMenu] = useState(false);
-
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/login");
-  };
+  const toggleSubMenu = (menu) => setMenus(prev => ({ ...prev, [menu]: !prev[menu] }));
 
   const navItem = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-2 rounded-xl text-sm transition-all
-    ${isActive
-      ? "bg-white text-sky-700 shadow font-semibold"
-      : "text-gray-600 hover:bg-white hover:text-sky-700"
+    `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${
+      isActive 
+        ? "bg-emerald-600 text-white shadow-lg font-semibold" 
+        : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
+    }`;
+
+  const subNavItem = ({ isActive }) =>
+    `block py-2 px-4 text-sm transition-colors rounded-lg ${
+      isActive ? "text-emerald-700 font-bold bg-emerald-50" : "text-gray-500 hover:text-emerald-600 hover:bg-gray-50"
     }`;
 
   return (
-    <motion.div
-      animate={{ width: open ? 260 : 80 }}
-      transition={{ duration: 0.3 }}
-      className="min-h-screen bg-sky-50 border-r border-sky-100 shadow-sm flex flex-col"
+    <motion.aside
+      initial={false}
+      animate={{ 
+        width: isOpen ? 260 : 0,
+        x: isOpen ? 0 : -260 
+      }}
+      transition={{ duration: 0.4, ease: "circOut" }}
+      className="fixed lg:relative z-50 h-screen bg-white border-r border-sky-100 shadow-2xl lg:shadow-none flex flex-col overflow-hidden"
     >
-
       
-
-      <div className="flex items-center justify-between p-4">
-
+      <div className="p-5 flex items-center justify-between border-b border-sky-50 min-w-[260px]">
         <div className="flex items-center gap-3">
-          <img src={logo} className="w-10" />
-
-          {open && (
-            <span className="font-bold text-sky-700 text-lg">
-              LMC Portal
-            </span>
-          )}
+          <img src={logo} className="w-8" alt="logo" />
+          <span className="text-emerald-700 font-bold text-lg whitespace-nowrap">LMC Portal</span>
         </div>
-
-        <button
-          onClick={() => setOpen(!open)}
-          className="p-2 rounded-lg hover:bg-white"
-        >
-          <Bars3Icon className="w-6 text-sky-700" />
+        <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-red-50 rounded-lg text-red-400 lg:hidden">
+          <XMarkIcon className="w-6" />
         </button>
-
       </div>
 
       
-
-      <nav className="space-y-2 px-3 mt-6">
-
-        
-
-        <NavLink to="/dashboard-copy" className={navItem}>
-          <HomeIcon className="w-5" />
-          {open && "Dashboard"}
+      <nav className="flex-1 overflow-y-auto p-4 space-y-2 min-w-[260px] custom-scrollbar">
+        <NavLink to="/dashboard" className={navItem} onClick={() => setIsOpen(false)}>
+          <HomeIcon className="w-5" /> Dashboard
         </NavLink>
 
-
         
-
-        <div>
-
-          <button
-            onClick={() => setPatientMenu(!patientMenu)}
-            className="flex justify-between items-center w-full px-4 py-2 text-gray-700 rounded-xl hover:bg-white"
-          >
-
-            <span className="flex items-center gap-3">
-              <UserCircleIcon className="w-5" />
-              {open && "Patient"}
-            </span>
-
-            {open && (
-              <ChevronDownIcon
-                className={`w-4 transition ${patientMenu ? "rotate-180" : ""}`}
-              />
-            )}
-
+        <div className="space-y-1">
+          <button onClick={() => toggleSubMenu('patient')} className="flex justify-between items-center w-full px-4 py-2.5 text-gray-600 rounded-xl hover:bg-emerald-50 transition-colors">
+            <span className="flex items-center gap-3"><UserCircleIcon className="w-5" /> Patient</span>
+            <ChevronDownIcon className={`w-4 transition-transform ${menus.patient ? "rotate-180" : ""}`} />
           </button>
-
-          {patientMenu && open && (
-
-            <div className="ml-8 space-y-1">
-
-              <NavLink to="/patient-registration-copy" className={navItem}>
-                Patient Registration
-              </NavLink>
-
-              <NavLink to="/patient-list-copy" className={navItem}>
-                Patient List
-              </NavLink>
-
-            </div>
-
-          )}
-
+          <AnimatePresence>
+            {menus.patient && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ml-9 space-y-1 overflow-hidden">
+                <NavLink to="/patient-registration" className={subNavItem} onClick={() => setIsOpen(false)}>Patient Registration</NavLink>
+                <NavLink to="/patient-list" className={subNavItem} onClick={() => setIsOpen(false)}>Patient List</NavLink>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-
         
-
-        <div>
-
-          <button
-            onClick={() => setOpdMenu(!opdMenu)}
-            className="flex justify-between items-center w-full px-4 py-2 text-gray-700 rounded-xl hover:bg-white"
-          >
-
-            <span className="flex items-center gap-3">
-              <BuildingOffice2Icon className="w-5" />
-              {open && "OPD"}
-            </span>
-
-            {open && (
-              <ChevronDownIcon
-                className={`w-4 transition ${opdMenu ? "rotate-180" : ""}`}
-              />
-            )}
-
+        <div className="space-y-1">
+          <button onClick={() => toggleSubMenu('opd')} className="flex justify-between items-center w-full px-4 py-2.5 text-gray-600 rounded-xl hover:bg-emerald-50">
+            <span className="flex items-center gap-3"><BuildingOffice2Icon className="w-5" /> OPD</span>
+            <ChevronDownIcon className={`w-4 transition-transform ${menus.opd ? "rotate-180" : ""}`} />
           </button>
-
-          {opdMenu && open && (
-
-            <div className="ml-8 space-y-1">
-
-              <NavLink to="/opd-form-copy" className={navItem}>
-                OPD Form
-              </NavLink>
-
-              <NavLink to="/opd-list-copy" className={navItem}>
-                OPD Billing List
-              </NavLink>
-
-            </div>
-
-          )}
-
+          <AnimatePresence>
+            {menus.opd && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ml-9 space-y-1 overflow-hidden">
+                <NavLink to="/opd-form" className={subNavItem} onClick={() => setIsOpen(false)}>OPD Form</NavLink>
+                <NavLink to="/opd-list" className={subNavItem} onClick={() => setIsOpen(false)}>OPD Billing List</NavLink>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
 
        
-
-        <div>
-
-          <button
-            onClick={() => setPrescriptionMenu(!prescriptionMenu)}
-            className="flex justify-between items-center w-full px-4 py-2 text-gray-700 rounded-xl hover:bg-white"
-          >
-
-            <span className="flex items-center gap-3">
-              <ClipboardDocumentListIcon className="w-5" />
-              {open && "Prescription"}
-            </span>
-
-            {open && (
-              <ChevronDownIcon
-                className={`w-4 transition ${prescriptionMenu ? "rotate-180" : ""}`}
-              />
-            )}
-
+        <div className="space-y-1">
+          <button onClick={() => toggleSubMenu('prescription')} className="flex justify-between items-center w-full px-4 py-2.5 text-gray-600 rounded-xl hover:bg-emerald-50">
+            <span className="flex items-center gap-3"><ClipboardDocumentListIcon className="w-5" /> Prescription</span>
+            <ChevronDownIcon className={`w-4 transition-transform ${menus.prescription ? "rotate-180" : ""}`} />
           </button>
-
-          {prescriptionMenu && open && (
-
-            <div className="ml-8 space-y-1">
-
-              <NavLink to="/prescription-form-copy" className={navItem}>
-                Prescription Form
-              </NavLink>
-
-              <NavLink to="/prescription-list-copy" className={navItem}>
-                Prescription List
-              </NavLink>
-
-            </div>
-
-          )}
-
+          <AnimatePresence>
+            {menus.prescription && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ml-9 space-y-1 overflow-hidden">
+                <NavLink to="/prescription-form" className={subNavItem} onClick={() => setIsOpen(false)}>Prescription Form</NavLink>
+                <NavLink to="/prescription-list" className={subNavItem} onClick={() => setIsOpen(false)}>Prescription List</NavLink>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
 
         
-
-        <div>
-
-          <button
-            onClick={() => setInventoryMenu(!inventoryMenu)}
-            className="flex justify-between items-center w-full px-4 py-2 text-gray-700 rounded-xl hover:bg-white"
-          >
-
-            <span className="flex items-center gap-3">
-              <ArchiveBoxIcon className="w-5" />
-              {open && "Inventory"}
-            </span>
-
-            {open && (
-              <ChevronDownIcon
-                className={`w-4 transition ${inventoryMenu ? "rotate-180" : ""}`}
-              />
-            )}
-
+        <div className="space-y-1">
+          <button onClick={() => toggleSubMenu('inventory')} className="flex justify-between items-center w-full px-4 py-2.5 text-gray-600 rounded-xl hover:bg-emerald-50">
+            <span className="flex items-center gap-3"><ArchiveBoxIcon className="w-5" /> Inventory</span>
+            <ChevronDownIcon className={`w-4 transition-transform ${menus.inventory ? "rotate-180" : ""}`} />
           </button>
-
-          {inventoryMenu && open && (
-
-            <div className="ml-8 space-y-1">
-
-              <NavLink to="/purchased-entry-copy" className={navItem}>
-                Purchased Entry
-              </NavLink>
-
-              <NavLink to="/billing-copy" className={navItem}>
-                Billing
-              </NavLink>
-
-              
-
-              <NavLink to="/expiry-items-copy" className={navItem}>
-                Expiry Items
-              </NavLink>
-
-              <NavLink to="/camp-billing-copy" className={navItem}>
-                Camp Billing
-              </NavLink>
-              <NavLink to="/sales-record-copy" className={navItem}>
-                Sales Record
-              </NavLink>
-
-            </div>
-
-          )}
-
+          <AnimatePresence>
+            {menus.inventory && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="ml-9 space-y-1 overflow-hidden text-xs">
+                <NavLink to="/purchased-entry" className={subNavItem} onClick={() => setIsOpen(false)}>Purchased Entry</NavLink>
+                <NavLink to="/billing" className={subNavItem} onClick={() => setIsOpen(false)}>Billing</NavLink>
+                <NavLink to="/expiry-items" className={subNavItem} onClick={() => setIsOpen(false)}>Expiry Items</NavLink>
+                <NavLink to="/camp-billing" className={subNavItem} onClick={() => setIsOpen(false)}>Camp Billing</NavLink>
+                <NavLink to="/sales-record" className={subNavItem} onClick={() => setIsOpen(false)}>Sales Record</NavLink>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
       </nav>
-
-      
-
-      <div className="mt-auto border-t border-sky-100 p-3">
-
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-600 rounded-xl hover:bg-red-100 hover:text-red-600"
-        >
-          <ArrowLeftStartOnRectangleIcon className="w-5" />
-          {open && "Logout"}
-        </button>
-
-      </div>
-
-    </motion.div>
+    </motion.aside>
   );
 };
 

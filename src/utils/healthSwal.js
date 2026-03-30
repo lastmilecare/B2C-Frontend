@@ -665,14 +665,56 @@ export const healthAlerts = {
     }),
 
     loading: (message = "Processing...") => healthAlert({
-        title: message,
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        didOpen: () => {
-            MySwal.showLoading();
-        }
-    }),
+    title: "",
+    html: `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:20px;padding:10px;">
+            
+            
+            <img src="/images/LMC_logo.webp" style="width:120px;animation:pulse 1.5s infinite;" />
+
+            
+            <div style="font-size:14px;color:#4b5563;">${message}</div>
+
+            
+            <svg viewBox="0 0 200 40" style="width:200px;">
+                <polyline 
+                    fill="none" 
+                    stroke="#22c55e" 
+                    stroke-width="2"
+                    points="0,20 20,20 30,5 40,35 50,20 70,20 80,10 90,30 100,20 200,20"
+                    class="ecg-line"
+                />
+            </svg>
+
+        </div>
+
+        <style>
+            .ecg-line {
+                stroke-dasharray: 300;
+                stroke-dashoffset: 300;
+                animation: ecgMove 2s linear infinite;
+                filter: drop-shadow(0 0 6px #22c55e);
+            }
+
+            @keyframes ecgMove {
+                0% {
+                    stroke-dashoffset: 300;
+                }
+                100% {
+                    stroke-dashoffset: 0;
+                }
+            }
+
+            @keyframes pulse {
+                0%,100% { transform: scale(1); }
+                50% { transform: scale(1.08); }
+            }
+        </style>
+    `,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+}),
 
     input: async (title = "Enter Information", placeholder = "", inputType = "text") => {
         return healthAlert({

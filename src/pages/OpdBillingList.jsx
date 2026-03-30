@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
-import FilterBar from "../components/common/FilterBar";
+import CopyFilterBar from "../components/copy/CopyFilterBar";
 import {
   useGetOpdBillingQuery,
   useGetComboQuery,
@@ -16,7 +16,7 @@ import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { generateFileName, downloadBlob } from "../utils/helper";
 
-const OpdBillingList = () => {
+const OpdBillingListCopy = () => {
   const [exportExcel] = useLazyExportOpdExcelQuery();
 
   const navigate = useNavigate();
@@ -497,7 +497,7 @@ const OpdBillingList = () => {
 
   return (
     <div className="p-0">
-      <FilterBar
+      <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
         uhidSearch={uhidSearch}
@@ -548,4 +548,4 @@ const OpdBillingList = () => {
   );
 };
 
-export default OpdBillingList;
+export default OpdBillingListCopy;

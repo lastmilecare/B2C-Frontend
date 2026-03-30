@@ -5,6 +5,10 @@ import {
   CheckCircleIcon,
   ArrowPathIcon,
   PlusIcon,
+  ClipboardDocumentIcon,
+  DocumentCheckIcon,
+  BeakerIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import {
   useLazyGetBillingByBillNoQuery,
@@ -21,7 +25,17 @@ import { Input, Select, Button, baseInput } from "../components/UIComponents";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { cleanCurrency } from "../utils/helper";
-const CampBillingForm = ({ refetchList }) => {
+import { Picaso_Paymode_Options } from "../utils/constants";
+const CampBillingFormCopy = ({ refetchList }) => {
+  const [activeStep, setActiveStep] = useState(1);
+
+  const nextStep = () => {
+    setActiveStep((prev) => prev + 1);
+  };
+
+  const prevStep = () => {
+    setActiveStep((prev) => prev - 1);
+  };
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
@@ -269,324 +283,519 @@ const CampBillingForm = ({ refetchList }) => {
     );
   }, [formik.values.paidAmount, formik.values.totalAmount]);
 
-  return (
-    <FormikProvider value={formik}>
-      <form onSubmit={formik.handleSubmit} className="space-y-4">
-        <h2 className="text-lg font-bold text-sky-700 text-center uppercase border-b pb-2">
-          💳 Medicine Camp Billing Form
-        </h2>
+return (
 
-        {/* Patient Details Section */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="relative">
-            <label className="text-sm text-gray-600 block mb-1">
-              Bill no <span className="text-red-500">*</span>
-            </label>
+        <FormikProvider value={formik}>
 
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              className={baseInput}
-              placeholder="Search Bill no (e.g., 123)"
-              value={billSearch}
-              onChange={(e) => {
-                if (id) return;
-                const val = e.target.value.replace(/\D/g, "");
-                setBillSearch(val);
-                setSelectedBill("");
-                formik.setFieldValue("billno", "");
-                setSuggestionsList([]);
-                populatedUhidRef.current = "";
-              }}
-              autoComplete="off"
-            />
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
 
-            {suggestionsList.length > 0 && billSearch.length >= 1 && (
-              <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-                {suggestionsList.map((item) => (
-                  <li
-                    key={item.ID}
-                    onClick={() => {
-                      setSelectedBill(item.ID);
-                      formik.setFieldValue("billno", item.ID);
-                      setBillSearch(item.ID);
-                      setSuggestionsList([]);
-                    }}
-                    className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
-                  >
-                    {item.ID}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <Input label="Name" {...formik.getFieldProps("Name")} readOnly />
-          <Input
-            label="UHID"
-            {...formik.getFieldProps("UHID")}
-            readOnly
-            className="bg-sky-50"
-          />
-          <Input label="Age" {...formik.getFieldProps("Age")} readOnly />
-          <Input label="Gender" {...formik.getFieldProps("Gender")} readOnly />
-          <Input
-            label="Mobile *"
-            {...formik.getFieldProps("Mobile")}
-            readOnly
-          />
-          <Input
-            label="Fin. Category"
-            {...formik.getFieldProps("FinCategory")}
-            readOnly
-          />
-        </section>
+                <div className="max-w-[1400px] mx-auto px-8">
 
-        {/* Item Entry Section */}
-        <section className="bg-sky-50/50 p-3 rounded-lg border border-sky-100 space-y-3 shadow-inner">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div className="relative">
-              <label className="text-sm text-gray-600 block mb-1">
-                Medicine <span className="text-red-500">*</span>
-              </label>
+                    <div className="flex justify-between items-center mb-6">
 
-              <input
-                type="text"
-                className={`${baseInput} 
-                             ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
-                placeholder={"Search Medicine"}
-                value={medicineSearch}
-                disabled={!formik.values.billno}
-                onChange={(e) => {
-                  setMedicineSearch(e.target.value);
-                  setSelectedMedicine(null);
-                  formik.setFieldValue("medicine", e.target.value);
-                }}
-                autoComplete="off"
-              />
+                        <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
 
-              {/* Medicine Search Suggestions List */}
-              {medicineSuggestions.length > 0 && (
-                <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-                  {medicineSuggestions.map((item) => (
-                    <li
-                      key={item.id}
-                      onClick={() => {
-                        setSelectedMedicine(item);
-                        setMedicineSearch(item.descriptions);
-                        formik.setFieldValue("medicine", item.descriptions);
-                        formik.setFieldValue("medicineId", item.id);
-                        formik.setFieldValue(
-                          "typemedicine",
-                          item.itemType?.Descriptions || "",
-                        );
-                        setMedicineSuggestions([]);
-                      }}
-                      className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
-                    >
-                      {item.descriptions}
-                      <span className="text-xs text-gray-400 ml-2">
-                        ({item.itemType?.Code})
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                            <span className="bg-blue-100 p-2 rounded-xl">
+                                <CreditCardIcon className="w-6 text-blue-600" />
+                            </span>
+
+                            Medicine Billing
+
+                        </h1>
+
+                    </div>
+
+                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+
+                        <div className="flex border-b">
+
+                            {[
+                                { id: 1, label: "Patient", icon: ClipboardDocumentIcon },
+                                { id: 2, label: "Medicine", icon: BeakerIcon },
+                                { id: 3, label: "Items", icon: CreditCardIcon },
+                                { id: 4, label: "Payment", icon: DocumentCheckIcon }
+                            ].map((step) => (
+
+                                <button
+                                    key={step.id}
+                                    type="button"
+                                    disabled
+                                    onClick={() => setActiveStep(step.id)}
+                                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
+${activeStep === step.id
+                                            ? "bg-white text-blue-600 shadow"
+                                            : "text-gray-400"}
+`}
+                                >
+
+                                    <step.icon className="w-4 h-4" />
+
+                                    {step.label}
+
+                                </button>
+
+                            ))}
+
+                        </div>
+                        <form onSubmit={formik.handleSubmit} className="space-y-6 p-6">
+
+
+                            
+                            {activeStep === 1 && (
+                                <section className="space-y-4">
+
+                                    <h3 className="text-sky-700 font-semibold text-lg">
+                                        Patient Details
+                                    </h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                                        <div className="relative">
+                                            <label className="text-sm text-gray-600 block mb-1">
+                                                Bill no <span className="text-red-500">*</span>
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                pattern="[0-9]*"
+                                                className={baseInput}
+                                                placeholder="Search Bill no (e.g., 123)"
+                                                value={billSearch || formik.values.opdBillNo}
+                                                onChange={(e) => {
+                                                    if (id) return;
+                                                    const val = e.target.value.replace(/\D/g, "");
+                                                    setBillSearch(val);
+                                                    setSelectedBill("");
+                                                    formik.setFieldValue("billno", "");
+                                                    setSuggestionsList([]);
+                                                    populatedUhidRef.current = "";
+                                                }}
+                                                autoComplete="off"
+                                            />
+
+                                            {suggestionsList.length > 0 && billSearch.length >= 1 && (
+                                                <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                                                    {suggestionsList.map((item) => (
+                                                        <li
+                                                            key={item.ID}
+                                                            onClick={() => {
+                                                                setSelectedBill(item.ID);
+
+                                                                formik.setValues({
+                                                                    ...formik.values,
+                                                                    opdBillNo: item.ID
+                                                                });
+
+                                                                setBillSearch(item.ID);
+                                                                setSuggestionsList([]);
+                                                            }}
+                                                            className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
+                                                        >
+                                                            {item.ID}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                        <Input label="Name" {...formik.getFieldProps("Name")} readOnly />
+                                        <Input
+                                            label="UHID"
+                                            {...formik.getFieldProps("UHID")}
+                                            readOnly
+                                            className="bg-sky-50"
+                                        />
+                                        <Input label="Age" {...formik.getFieldProps("Age")} readOnly />
+                                        <Input label="Gender" {...formik.getFieldProps("Gender")} readOnly />
+                                        <Input
+                                            label="Mobile *"
+                                            {...formik.getFieldProps("Mobile")}
+                                            readOnly
+                                        />
+                                        <Input
+                                            label="Fin. Category"
+                                            {...formik.getFieldProps("FinCategory")}
+                                            readOnly
+                                        />
+                                    </div>
+                                </section>
+                            )}
+                            
+                            {activeStep === 2 && (
+                                <section className="bg-sky-50/40 p-6 rounded-xl border border-sky-100 space-y-6 shadow-sm">
+                                    <h3 className="text-sky-700 font-semibold mb-3">
+                                        Medicine Entry
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="relative">
+                                            <label className="text-sm text-gray-600 block mb-1">
+                                                Medicine <span className="text-red-500">*</span>
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                className={`${baseInput} 
+                             ${!formik.values.opdBillNo ? "bg-sky-50 cursor-not-allowed" : ""}`}
+                                                placeholder={"Search Medicine"}
+                                                value={medicineSearch || formik.values.medicine}
+                                                disabled={!formik.values.opdBillNo}
+                                                onChange={(e) => {
+                                                    setMedicineSearch(e.target.value);
+                                                    setSelectedMedicine(null);
+                                                    formik.setFieldValue("medicine", e.target.value);
+                                                }}
+                                                autoComplete="off"
+                                            />
+
+                                          
+                                            {medicineSuggestions.length > 0 && (
+                                                <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                                                    {medicineSuggestions.map((item) => (
+                                                        <li
+                                                            key={item.id}
+                                                            onClick={() => {
+                                                                setSelectedMedicine(item);
+                                                                setMedicineSearch(item.descriptions);
+                                                                formik.setFieldValue("medicine", item.descriptions);
+                                                                formik.setFieldValue("medicineId", item.id);
+                                                                formik.setFieldValue(
+                                                                    "typemedicine",
+                                                                    item.itemType?.Descriptions || "",
+                                                                );
+                                                                setMedicineSuggestions([]);
+                                                            }}
+                                                            className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
+                                                        >
+                                                            {item.descriptions}
+                                                            <span className="text-xs text-gray-400 ml-2">
+                                                                ({item.itemType?.Code})
+                                                            </span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <Input
+                                                label="CGST (%)"
+                                                {...formik.getFieldProps("cgst")}
+                                                readOnly
+                                            />
+                                            <Input
+                                                label="SGST (%)"
+                                                {...formik.getFieldProps("sgst")}
+                                                readOnly
+                                            />
+                                        </div>
+                                        <Input label="MRP" {...formik.getFieldProps("mrp")} readOnly />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                                        <Input
+                                            label="Quantity"
+                                            {...formik.getFieldProps("quantity")}
+                                            placeholder="Qty"
+                                        />
+                                        <Input label="CP" {...formik.getFieldProps("cp")} readOnly />
+                                        <Input
+                                            label="Discount (%)"
+                                            {...formik.getFieldProps("discountPercent")}
+                                        />
+                                        <Input label="Bill No" {...formik.getFieldProps("billNo")} readOnly />
+                                        <Button
+                                            type="button"
+                                            onClick={addItemToList}
+                                            className="bg-emerald-600 text-white hover:bg-emerald-700 h-9"
+                                        >
+                                            <PlusIcon className="w-4 h-4 mr-1" /> Add Item
+                                        </Button>
+                                    </div>
+                                </section>
+                            )}
+                            
+                            {activeStep === 3 && (
+
+                                <section className="space-y-4">
+
+                                    <h3 className="text-sky-700 font-semibold mb-3">
+                                        Items List
+                                    </h3>
+
+                                    {formik.values.items.length === 0 ? (
+
+                                        <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-50 rounded-xl border border-dashed">
+
+                                            <BeakerIcon className="w-12 h-12 text-slate-400 mb-3" />
+
+                                            <h4 className="text-slate-600 font-semibold text-lg">
+                                                No Medicines Added
+                                            </h4>
+
+                                            <p className="text-slate-400 text-sm mt-1">
+                                                Please go back and add medicines to continue billing
+                                            </p>
+
+                                            <Button
+                                                type="button"
+                                                variant="sky"
+                                                className="mt-4"
+                                                onClick={() => setActiveStep(2)}
+                                            >
+                                                <PlusIcon className="w-4 h-4 mr-1" />
+                                                Add Medicine
+                                            </Button>
+
+                                        </div>
+
+                                    ) : (
+
+                                        <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100 overflow-hidden">
+
+                                            <div className="px-4 py-3 border-b border-sky-100 bg-white">
+                                                <h2 className="text-sky-700 font-semibold text-sm">
+                                                    Item List
+                                                </h2>
+                                            </div>
+
+                                            <div className="overflow-x-auto">
+
+                                                <table className="w-full text-sm">
+
+                                                    <thead className="bg-sky-50 text-sky-700">
+
+                                                        <tr>
+                                                            <th className="px-3 py-3 text-left">SL</th>
+                                                            <th className="px-3 py-3 text-left">Description</th>
+                                                            <th className="px-3 py-3 text-center">Qty</th>
+                                                            <th className="px-3 py-3 text-center">Batch</th>
+                                                            <th className="px-3 py-3 text-center">HSN</th>
+                                                            <th className="px-3 py-3 text-center">Exp</th>
+                                                            <th className="px-3 py-3 text-right">Sale Rate</th>
+                                                            <th className="px-3 py-3 text-right">Disc %</th>
+                                                            <th className="px-3 py-3 text-right">Disc Amt</th>
+                                                            <th className="px-3 py-3 text-right">CGST %</th>
+                                                            <th className="px-3 py-3 text-right">CGST Amt</th>
+                                                            <th className="px-3 py-3 text-right">SGST %</th>
+                                                            <th className="px-3 py-3 text-right">SGST Amt</th>
+                                                            <th className="px-3 py-3 text-right">Taxable Amt</th>
+                                                            <th className="px-3 py-3 text-right">Total</th>
+                                                            <th className="px-3 py-3 text-center">Action</th>
+                                                        </tr>
+
+                                                    </thead>
+
+                                                    <tbody className="divide-y divide-gray-100">
+
+                                                        <FieldArray name="items">
+                                                            {({ remove }) =>
+                                                                formik.values.items.map((item, index) => (
+
+                                                                    <tr key={index} className="hover:bg-gray-50">
+
+                                                                        <td className="px-3 py-3">{index + 1}</td>
+
+                                                                        <td className="px-3 py-3 font-medium">
+                                                                            {item.description}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-center">
+                                                                            {item.qty}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-center text-xs">
+                                                                            {item.batchNo}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-center text-xs">
+                                                                            {item.hsn}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-center text-red-500 text-xs">
+                                                                            {item.expDate}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-right">
+                                                                            ₹{item.saleRate}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-right">
+                                                                            {item.discountPercent}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-right">
+                                                                            ₹{item.discAmt}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-right">
+                                                                            {item.cgstPercent}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-right">
+                                                                            ₹{item.cgstAmt}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-right">
+                                                                            {item.sgstPercent}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-right">
+                                                                            ₹{item.sgstAmt}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-right">
+                                                                            {Number(item.taxableAmt || 0).toFixed(2)}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-right font-bold text-sky-700">
+                                                                            ₹{item.total.toFixed(2)}
+                                                                        </td>
+
+                                                                        <td className="px-3 py-3 text-center">
+
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => remove(index)}
+                                                                                className="text-red-500 hover:text-red-700"
+                                                                            >
+
+                                                                                <TrashIcon className="w-5 h-5" />
+
+                                                                            </button>
+
+                                                                        </td>
+
+                                                                    </tr>
+
+                                                                ))
+                                                            }
+                                                        </FieldArray>
+
+                                                    </tbody>
+
+                                                </table>
+
+                                            </div>
+
+                                        </div>
+
+                                    )}
+
+                                </section>
+                            )}
+
+                           
+                            {activeStep === 4 && (
+                                <section className="bg-gray-50 p-6 rounded-xl border">
+
+                                    <h3 className="text-sky-700 font-semibold mb-4">
+                                        Payment Summary
+                                    </h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                                        <div className="space-y-2">
+                                            <Input
+                                                label="Total Quantity"
+                                                value={formik.values.totalQuantity}
+                                                readOnly
+                                            />
+                                            <Input
+                                                label="Total Discount"
+                                                value={formik.values.totalDiscount}
+                                                readOnly
+                                            />
+                                            <Input
+                                                label="Total Amount"
+                                                value={formik.values.totalAmount}
+                                                readOnly
+                                            />
+                                            <Select label="Pay Mode *" {...formik.getFieldProps("payMode")}>
+                                                <option value="">-- Select --</option>
+                                                {Picaso_Paymode_Options.map((m) => (
+                                                    <option key={m.id} value={m.id}>
+                                                        {m.name}
+                                                    </option>
+                                                ))}
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Input
+                                                label="CGST Amount"
+                                                value={formik.values.cgstAmount}
+                                                readOnly
+                                            />
+                                            <Input
+                                                label="Gross Amount"
+                                                value={formik.values.grossAmount}
+                                                readOnly
+                                            />
+                                            <Input
+                                                label="Paid Amount"
+                                                {...formik.getFieldProps("paidAmount")}
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Input
+                                                label="SGST Amount"
+                                                value={formik.values.sgstAmount}
+                                                readOnly
+                                            />
+                                            <Input
+                                                label="Taxable Amount"
+                                                value={formik.values.taxableAmount}
+                                                readOnly
+                                            />
+                                            <Input
+                                                label="Due Amount"
+                                                value={formik.values.dueAmount}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+                                </section>
+                            )}
+                            <div className="flex justify-between items-center pt-6 border-t">
+
+                                <div>
+                                    {activeStep > 1 && (
+                                        <Button type="button" variant="gray" onClick={prevStep}>
+                                            Back
+                                        </Button>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-3">
+
+                                    <Button type="button" variant="gray" onClick={formik.handleReset}>
+                                        <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
+                                    </Button>
+
+                                    {activeStep < 4 ? (
+
+                                        <Button type="button" variant="sky" onClick={nextStep}>
+                                            Continue
+                                        </Button>
+
+                                    ) : (
+
+                                        <Button type="submit" variant="sky">
+                                            Save Bill
+                                        </Button>
+
+                                    )}
+
+                                </div>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                label="CGST (%)"
-                {...formik.getFieldProps("cgst")}
-                readOnly
-              />
-              <Input
-                label="SGST (%)"
-                {...formik.getFieldProps("sgst")}
-                readOnly
-              />
-            </div>
-            <Input label="MRP" {...formik.getFieldProps("mrp")} readOnly />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
-            <Input
-              label="Quantity"
-              {...formik.getFieldProps("quantity")}
-              placeholder="Qty"
-            />
-            <Input label="CP" {...formik.getFieldProps("cp")} readOnly />
-            <Input
-              label="Discount (%)"
-              {...formik.getFieldProps("discountPercent")}
-            />
-            <Input label="Bill No" {...formik.getFieldProps("billNo")} />
-            <Button
-              type="button"
-              onClick={addItemToList}
-              className="bg-emerald-600 text-white hover:bg-emerald-700 h-9"
-            >
-              <PlusIcon className="w-4 h-4 mr-1" /> Add Item
-            </Button>
-          </div>
-        </section>
 
-        {/* Items Table Section */}
-        {formik.values.items.length > 0 && (
-          <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100 overflow-hidden">
-            <div className="px-4 py-3 border-b border-sky-100 bg-white">
-              <h2 className="text-sky-700 font-semibold text-sm">Item List:</h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-sky-50 text-sky-700">
-                  <tr>
-                    <th className="px-3 py-3 text-left">SL</th>
-                    <th className="px-3 py-3 text-left">Description</th>
-                    <th className="px-3 py-3 text-center">Qty</th>
-                    <th className="px-3 py-3 text-center">Batch</th>
-                    <th className="px-3 py-3 text-center">HSN</th>
-                    <th className="px-3 py-3 text-center">Exp</th>
-                    <th className="px-3 py-3 text-right">Rate</th>
-                    <th className="px-3 py-3 text-right">Disc</th>
-                    <th className="px-3 py-3 text-right">Taxable</th>
-                    <th className="px-3 py-3 text-right">Total</th>
-                    <th className="px-3 py-3 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  <FieldArray name="items">
-                    {({ remove }) =>
-                      formik.values.items.map((item, index) => (
-                        <tr
-                          key={index}
-                          className="hover:bg-gray-50 transition-colors"
-                        >
-                          <td className="px-3 py-3 text-gray-600">
-                            {index + 1}
-                          </td>
-                          <td className="px-3 py-3 font-medium text-gray-900">
-                            {item.description}
-                          </td>
-                          <td className="px-3 py-3 text-center">{item.qty}</td>
-                          <td className="px-3 py-3 text-center text-xs">
-                            {item.batchNo}
-                          </td>
-                          <td className="px-3 py-3 text-center text-xs">
-                            {item.hsn}
-                          </td>
-                          <td className="px-3 py-3 text-center text-red-500 text-xs">
-                            {item.expDate}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            ₹{item.saleRate}
-                          </td>
-                          <td className="px-3 py-3 text-right text-gray-500">
-                            {item.discAmt.toFixed(2)}
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            {item.taxableAmt.toFixed(2)}
-                          </td>
-                          <td className="px-3 py-3 text-right font-bold text-sky-700">
-                            ₹{item.total.toFixed(2)}
-                          </td>
-                          <td className="px-3 py-3 text-center">
-                            <button
-                              type="button"
-                              onClick={() => remove(index)}
-                              className="text-red-400 hover:text-red-600"
-                            >
-                              <TrashIcon className="w-5 h-5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    }
-                  </FieldArray>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        </FormikProvider>
 
-        {/* Calculations Summary Section */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border">
-          <div className="space-y-1">
-            <Input
-              label="Total Quantity"
-              value={formik.values.totalQuantity}
-              readOnly
-            />
-            <Input
-              label="Total Discount"
-              value={formik.values.totalDiscount}
-              readOnly
-            />
-            <Input
-              label="Total Amount"
-              value={formik.values.totalAmount}
-              readOnly
-            />
-            <Select label="Pay Mode *" {...formik.getFieldProps("payMode")}>
-              <option value="">-- Select --</option>
-              {paymodes?.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div className="space-y-1">
-            <Input
-              label="CGST Amount"
-              value={formik.values.cgstAmount}
-              readOnly
-            />
-            <Input
-              label="Gross Amount"
-              value={formik.values.grossAmount}
-              readOnly
-            />
-            <Input
-              label="Paid Amount"
-              {...formik.getFieldProps("paidAmount")}
-            />
-          </div>
-          <div className="space-y-1">
-            <Input
-              label="SGST Amount"
-              value={formik.values.sgstAmount}
-              readOnly
-            />
-            <Input
-              label="Taxable Amount"
-              value={formik.values.taxableAmount}
-              readOnly
-            />
-            <Input
-              label="Due Amount"
-              value={formik.values.dueAmount}
-              readOnly
-            />
-          </div>
-        </section>
-
-        <div className="flex justify-center gap-2 pb-2">
-          <Button type="submit">
-            <CheckCircleIcon className="w-5 h-5" /> Save Bill
-          </Button>
-          <Button
-            type="button"
-            variant="gray"
-            onClick={() => {
-              formik.resetForm();
-              setBillSearch("");
-            }}
-          >
-            <ArrowPathIcon className="w-5 h-5" /> Reset
-          </Button>
-        </div>
-      </form>
-    </FormikProvider>
-  );
+    )
 };
 
-export default CampBillingForm;
+export default CampBillingFormCopy;

@@ -319,7 +319,7 @@ const OpdFormCopy = () => {
                     icon: "success",
                 });
                 handleFormReset();
-                navigate("/opd-billing");
+                navigate("/opd-list");
 
 
             } catch (err) {
@@ -500,6 +500,7 @@ const OpdFormCopy = () => {
                             <button
                                 key={step.id}
                                 type="button"
+                                disabled
                                 onClick={() => setActiveStep(step.id)}
                                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold 
                                     ${activeStep === step.id
@@ -516,7 +517,11 @@ const OpdFormCopy = () => {
 
                     </div>
                     <div className="p-10">
-                        <form onSubmit={formik.handleSubmit} className="space-y-5">
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                            }}
+                            className="space-y-5">
                             {activeStep === 1 && (
                                 <section>
                                     <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -839,7 +844,11 @@ const OpdFormCopy = () => {
 
                                 ) : (
 
-                                    <Button type="submit" variant="sky">
+                                    <Button
+                                        type="button"
+                                        variant="sky"
+                                        onClick={formik.handleSubmit}
+                                    >
                                         <CheckCircleIcon className="w-5 h-5 inline mr-1" />
                                         {editData ? "Update" : "Save"}
                                     </Button>

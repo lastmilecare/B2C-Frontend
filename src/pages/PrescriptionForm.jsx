@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowPathIcon,
+  UserIcon,
+  ClipboardDocumentIcon,
+  CreditCardIcon,
+  DocumentCheckIcon,
+  BeakerIcon,
+
+} from "@heroicons/react/24/outline";
 import DiseaseSelect from "../components/DiseaseSelect";
 import useDebounce from "../hooks/useDebounce";
 import {
@@ -35,7 +43,48 @@ const parseChiefComplaintNames = (value) => {
     .filter(Boolean);
 };
 
-const PrescriptionForm = () => {
+const PrescriptionFormCopy = () => {
+  const [activeStep, setActiveStep] = useState(1);
+
+  const nextStep = async () => {
+  const errors = await formik.validateForm();
+
+  
+  if (activeStep === 1) {
+   if (!formik.values.billno) {
+  healthAlerts.warning("Bill No is required");
+  return;
+}
+  }
+
+  
+  if (activeStep === 2) {
+    if (
+      errors.bpsystolic ||
+      errors.bpdiastolic ||
+      errors.pulserate ||
+      errors.spo2 ||
+      errors.temprature ||
+      errors.height ||
+      errors.weight
+    ) {
+      const firstError = Object.values(errors)[0];
+      healthAlerts.warning(firstError);
+      return;
+    }
+  }
+  if (activeStep === 4) {
+  if (prescriptionList.length === 0) {
+    healthAlerts.warning("Please add at least one medicine");
+    return;
+  }
+}
+  setActiveStep((prev) => prev + 1);
+};
+
+  const prevStep = () => {
+    setActiveStep((prev) => prev - 1);
+  };
   const [billSearch, setBillSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
@@ -254,6 +303,16 @@ const PrescriptionForm = () => {
       weight: Yup.number().min(2, "Invalid weight").max(300, "Invalid weight"),
     }),
     onSubmit: async (values) => {
+  const errors = await formik.validateForm();
+
+  if (Object.keys(errors).length > 0) {
+    formik.setTouched(errors);
+
+    const firstError = Object.values(errors)[0];
+    healthAlerts.warning(firstError);
+
+    return;
+  }
       if (prescriptionList.length === 0) {
         healthAlerts.warning("Please add at least one medicine");
         return;
@@ -313,14 +372,14 @@ const PrescriptionForm = () => {
     // Map advice list safely
     const mappedAdviceList = Array.isArray(row.adviceList)
       ? row.adviceList.map((item) => ({
-          itemId: item.itemId,
-          medicine: item.item,
-          type: item.typeOfMedicine,
-          dosage: item.dosage,
-          instructions: "",
-          preferredTime: item.pillsConsumption,
-          duration: item.duration,
-        }))
+        itemId: item.itemId,
+        medicine: item.item,
+        type: item.typeOfMedicine,
+        dosage: item.dosage,
+        instructions: "",
+        preferredTime: item.pillsConsumption,
+        duration: item.duration,
+      }))
       : [];
 
     if (prescriptionList.length === 0) {
@@ -427,309 +486,380 @@ const PrescriptionForm = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto mt-8 bg-white p-6 rounded-2xl shadow border border-gray-200">
-      <h2 className="text-2xl font-bold text-sky-700 mb-5 text-center">
-        💳 Prescription Form
-      </h2>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
+      <div className="max-w-[1400px] mx-auto px-8">
+        <div className="flex justify-between items-center mb-10">
 
-      <form onSubmit={formik.handleSubmit} className="space-y-5">
-        <section>
-          <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Patient
-            Details
-          </h3>
+          <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+            <span className="bg-blue-100 p-2 rounded-xl">
+              <ClipboardDocumentIcon className="w-6 text-blue-600" />
+            </span>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div className="relative">
-              <label className="text-sm text-gray-600 block mb-1">
-                Bill no <span className="text-red-500">*</span>
-              </label>
-
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                className={baseInput}
-                placeholder="Search Bill no (e.g., 123)"
-                value={billSearch}
-                onChange={(e) => {
-                  if (id) return;
-                  const val = e.target.value.replace(/\D/g, "");
-                  setBillSearch(val);
-                  setSelectedBill("");
-                  formik.setFieldValue("billno", "");
-                  setSuggestionsList([]);
-                  populatedUhidRef.current = "";
-                }}
-                autoComplete="off"
-              />
-
-              {suggestionsList.length > 0 && billSearch.length >= 1 && (
-                <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-                  {suggestionsList.map((item) => (
-                    <li
-                      key={item.ID}
-                      onClick={() => {
-                        setSelectedBill(item.ID);
-                        formik.setFieldValue("billno", item.ID);
-                        setBillSearch(item.ID);
-                        setSuggestionsList([]);
-                      }}
-                      className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
-                    >
-                      {item.ID}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <Input
-              label="Name"
-              {...formik.getFieldProps("Name")}
-              readOnly
-              className="bg-sky-50 cursor-not-allowed"
-            />
-
-            <Input
-              label="UHID"
-              {...formik.getFieldProps("UHID")}
-              readOnly
-              className="bg-sky-50 cursor-not-allowed"
-            ></Input>
-
-            <Input
-              label="Age"
-              {...formik.getFieldProps("Age")}
-              readOnly
-              className="bg-sky-50 cursor-not-allowed"
-            />
-
-            <Input
-              label="Gender"
-              {...formik.getFieldProps("Gender")}
-              readOnly
-              className="bg-sky-50 cursor-not-allowed"
-            ></Input>
-            <Input
-              label="Mobile"
-              {...formik.getFieldProps("Mobile")}
-              readOnly
-              className="bg-sky-50 cursor-not-allowed"
-            ></Input>
-
-            <Input
-              {...formik.getFieldProps("FinCategory")}
-              className="bg-sky-50 cursor-not-allowed"
-              label="Category"
-              readOnly
-            ></Input>
-          </div>
-        </section>
-        <section className="mt-6">
-          <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
-            Vitals & Examination
-          </h3>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Input
-              {...formik.getFieldProps("bpsystolic")}
-              label="BP Systolic (mmHg)"
-              type="number"
-              inputProps={{ min: 70, max: 250 }}
-            />
-
-            <Input
-              {...formik.getFieldProps("bpdiastolic")}
-              label="BP Diastolic (mmHg)"
-              type="number"
-              inputProps={{ min: 40, max: 150 }}
-            />
-
-            <Input
-              {...formik.getFieldProps("pulserate")}
-              label="Pulse (bpm)"
-              type="number"
-              inputProps={{ min: 30, max: 220 }}
-            />
-
-            <Input
-              {...formik.getFieldProps("spo2")}
-              label="SPO2 (%)"
-              type="number"
-              inputProps={{ min: 70, max: 100 }}
-            />
-
-            <Input
-              {...formik.getFieldProps("temprature")}
-              label="Temperature (°C)"
-              type="number"
-              inputProps={{
-                step: "0.1",
-                min: 35,
-                max: 42,
-              }}
-            />
-
-            <Input
-              {...formik.getFieldProps("height")}
-              label="Height (cm)"
-              type="number"
-              inputProps={{ min: 30, max: 250 }}
-            />
-
-            <Input
-              {...formik.getFieldProps("weight")}
-              label="Weight (kg)"
-              type="number"
-              inputProps={{ min: 1, max: 300 }}
-            />
-          </div>
-        </section>
-        {/* ================= BILLING DETAILS ================= */}{" "}
-        <section>
-          <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
-            Prescription Details
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input
-              {...formik.getFieldProps("otherinstrution")}
-              placeholder="Other Instructions "
-              label="Other Instructions"
-            />
-            <DiseaseSelect
-              label="Complaint"
-              value={formik.values.ChiefComplaint}
-              onChange={(selected) =>
-                formik.setFieldValue("ChiefComplaint", selected)
-              }
-              required
-            />
-            <Input
-              {...formik.getFieldProps("labs")}
-              placeholder="Labs"
-              label="Labs"
-            />
-            <Input
-              {...formik.getFieldProps("otherlabs")}
-              placeholder="Other Labs"
-              label="Other Labs"
-            />
-            <Input
-              {...formik.getFieldProps("followup")}
-              placeholder="Next Follow-up days"
-              label="Next Follow-up days"
-            />
-            <Input
-              {...formik.getFieldProps("advice")}
-              placeholder="Preventive Advice"
-              label="Preventive Advice"
-            />
-            <Input
-              {...formik.getFieldProps("history")}
-              placeholder="History"
-              label="History"
-            />
-          </div>
-        </section>
-        {/* ================= Medical Prescription DETAILS ================= */}
-        <section>
-          <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Medical
             Prescription
-          </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="relative">
-              <label className="text-sm text-gray-600 block mb-1">
-                Medicine <span className="text-red-500">*</span>
-              </label>
+          </h1>
 
-              <input
-                type="text"
-                className={`${baseInput} 
-                  ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
-                placeholder={"Search Medicine"}
-                value={medicineSearch}
-                disabled={!formik.values.billno}
-                onChange={(e) => {
-                  setMedicineSearch(e.target.value);
-                  setSelectedMedicine(null);
-                  formik.setFieldValue("medicine", e.target.value);
-                }}
-                autoComplete="off"
+          <div className="flex gap-2">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <div
+                key={s}
+                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-blue-600" : "bg-gray-200"
+                  }`}
               />
+            ))}
+          </div>
 
-              {/* Medicine Search Suggestions List */}
-              {medicineSuggestions.length > 0 && (
-                <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-                  {medicineSuggestions.map((item) => (
-                    <li
-                      key={item.id}
-                      onClick={() => {
-                        setSelectedMedicine(item);
-                        setMedicineSearch(item.descriptions);
-                        formik.setFieldValue("medicine", item.descriptions);
-                        formik.setFieldValue("medicineId", item.id);
-                        formik.setFieldValue(
-                          "typemedicine",
-                          item.itemType?.Descriptions || "",
-                        );
-                        setMedicineSuggestions([]);
+        </div>
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="flex border-b">
+
+            {[
+              { id: 1, label: "Patient", icon: UserIcon },
+              { id: 2, label: "Vitals", icon: ClipboardDocumentIcon },
+              { id: 3, label: "Prescription", icon: CreditCardIcon },
+              { id: 4, label: "Medicine", icon: BeakerIcon },
+              { id: 5, label: "Confirm", icon: DocumentCheckIcon }
+            ].map((step) => (
+
+              <button
+                key={step.id}
+                type="button"
+                disabled
+                onClick={() => setActiveStep(step.id)}
+                className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
+${activeStep === step.id
+                    ? "bg-white text-blue-600 shadow"
+                    : "text-gray-400"}
+`}
+              >
+
+                <step.icon className="w-4 h-4" />
+
+                {step.label}
+
+              </button>
+
+            ))}
+
+
+          </div>
+
+         <form
+  onSubmit={(e) => {
+    e.preventDefault();
+
+    if (activeStep !== 5) return; 
+
+    formik.handleSubmit(e); 
+  }}
+
+           className="space-y-8 p-9">
+            {activeStep === 1 && (
+              <section>
+                <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Patient
+                  Details
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="relative">
+                    <label className="text-sm text-gray-600 block mb-1">
+                      Bill no <span className="text-red-500">*</span>
+                    </label>
+
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      className={baseInput}
+                      placeholder="Search Bill no (e.g., 123)"
+                      value={billSearch}
+                      onChange={(e) => {
+                        if (id) return;
+                        const val = e.target.value.replace(/\D/g, "");
+                        setBillSearch(val);
+                        setSelectedBill("");
+                        formik.setFieldValue("billno", "");
+                        setSuggestionsList([]);
+                        populatedUhidRef.current = "";
                       }}
-                      className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
-                    >
-                      {item.descriptions}
-                      <span className="text-xs text-gray-400 ml-2">
-                        ({item.itemType?.Code})
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+                      autoComplete="off"
+                    />
 
-            <Input
-              {...formik.getFieldProps("typemedicine")}
-              placeholder="Type of Medicine"
-              label="Type of Medicine *"
-              disabled={!formik.values.billno}
-            />
-            <Input
-              {...formik.getFieldProps("dosage")}
-              placeholder="Dosage pills "
-              label="Dosage pills*"
-              disabled={!formik.values.billno}
-            />
-            <Input
-              {...formik.getFieldProps("dosageinstructions")}
-              placeholder="Instructions "
-              label="Instructions *"
-              disabled={!formik.values.billno}
-            />
-            <Select
-              label="Preferred Time *"
-              required
-              value={formik.values.preferredtime}
-              onChange={(e) =>
-                formik.setFieldValue("preferredtime", e.target.value)
-              }
-              error={
-                formik.touched.preferredtime && formik.errors.preferredtime
-              }
-            >
-              <option value="">Select Time</option>
-              {PILL_CONSUMPTION_TIMES.map((time) => (
-                <option key={time.value} value={time.value}>
-                  {time.label}
-                </option>
-              ))}
-            </Select>
+                    {suggestionsList.length > 0 && billSearch.length >= 1 && (
+                      <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                        {suggestionsList.map((item) => (
+                          <li
+                            key={item.ID}
+                            onClick={() => {
+                              setSelectedBill(item.ID);
+                              formik.setFieldValue("billno", item.ID);
+                              setBillSearch(item.ID);
+                              setSuggestionsList([]);
+                            }}
+                            className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
+                          >
+                            {item.ID}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
 
-            {/* <Input
+                  <Input
+                    label="Name"
+                    {...formik.getFieldProps("Name")}
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
+                  />
+
+                  <Input
+                    label="UHID"
+                    {...formik.getFieldProps("UHID")}
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
+                  ></Input>
+
+                  <Input
+                    label="Age"
+                    {...formik.getFieldProps("Age")}
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
+                  />
+
+                  <Input
+                    label="Gender"
+                    {...formik.getFieldProps("Gender")}
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
+                  ></Input>
+                  <Input
+                    label="Mobile"
+                    {...formik.getFieldProps("Mobile")}
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
+                  ></Input>
+
+                  <Input
+                    {...formik.getFieldProps("FinCategory")}
+                    className="bg-sky-50 cursor-not-allowed"
+                    label="Category"
+                    readOnly
+                  ></Input>
+                </div>
+
+              </section>
+            )}
+            {activeStep === 2 && (
+              <section className="mt-6">
+                <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
+                  Vitals & Examination
+                </h3>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+                  <Input
+                    {...formik.getFieldProps("bpsystolic")}
+                    label="BP Systolic (mmHg)"
+                    type="number"
+                    inputProps={{ min: 70, max: 250 }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("bpdiastolic")}
+                    label="BP Diastolic (mmHg)"
+                    type="number"
+                    inputProps={{ min: 40, max: 150 }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("pulserate")}
+                    label="Pulse (bpm)"
+                    type="number"
+                    inputProps={{ min: 30, max: 220 }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("spo2")}
+                    label="SPO2 (%)"
+                    type="number"
+                    inputProps={{ min: 70, max: 100 }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("temprature")}
+                    label="Temperature (°C)"
+                    type="number"
+                    inputProps={{
+                      step: "0.1",
+                      min: 35,
+                      max: 42,
+                    }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("height")}
+                    label="Height (cm)"
+                    type="number"
+                    inputProps={{ min: 30, max: 250 }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("weight")}
+                    label="Weight (kg)"
+                    type="number"
+                    inputProps={{ min: 1, max: 300 }}
+                  />
+                </div>
+              </section>
+            )}
+            {/* ================= BILLING DETAILS ================= */}{" "}
+            {activeStep === 3 && (
+              <section>
+                <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                  Prescription Details
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <Input
+                    {...formik.getFieldProps("otherinstrution")}
+                    placeholder="Other Instructions "
+                    label="Other Instructions"
+                  />
+                  <DiseaseSelect
+                    label="Complaint"
+                    value={formik.values.ChiefComplaint}
+                    onChange={(selected) =>
+                      formik.setFieldValue("ChiefComplaint", selected)
+                    }
+                    required
+                  />
+                  <Input
+                    {...formik.getFieldProps("labs")}
+                    placeholder="Labs"
+                    label="Labs"
+                  />
+                  <Input
+                    {...formik.getFieldProps("otherlabs")}
+                    placeholder="Other Labs"
+                    label="Other Labs"
+                  />
+                  <Input
+                    {...formik.getFieldProps("followup")}
+                    placeholder="Next Follow-up days"
+                    label="Next Follow-up days"
+                  />
+                  <Input
+                    {...formik.getFieldProps("advice")}
+                    placeholder="Preventive Advice"
+                    label="Preventive Advice"
+                  />
+                  <Input
+                    {...formik.getFieldProps("history")}
+                    placeholder="History"
+                    label="History"
+                  />
+                </div>
+              </section>
+            )}
+            {/* ================= Medical Prescription DETAILS ================= */}
+            {activeStep === 4 && (
+
+              <section>
+                <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Medical
+                  Prescription
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="relative">
+                    <label className="text-sm text-gray-600 block mb-1">
+                      Medicine <span className="text-red-500">*</span>
+                    </label>
+
+                    <input
+                      type="text"
+                      className={`${baseInput} 
+                  ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
+                      placeholder={"Search Medicine"}
+                      value={medicineSearch}
+                      disabled={!formik.values.billno}
+                      onChange={(e) => {
+                        setMedicineSearch(e.target.value);
+                        setSelectedMedicine(null);
+                        formik.setFieldValue("medicine", e.target.value);
+                      }}
+                      autoComplete="off"
+                    />
+
+                    {/* Medicine Search Suggestions List */}
+                    {medicineSuggestions.length > 0 && (
+                      <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                        {medicineSuggestions.map((item) => (
+                          <li
+                            key={item.id}
+                            onClick={() => {
+                              setSelectedMedicine(item);
+                              setMedicineSearch(item.descriptions);
+                              formik.setFieldValue("medicine", item.descriptions);
+                              formik.setFieldValue("medicineId", item.id);
+                              formik.setFieldValue(
+                                "typemedicine",
+                                item.itemType?.Descriptions || "",
+                              );
+                              setMedicineSuggestions([]);
+                            }}
+                            className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
+                          >
+                            {item.descriptions}
+                            <span className="text-xs text-gray-400 ml-2">
+                              ({item.itemType?.Code})
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <Input
+                    {...formik.getFieldProps("typemedicine")}
+                    placeholder="Type of Medicine"
+                    label="Type of Medicine *"
+                    disabled={!formik.values.billno}
+                  />
+                  <Input
+                    {...formik.getFieldProps("dosage")}
+                    placeholder="Dosage pills "
+                    label="Dosage pills*"
+                    disabled={!formik.values.billno}
+                  />
+                  <Input
+                    {...formik.getFieldProps("dosageinstructions")}
+                    placeholder="Instructions "
+                    label="Instructions *"
+                    disabled={!formik.values.billno}
+                  />
+                  <Select
+                    label="Preferred Time *"
+                    required
+                    value={formik.values.preferredtime}
+                    onChange={(e) =>
+                      formik.setFieldValue("preferredtime", e.target.value)
+                    }
+                    error={
+                      formik.touched.preferredtime && formik.errors.preferredtime
+                    }
+                  >
+                    <option value="">Select Time</option>
+                    {PILL_CONSUMPTION_TIMES.map((time) => (
+                      <option key={time.value} value={time.value}>
+                        {time.label}
+                      </option>
+                    ))}
+                  </Select>
+
+                  {/* <Input
               label="Duration (in days) *"
               inputMode="numeric"
               type="text"
@@ -739,111 +869,154 @@ const PrescriptionForm = () => {
                 formik.setFieldValue("duration", onlyNumbers);
               }}
             /> */}
-            <Select
-              label="Duration (in days) *"
-              required
-              value={formik.values.duration}
-              onChange={(e) => formik.setFieldValue("duration", e.target.value)}
-              error={formik.touched.duration && formik.errors.duration}
-            >
-              <option value="">Select Time</option>
-              {MEDICINE_FREQUENCIES.map((time) => (
-                <option key={time.value} value={time.value}>
-                  {time.label}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div className="mt-3">
-            <button
-              type="button"
-              onClick={handleAddPrescription}
-              title="Add medicine"
-              className="h-9 w-9 flex items-center justify-center rounded-full
+                  <Select
+                    label="Duration (in days) *"
+                    required
+                    value={formik.values.duration}
+                    onChange={(e) => formik.setFieldValue("duration", e.target.value)}
+                    error={formik.touched.duration && formik.errors.duration}
+                  >
+                    <option value="">Select Time</option>
+                    {MEDICINE_FREQUENCIES.map((time) => (
+                      <option key={time.value} value={time.value}>
+                        {time.label}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={handleAddPrescription}
+                    title="Add medicine"
+                    className="h-9 w-9 flex items-center justify-center rounded-full
              bg-emerald-600 text-white hover:bg-emerald-700
              focus:ring-2 focus:ring-emerald-500"
-            >
-              <PlusIcon className="h-5 w-5" />
-            </button>
-          </div>
+                  >
+                    <PlusIcon className="h-5 w-5" />
+                  </button>
+                </div>
 
-          {prescriptionList.length > 0 && (
-            <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100">
-              <div className="px-4 py-3 border-b border-sky-100">
-                <h2 className="text-sky-700 font-semibold text-sm">
-                  Prescribed Medicines
-                </h2>
+                {prescriptionList.length > 0 && (
+                  <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100">
+                    <div className="px-4 py-3 border-b border-sky-100">
+                      <h2 className="text-sky-700 font-semibold text-sm">
+                        Prescribed Medicines
+                      </h2>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-sky-50 text-sky-700">
+                          <tr>
+                            <th className="px-4 py-3 text-left">SL No</th>
+                            <th className="px-4 py-3 text-left">Medicine</th>
+                            <th className="px-4 py-3 text-left">Type</th>
+                            <th className="px-4 py-3 text-left">Dosage</th>
+                            <th className="px-4 py-3 text-left">Time</th>
+                            <th className="px-4 py-3 text-left">Days</th>
+                            <th className="px-4 py-3 text-center">Delete</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {prescriptionList.map((item, index) => (
+                            <tr key={index} className="border-t hover:bg-gray-50">
+                              <td className="px-4 py-3">{index + 1}</td>
+                              <td className="px-4 py-3 font-medium">
+                                {item.medicine}
+                              </td>
+                              <td className="px-4 py-3">{item.type}</td>
+                              <td className="px-4 py-3">{item.dosage}</td>
+                              <td className="px-4 py-3">
+                                {item.preferredTime || "-"}
+                              </td>
+                              <td className="px-4 py-3">{item.duration}</td>
+                              <td className="px-4 py-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePrescription(index)}
+                                  className="text-red-500 hover:text-red-700"
+                                  title="Delete"
+                                >
+                                  🗑
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+            {activeStep === 5 && (
+
+              <div className="bg-gray-50 p-6 rounded-lg space-y-4">
+
+                <h3 className="text-lg font-semibold">
+                  Confirm Prescription
+                </h3>
+
+                <p>Patient : {formik.values.Name}</p>
+                <p>Mobile : {formik.values.Mobile}</p>
+                <p>Medicines : {prescriptionList.length}</p>
+
+                <div className="flex gap-3 pt-4">
+
+                  <Button type="button" variant="gray" onClick={formik.handleReset}>
+                    <ArrowPathIcon className="w-5 h-5 inline mr-1" />
+                    Reset
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onPrintCS(row)}
+                  >
+                    Print CS
+                  </Button>
+
+                </div>
+
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-sky-40 text-sky-700">
-                    <tr>
-                      <th className="px-4 py-3 text-left">SL No</th>
-                      <th className="px-4 py-3 text-left">Medicine</th>
-                      <th className="px-4 py-3 text-left">Type</th>
-                      <th className="px-4 py-3 text-left">Dosage</th>
-                      <th className="px-4 py-3 text-left">Time</th>
-                      <th className="px-4 py-3 text-left">Days</th>
-                      <th className="px-4 py-3 text-center">Delete</th>
-                    </tr>
-                  </thead>
+            )}
+            <div className="flex justify-between pt-6 border-t">
 
-                  <tbody>
-                    {prescriptionList.map((item, index) => (
-                      <tr key={index} className="border-t hover:bg-gray-50">
-                        <td className="px-4 py-3">{index + 1}</td>
-                        <td className="px-4 py-3 font-medium">
-                          {item.medicine}
-                        </td>
-                        <td className="px-4 py-3">{item.type}</td>
-                        <td className="px-4 py-3">{item.dosage}</td>
-                        <td className="px-4 py-3">
-                          {item.preferredTime || "-"}
-                        </td>
-                        <td className="px-4 py-3">{item.duration}</td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleDeletePrescription(index)}
-                            className="text-red-500 hover:text-red-700"
-                            title="Delete"
-                          >
-                            🗑
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {activeStep > 1 && (
+                <Button type="button" variant="gray" onClick={prevStep}>
+                  Back
+                </Button>
+              )}
+
+              {activeStep < 5 ? (
+
+                <Button type="button" variant="sky" onClick={nextStep}>
+                  Continue
+                </Button>
+
+              ) : (
+
+                <Button type="submit" variant="sky" disabled={isLoading}>
+                  {isLoading ? "Saving..." : id ? "Update" : "Save"}
+                </Button>
+
+              )}
             </div>
-          )}
-        </section>
-        <div className="flex justify-center flex-wrap gap-3 pt-6 border-t border-gray-100">
-          <Button type="submit" variant="sky" disabled={isLoading}>
-            {isLoading ? "Saving..." : id ? "Update" : "Save"}
-          </Button>
 
-          <Button type="button" variant="gray" onClick={formik.handleReset}>
-            <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onPrintCS(row)}
-          >
-            Print CS
-          </Button>
+          </form>
         </div>
-      </form>
+      </div>
       {printRow && (
         <div style={{ display: "none" }}>
           <PrescriptionPrint ref={printRef} data={printRow} />
         </div>
       )}
     </div>
+
   );
 };
 
-export default PrescriptionForm;
+export default PrescriptionFormCopy;

@@ -1,72 +1,103 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "../../redux/authSlice";
 import { cookie } from "../../utils/cookie";
+import { 
+  Bars3Icon, 
+  ArrowLeftStartOnRectangleIcon 
+} from "@heroicons/react/24/outline";
 
-import { BellIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-
-const CopyHeader = () => {
+const CopyHeader = ({ toggleSidebar }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const username = cookie.get("username") || "User";
-
   const today = new Date().toLocaleDateString();
 
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
+  };
+
+  const letterAnimation = {
+    animate: { 
+      y: [0, -2, 0], 
+      color: ["#047857", "#10b981", "#047857"], 
+    },
+  };
+
+  const ekgPath = "M0,10 L5,10 L8,3 L12,17 L15,10 L25,10";
+
   return (
-    <motion.div
-      initial={{ y: -20, opacity: 0 }}
+    <motion.header
+      initial={{ y: -30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4 }}
-      className="bg-gradient-to-r from-sky-100 via-white to-sky-50 border-b border-sky-100 px-6 py-4 flex justify-between items-center shadow-sm"
+      className="bg-white border-b border-sky-100 px-6 py-3 flex justify-between items-center shadow-sm sticky top-0 z-30"
     >
-      <div>
-        <h1 className="text-xl font-bold text-sky-700">LMC Portal</h1>
+      <div className="flex items-center gap-4">
+        {/* Light Green Hamburger Menu Icon */}
+        <button 
+          onClick={toggleSidebar}
+          className="p-2 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors group"
+        >
+          <Bars3Icon className="w-6 text-emerald-600 group-hover:scale-110 transition-transform" />
+        </button>
 
-        <p className="text-xs text-gray-500">Healthcare Management Dashboard</p>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-[1.5px] relative">
+            {"LMC Portal".split("").map((char, index) => (
+              <motion.span
+                key={index}
+                variants={letterAnimation}
+                animate="animate"
+                transition={{ duration: 2.8, repeat: Infinity, delay: index * 0.1, ease: "easeInOut" }}
+                className="text-xl font-extrabold inline-block tracking-tight text-emerald-700"
+              >
+                {char === " " ? "\u00A0" : char}
+              </motion.span>
+            ))}
+            
+            <div className="w-10 h-6 flex items-center justify-center overflow-hidden ml-1">
+              <svg viewBox="0 0 25 20" className="w-full h-full">
+                <path d={ekgPath} fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round"/>
+                <motion.path
+                  d={ekgPath} fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                />
+              </svg>
+            </div>
+          </div>
+          <p className="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">Healthcare Management</p>
+        </div>
       </div>
-
-      {/* 
-<div className="hidden md:flex items-center bg-white shadow-sm border rounded-xl px-3 py-2 w-80">
-
-<MagnifyingGlassIcon className="w-5 text-gray-400"/>
-
-<input
-type="text"
-placeholder="Search patients, medicines..."
-className="outline-none text-sm px-2 w-full"
-/>
-
-</div> */}
 
       <div className="flex items-center gap-5">
         <div className="text-right hidden md:block">
-          <p className="text-xs text-gray-400">Today</p>
-
-          <p className="text-sm font-semibold text-gray-600">{today}</p>
+          <p className="text-[10px] text-neutral-400 uppercase">Today</p>
+          <p className="text-sm font-bold text-neutral-700">{today}</p>
         </div>
 
-        <div className="relative group cursor-not-allowed opacity-50">
-          <BellIcon className="w-6 text-gray-400" />
+        
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-100 hover:bg-red-600 hover:text-white transition-all text-xs font-bold shadow-sm"
+        >
+          <ArrowLeftStartOnRectangleIcon className="w-4" />
+          Logout
+        </motion.button>
 
-          {/* Tooltip */}
-          <div
-            className="absolute top-8 left-1/2 -translate-x-1/2 
-                  hidden group-hover:block 
-                  bg-black text-white text-xs px-2 py-1 rounded"
-          >
-            Upcoming Feature
+        <div className="flex items-center gap-3 pl-3 border-l border-sky-100">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-500 text-white flex items-center justify-center font-bold shadow-md border-2 border-white">
+            {username.charAt(0).toUpperCase()}
           </div>
         </div>
-
-        <div className="flex items-center gap-3 cursor-pointer">
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            className="w-9 h-9 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white flex items-center justify-center font-semibold shadow"
-          >
-            {username.charAt(0).toUpperCase()}
-          </motion.div>
-
-          <span className="text-sm text-gray-700 font-medium">{username}</span>
-        </div>
       </div>
-    </motion.div>
+    </motion.header>
   );
 };
 

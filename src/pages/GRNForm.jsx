@@ -3,6 +3,10 @@ import {
   PlusIcon,
   CheckCircleIcon,
   ArrowPathIcon,
+  ClipboardDocumentIcon,
+  DocumentCheckIcon,
+  BeakerIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -25,9 +29,20 @@ import { cookie } from "../utils/cookie";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useLocation } from "react-router-dom";
 import { useParams } from "react-router-dom";
-const username = cookie.get("username"); // Ensure auth token is loaded for API calls
+import StepProgress from "../components/StepProgress";
+import PageLayout from "../components/PageLayout";
+const username = cookie.get("username");
 const userId = cookie.get("user_id");
-const GRNForm = () => {
+const GRNFormCopy = () => {
+  const [activeStep, setActiveStep] = useState(1)
+
+  const nextStep = () => {
+    setActiveStep((prev) => prev + 1)
+  }
+
+  const prevStep = () => {
+    setActiveStep((prev) => prev - 1)
+  }
   const centerIdFromCookie = cookie.get("center_id");
   const navigate = useNavigate();
   const location = useLocation();
@@ -379,303 +394,392 @@ const GRNForm = () => {
   );
 
   return (
-    <form onSubmit={formik.handleSubmit} className="space-y-6">
-      <h2 className="text-2xl font-bold text-sky-700 text-center mb-6">
-        📦 Goods Received Note (GRN)
-      </h2>
 
-      <section>
-        <h3 className="text-sky-700 font-semibold mb-3">GRN Details</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <Input
-            type="date"
-            label="Invoice Date"
-            required
-            disabled={isEditMode}
-            error={formik.touched.InvoiceDate && formik.errors.InvoiceDate}
-            {...formik.getFieldProps("InvoiceDate")}
-          />
-          <Input
-            label="Invoice No"
-            required
-            error={formik.touched.RecieptNo && formik.errors.RecieptNo}
-            {...formik.getFieldProps("RecieptNo")}
-          />
-          <Select
-            label="Select Supplier"
-            required
-            value={formik.values.SupplierID}
-            disabled={isEditMode}
-            onChange={(e) => {
-              const id = e.target.value;
-              const supplier = SupplierOptions.find(
-                (s) => s.value == id
-              );
-
-              formik.setFieldValue("SupplierID", Number(id));
-              formik.setFieldValue("SupplierName", supplier?.label || "");
-            }}
-          >
-            <option value="">Select Supplier</option>
-            {SupplierOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </Select>
-          <Input label="Rack No" {...formik.getFieldProps("RagNo")} />
-        </div>
-      </section>
-
-      <section>
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sky-700 font-semibold">Item Entry</h3>
-          <Button type="button" onClick={() => navigate("/items-master")}>
-            <PlusIcon className="w-4 h-4 mr-1" /> New Item
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-          <div className="relative">
-            <Input
-              label="Item Name"
-              type="text"
-              placeholder={"Search Medicine"}
-              value={medicineSearch}
-              required
-              disabled={isEditMode}
-              onChange={(e) => {
-                setMedicineSearch(e.target.value);
-                formik.setFieldValue("ItemName", e.target.value);
-              }}
-              autoComplete="off"
-            />
-            {/* Medicine Search Suggestions List */}
-            {!isEditMode && medicineSuggestions.length > 0 && (
-              <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-                {medicineSuggestions.map((item) => (
-                  <li
-                    key={item.id}
-                    onClick={() => {
-
-                      setMedicineSearch(item.descriptions);
-                      formik.setFieldValue("ItemName", item.descriptions);
-                      formik.setFieldValue("ItemID", item.id);
-
-                      const typeId = item.itemType?.ID || 0;
-
-                      formik.setFieldValue("ItemTypeID", typeId);
-                      formik.setFieldValue("ItemType", item.itemType?.Descriptions || "");
-
-
-
-                      setMedicineSuggestions([]);
-                    }}
-                    className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
-                  >
-                    {item.descriptions}
-                    <span className="text-xs text-gray-400 ml-2">
-                      ({item.itemType?.Code})
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <Input
-            label="Item Type"
-            readOnly
-            {...formik.getFieldProps("ItemType")}
-          />
-          <Input
-            label="Batch No"
-            required
-            {...formik.getFieldProps("BatchNo")}
-          />
-          <Input
-            type="date"
-            label="Mfg Date"
-            required
-            {...formik.getFieldProps("MenufacturingDate")}
-          />
-          <Input
-            type="date"
-            label="Expiry Date"
-            required
-            {...formik.getFieldProps("ExpiryDate")}
-          />
-          <NumericInput
-            label="Unit / Strip"
-            required
-            {...formik.getFieldProps("NoStrip")}
-          />
-          <NumericInput
-            label="Qty / Unit"
-            required
-            {...formik.getFieldProps("NoQtyperStrip")}
-          />
-          <Input
-            label="Total Recv. Qty"
-            value={formik.values.RecvQty}
-            readOnly
-          />
-          <NumericInput
-            label="Free Qty (Strips)"
-            {...formik.getFieldProps("FreeRecvQty")}
-          />
-          <NumericInput
-            label="CP / Strip"
-            required
-            {...formik.getFieldProps("CP")}
-          />
-          <NumericInput
-            label="MRP / Strip"
-            required
-            {...formik.getFieldProps("MRP")}
-          />
-          <NumericInput
-            label="Discount %"
-            required
-            {...formik.getFieldProps("DiscountPCperitem")}
-          />
-          <Select
-            label="HSN Code"
-            required
-            value={formik.values.HSNCode}
-            error={formik.touched.HSNCode && formik.errors.HSNCode}   
-            onBlur={formik.handleBlur}
-            onChange={(e) => {
-              const selectedId = e.target.value;
-
-              formik.setFieldValue("HSNCode", selectedId);
-
-              const selectedHSN = hsnCodeOptions.find(
-                (h) => h.value.toString() === selectedId.toString()
-              );
-
-              if (selectedHSN) {
-                formik.setFieldValue("CGST", selectedHSN.CGST);
-                formik.setFieldValue("SGST", selectedHSN.SGST);
-              }
-            }}
-          >
-            <option value="">Select HSN</option>
-            {hsnCodeOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </Select>
-
-          <NumericInput
-            label="CGST %"
-            required
-            {...formik.getFieldProps("CGST")}
-          />
-          <NumericInput
-            label="SGST %"
-            required
-            {...formik.getFieldProps("SGST")}
-          />
-          {/* <Input label="C.P / Qty" value={formik.values.cpQty} readOnly />
-          <Input label="M.R.P / Qty" value={formik.values.mrpQty} readOnly /> */}
-          <Input
-            label="Total C.P"
-            value={calculatedValues.totalCp.toFixed(2)}
-            readOnly
-          />
-
-          <Input
-            label="Total M.R.P"
-            value={calculatedValues.totalMrp.toFixed(2)}
-            readOnly
-          />
-          <Input
-            label="CGST Amount"
-            value={calculatedValues.cgstAmt.toFixed(2)}
-            readOnly
-          />
-          <Input
-            label="SGST Amount"
-            value={calculatedValues.sgstAmt.toFixed(2)}
-            readOnly
-          />
-        </div>
-        <Button type="button" onClick={handleAddItem} className="mt-4">
-          <PlusIcon className="w-4 h-4 mr-1" /> Add Item
-        </Button>
-      </section>
-
-      {formik.values.items.length > 0 && (
-        <div className="overflow-x-auto border rounded-lg">
-          <table className="w-full text-sm">
-            <thead className="bg-sky-100 text-sky-700">
-              <tr>
-                <th className="border px-2 py-2 text-left">Item</th>
-                <th className="border px-2 py-2 text-center">Batch</th>
-                <th className="border px-2 py-2 text-right">Qty</th>
-                <th className="border px-2 py-2 text-right">Total C.P</th>
-                <th className="border px-2 py-2 text-right">GST</th>
-                <th className="border px-2 py-2 text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {formik.values.items.map((item, idx) => (
-                <tr key={idx} className="hover:bg-gray-50">
-                  <td className="border px-2 py-2">{item.ItemName}</td>
-                  <td className="border px-2 py-2 text-center">
-                    {item.BatchNo}
-                  </td>
-                  <td className="border px-2 py-2 text-right">
-                    {item.RecvQty}
-                  </td>
-                  <td className="border px-2 py-2 text-right">
-                    ₹ {item.totalCp.toFixed(2)}
-                  </td>
-                  <td className="border px-2 py-2 text-right">
-                    ₹ {item.totalGst.toFixed(2)}
-                  </td>
-                  <td className="border px-2 py-2 text-right font-semibold">
-                    ₹ {item.total.toFixed(2)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <section className="grid grid-cols-1 md:grid-cols-5 gap-3">
-        <Input label="Total Qty" value={totals.qty} readOnly />
-        <Input label="Total C.P" value={totals.totalCp.toFixed(2)} readOnly />
-        <Input
-          label="Discount Amount"
-          value={totals.discount.toFixed(2)}
-          readOnly
+    <PageLayout
+      title="Goods Received Note"
+      icon={ClipboardDocumentIcon}
+      rightContent={
+        <StepProgress
+          steps={["GRN Details", "Item Entry", "Items List", "Summary"]}
+          activeStep={activeStep}
         />
-        <Input
-          label="Total GST Amount"
-          value={totals.gst.toFixed(2)}
-          readOnly
-        />
-        <Input label="Grand Total" value={totals.grand.toFixed(2)} readOnly />
-      </section>
+      }
+    >
 
-      <div className="flex justify-center gap-4 pt-4 border-t">
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
-            "Saving..."
-          ) : (
-            <>
-              <CheckCircleIcon className="w-5 h-5 mr-1" /> Save
-            </>
+      <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+        <div className="flex border-b">
+
+          {[
+            { id: 1, label: "GRN Details", icon: ClipboardDocumentIcon },
+            { id: 2, label: "Item Entry", icon: BeakerIcon },
+            { id: 3, label: "Items List", icon: CreditCardIcon },
+            { id: 4, label: "Summary", icon: DocumentCheckIcon }
+          ].map((step) => (
+
+            <button
+              key={step.id}
+              type="button"
+              disabled
+              onClick={() => setActiveStep(step.id)}
+              className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
+${activeStep === step.id
+                  ? "bg-white text-blue-600 shadow"
+                  : "text-gray-400"}
+`}
+            >
+
+              <step.icon className="w-4 h-4" />
+
+              {step.label}
+
+            </button>
+
+          ))}
+
+        </div>
+        <form onSubmit={formik.handleSubmit} className="space-y-10 p-10">
+
+          {activeStep === 1 && (
+            <section>
+              <div className="flex justify-between items-center mb-10">
+
+                <h3 className="text-sky-700 font-semibold">
+                  GRN Details
+                </h3>
+
+                <Button
+                  type="button"
+                  onClick={() => navigate("/items-master")}
+                  className="flex items-center gap-1"
+                >
+                  <PlusIcon className="w-4" />
+                  New Item
+                </Button>
+
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <Input
+                  type="date"
+                  label="Invoice Date"
+                  required
+                  disabled={isEditMode}
+                  error={formik.touched.InvoiceDate && formik.errors.InvoiceDate}
+                  {...formik.getFieldProps("InvoiceDate")}
+                />
+                <Input
+                  label="Invoice No"
+                  required
+                  error={formik.touched.RecieptNo && formik.errors.RecieptNo}
+                  {...formik.getFieldProps("RecieptNo")}
+                />
+                <Select
+                  label="Select Supplier"
+                  required
+                  value={formik.values.SupplierID}
+                  disabled={isEditMode}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    const supplier = SupplierOptions.find(
+                      (s) => s.value == id
+                    );
+
+                    formik.setFieldValue("SupplierID", Number(id));
+                    formik.setFieldValue("SupplierName", supplier?.label || "");
+                  }}
+                >
+                  <option value="">Select Supplier</option>
+                  {SupplierOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Select>
+                <Input label="Rack No" {...formik.getFieldProps("RagNo")} />
+              </div>
+            </section>
           )}
-        </Button>
-        <Button type="button" variant="gray" onClick={formik.resetForm}>
-          <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
-        </Button>
+          {activeStep === 2 && (
+            <section>
+              <div className="flex justify-between items-center mb-10">
+                <h3 className="text-sky-700 font-semibold">Item Entry</h3>
+
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+                <div className="relative">
+                  <Input
+                    label="Item Name"
+                    type="text"
+                    placeholder={"Search Medicine"}
+                    value={medicineSearch}
+                    required
+                    disabled={isEditMode}
+                    onChange={(e) => {
+                      setMedicineSearch(e.target.value);
+                      formik.setFieldValue("ItemName", e.target.value);
+                    }}
+                    autoComplete="off"
+                  />
+                  {/* Medicine Search Suggestions List */}
+                  {!isEditMode && medicineSuggestions.length > 0 && (
+                    <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                      {medicineSuggestions.map((item) => (
+                        <li
+                          key={item.id}
+                          onClick={() => {
+
+                            setMedicineSearch(item.descriptions);
+                            formik.setFieldValue("ItemName", item.descriptions);
+                            formik.setFieldValue("ItemID", item.id);
+
+                            const typeId = item.itemType?.ID || 0;
+
+                            formik.setFieldValue("ItemTypeID", typeId);
+                            formik.setFieldValue("ItemType", item.itemType?.Descriptions || "");
+
+
+
+                            setMedicineSuggestions([]);
+                          }}
+                          className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
+                        >
+                          {item.descriptions}
+                          <span className="text-xs text-gray-400 ml-2">
+                            ({item.itemType?.Code})
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <Input
+                  label="Item Type"
+                  readOnly
+                  {...formik.getFieldProps("ItemType")}
+                />
+                <Input
+                  label="Batch No"
+                  required
+                  {...formik.getFieldProps("BatchNo")}
+                />
+                <Input
+                  type="date"
+                  label="Mfg Date"
+                  required
+                  {...formik.getFieldProps("MenufacturingDate")}
+                />
+                <Input
+                  type="date"
+                  label="Expiry Date"
+                  required
+                  {...formik.getFieldProps("ExpiryDate")}
+                />
+                <NumericInput
+                  label="Unit / Strip"
+                  required
+                  {...formik.getFieldProps("NoStrip")}
+                />
+                <NumericInput
+                  label="Qty / Unit"
+                  required
+                  {...formik.getFieldProps("NoQtyperStrip")}
+                />
+                <Input
+                  label="Total Recv. Qty"
+                  value={formik.values.RecvQty}
+                  readOnly
+                />
+                <NumericInput
+                  label="Free Qty (Strips)"
+                  {...formik.getFieldProps("FreeRecvQty")}
+                />
+                <NumericInput
+                  label="CP / Strip"
+                  required
+                  {...formik.getFieldProps("CP")}
+                />
+                <NumericInput
+                  label="MRP / Strip"
+                  required
+                  {...formik.getFieldProps("MRP")}
+                />
+                <NumericInput
+                  label="Discount %"
+                  required
+                  {...formik.getFieldProps("DiscountPCperitem")}
+                />
+                <Select
+                  label="HSN Code"
+                  required
+                  value={formik.values.HSNCode}
+                  error={formik.touched.HSNCode && formik.errors.HSNCode}
+                  onBlur={formik.handleBlur}
+                  onChange={(e) => {
+                    const selectedId = e.target.value;
+
+                    formik.setFieldValue("HSNCode", selectedId);
+
+                    const selectedHSN = hsnCodeOptions.find(
+                      (h) => h.value.toString() === selectedId.toString()
+                    );
+
+                    if (selectedHSN) {
+                      formik.setFieldValue("CGST", selectedHSN.CGST);
+                      formik.setFieldValue("SGST", selectedHSN.SGST);
+                    }
+                  }}
+                >
+                  <option value="">Select HSN</option>
+                  {hsnCodeOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Select>
+
+                <NumericInput
+                  label="CGST %"
+                  required
+                  {...formik.getFieldProps("CGST")}
+                />
+                <NumericInput
+                  label="SGST %"
+                  required
+                  {...formik.getFieldProps("SGST")}
+                />
+                {/* <Input label="C.P / Qty" value={formik.values.cpQty} readOnly />
+          <Input label="M.R.P / Qty" value={formik.values.mrpQty} readOnly /> */}
+                <Input
+                  label="Total C.P"
+                  value={calculatedValues.totalCp.toFixed(2)}
+                  readOnly
+                />
+
+                <Input
+                  label="Total M.R.P"
+                  value={calculatedValues.totalMrp.toFixed(2)}
+                  readOnly
+                />
+                <Input
+                  label="CGST Amount"
+                  value={calculatedValues.cgstAmt.toFixed(2)}
+                  readOnly
+                />
+                <Input
+                  label="SGST Amount"
+                  value={calculatedValues.sgstAmt.toFixed(2)}
+                  readOnly
+                />
+              </div>
+              <Button type="button" onClick={handleAddItem} className="mt-4">
+                <PlusIcon className="w-4 h-4 mr-1" /> Add Item
+              </Button>
+            </section>
+          )}
+          {activeStep === 3 && (
+
+            <section>
+              {formik.values.items.length === 0 && (
+                <div className="text-center text-gray-400 py-10">
+                  No items added yet
+                </div>
+              )}
+              {formik.values.items.length > 0 && (
+
+                <div className="overflow-x-auto border rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead className="bg-sky-100 text-sky-700">
+                      <tr>
+                        <th className="border px-2 py-2 text-left">Item</th>
+                        <th className="border px-2 py-2 text-center">Batch</th>
+                        <th className="border px-2 py-2 text-right">Qty</th>
+                        <th className="border px-2 py-2 text-right">Total C.P</th>
+                        <th className="border px-2 py-2 text-right">GST</th>
+                        <th className="border px-2 py-2 text-right">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {formik.values.items.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="border px-2 py-2">{item.ItemName}</td>
+                          <td className="border px-2 py-2 text-center">
+                            {item.BatchNo}
+                          </td>
+                          <td className="border px-2 py-2 text-right">
+                            {item.RecvQty}
+                          </td>
+                          <td className="border px-2 py-2 text-right">
+                            ₹ {item.totalCp.toFixed(2)}
+                          </td>
+                          <td className="border px-2 py-2 text-right">
+                            ₹ {item.totalGst.toFixed(2)}
+                          </td>
+                          <td className="border px-2 py-2 text-right font-semibold">
+                            ₹ {item.total.toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+          )}
+          {activeStep === 4 && (
+
+            <section className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <Input label="Total Qty" value={totals.qty} readOnly />
+              <Input label="Total C.P" value={totals.totalCp.toFixed(2)} readOnly />
+              <Input
+                label="Discount Amount"
+                value={totals.discount.toFixed(2)}
+                readOnly
+              />
+              <Input
+                label="Total GST Amount"
+                value={totals.gst.toFixed(2)}
+                readOnly
+              />
+              <Input label="Grand Total" value={totals.grand.toFixed(2)} readOnly />
+            </section>
+          )}
+          <div className="flex justify-between items-center pt-6 border-t">
+
+            <div>
+              {activeStep > 1 && (
+                <Button type="button" variant="gray" onClick={prevStep}>
+                  Back
+                </Button>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+
+              <Button type="button" variant="gray" onClick={formik.handleReset}>
+                <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
+              </Button>
+
+              {activeStep < 4 ? (
+
+                <Button type="button" variant="sky" onClick={nextStep}>
+                  Continue
+                </Button>
+
+              ) : (
+
+                <Button type="submit" variant="sky" disabled={isLoading}>
+                  {isLoading ? "Saving..." : "Save"}
+                </Button>
+
+              )}
+
+            </div>
+
+          </div>
+        </form>
       </div>
-    </form>
+    </PageLayout>
+
   );
 };
 
-export default GRNForm;
+export default GRNFormCopy;
