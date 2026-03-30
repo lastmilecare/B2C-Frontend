@@ -95,7 +95,7 @@ const DashboardCopy = () => {
 
             {/* HEADER */}
 
-            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
+            <div className="bg-gradient-to-r from-emerald-600 via-emerald-350 to-emerald-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
 
                 <div>
 
@@ -110,16 +110,13 @@ const DashboardCopy = () => {
                 </div>
 
                 <div className="text-right">
-
-                    <p className="text-sm opacity-80">
-                        Today
-                    </p>
-
-                    <p className="text-lg font-semibold">
-                        {new Date().toLocaleDateString()}
-                    </p>
-
-                </div>
+    <button
+        onClick={() => navigate("/attendance")}
+        className="bg-white text-emerald-700 px-5 py-2 rounded-lg font-semibold shadow hover:bg-emerald-100 transition"
+    >
+        Attendance
+    </button>
+</div>
 
             </div>
 
@@ -179,6 +176,7 @@ const DashboardCopy = () => {
 
             <div className="grid grid-cols-4 gap-6">
 
+               
                 <motion.div whileHover={{ scale: 1.03 }} className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm">
 
                     <p className="text-sm">
@@ -190,8 +188,8 @@ const DashboardCopy = () => {
                     </h2>
 
                 </motion.div>
-
-                <motion.div whileHover={{ scale: 1.03 }} className="bg-blue-50 border border-blue-200 text-blue-700 rounded-xl p-6 shadow-sm">
+                 
+                <motion.div whileHover={{ scale: 1.03 }} className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm">
 
                     <p className="text-sm">
                         Today's OPD
@@ -203,7 +201,7 @@ const DashboardCopy = () => {
 
                 </motion.div>
 
-                <motion.div whileHover={{ scale: 1.03 }} className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-6 shadow-sm">
+                <motion.div whileHover={{ scale: 1.03 }} className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm">
 
                     <p className="text-sm">
                         Low Stock
@@ -215,7 +213,7 @@ const DashboardCopy = () => {
 
                 </motion.div>
 
-                <motion.div whileHover={{ scale: 1.03 }} className="bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl p-6 shadow-sm">
+                <motion.div whileHover={{ scale: 1.03 }} className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm">
 
                     <p className="text-sm">
                         Today Prescription
@@ -231,7 +229,7 @@ const DashboardCopy = () => {
 
             {/* QUICK ACTION */}
 
-            <div className="grid grid-cols-4 gap-6">
+            {/* <div className="grid grid-cols-4 gap-6">
 
                 <button
                     onClick={() => navigate("/patient-registration-copy")}
@@ -267,7 +265,7 @@ const DashboardCopy = () => {
                     Attendance
                 </button>
 
-            </div>
+            </div> */}
 
 
 

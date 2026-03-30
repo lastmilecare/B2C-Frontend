@@ -15,7 +15,8 @@ import {
 } from "@heroicons/react/24/solid";
 
 import { cookie } from "../utils/cookie";
-import { healthAlert } from "../utils/healthSwal";
+import { healthAlert, healthAlerts } from "../utils/healthSwal";
+
 import CommonListCopy from "../components/CommonListCopy";
 import CopyFilterBar from "../components/copy/CopyFilterBar";
 
@@ -417,11 +418,13 @@ const AttendancePage = () => {
     );
   }
   return (
+    
     <div className="p-8 space-y-8 animate-in zoom-in-95 duration-700">
-      <div className="bg-gradient-to-r from-slate-900 via-sky-900 to-indigo-950 px-10 py-6 rounded-[2.5rem] text-white shadow-3xl relative overflow-hidden group">
+      <div className="bg-gradient-to-r from-emerald-600 via-emerald-450 to-emerald-600 px-10 py-6 rounded-[2.5rem] text-white shadow-3xl relative overflow-hidden group">
+        
         <div className="relative z-10 flex justify-between items-center">
           <div className="text-left">
-            <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.4em] mb-1 text-sky-400">
+            <p className="text-2xl font-black tracking-tighter uppercase leading-none">
               Employee Attendance
             </p>
             <h2 className="text-2xl font-black tracking-tighter uppercase leading-none">
@@ -505,13 +508,9 @@ const AttendancePage = () => {
           <div className="bg-gradient-to-br from-white via-sky-50 to-indigo-50 p-10 rounded-[3.5rem] shadow-2xl border border-sky-100 flex-1 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-4 mb-8">
-                <div className="h-10 w-10 bg-sky-500 rounded-2xl flex items-center justify-center shadow-lg shadow-sky-200">
-                  <FingerPrintIcon className="h-6 w-6 text-white" />
-                </div>
+                
                 <div>
-                  <p className="text-[10px] font-black text-sky-600 uppercase tracking-widest">
-                    Biometric System
-                  </p>
+                 
                   <h4 className="text-lg font-black text-slate-800 uppercase">
                     Duty Marker
                   </h4>
