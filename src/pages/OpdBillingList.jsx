@@ -312,6 +312,7 @@ const OpdBillingListCopy = () => {
       name: "S.No",
       title: "Serial Number",
       selector: (row, i) => (page - 1) * limit + i + 1,
+      width: "70px",
     },
     {
       name: "T.No",
@@ -376,7 +377,7 @@ const OpdBillingListCopy = () => {
       name: "Ph",
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNumber, "-"),
-      width: "93px",
+      width: "100px",
     },
     {
       name: "P.Due",
