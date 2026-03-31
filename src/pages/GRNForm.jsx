@@ -286,7 +286,7 @@
       }
     }, [medicineList, debouncedMedicine, formik.values.ItemName, formik.values.ItemID]);
 
-    // Auto-calc Qty & Financials
+    
     useEffect(() => {
       const unit = Number(formik.values.NoStrip || 0);
       const qty = Number(formik.values.NoQtyperStrip || 0);
@@ -412,7 +412,7 @@
       <div
         key={s}
         className={`h-2 w-12 rounded-full ${
-          activeStep >= s ? "bg-blue-600" : "bg-gray-200"
+          activeStep >= s ? "bg-sky-600" : "bg-gray-200"
         }`}
       />
     ))}
@@ -437,7 +437,7 @@
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
   ${activeStep === step.id
-                    ? "bg-white text-blue-600 shadow"
+                    ? "bg-white text-sky-600 shadow"
                     : "text-gray-400"}
   `}
               >
@@ -451,8 +451,18 @@
             ))}
 
           </div>
-          <form onSubmit={formik.handleSubmit} className="space-y-8 p-9">
+          {/* <form onSubmit={formik.handleSubmit} className="space-y-8 p-9"> */}
+<form
+  onSubmit={(e) => {
+    e.preventDefault();
 
+    
+    if (activeStep !== 4) return;
+
+    formik.handleSubmit(e);
+  }}
+  className="space-y-8 p-9"
+>
             {activeStep === 1 && (
               <section>
                 <div className="flex justify-between items-center mb-10">
@@ -739,24 +749,39 @@
                 )}
               </section>
             )}
-            {activeStep === 4 && (
+           {activeStep === 4 && (
+  <section>
+    <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
 
-              <section className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                <Input label="Total Qty" value={totals.qty} readOnly />
-                <Input label="Total C.P" value={totals.totalCp.toFixed(2)} readOnly />
-                <Input
-                  label="Discount Amount"
-                  value={totals.discount.toFixed(2)}
-                  readOnly
-                />
-                <Input
-                  label="Total GST Amount"
-                  value={totals.gst.toFixed(2)}
-                  readOnly
-                />
-                <Input label="Grand Total" value={totals.grand.toFixed(2)} readOnly />
-              </section>
-            )}
+      <h3 className="text-lg font-semibold text-sky-600">
+        Confirm GRN Summary
+      </h3>
+
+      {/* GRN Info */}
+      <div className="grid md:grid-cols-2 gap-3 text-sm">
+        <p><b>Invoice No:</b> {formik.values.RecieptNo}</p>
+        <p><b>Invoice Date:</b> {formik.values.InvoiceDate}</p>
+        <p><b>Supplier:</b> {formik.values.SupplierName}</p>
+        <p><b>Rack No:</b> {formik.values.RagNo}</p>
+      </div>
+
+      {/* Items */}
+      <div className="border-t pt-3 text-sm">
+        <p><b>Total Items:</b> {formik.values.items.length}</p>
+      </div>
+
+      {/* Totals */}
+      <div className="border-t pt-3 grid md:grid-cols-2 gap-3 text-sm">
+        <p><b>Total Qty:</b> {totals.qty}</p>
+        <p><b>Total CP:</b> ₹ {totals.totalCp.toFixed(2)}</p>
+        <p><b>Discount:</b> ₹ {totals.discount.toFixed(2)}</p>
+        <p><b>GST:</b> ₹ {totals.gst.toFixed(2)}</p>
+        <p><b>Grand Total:</b> ₹ {totals.grand.toFixed(2)}</p>
+      </div>
+
+    </div>
+  </section>
+)}
             <div className="flex justify-between items-center pt-6 border-t">
 
               <div>
@@ -781,9 +806,17 @@
 
                 ) : (
 
-                  <Button type="submit" variant="sky" disabled={isLoading}>
-                    {isLoading ? "Saving..." : "Save"}
-                  </Button>
+                 <Button
+  type="button"
+  variant="sky"
+  disabled={isLoading}
+  onClick={() => {
+    if (activeStep !== 4) return;
+    formik.handleSubmit();
+  }}
+>
+  {isLoading ? "Saving..." : "Save"}
+</Button>
 
                 )}
 

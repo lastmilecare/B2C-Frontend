@@ -478,36 +478,46 @@ const BillingFormCopy = ({ refetchList }) => {
 
     return (
 
+        
         <FormikProvider value={formik}>
 
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
 
-                <div className="max-w-[1400px] mx-auto px-8">
+    <div className="max-w-[1400px] mx-auto px-8">
+     <div className="flex justify-between items-center mb-10">
 
-                    <div className="flex justify-between items-center mb-6">
+  <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+    <span className="bg-blue-100 p-2 rounded-xl">
+      <CreditCardIcon className="w-6 text-blue-600" />
+    </span>
+    Medicine Billing
+  </h1>
 
-                        <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+ 
+  <div className="flex gap-2">
+    {[1, 2, 3, 4,5].map((s) => (
+      <div
+        key={s}
+        className={`h-2 w-12 rounded-full ${
+          activeStep >= s ? "bg-sky-600" : "bg-sky-100"
+        }`}
+      />
+    ))}
+  </div>
 
-                            <span className="bg-blue-100 p-2 rounded-xl">
-                                <CreditCardIcon className="w-6 text-blue-600" />
-                            </span>
+</div>
 
-                            Medicine Billing
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="flex border-b">
 
-                        </h1>
-
-                    </div>
-
-                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-
-                        <div className="flex border-b">
 
                             {[
-                                { id: 1, label: "Patient", icon: ClipboardDocumentIcon },
-                                { id: 2, label: "Medicine", icon: BeakerIcon },
-                                { id: 3, label: "Items", icon: CreditCardIcon },
-                                { id: 4, label: "Payment", icon: DocumentCheckIcon }
-                            ].map((step) => (
+  { id: 1, label: "Patient", icon: ClipboardDocumentIcon },
+  { id: 2, label: "Medicine", icon: BeakerIcon },
+  { id: 3, label: "Items", icon: CreditCardIcon },
+  { id: 4, label: "Payment", icon: DocumentCheckIcon },
+  { id: 5, label: "Summary", icon: CheckCircleIcon }, 
+].map((step) => (
 
                                 <button
                                     key={step.id}
@@ -516,7 +526,7 @@ const BillingFormCopy = ({ refetchList }) => {
                                     onClick={() => setActiveStep(step.id)}
                                     className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
 ${activeStep === step.id
-                                            ? "bg-white text-blue-600 shadow"
+                                            ? "bg-white text-sky-600 shadow"
                                             : "text-gray-400"}
 `}
                                 >
@@ -945,41 +955,71 @@ ${activeStep === step.id
                                         </div>
                                     </div>
                                 </section>
+
                             )}
-                            <div className="flex justify-between items-center pt-6 border-t">
+                            {activeStep === 5 && (
+  <section className="bg-blue-50 p-6 rounded-xl border border-blue-200">
 
-                                <div>
-                                    {activeStep > 1 && (
-                                        <Button type="button" variant="gray" onClick={prevStep}>
-                                            Back
-                                        </Button>
-                                    )}
-                                </div>
+    <h3 className="text-sky-600 font-semibold mb-4">
+      Final Summary
+    </h3>
 
-                                <div className="flex gap-3">
+    <div className="grid md:grid-cols-2 gap-4 text-sm">
 
-                                    <Button type="button" variant="gray" onClick={formik.handleReset}>
-                                        <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
-                                    </Button>
+      <p><b>Name:</b> {formik.values.Name}</p>
+      <p><b>UHID:</b> {formik.values.UHID}</p>
+      <p><b>Mobile:</b> {formik.values.Mobile}</p>
+      <p><b>Category:</b> {formik.values.FinCategory}</p>
 
-                                    {activeStep < 4 ? (
+      <p><b>Total Items:</b> {formik.values.items.length}</p>
+      <p><b>Total Qty:</b> {formik.values.totalQuantity}</p>
 
-                                        <Button type="button" variant="sky" onClick={nextStep}>
-                                            Continue
-                                        </Button>
+      <p><b>Total Amount:</b> ₹ {formik.values.totalAmount}</p>
+      <p><b>Discount:</b> ₹ {formik.values.totalDiscount}</p>
 
-                                    ) : (
+      <p><b>GST:</b> ₹ {Number(formik.values.cgstAmount) + Number(formik.values.sgstAmount)}</p>
+      <p><b>Paid:</b> ₹ {formik.values.paidAmount}</p>
 
-                                        <Button type="submit" variant="sky">
-                                            Save Bill
-                                        </Button>
+      <p><b>Due:</b> ₹ {formik.values.dueAmount}</p>
+      <p><b>Payment Mode:</b> {formik.values.payMode}</p>
 
-                                    )}
+    </div>
 
-                                </div>
+  </section>
+)}
+               <div className="flex justify-between items-center pt-6 border-t">
 
-                            </div>
+  
+  <div className="flex gap-3">
+     {activeStep > 1 && (
+      <Button type="button" variant="gray" onClick={prevStep}>
+        Back
+      </Button>
+    )}
 
+
+    <Button type="button" variant="gray" onClick={formik.handleReset}>
+      <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
+    </Button>
+
+   
+  </div>
+
+  
+  <div>
+    {activeStep < 5 ? (
+      <Button type="button" variant="sky" onClick={nextStep}>
+        Continue
+      </Button>
+    ) : (
+      <Button type="button" variant="sky" onClick={formik.handleSubmit}>
+        Save Bill
+      </Button>
+    )}
+  </div>
+
+
+</div>
                         </form>
 
                     </div>

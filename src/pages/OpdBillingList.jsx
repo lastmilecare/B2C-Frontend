@@ -497,7 +497,11 @@ const OpdBillingListCopy = () => {
   };
 
   return (
+    
     <div className="p-0">
+      <h1 className="text-2xl font-semibold text-gray-700 mb-6">
+Opd List
+</h1>
       <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}

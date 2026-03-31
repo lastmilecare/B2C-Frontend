@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import DataTable from "react-data-table-component";
 import { EllipsisVerticalIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { healthAlert } from "../utils/healthSwal";
+import GlobalLoader from "./common/GlobalLoader";
 const CommonList = ({
   title = "Records",
   columns = [],
@@ -242,6 +243,7 @@ const CommonList = ({
         columns={enhancedColumns}
         data={data}
         progressPending={isLoading}
+        progressComponent={<GlobalLoader />} 
         pagination
         paginationServer
         paginationTotalRows={totalRows}
