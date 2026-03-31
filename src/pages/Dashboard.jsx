@@ -5,6 +5,7 @@ import {
   ClipboardDocumentIcon,
   ArchiveBoxIcon,
   DocumentTextIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/outline";
 
 import {
@@ -81,6 +82,14 @@ const DashboardCopy = () => {
         { name: "Purchased Entry", path: "/purchased-entry" },
         { name: "Medicine Billing", path: "/billing" },
         { name: "Sales Record", path: "/sales-record" },
+      ],
+    },
+    {
+      title: "Staff",
+      icon: <UserGroupIcon className="w-6" />,
+      items: [
+        { name: "Staff Form", path: "/staff-form" },
+        { name: "Staff List", path: "/staff-list" },
       ],
     },
   ];

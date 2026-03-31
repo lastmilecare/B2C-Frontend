@@ -81,3 +81,9 @@ export const Picaso_Paymode_Options = [
   { id: "4", name: "UPI" },
   { id: "5", name: "Cost Free" },
 ];
+
+export const GENDER_OPTIONS = [
+  { label: "Male", value: "male" },
+  { label: "Female", value: "female" },
+  { label: "Other", value: "other" },
+];
