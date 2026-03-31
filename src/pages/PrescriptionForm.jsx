@@ -965,15 +965,17 @@ ${activeStep === step.id
 
                 <div className="flex gap-3 pt-4">
 
-                  <Button type="button" variant="gray" onClick={formik.handleReset}>
-                    <ArrowPathIcon className="w-5 h-5 inline mr-1" />
-                    Reset
-                  </Button>
+                  
 
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => onPrintCS(row)}
+                    onClick={() =>
+  onPrintCS({
+    ...formik.values,
+    prescriptionList,
+  })
+}
                   >
                     Print CS
                   </Button>
@@ -983,27 +985,48 @@ ${activeStep === step.id
               </div>
 
             )}
-            <div className="flex justify-between pt-6 border-t">
+            <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
 
-              {activeStep > 1 && (
-                <Button type="button" variant="gray" onClick={prevStep}>
-                  Back
-                </Button>
-              )}
+  {/* LEFT SIDE */}
+  <div className="flex gap-2">
 
-              {activeStep < 5 ? (
+    {activeStep > 1 && (
+      <Button type="button" variant="gray" onClick={prevStep}>
+        Back
+      </Button>
+    )}
 
-                <Button type="button" variant="sky" onClick={nextStep}>
-                  Continue
-                </Button>
+    <Button type="button" variant="gray" onClick={formik.handleReset}>
+      <ArrowPathIcon className="w-5 h-5 inline mr-1" />
+      Reset
+    </Button>
 
-              ) : (
+  </div>
 
-                <Button type="submit" variant="sky" disabled={isLoading}>
-                  {isLoading ? "Saving..." : id ? "Update" : "Save"}
-                </Button>
+  {/* RIGHT SIDE */}
+  {activeStep < 5 ? (
 
-              )}
+    <Button type="button" variant="sky" onClick={nextStep}>
+      Continue
+    </Button>
+
+  ) : (
+
+    <div className="flex gap-2">
+
+      {/* PRINT */}
+      
+
+      {/* SAVE */}
+      <Button type="submit" variant="sky" disabled={isLoading}>
+        {isLoading ? "Saving..." : id ? "Update" : "Save"}
+      </Button>
+
+    </div>
+
+  )}
+
+
             </div>
 
           </form>

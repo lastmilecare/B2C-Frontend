@@ -299,7 +299,7 @@ return (
                                 <CreditCardIcon className="w-6 text-blue-600" />
                             </span>
 
-                            Medicine Billing
+                            Camp Medicine Billing
 
                         </h1>
 

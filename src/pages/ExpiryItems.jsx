@@ -209,32 +209,7 @@ const ExpiryItemsCopy = () => {
         showSearch={false}
       />
 
-      {/* SUMMARY CARDS */}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-        <StatCard
-          icon={ArchiveBoxXMarkIcon}
-          title="Expired Medicines"
-          value={expired}
-          color="bg-red-50 text-red-700 border-red-200"
-        />
-
-        <StatCard
-          icon={ExclamationTriangleIcon}
-          title="Expiring in 30 Days"
-          value={critical}
-          color="bg-orange-50 text-orange-700 border-orange-200"
-        />
-
-        <StatCard
-          icon={ClockIcon}
-          title="Expiring in 90 Days"
-          value={warning}
-          color="bg-amber-50 text-amber-700 border-amber-200"
-        />
-
-      </div>
+      
 
       {/* TABLE */}
 
@@ -259,14 +234,32 @@ const ExpiryItemsCopy = () => {
 
       {/* FOOTER */}
 
-      <section className="border rounded-lg bg-amber-50 text-xs p-3">
-        <span className="text-amber-800 font-medium">
-          Medicines expiring within 90 days :
-        </span>{" "}
-        <span className="font-bold text-amber-900">
-          {Number(data?.total || 0).toLocaleString("en-IN")}
-        </span>
-      </section>
+     <section className="border rounded-xl bg-emerald-50 px-6 py-3 shadow-sm">
+
+  <div className="flex flex-wrap justify-between items-center w-full text-sm text-emerald-900">
+
+    <span>
+      Expired Medicines : <span className="font-semibold">{expired}</span>
+    </span>
+
+    <span>
+      Expiring in 30 Days : <span className="font-semibold">{critical}</span>
+    </span>
+
+    <span>
+      Expiring in 90 Days : <span className="font-semibold">{warning}</span>
+    </span>
+
+    <span>
+      Total Medicines (90 days) :{" "}
+      <span className="font-semibold">
+        {(expired + critical + warning).toLocaleString("en-IN")}
+      </span>
+    </span>
+
+  </div>
+
+</section>
 
     </div>
   );

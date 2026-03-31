@@ -370,29 +370,28 @@ const BillingListCopy = () => {
   />
 </div>
 
-      <section className="border-t bg-amber-50 text-[12px]">
-       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-  <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-xl shadow">
-    <p className="text-sm opacity-80">Total Sales</p>
-    <h2 className="text-2xl font-bold">{data?.totalSales || 0}</h2>
+     <section className="border rounded-xl bg-emerald-50 px-4 py-2 shadow-sm">
+
+<div className="flex flex-wrap justify-between items-center w-full">
+    <span>
+      Total Sales : <span className="font-semibold">{data?.totalSales || 0}</span>
+    </span>
+
+    <span>
+      Total Paid : <span className="font-semibold">{data?.totalPaid || 0}</span>
+    </span>
+
+    <span>
+      Total Due : <span className="font-semibold">{data?.totalDue || 0}</span>
+    </span>
+
+    <span>
+      Total Discount : <span className="font-semibold">{data?.totalDiscount || 0}</span>
+    </span>
+
   </div>
 
-  <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl shadow">
-    <p className="text-sm opacity-80">Total Paid</p>
-    <h2 className="text-2xl font-bold">{data?.totalPaid || 0}</h2>
-  </div>
-
-  <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-xl shadow">
-    <p className="text-sm opacity-80">Total Due</p>
-    <h2 className="text-2xl font-bold">{data?.totalDue || 0}</h2>
-  </div>
-
-  <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow">
-    <p className="text-sm opacity-80">Total Discount</p>
-    <h2 className="text-2xl font-bold">{data?.totalDiscount || 0}</h2>
-  </div>
-</div>
-      </section>
+</section>
       {printRow && (
         <div style={{ display: "none" }}>
           <PharmaBillPrint ref={printRef} data={printRow} />

@@ -17,6 +17,7 @@ import {
 import { cookie } from "../utils/cookie";
 import { healthAlert, healthAlerts } from "../utils/healthSwal";
 
+
 import CommonListCopy from "../components/CommonListCopy";
 import CopyFilterBar from "../components/copy/CopyFilterBar";
 
@@ -221,7 +222,6 @@ const AttendancePage = () => {
 
   const formatMinutes = (minutes) => {
     if (!minutes && minutes !== 0) return "-";
-
     const hrs = Math.floor(minutes / 60);
     const mins = minutes % 60;
 
