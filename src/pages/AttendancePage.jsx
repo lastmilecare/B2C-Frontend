@@ -222,7 +222,6 @@ const AttendancePage = () => {
 
   const formatMinutes = (minutes) => {
     if (!minutes && minutes !== 0) return "-";
-
     const hrs = Math.floor(minutes / 60);
     const mins = minutes % 60;
 
