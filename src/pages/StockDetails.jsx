@@ -499,42 +499,48 @@ const StockDetailsCopy = () => {
           });
         }}
       />
-      <section className="grid grid-cols-2 md:grid-cols-5 gap-4">
+     <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-3 shadow-sm">
 
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-xl shadow">
-          <p className="text-xs opacity-80">Total Stock</p>
-          <h2 className="text-xl font-bold">{Stock.length}</h2>
-        </div>
+  <div className="flex flex-wrap justify-between items-center w-full text-sm text-emerald-900">
 
-        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl shadow">
-          <p className="text-xs opacity-80">Received Qty</p>
-          <h2 className="text-xl font-bold">
-            {Stock.reduce((a, b) => a + (b.RecvQty || 0), 0)}
-          </h2>
-        </div>
+    <span>
+      Total Stock : <span className="font-semibold">{Stock.length}</span>
+    </span>
 
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow">
-          <p className="text-xs opacity-80">Balance Qty</p>
-          <h2 className="text-xl font-bold">
-            {Stock.reduce((a, b) => a + (b.BalQty || 0), 0)}
-          </h2>
-        </div>
+    <span>
+      Received Qty :{" "}
+      <span className="font-semibold">
+        {Stock.reduce((a, b) => a + (b.RecvQty || 0), 0)}
+      </span>
+    </span>
 
-        <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-xl shadow">
-          <p className="text-xs opacity-80">Sales Qty</p>
-          <h2 className="text-xl font-bold">
-            {Stock.reduce((a, b) => a + ((b.RecvQty || 0) - (b.BalQty || 0)), 0)}
-          </h2>
-        </div>
+    <span>
+      Balance Qty :{" "}
+      <span className="font-semibold">
+        {Stock.reduce((a, b) => a + (b.BalQty || 0), 0)}
+      </span>
+    </span>
 
-        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-xl shadow">
-          <p className="text-xs opacity-80">Low Stock</p>
-          <h2 className="text-xl font-bold">
-            {Stock.filter(i => i.BalQty < 5).length}
-          </h2>
-        </div>
+    <span>
+      Sales Qty :{" "}
+      <span className="font-semibold">
+        {Stock.reduce(
+          (a, b) => a + ((b.RecvQty || 0) - (b.BalQty || 0)),
+          0
+        )}
+      </span>
+    </span>
 
-      </section>
+    <span>
+      Low Stock :{" "}
+      <span className="font-semibold">
+        {Stock.filter((i) => i.BalQty < 5).length}
+      </span>
+    </span>
+
+  </div>
+
+</section>
     </div>
   );
 };

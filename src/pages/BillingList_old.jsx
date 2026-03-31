@@ -315,36 +315,48 @@ const BillingList = () => {
         onPrint={onPrint}
       />
 
-      <section className="border-t bg-amber-50 text-[12px]">
-        <div className="flex flex-wrap gap-x-6 gap-y-1 px-2 py-2">
-          <span className="text-amber-800 font-medium">Total Issue Qty:</span>
-          <span className="font-semibold text-amber-900">
-            {Number(data?.totalQty || 0)}
-          </span>
-          <span className="text-amber-800 font-medium">
-            Total Bill Amount :
-          </span>
-          <span className="font-semibold text-amber-900">
-            {data?.totalSales || 0}
-          </span>
-          <span className="text-amber-800 font-medium">
-            Total Discount Amount :
-          </span>
-          <span className="font-semibold text-amber-900">
-            {data?.totalDiscount || 0}
-          </span>
-          <span className="text-amber-800 font-medium">
-            Total Paid Amount :
-          </span>
-          <span className="font-semibold text-amber-900">
-            {data?.totalPaid || 0}
-          </span>
-          <span className="text-amber-800 font-medium">Total Due Amount :</span>
-          <span className="font-semibold text-amber-900">
-            {`${data?.totalDue || 0}`}<span style={{ color: "red" }}>*</span>
-          </span>
-        </div>
-      </section>
+     <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-3 shadow-sm">
+
+  <div className="flex flex-wrap justify-between items-center w-full text-sm text-emerald-900">
+
+    <span>
+      Total Qty :{" "}
+      <span className="font-semibold">
+        {Number(data?.totalQty || 0)}
+      </span>
+    </span>
+
+    <span>
+      Total Bill :{" "}
+      <span className="font-semibold">
+        {data?.totalSales || 0}
+      </span>
+    </span>
+
+    <span>
+      Total Discount :{" "}
+      <span className="font-semibold">
+        {data?.totalDiscount || 0}
+      </span>
+    </span>
+
+    <span>
+      Total Paid :{" "}
+      <span className="font-semibold">
+        {data?.totalPaid || 0}
+      </span>
+    </span>
+
+    <span>
+      Total Due :{" "}
+      <span className="font-semibold">
+        {data?.totalDue || 0}
+      </span>
+    </span>
+
+  </div>
+
+</section>
       {printRow && (
         <div style={{ display: "none" }}>
           <PharmaBillPrint ref={printRef} data={printRow} />

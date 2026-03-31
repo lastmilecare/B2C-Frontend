@@ -289,10 +289,10 @@
 //     })
 // };
 
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
+// import Swal from "sweetalert2";
+// import withReactContent from "sweetalert2-react-content";
 
-const MySwal = withReactContent(Swal);
+// const MySwal = withReactContent(Swal);
 
 const healthTheme = {
     // Clean health color palette
@@ -591,59 +591,309 @@ const injectHealthStyles = () => {
 /**
  * healthAlert: Futuristic healthcare-themed SweetAlert
  */
+// export const healthAlert = ({
+//     title = "Notice",
+//     text = "",
+//     html,
+//     icon = "info",
+//     showCancelButton = false,
+//     confirmButtonText = "Confirm",
+//     cancelButtonText = "Cancel",
+//     timer,
+//     timerProgressBar = false,
+//     ...rest
+// }) => {
+//     injectHealthStyles();
+
+    // return MySwal.fire({
+    //     title,
+    //     text,
+    //     html,
+    //     icon,
+    //     showCancelButton,
+    //     confirmButtonText,
+    //     cancelButtonText,
+    //     timer,
+    //     timerProgressBar,
+    //     ...healthTheme,
+    //     ...rest,
+    // });
+// };
+// export const healthAlert = ({
+//     title = "Success",
+//     text = "",
+//     type = "success",
+//     timer = 3000
+// }) => {
+
+//     const colorMap = {
+//         success: "#10b981",
+//         error: "#ef4444",
+//         warning: "#f59e0b",
+//         info: "#3b82f6"
+//     };
+
+//     const alert = document.createElement("div");
+
+//     alert.innerHTML = `
+//         <div style="
+//             position: fixed;
+//             inset: 0;
+//             background: rgba(0,0,0,0.4);
+//             backdrop-filter: blur(6px);
+//             display: flex;
+//             align-items: center;
+//             justify-content: center;
+//             z-index: 9999;
+//         ">
+
+//             <div style="
+//                 width: 320px;
+//                 background: #ffffff;
+//                 border-radius: 16px;
+//                 padding: 20px;
+//                 box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+//                 text-align: center;
+//                 animation: popIn 0.3s ease;
+//                 border-top: 4px solid ${colorMap[type]};
+//                 font-family: 'Inter', sans-serif;
+//             ">
+
+//                 <!-- Icon -->
+//                 <div style="
+//                     width:60px;
+//                     height:60px;
+//                     margin:0 auto 10px;
+//                     border-radius:50%;
+//                     background:${colorMap[type]}20;
+//                     display:flex;
+//                     align-items:center;
+//                     justify-content:center;
+//                     font-size:28px;
+//                     color:${colorMap[type]};
+//                     animation: pulse 1.5s infinite;
+//                 ">
+//                     ✔
+//                 </div>
+
+//                 <!-- Title -->
+//                 <div style="
+//                     font-size:18px;
+//                     font-weight:600;
+//                     color:#111827;
+//                     margin-bottom:6px;
+//                 ">
+//                     ${title}
+//                 </div>
+
+//                 <!-- Text -->
+//                 <div style="
+//                     font-size:14px;
+//                     color:#6b7280;
+//                     margin-bottom:16px;
+//                 ">
+//                     ${text}
+//                 </div>
+
+//                 <!-- Button -->
+//                 <button id="closeAlertBtn" style="
+//                     width:100%;
+//                     background:${colorMap[type]};
+//                     color:white;
+//                     border:none;
+//                     padding:10px;
+//                     border-radius:8px;
+//                     cursor:pointer;
+//                     font-weight:500;
+//                     transition:0.2s;
+//                 ">
+//                     OK
+//                 </button>
+
+//             </div>
+//         </div>
+
+//         <style>
+//             @keyframes popIn {
+//                 from { transform: scale(0.8); opacity:0 }
+//                 to { transform: scale(1); opacity:1 }
+//             }
+
+//             @keyframes pulse {
+//                 0%,100% { transform: scale(1); }
+//                 50% { transform: scale(1.1); }
+//             }
+//         </style>
+//     `;
+
+//     document.body.appendChild(alert);
+
+//     // Close button
+//     alert.querySelector("#closeAlertBtn").onclick = () => {
+//         alert.remove();
+//     };
+
+//     // Auto close
+//     if (timer) {
+//         setTimeout(() => {
+//             alert.remove();
+//         }, timer);
+//     }
+// };
 export const healthAlert = ({
-    title = "Notice",
+    title = "Success",
     text = "",
-    html,
-    icon = "info",
-    showCancelButton = false,
-    confirmButtonText = "Confirm",
-    cancelButtonText = "Cancel",
-    timer,
-    timerProgressBar = false,
-    ...rest
+    type = "success",
+    timer = 4000
+    
 }) => {
-    injectHealthStyles();
 
-    return MySwal.fire({
-        title,
-        text,
-        html,
-        icon,
-        showCancelButton,
-        confirmButtonText,
-        cancelButtonText,
-        timer,
-        timerProgressBar,
-        ...healthTheme,
-        ...rest,
-    });
+    const alert = document.createElement("div");
+
+    alert.innerHTML = `
+        <div style="
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        ">
+
+            <div style="
+                width: 340px;
+                background: rgba(255,255,255,0.9);
+                border-radius: 18px;
+                padding: 20px;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+                animation: popIn 0.4s ease;
+                font-family: 'Inter', sans-serif;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+            ">
+
+                <!-- Top Gradient -->
+                <div style="
+                    position:absolute;
+                    top:0;
+                    left:0;
+                    right:0;
+                    height:4px;
+                    background: linear-gradient(90deg,#10b981,#059669,#10b981);
+                    animation: shimmer 3s infinite linear;
+                "></div>
+
+                <!-- Logo Pulse -->
+                <img src="/images/LMC_logo.webp" style="
+                    width:70px;
+                    margin:0 auto 10px;
+                    animation:pulse 1.5s infinite;
+                "/>
+
+                <!-- Title -->
+                <div style="
+                    font-size:18px;
+                    font-weight:600;
+                    color:#111827;
+                    margin-bottom:6px;
+                ">
+                    ${title}
+                </div>
+
+                <!-- Message -->
+                <div style="
+                    font-size:14px;
+                    color:#6b7280;
+                    margin-bottom:16px;
+                ">
+                    ${text}
+                </div>
+
+                <!-- ECG Line -->
+                <svg viewBox="0 0 200 40" style="width:100%; margin-bottom:12px;">
+                    <polyline 
+                        fill="none" 
+                        stroke="#22c55e" 
+                        stroke-width="2"
+                        points="0,20 20,20 30,5 40,35 50,20 70,20 80,10 90,30 100,20 200,20"
+                        class="ecg-line"
+                    />
+                </svg>
+
+                <!-- Button -->
+                <button id="closeAlertBtn" style="
+                    width:100%;
+                    background:#10b981;
+                    color:white;
+                    border:none;
+                    padding:10px;
+                    border-radius:10px;
+                    cursor:pointer;
+                    font-weight:500;
+                ">
+                    OK
+                </button>
+
+            </div>
+        </div>
+
+        <style>
+            @keyframes popIn {
+                from { transform: scale(0.8); opacity:0 }
+                to { transform: scale(1); opacity:1 }
+            }
+
+            @keyframes pulse {
+                0%,100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+
+            @keyframes shimmer {
+                0% { background-position: 0% }
+                100% { background-position: 200% }
+            }
+
+            .ecg-line {
+                stroke-dasharray: 300;
+                stroke-dashoffset: 300;
+                animation: ecgMove 2s linear infinite;
+                filter: drop-shadow(0 0 6px #22c55e);
+            }
+
+            @keyframes ecgMove {
+                0% { stroke-dashoffset: 300; }
+                100% { stroke-dashoffset: 0; }
+            }
+        </style>
+    `;
+
+    document.body.appendChild(alert);
+
+    alert.querySelector("#closeAlertBtn").onclick = () => {
+        alert.remove();
+    };
+
+    if (timer) {
+        setTimeout(() => {
+            alert.remove();
+        }, timer);
+    }
 };
-
 /**
  * Quick presets for common scenarios
  */
 export const healthAlerts = {
-    success: (message, title = "Success") => healthAlert({
-        title,
-        text: message,
-        icon: "success",
-        confirmButtonText: "OK"
-    }),
+    success: (message, title = "Success") =>
+        healthAlert({ title, text: message }),
 
-    error: (message, title = "Error") => healthAlert({
-        title,
-        text: message,
-        icon: "error",
-        confirmButtonText: "OK"
-    }),
+    error: (message, title = "Error") =>
+        healthAlert({ title, text: message }),
 
-    warning: (message, title = "Warning") => healthAlert({
-        title,
-        text: message,
-        icon: "warning",
-        confirmButtonText: "OK"
-    }),
+    warning: (message, title = "Warning") =>
+        healthAlert({ title, text: message }),
 
     confirm: (message, title = "Confirm?") => healthAlert({
         title,

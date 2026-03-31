@@ -759,8 +759,7 @@ const OpdFormCopy = () => {
                                                 // disabled
 
                                                 // className="bg-gray-100 cursor-not-allowed"
-                                                className="cursor-pointer h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded"
-                                            />
+className="cursor-pointer h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"                                            />
                                             Adjust with Balance
                                         </label>
 
@@ -812,50 +811,69 @@ const OpdFormCopy = () => {
                                     </div>
                                 </section>
                             )}
-                            {activeStep === 4 && (
+                           {activeStep === 4 && (
+    <>
+        {/* PRINT BUTTON */}
+        <div className="mb-4">
+            <Button
+                type="button"
+                variant="outline"
+                onClick={() => onPrintCS({
+                    ...formik.values,
+                    services: selectedServices
+                })}
+            >
+                <PrinterIcon className="w-5 h-5 inline mr-1" />
+                Print CS
+            </Button>
+        </div>
 
-                                <div className="bg-gray-50 p-6 rounded-lg">
+        {/* CONFIRM CARD */}
+        <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold">
+                Confirm OPD Billing
+            </h3>
 
-                                    <h3 className="text-lg font-semibold">
-                                        Confirm OPD Billing
-                                    </h3>
+            <p>Patient : {formik.values.Name}</p>
+            <p>Previous : {formik.values.PreviousDue}</p>
+            <p>Total : {formik.values.TotalAmount}</p>
+            <p>Paid : {formik.values.PaidAmount}</p>
+            <p>Due : {formik.values.DueAmount}</p>
+        </div>
+    </>
+)}
+                           <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
 
-                                    <p>Patient : {formik.values.Name}</p>
-                                    <p>Total : {formik.values.TotalAmount}</p>
-                                    <p>Paid : {formik.values.PaidAmount}</p>
-                                    <p>Due : {formik.values.DueAmount}</p>
+    {/* LEFT */}
+    <div className="flex gap-2">
+        {activeStep > 1 && (
+            <Button type="button" variant="gray" onClick={prevStep}>
+                Back
+            </Button>
+        )}
 
-                                </div>
+        <Button type="button" variant="gray" onClick={handleFormReset}>
+            <ArrowPathIcon className="w-5 h-5 inline mr-1" />
+            Reset
+        </Button>
+    </div>
 
-                            )}
-                            <div className="flex justify-between pt-6 border-t">
-
-                                {activeStep > 1 && (
-                                    <Button type="button" variant="gray" onClick={prevStep}>
-                                        Back
-                                    </Button>
-                                )}
-
-                                {activeStep < 4 ? (
-
-                                    <Button type="button" variant="sky" onClick={nextStep}>
-                                        Continue
-                                    </Button>
-
-                                ) : (
-
-                                    <Button
-                                        type="button"
-                                        variant="sky"
-                                        onClick={formik.handleSubmit}
-                                    >
-                                        <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-                                        {editData ? "Update" : "Save"}
-                                    </Button>
-
-                                )}
-
-                            </div>
+    {/* RIGHT */}
+    {activeStep < 4 ? (
+        <Button type="button" variant="sky" onClick={nextStep}>
+            Continue
+        </Button>
+    ) : (
+        <Button
+            type="button"
+            variant="sky"
+            onClick={formik.handleSubmit}
+        >
+            <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+            {editData ? "Update" : "Save"}
+        </Button>
+    )}
+</div>
                             {/* <Button type="submit" variant="sky">
             <CheckCircleIcon className="w-5 h-5 inline mr-1" /> {editData ? "Update" : "Save"}
           </Button>

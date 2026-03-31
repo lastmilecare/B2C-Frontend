@@ -412,24 +412,26 @@ const SalesRecordCopy = () => {
         isLoading={isLoading}
       />
 
-      <section className="border-t bg-gradient-to-r from-amber-50 to-yellow-50 text-sm">
- <div className="flex flex-wrap gap-6 px-4 py-3">
+    <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-3 shadow-sm">
 
-  <div>
-   <span className="text-gray-600">Total Qty :</span>
-   <span className="ml-2 font-semibold text-gray-900">
-    {Number(data?.totalQty || 0)}
-   </span>
+  <div className="flex flex-wrap justify-between items-center w-full text-sm text-emerald-900">
+
+    <span>
+      Total Qty :{" "}
+      <span className="font-semibold">
+        {Number(data?.totalQty || 0)}
+      </span>
+    </span>
+
+    <span>
+      Total Amount :{" "}
+      <span className="font-semibold">
+        ₹ {data?.totalSales || 0}
+      </span>
+    </span>
+
   </div>
 
-  <div>
-   <span className="text-gray-600">Total Amount :</span>
-   <span className="ml-2 font-semibold text-green-700">
-    ₹ {data?.totalSales || 0}
-   </span>
-  </div>
-
- </div>
 </section>
     </div>
   );
