@@ -536,186 +536,74 @@ const StaffForm = ({ refetchList }) => {
 
               {activeStep === 2 && (
                 <section className="bg-sky-50/40 p-6 rounded-xl border border-sky-100 space-y-6 shadow-sm">
-                  <h3 className="text-sky-700 font-semibold text-lg">
-                    Roles
-                  </h3>
+                  <h3 className="text-sky-700 font-semibold text-lg">Roles</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input label="Name" {...formik.getFieldProps("Name")} />
+                    <Select
+                      label=" Designation *"
+                      {...formik.getFieldProps("designation")}
+                    >
+                      <option value="">-- Select --</option>
+                      {Picaso_Paymode_Options.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </Select>
+                    <Select
+                      label="Employee Type *"
+                      {...formik.getFieldProps("employeeType")}
+                    >
+                      <option value="">-- Select --</option>
+                      {Picaso_Paymode_Options.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </Select>
+                    <Select
+                      label="Department *"
+                      {...formik.getFieldProps("department")}
+                    >
+                      <option value="">-- Select --</option>
+                      {Picaso_Paymode_Options.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </Select>
                     <Input
-                      label="Employee Number"
-                      {...formik.getFieldProps("EmployeeNo")}
+                      label="Education/Qualification"
+                      {...formik.getFieldProps("education")}
                     />
                     <Input
-                      label="Date of Birth"
-                      type="date"
-                      {...formik.getFieldProps("DOB")}
-                      max={new Date().toISOString().split("T")[0]}
+                      label="Timings"
+                      {...formik.getFieldProps("timings")}
                     />
-
-                    <Input
-                      label="Date of Joining"
-                      type="date"
-                      {...formik.getFieldProps("DOJ")}
-                      max={new Date().toISOString().split("T")[0]}
-                    />
-                    <Input label="Gender" {...formik.getFieldProps("Gender")} />
-
-                    <Input
-                      label="Mobile *"
-                      {...formik.getFieldProps("phone")}
-                    />
-                    <Input label="Email *" {...formik.getFieldProps("email")} />
                   </div>
                 </section>
               )}
 
               {activeStep === 3 && (
                 <section className="space-y-4">
-                  <h3 className="text-sky-700 font-semibold mb-3">
-                    Items List
-                  </h3>
+                  <h3 className="text-sky-700 font-semibold mb-3">Basic</h3>
 
-                  {formik.values.items.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-50 rounded-xl border border-dashed">
-                      <BeakerIcon className="w-12 h-12 text-slate-400 mb-3" />
-
-                      <h4 className="text-slate-600 font-semibold text-lg">
-                        No Medicines Added
-                      </h4>
-
-                      <p className="text-slate-400 text-sm mt-1">
-                        Please go back and add medicines to continue billing
-                      </p>
-
-                      <Button
-                        type="button"
-                        variant="sky"
-                        className="mt-4"
-                        onClick={() => setActiveStep(2)}
-                      >
-                        <PlusIcon className="w-4 h-4 mr-1" />
-                        Add Medicine
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100 overflow-hidden">
-                      <div className="px-4 py-3 border-b border-sky-100 bg-white">
-                        <h2 className="text-sky-700 font-semibold text-sm">
-                          Item List
-                        </h2>
-                      </div>
-
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead className="bg-sky-50 text-sky-700">
-                            <tr>
-                              <th className="px-3 py-3 text-left">SL</th>
-                              <th className="px-3 py-3 text-left">
-                                Description
-                              </th>
-                              <th className="px-3 py-3 text-center">Qty</th>
-                              <th className="px-3 py-3 text-center">Batch</th>
-                              <th className="px-3 py-3 text-center">HSN</th>
-                              <th className="px-3 py-3 text-center">Exp</th>
-                              <th className="px-3 py-3 text-right">
-                                Sale Rate
-                              </th>
-                              <th className="px-3 py-3 text-right">Disc %</th>
-                              <th className="px-3 py-3 text-right">Disc Amt</th>
-                              <th className="px-3 py-3 text-right">CGST %</th>
-                              <th className="px-3 py-3 text-right">CGST Amt</th>
-                              <th className="px-3 py-3 text-right">SGST %</th>
-                              <th className="px-3 py-3 text-right">SGST Amt</th>
-                              <th className="px-3 py-3 text-right">
-                                Taxable Amt
-                              </th>
-                              <th className="px-3 py-3 text-right">Total</th>
-                              <th className="px-3 py-3 text-center">Action</th>
-                            </tr>
-                          </thead>
-
-                          <tbody className="divide-y divide-gray-100">
-                            <FieldArray name="items">
-                              {({ remove }) =>
-                                formik.values.items.map((item, index) => (
-                                  <tr key={index} className="hover:bg-gray-50">
-                                    <td className="px-3 py-3">{index + 1}</td>
-
-                                    <td className="px-3 py-3 font-medium">
-                                      {item.description}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-center">
-                                      {item.qty}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-center text-xs">
-                                      {item.batchNo}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-center text-xs">
-                                      {item.hsn}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-center text-red-500 text-xs">
-                                      {item.expDate}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-right">
-                                      ₹{item.saleRate}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-right">
-                                      {item.discountPercent}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-right">
-                                      ₹{item.discAmt}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-right">
-                                      {item.cgstPercent}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-right">
-                                      ₹{item.cgstAmt}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-right">
-                                      {item.sgstPercent}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-right">
-                                      ₹{item.sgstAmt}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-right">
-                                      {Number(item.taxableAmt || 0).toFixed(2)}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-right font-bold text-sky-700">
-                                      ₹{item.total.toFixed(2)}
-                                    </td>
-
-                                    <td className="px-3 py-3 text-center">
-                                      <button
-                                        type="button"
-                                        onClick={() => remove(index)}
-                                        className="text-red-500 hover:text-red-700"
-                                      >
-                                        <TrashIcon className="w-5 h-5" />
-                                      </button>
-                                    </td>
-                                  </tr>
-                                ))
-                              }
-                            </FieldArray>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
+                  <Input
+                    label="Emergency Contact No"
+                    {...formik.getFieldProps("emergencyContact")}
+                  />
+                  <Input
+                    label="Doctor Registration No"
+                    {...formik.getFieldProps("doctorRegistrationNo")}
+                  />
+                  <Input
+                    label="Previous Employer/Work Details"
+                    {...formik.getFieldProps("previousEmployer")}
+                  />
+                  <Input
+                    label="Permanent Address"
+                    {...formik.getFieldProps("permanentAddress")}
+                  />
                 </section>
               )}
 
