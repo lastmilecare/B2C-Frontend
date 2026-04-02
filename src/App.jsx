@@ -401,9 +401,29 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/staff-form"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <StaffForm />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/staff-list"
+          element={
+            <ProtectedRoute>
+              <CopyLayout>
+                <StaffList />
+              </CopyLayout>
+            </ProtectedRoute>
+          }
+        />
         <Route path="/print-opd-form" element={<PrintOpdForm />} />
-        <Route path="/staff-form" element={<StaffForm />} />
-        <Route path="/staff-list" element={<StaffList />} />
+        {/* <Route path="/staff-form" element={<StaffForm />} /> */}
+        {/* <Route path="/staff-list" element={<StaffList />} /> */}
         {/* <Route path="/signup" element={<Signup />} /> */}
         {/* <Route path="/login" element={<Login />} /> */}
         <Route path="*" element={<NotFound />} />

@@ -122,12 +122,12 @@ const DashboardCopy = () => {
 
       {/* MODULE CARDS */}
 
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-4 gap-6 overflow-visible">
         {modules.map((m) => (
           <motion.div
             whileHover={{ y: -6 }}
             key={m.title}
-            className="group relative bg-white/70 backdrop-blur-lg border border-white/30 shadow-lg rounded-2xl p-6 cursor-pointer transition"
+            className="group relative bg-white/70 backdrop-blur-lg border border-white/30 shadow-lg rounded-2xl p-6 cursor-pointer transition hover:z-50"
           >
             <div className="flex items-center gap-3">
               <div className="text-emerald-600">{m.icon}</div>

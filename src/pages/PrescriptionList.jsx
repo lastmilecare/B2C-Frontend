@@ -335,6 +335,7 @@ Prescription List
         onSelectSuggestion={handleSelectBillSuggestion}
       />
       <PatientTable
+       title="Prescription List"
  data={patients}
  columns={columns}
 
