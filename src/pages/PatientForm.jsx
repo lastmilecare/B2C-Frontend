@@ -291,7 +291,7 @@ const PatientRegistrationCopy = () => {
                         {[1, 2, 3, 4].map((s) => (
                             <div
                                 key={s}
-                                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-blue-600" : "bg-gray-200"
+                                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
                                     }`}
                             />
                         ))}
@@ -317,7 +317,7 @@ const PatientRegistrationCopy = () => {
                                 onClick={() => setActiveStep(step.id)}
                                 className={`flex-1 py-4 flex items-center justify-center gap-2
 ${activeStep === step.id
-                                        ? "bg-white text-blue-600 shadow"
+                                        ? "bg-white text-sky-600 shadow "
                                         : "text-gray-400"}`}
                             >
 
@@ -564,26 +564,51 @@ ${activeStep === step.id
                                 </section>
                             )}
                             {activeStep === 4 && (
+  <section>
+    <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
 
-                                <div className="bg-gray-50 p-6 rounded-lg">
+      <h3 className="text-lg font-semibold text-sky-600">
+        Confirm Patient Registration
+      </h3>
 
-                                    <h3 className="text-lg font-semibold">
-                                        Confirm Patient Registration
-                                    </h3>
+      {/* Basic Info */}
+      <div className="grid md:grid-cols-2 gap-3 text-sm">
+        <p><b>Name:</b> {formik.values.name}</p>
+        <p><b>Contact:</b> {formik.values.contactNumber}</p>
+        <p><b>Gender:</b> {formik.values.gender}</p>
+        <p><b>Age:</b> {formik.values.age}</p>
+        <p><b>Category:</b> {formik.values.fincat}</p>
+        <p><b>Blood Group:</b> {formik.values.blood_group}</p>
+      </div>
 
-                                    <p>Name : {formik.values.name}</p>
-                                    <p>Mobile : {formik.values.contactNumber}</p>
-                                    <p>Category : {formik.values.fincat}</p>
-                                    <section>
-                                        <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-                                            <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Payment Details
-                                        </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            <Input {...formik.getFieldProps("creditamount")} label="Credit Amount" disabled />
-                                        </div>
-                                    </section>
-                                </div>
-                            )}
+      {/* Address */}
+      <div className="border-t pt-3 text-sm">
+        <p><b>Address:</b> {formik.values.localAddress}</p>
+        <p><b>Pin:</b> {formik.values.pin}</p>
+      </div>
+
+      
+      <div className="border-t pt-3 text-sm">
+        <p><b>Emergency Contact:</b> {formik.values.emergencyContactName}</p>
+        <p><b>Emergency Number:</b> {formik.values.emergencyContactNumber}</p>
+      </div>
+
+      
+      <div className="border-t pt-3 text-sm">
+        <p>
+          <b>Diseases:</b>{" "}
+          {formik.values.diseases?.map((d) => d.name).join(", ") || "None"}
+        </p>
+      </div>
+
+      
+      <div className="border-t pt-3 text-sm">
+        <p><b>Credit Amount:</b> {formik.values.creditamount}</p>
+      </div>
+
+    </div>
+  </section>
+)}
 
                             <div className="flex justify-between pt-6 border-t border-gray-100">
 

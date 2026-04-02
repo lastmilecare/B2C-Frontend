@@ -317,7 +317,7 @@ const colon1 = {
       <div
         style={{ textAlign: "right", marginTop: "10px", fontWeight: "bold" }}
       >
-        {data?.doctor.name}
+        {data?.doctor?.name}
       </div>
     </div>
   );

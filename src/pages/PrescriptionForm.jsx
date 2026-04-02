@@ -115,11 +115,11 @@ const PrescriptionFormCopy = () => {
 
       setTimeout(() => {
         setPrintRow(null);
-      }, 300);
+      }, 1000);
     }
   }, [printRow]);
 
-  const onPrintCS = (row) => {
+ const onPrintCS = (row) => {
     setPrintRow(row);
   };
   const handlePrint = useReactToPrint({
@@ -208,9 +208,9 @@ const PrescriptionFormCopy = () => {
       addedBy: values.AddedBy,
       addedDate,
       isActive: true,
-      doctor_id: patientData.ConsultantDoctorID,
-      centerID: patientData.CenterID,
-      driver_id: patientData.PatientID,
+     doctor_id: patientData?.ConsultantDoctorID || null,
+centerID: patientData?.CenterID || null,
+driver_id: patientData?.PatientID || null,
       modifiedDate: addedDate,
       modifiedBy: user_id,
       AdviceList: prescriptionList.map((item) => ({
@@ -501,12 +501,15 @@ const PrescriptionFormCopy = () => {
 
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map((s) => (
-              <div
-                key={s}
-                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-blue-600" : "bg-gray-200"
-                  }`}
-              />
-            ))}
+  <div
+    key={s}
+    className={`h-2 w-12 rounded-full transition-all duration-300 ${
+      activeStep >= s
+        ? "bg-sky-600 shadow-sm"
+        : "bg-blue-100"
+    }`}
+  />
+))}
           </div>
 
         </div>
@@ -528,7 +531,7 @@ const PrescriptionFormCopy = () => {
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
 ${activeStep === step.id
-                    ? "bg-white text-blue-600 shadow"
+                    ? "bg-white text-sky-600 shadow"
                     : "text-gray-400"}
 `}
               >
@@ -953,36 +956,45 @@ ${activeStep === step.id
             )}
             {activeStep === 5 && (
 
-              <div className="bg-gray-50 p-6 rounded-lg space-y-4">
+              <div className="bg-sky-50 p-6 rounded-xl space-y-4 border border-sky-200">
 
-                <h3 className="text-lg font-semibold">
-                  Confirm Prescription
-                </h3>
+  <h3 className="text-lg font-semibold text-sky-700">
+    Confirm Prescription
+  </h3>
 
-                <p>Patient : {formik.values.Name}</p>
-                <p>Mobile : {formik.values.Mobile}</p>
-                <p>Medicines : {prescriptionList.length}</p>
+  
+  <div className="grid md:grid-cols-2 gap-4 text-sm">
+    <p><b>Name:</b> {formik.values.Name}</p>
+    <p><b>Mobile:</b> {formik.values.Mobile}</p>
+    <p><b>UHID:</b> {formik.values.UHID}</p>
+    <p><b>Age:</b> {formik.values.Age}</p>
+    <p><b>Gender:</b> {formik.values.Gender}</p>
+    <p><b>Category:</b> {formik.values.FinCategory}</p>
+  </div>
 
-                <div className="flex gap-3 pt-4">
+ 
+  <div className="border-t pt-3 text-sm grid md:grid-cols-3 gap-3">
+    <p><b>BP:</b> {formik.values.bpsystolic}/{formik.values.bpdiastolic}</p>
+    <p><b>Pulse:</b> {formik.values.pulserate}</p>
+    <p><b>SPO2:</b> {formik.values.spo2}</p>
+    <p><b>Temp:</b> {formik.values.temprature}</p>
+    <p><b>Height:</b> {formik.values.height}</p>
+    <p><b>Weight:</b> {formik.values.weight}</p>
+  </div>
 
-                  
+  
+  <div className="border-t pt-3 text-sm">
+    <p><b>Chief Complaint:</b> {formik.values.ChiefComplaint?.map(c => c.name).join(", ")}</p>
+    <p><b>Advice:</b> {formik.values.advice}</p>
+    <p><b>Follow-up:</b> {formik.values.followup}</p>
+  </div>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-  onPrintCS({
-    ...formik.values,
-    prescriptionList,
-  })
-}
-                  >
-                    Print CS
-                  </Button>
+ s
+  <div className="border-t pt-3 text-sm">
+    <p><b>Total Medicines:</b> {prescriptionList.length}</p>
+  </div>
 
-                </div>
-
-              </div>
+</div>
 
             )}
             <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
@@ -1000,6 +1012,27 @@ ${activeStep === step.id
       <ArrowPathIcon className="w-5 h-5 inline mr-1" />
       Reset
     </Button>
+     
+    <Button
+  type="button"
+  variant="outline"
+  onClick={() => {
+    const dataToPrint = id && row
+      ? row
+      : buildPrescriptionPayload(formik.values, prescriptionList);
+
+    onPrintCS(dataToPrint);
+  }}
+>
+  Print CS
+</Button>
+{printRow && (
+      <div style={{ position: "absolute", top: "-9999px" }}>
+  <PrescriptionPrint ref={printRef} data={printRow} />
+</div>
+      )}
+  
+
 
   </div>
 
@@ -1032,11 +1065,7 @@ ${activeStep === step.id
           </form>
         </div>
       </div>
-      {printRow && (
-        <div style={{ display: "none" }}>
-          <PrescriptionPrint ref={printRef} data={printRow} />
-        </div>
-      )}
+      
     </div>
 
   );

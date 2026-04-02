@@ -479,7 +479,7 @@ const OpdFormCopy = () => {
                         {[1, 2, 3, 4].map((s) => (
                             <div
                                 key={s}
-                                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-blue-600" : "bg-gray-200"
+                                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
                                     }`}
                             />
                         ))}
@@ -504,7 +504,7 @@ const OpdFormCopy = () => {
                                 onClick={() => setActiveStep(step.id)}
                                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold 
                                     ${activeStep === step.id
-                                        ? "bg-white text-blue-600 shadow"
+                                        ? "bg-white text-sky-600 shadow"
                                         : "text-gray-400"}`} >
 
                                 <step.icon className="w-4 h-4" />
@@ -813,34 +813,36 @@ className="cursor-pointer h-4 w-4 text-green-600 focus:ring-green-500 border-gra
                             )}
                            {activeStep === 4 && (
     <>
-        {/* PRINT BUTTON */}
-        <div className="mb-4">
-            <Button
-                type="button"
-                variant="outline"
-                onClick={() => onPrintCS({
-                    ...formik.values,
-                    services: selectedServices
-                })}
-            >
-                <PrinterIcon className="w-5 h-5 inline mr-1" />
-                Print CS
-            </Button>
-        </div>
+        <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
 
-        {/* CONFIRM CARD */}
-        <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold">
-                Confirm OPD Billing
-            </h3>
+  <h3 className="text-lg font-semibold text-sky-600">
+    Confirm OPD Billing
+  </h3>
 
-            <p>Patient : {formik.values.Name}</p>
-            <p>Previous : {formik.values.PreviousDue}</p>
-            <p>Total : {formik.values.TotalAmount}</p>
-            <p>Paid : {formik.values.PaidAmount}</p>
-            <p>Due : {formik.values.DueAmount}</p>
-        </div>
-    </>
+  
+  <div className="grid md:grid-cols-2 gap-3 text-sm">
+    <p><b>Name:</b> {formik.values.Name}</p>
+    <p><b>Mobile:</b> {formik.values.Mobile}</p>
+    <p><b>UHID:</b> {formik.values.UHID}</p>
+    <p><b>Department:</b> {department?.find(d => d.id == formik.values.Department)?.name}</p>
+    <p><b>Doctor:</b> {doctors?.find(d => d.id == formik.values.Doctor)?.name}</p>
+  </div>
+
+  
+  <div className="border-t pt-3 text-sm">
+    <p><b>Total Services:</b> {selectedServices.length}</p>
+  </div>
+
+ 
+  <div className="border-t pt-3 text-sm grid md:grid-cols-2 gap-3">
+    <p><b>Previous Due:</b> {formik.values.PreviousDue}</p>
+    <p><b>Total Amount:</b> {formik.values.TotalAmount}</p>
+    <p><b>Paid Amount:</b> {formik.values.PaidAmount}</p>
+    <p><b>Due Amount:</b> {formik.values.DueAmount}</p>
+    <p><b>Payment Mode:</b> {Picaso_Paymode_Options.find(p => p.id == formik.values.PayMode)?.name}</p>
+  </div>
+
+</div>    </>
 )}
                            <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
 
@@ -856,6 +858,17 @@ className="cursor-pointer h-4 w-4 text-green-600 focus:ring-green-500 border-gra
             <ArrowPathIcon className="w-5 h-5 inline mr-1" />
             Reset
         </Button>
+         <Button
+                type="button"
+                variant="outline"
+                onClick={() => onPrintCS({
+                    ...formik.values,
+                    services: selectedServices
+                })}
+            >
+                <PrinterIcon className="w-5 h-5 inline mr-1" />
+                Print CS
+            </Button>
     </div>
 
     {/* RIGHT */}

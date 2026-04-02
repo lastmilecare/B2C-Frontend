@@ -255,17 +255,17 @@ const DashboardCopy = () => {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Paracetamol</span>
-              <span className="text-red-500">5 left</span>
+              <span className="text-red-500 font-semibold">5 left</span>
             </div>
 
             <div className="flex justify-between">
               <span>Vitamin D</span>
-              <span className="text-red-500">3 left</span>
+              <span className="text-red-500 font-semibold">3 left</span>
             </div>
 
             <div className="flex justify-between">
               <span>Amoxicillin</span>
-              <span className="text-red-500">2 left</span>
+              <span className="text-red-500 font-semibold">2 left</span>
             </div>
           </div>
         </div>

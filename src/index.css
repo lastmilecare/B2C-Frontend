@@ -1,6 +1,7 @@
 @import "tailwindcss";
 /* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'); */
 
+
 body {
   font-family: 'Inter', sans-serif;
   background: linear-gradient(120deg, #f0fdfa, #e0f2fe);
@@ -33,6 +34,7 @@ body {
       box-sizing: border-box !important;
     }
 
+   
     @page :first {
       margin: 0 !important;
     }
@@ -41,31 +43,26 @@ body {
 
 
 
+::-webkit-scrollbar {
+  width: 6px; /* thin */
+}
 
-html {
-  overflow-y: auto;
+::-webkit-scrollbar-track {
+  background: #f0fdfa; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 0;
+  border: 1px solid #059669;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #059669; 
 }
 
 
-html::-webkit-scrollbar {
-  width: 4px;   
-}
-
-html::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-html::-webkit-scrollbar-thumb {
-  background: #10b981; 
-  border-radius: 10px;
-}
-
-html::-webkit-scrollbar-thumb:hover {
-  background: #059669;
-}
-
-
-html {
+* {
   scrollbar-width: thin;
-  scrollbar-color: #10b981 transparent;
+  scrollbar-color: #10b981 #f0fdfa;
 }
