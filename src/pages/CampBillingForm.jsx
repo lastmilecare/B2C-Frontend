@@ -287,117 +287,126 @@ return (
 
         <FormikProvider value={formik}>
 
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
-
-                <div className="max-w-[1400px] mx-auto px-8">
-
-                    <div className="flex justify-between items-center mb-6">
-
-                        <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
-
-                            <span className="bg-blue-100 p-2 rounded-xl">
-                                <CreditCardIcon className="w-6 text-blue-600" />
-                            </span>
-
-                            Camp Medicine Billing
-
-                        </h1>
-
-                    </div>
-
-                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-
-                        <div className="flex border-b">
-
-                            {[
-                                { id: 1, label: "Patient", icon: ClipboardDocumentIcon },
-                                { id: 2, label: "Medicine", icon: BeakerIcon },
-                                { id: 3, label: "Items", icon: CreditCardIcon },
-                                { id: 4, label: "Payment", icon: DocumentCheckIcon }
-                            ].map((step) => (
-
-                                <button
-                                    key={step.id}
-                                    type="button"
-                                    disabled
-                                    onClick={() => setActiveStep(step.id)}
-                                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
-${activeStep === step.id
-                                            ? "bg-white text-blue-600 shadow"
-                                            : "text-gray-400"}
-`}
-                                >
-
-                                    <step.icon className="w-4 h-4" />
-
-                                    {step.label}
-
-                                </button>
-
-                            ))}
-
-                        </div>
-                        <form onSubmit={formik.handleSubmit} className="space-y-6 p-6">
-
-
-                            
-                            {activeStep === 1 && (
-                                <section className="space-y-4">
-
-                                    <h3 className="text-sky-700 font-semibold text-lg">
-                                        Patient Details
-                                    </h3>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                                        <div className="relative">
-                                            <label className="text-sm text-gray-600 block mb-1">
-                                                Bill no <span className="text-red-500">*</span>
-                                            </label>
-
-                                            <input
-                                                type="text"
-                                                inputMode="numeric"
-                                                pattern="[0-9]*"
-                                                className={baseInput}
-                                                placeholder="Search Bill no (e.g., 123)"
-                                                value={billSearch || formik.values.opdBillNo}
-                                                onChange={(e) => {
-                                                    if (id) return;
-                                                    const val = e.target.value.replace(/\D/g, "");
-                                                    setBillSearch(val);
-                                                    setSelectedBill("");
-                                                    formik.setFieldValue("billno", "");
-                                                    setSuggestionsList([]);
-                                                    populatedUhidRef.current = "";
-                                                }}
-                                                autoComplete="off"
-                                            />
-
-                                            {suggestionsList.length > 0 && billSearch.length >= 1 && (
-                                                <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-                                                    {suggestionsList.map((item) => (
-                                                        <li
-                                                            key={item.ID}
-                                                            onClick={() => {
-                                                                setSelectedBill(item.ID);
-
-                                                                formik.setValues({
-                                                                    ...formik.values,
-                                                                    opdBillNo: item.ID
-                                                                });
-
-                                                                setBillSearch(item.ID);
-                                                                setSuggestionsList([]);
-                                                            }}
-                                                            className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
-                                                        >
-                                                            {item.ID}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </div>
+           <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
+           
+               <div className="max-w-[1400px] mx-auto px-8">
+                <div className="flex justify-between items-center mb-10">
+           
+             <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+               <span className="bg-blue-100 p-2 rounded-xl">
+                 <CreditCardIcon className="w-6 text-blue-600" />
+               </span>
+               Camp Medicine Billing
+             </h1>
+           
+            
+             <div className="flex gap-2">
+               {[1, 2, 3, 4,5].map((s) => (
+                 <div
+                   key={s}
+                   className={`h-2 w-12 rounded-full ${
+                     activeStep >= s ? "bg-sky-600" : "bg-sky-100"
+                   }`}
+                 />
+               ))}
+             </div>
+           
+           </div>
+           
+                   <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                     <div className="flex border-b">
+           
+           
+                                       {[
+             { id: 1, label: "Patient", icon: ClipboardDocumentIcon },
+             { id: 2, label: "Medicine", icon: BeakerIcon },
+             { id: 3, label: "Items", icon: CreditCardIcon },
+             { id: 4, label: "Payment", icon: DocumentCheckIcon },
+             { id: 5, label: "Summary", icon: CheckCircleIcon }, 
+           ].map((step) => (
+           
+                                           <button
+                                               key={step.id}
+                                               type="button"
+                                               disabled
+                                               onClick={() => setActiveStep(step.id)}
+                                               className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
+           ${activeStep === step.id
+                                                       ? "bg-white text-sky-600 shadow"
+                                                       : "text-gray-400"}
+           `}
+                                           >
+           
+                                               <step.icon className="w-4 h-4" />
+           
+                                               {step.label}
+           
+                                           </button>
+           
+                                       ))}
+           
+                                   </div>
+                                   <form onSubmit={formik.handleSubmit} className="space-y-6 p-6">
+           
+           
+           
+                                       {activeStep === 1 && (
+                                           <section className="space-y-4">
+           
+                                               <h3 className="text-sky-700 font-semibold text-lg">
+                                                   Patient Details
+                                               </h3>
+           
+                                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+           
+                                                   <div className="relative">
+                                                       <label className="text-sm text-gray-600 block mb-1">
+                                                           Bill no <span className="text-red-500">*</span>
+                                                       </label>
+           
+                                                       <input
+                                                           type="text"
+                                                           inputMode="numeric"
+                                                           pattern="[0-9]*"
+                                                           className={baseInput}
+                                                           placeholder="Search Bill no (e.g., 123)"
+                                                           value={billSearch || formik.values.opdBillNo}
+                                                           onChange={(e) => {
+                                                               if (id) return;
+                                                               const val = e.target.value.replace(/\D/g, "");
+                                                               setBillSearch(val);
+                                                               setSelectedBill("");
+                                                               formik.setFieldValue("billno", "");
+                                                               setSuggestionsList([]);
+                                                               populatedUhidRef.current = "";
+                                                           }}
+                                                           autoComplete="off"
+                                                       />
+           
+                                                       {suggestionsList.length > 0 && billSearch.length >= 1 && (
+                                                           <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                                                               {suggestionsList.map((item) => (
+                                                                   <li
+                                                                       key={item.ID}
+                                                                       onClick={() => {
+                                                                           setSelectedBill(item.ID);
+           
+                                                                           formik.setValues({
+                                                                               ...formik.values,
+                                                                               opdBillNo: item.ID
+                                                                           });
+           
+                                                                           setBillSearch(item.ID);
+                                                                           setSuggestionsList([]);
+                                                                       }}
+                                                                       className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
+                                                                   >
+                                                                       {item.ID}
+                                                                   </li>
+                                                               ))}
+                                                           </ul>
+                                                       )}
+                                                   </div>
                                         <Input label="Name" {...formik.getFieldProps("Name")} readOnly />
                                         <Input
                                             label="UHID"
