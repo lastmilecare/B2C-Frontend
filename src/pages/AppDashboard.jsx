@@ -11,6 +11,7 @@ import {
   useGetPatientsQuery,
   useGetOpdBillingQuery,
   useGetPrescriptionsListQuery,
+  useViewStockBillsQuery
 } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 
@@ -27,6 +28,10 @@ const AppDashboard = () => {
   const patients = patientData?.data || [];
   const opd = opdData?.data || [];
   const prescriptions = prescriptionData?.data || [];
+  const { data: stockData } = useViewStockBillsQuery({
+  page: 1,
+  limit: 200,
+});
 
   const today = new Date().toDateString();
 
@@ -43,6 +48,9 @@ const AppDashboard = () => {
   ).length;
 
   const recentPatients = patients.slice(0, 5);
+  const lowStock = stockData?.data?.filter(
+  (item) => item.BalQty < 10
+);
 
   /* ---------------- MODULES ---------------- */
 
@@ -169,7 +177,9 @@ const AppDashboard = () => {
         >
           <p className="text-sm">Low Stock</p>
 
-          <h2 className="text-3xl font-bold">6</h2>
+          <h2 className="text-3xl font-bold">
+  {lowStock?.length || 0}
+</h2>
         </motion.div>
 
         <motion.div
@@ -241,20 +251,14 @@ const AppDashboard = () => {
           <h3 className="font-semibold mb-4">Low Stock Medicines</h3>
 
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span>Paracetamol</span>
-              <span className="text-red-500">5 left</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Vitamin D</span>
-              <span className="text-red-500">3 left</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Amoxicillin</span>
-              <span className="text-red-500">2 left</span>
-            </div>
+            {lowStock?.slice(0, 5).map((item) => (
+  <div key={item.ID} className="flex justify-between">
+    <span>{item.ItemName}</span>
+    <span className="text-red-500">
+      {item.BalQty} left
+    </span>
+  </div>
+))}
           </div>
         </div>
       </div>

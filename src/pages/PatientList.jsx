@@ -285,6 +285,7 @@ Patient List
 />
 
 <PatientTable
+title="Patient List"
  data={patients}
  columns={columns}
  totalRows={pagination.totalRecords || 0}

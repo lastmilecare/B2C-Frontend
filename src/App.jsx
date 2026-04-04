@@ -35,6 +35,8 @@ import SalesRecordCopy from "./pages/salesrecord";
 import AttendancePage from "./pages/AttendancePage";
 import StaffForm from "./pages/StaffForm";
 import StaffList from "./pages/StaffList";
+import Permission from "./pages/Permission";
+import Roles from "./pages/Roles";
 function App() {
   return (
     <BrowserRouter>
@@ -417,6 +419,26 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <StaffList />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/roles"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Roles />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/permissions"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Permission />
               </AppLayout>
             </ProtectedRoute>
           }

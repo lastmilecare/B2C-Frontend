@@ -9,7 +9,8 @@ import {
   ChevronDownIcon,
   HomeIcon,
   XMarkIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  ShieldCheckIcon, KeyIcon 
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
 import { cookie } from "../../utils/cookie";
@@ -20,6 +21,8 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     prescription: false,
     inventory: false,
     staff: false,
+    Rolemanagement: false,
+
   });
   const role = cookie.get("role") || "USER";
   const toggleSubMenu = (menu) =>
@@ -290,6 +293,44 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             </AnimatePresence>
           </div>
         )}
+        <div className="space-y-1">
+          <button
+            onClick={() => toggleSubMenu("Rolemanagement")}
+            className="flex justify-between items-center w-full px-4 py-2.5 text-gray-600 rounded-xl hover:bg-emerald-50"
+          >
+            <span className="flex items-center gap-3">
+              <ShieldCheckIcon className="w-5" /> Role management
+            </span>
+            <ChevronDownIcon
+              className={`w-4 transition-transform ${menus.Rolemanagement ? "rotate-180" : ""}`}
+            />
+          </button>
+          <AnimatePresence>
+            {menus.Rolemanagement && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="ml-9 space-y-1 overflow-hidden"
+              >
+                <NavLink
+                  to="/roles"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Role
+                </NavLink>
+                <NavLink
+                  to="/permissions"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Permission
+                </NavLink>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </nav>
     </motion.aside>
   );
