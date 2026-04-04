@@ -1,18 +1,18 @@
 import React, { useState } from "react";
-import CopySidebar from "./CopySidebar";
-import CopyHeader from "./CopyHeader";
+import AppSidebar from "./AppSidebar";
+import AppHeader from "./AppHeader";
 
-const CopyLayout = ({ children }) => {
+const AppLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen bg-[#f3f6fb] overflow-hidden">
       
-      <CopySidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      <AppSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <div className="flex-1 flex flex-col min-w-0">
      
-        <CopyHeader toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <AppHeader toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
         <div className="p-6 overflow-auto flex-1">
           {children}
@@ -30,4 +30,4 @@ const CopyLayout = ({ children }) => {
   );
 };
 
-export default CopyLayout;
+export default AppLayout;

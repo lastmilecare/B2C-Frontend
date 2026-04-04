@@ -5,7 +5,6 @@ import {
   ClipboardDocumentIcon,
   ArchiveBoxIcon,
   DocumentTextIcon,
-  UserGroupIcon,
 } from "@heroicons/react/24/outline";
 
 import {
@@ -17,7 +16,7 @@ import { cookie } from "../utils/cookie";
 
 const AppDashboard = () => {
   const navigate = useNavigate();
-
+  const username = cookie.get("username") || "User";
   const { data: patientData } = useGetPatientsQuery({ page: 1, limit: 100 });
   const { data: opdData } = useGetOpdBillingQuery({ page: 1, limit: 100 });
   const { data: prescriptionData } = useGetPrescriptionsListQuery({
@@ -44,7 +43,7 @@ const AppDashboard = () => {
   ).length;
 
   const recentPatients = patients.slice(0, 5);
-  const username = cookie.get("username") || "User";
+
   /* ---------------- MODULES ---------------- */
 
   const modules = [
@@ -52,8 +51,8 @@ const AppDashboard = () => {
       title: "Patients",
       icon: <UserIcon className="w-6" />,
       items: [
-        { name: "Patient Registration", path: "/patient-registration" },
-        { name: "Patient List", path: "/patient-list" },
+        { name: "Patient Registration", path: "/patient-registration-copy" },
+        { name: "Patient List", path: "/patient-list-copy" },
       ],
     },
 
@@ -61,8 +60,8 @@ const AppDashboard = () => {
       title: "OPD",
       icon: <ClipboardDocumentIcon className="w-6" />,
       items: [
-        { name: "OPD Form", path: "/opd-form" },
-        { name: "OPD Billing", path: "/opd-list" },
+        { name: "OPD Form", path: "/opd-form-copy" },
+        { name: "OPD Billing", path: "/opd-list-copy" },
       ],
     },
 
@@ -70,8 +69,8 @@ const AppDashboard = () => {
       title: "Prescription",
       icon: <DocumentTextIcon className="w-6" />,
       items: [
-        { name: "Prescription Form", path: "/prescription-form" },
-        { name: "Prescription List", path: "/prescription-list" },
+        { name: "Prescription Form", path: "/prescription-form-copy" },
+        { name: "Prescription List", path: "/prescription-list-copy" },
       ],
     },
 
@@ -79,17 +78,9 @@ const AppDashboard = () => {
       title: "Inventory",
       icon: <ArchiveBoxIcon className="w-6" />,
       items: [
-        { name: "Purchased Entry", path: "/purchased-entry" },
-        { name: "Medicine Billing", path: "/billing" },
-        { name: "Sales Record", path: "/sales-record" },
-      ],
-    },
-    {
-      title: "Staff",
-      icon: <UserGroupIcon className="w-6" />,
-      items: [
-        { name: "Staff Form", path: "/staff-form" },
-        { name: "Staff List", path: "/staff-list" },
+        { name: "Purchased Entry", path: "/purchased-entry-copy" },
+        { name: "Medicine Billing", path: "/billing-copy" },
+        { name: "Sales Record", path: "/sales-record-copy" },
       ],
     },
   ];
@@ -103,7 +94,7 @@ const AppDashboard = () => {
     >
       {/* HEADER */}
 
-      <div className="bg-gradient-to-r from-emerald-600 via-emerald-350 to-emerald-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
         <div>
           <h2 className="text-2xl font-bold">Welcome back, {username} 👋</h2>
 
@@ -111,23 +102,22 @@ const AppDashboard = () => {
         </div>
 
         <div className="text-right">
-          <button
-            onClick={() => navigate("/attendance")}
-            className="bg-white text-emerald-700 px-5 py-2 rounded-lg font-semibold shadow hover:bg-emerald-100 transition"
-          >
-            Attendance
-          </button>
+          <p className="text-sm opacity-80">Today</p>
+
+          <p className="text-lg font-semibold">
+            {new Date().toLocaleDateString()}
+          </p>
         </div>
       </div>
 
       {/* MODULE CARDS */}
 
-      <div className="grid grid-cols-4 gap-6 overflow-visible">
+      <div className="grid grid-cols-4 gap-6">
         {modules.map((m) => (
           <motion.div
             whileHover={{ y: -6 }}
             key={m.title}
-            className="group relative bg-white/70 backdrop-blur-lg border border-white/30 shadow-lg rounded-2xl p-6 cursor-pointer transition hover:z-50"
+            className="group relative bg-white/70 backdrop-blur-lg border border-white/30 shadow-lg rounded-2xl p-6 cursor-pointer transition"
           >
             <div className="flex items-center gap-3">
               <div className="text-emerald-600">{m.icon}</div>
@@ -166,7 +156,7 @@ const AppDashboard = () => {
 
         <motion.div
           whileHover={{ scale: 1.03 }}
-          className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm"
+          className="bg-blue-50 border border-blue-200 text-blue-700 rounded-xl p-6 shadow-sm"
         >
           <p className="text-sm">Today's OPD</p>
 
@@ -175,7 +165,7 @@ const AppDashboard = () => {
 
         <motion.div
           whileHover={{ scale: 1.03 }}
-          className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm"
+          className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-6 shadow-sm"
         >
           <p className="text-sm">Low Stock</p>
 
@@ -184,7 +174,7 @@ const AppDashboard = () => {
 
         <motion.div
           whileHover={{ scale: 1.03 }}
-          className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm"
+          className="bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl p-6 shadow-sm"
         >
           <p className="text-sm">Today Prescription</p>
 
@@ -194,43 +184,41 @@ const AppDashboard = () => {
 
       {/* QUICK ACTION */}
 
-      {/* <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-4 gap-6">
+        <button
+          onClick={() => navigate("/patient-registration-copy")}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl shadow-sm transition"
+        >
+          Register Patient
+        </button>
 
-                <button
-                    onClick={() => navigate("/patient-registration-copy")}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl shadow-sm transition"
-                >
-                    Register Patient
-                </button>
+        <button
+          onClick={() => navigate("/opd-form")}
+          className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl shadow-sm transition"
+        >
+          Create OPD
+        </button>
 
-                <button
-                    onClick={() => navigate("/opd-form")}
-                    className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl shadow-sm transition"
-                >
-                    Create OPD
-                </button>
+        <button
+          onClick={() => navigate("/purchased-entry")}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-xl shadow-sm transition"
+        >
+          Add Medicine
+        </button>
 
-                <button
-                    onClick={() => navigate("/purchased-entry")}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-xl shadow-sm transition"
-                >
-                    Add Medicine
-                </button>
-
-                <button
-                    onClick={() => navigate("/medicines-billing")}
-                    className="bg-gray-700 hover:bg-gray-800 text-white p-4 rounded-xl shadow-sm transition"
-                >
-                    Billing
-                </button>
-                <button
-                    onClick={() => navigate("/attendance")}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white p-4 rounded-xl"
-                >
-                    Attendance
-                </button>
-
-            </div> */}
+        <button
+          onClick={() => navigate("/medicines-billing")}
+          className="bg-gray-700 hover:bg-gray-800 text-white p-4 rounded-xl shadow-sm transition"
+        >
+          Billing
+        </button>
+        <button
+          onClick={() => navigate("/attendance")}
+          className="bg-yellow-600 hover:bg-yellow-700 text-white p-4 rounded-xl"
+        >
+          Attendance
+        </button>
+      </div>
 
       <div className="grid grid-cols-2 gap-6">
         <div className="bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6">
@@ -255,17 +243,17 @@ const AppDashboard = () => {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Paracetamol</span>
-              <span className="text-red-500 font-semibold">5 left</span>
+              <span className="text-red-500">5 left</span>
             </div>
 
             <div className="flex justify-between">
               <span>Vitamin D</span>
-              <span className="text-red-500 font-semibold">3 left</span>
+              <span className="text-red-500">3 left</span>
             </div>
 
             <div className="flex justify-between">
               <span>Amoxicillin</span>
-              <span className="text-red-500 font-semibold">2 left</span>
+              <span className="text-red-500">2 left</span>
             </div>
           </div>
         </div>

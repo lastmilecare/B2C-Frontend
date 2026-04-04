@@ -18,8 +18,8 @@ import { cookie } from "../utils/cookie";
 import { healthAlert, healthAlerts } from "../utils/healthSwal";
 
 
-import CommonListCopy from "../components/CommonListCopy";
-import CopyFilterBar from "../components/copy/CopyFilterBar";
+import AppCommonList from "../components/AppCommonList";
+import CopyFilterBar from "../components/Updates/Filter";
 
 import {
   useCheckInMutation,
@@ -466,7 +466,7 @@ const AttendancePage = () => {
           onExport={handleExport}
         />
         <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-50 overflow-hidden">
-          <CommonListCopy
+          <AppCommonList
             title={
               appliedFilters.date
                 ? `REPORT FOR ${appliedFilters.date}`

@@ -19,8 +19,8 @@ import ItemMaster from "./pages/ItemMaster";
 import CampBilling from "./pages/CampBilling_old";
 
 import PatientListCopy from "./pages/PatientList";
-import CopyLayout from "./components/copy/CopyLayout";
-import DashboardCopy from "./pages/Dashboard";
+import AppLayout from "./components/Updates/AppLayout";
+import AppDashboard from "./pages/Dashboard";
 import OpdFormCopy from "./pages/OpdForm";
 import PrescriptionFormCopy from "./pages/PrescriptionForm";
 
@@ -44,9 +44,9 @@ function App() {
           path="/"
           element={
             <ProtectedRoute>
-              <CopyLayout>
-                <DashboardCopy />
-              </CopyLayout>
+              <AppLayout>
+                <AppDashboard />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -225,9 +225,9 @@ function App() {
           path="/patient-list"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <PatientListCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -235,9 +235,9 @@ function App() {
           path="/patient-registration"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <PatientRegistrationCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -245,9 +245,9 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <CopyLayout>
-                <DashboardCopy />
-              </CopyLayout>
+              <AppLayout>
+                <AppDashboard />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -255,9 +255,9 @@ function App() {
           path="/opd-form"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <OpdFormCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -265,9 +265,9 @@ function App() {
           path="/opd-form/:ID"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <OpdFormCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -275,9 +275,9 @@ function App() {
           path="/prescription-form"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <PrescriptionFormCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -285,9 +285,9 @@ function App() {
           path="/purchased-entry"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <PurchasedEntryCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -295,9 +295,9 @@ function App() {
           path="/billing"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <BillingCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -305,9 +305,9 @@ function App() {
           path="/camp-billing"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <CampBillingCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -315,9 +315,9 @@ function App() {
           path="/patient-registration/:id"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <PatientRegistrationCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -325,9 +325,9 @@ function App() {
           path="/opd-list"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <OpdBillingListCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -335,9 +335,9 @@ function App() {
           path="/prescription-list"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <PrescriptionListCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -345,9 +345,9 @@ function App() {
           path="/expiry-items"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <ExpiryItemsCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -355,9 +355,9 @@ function App() {
           path="/prescription-form/:id"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <PrescriptionFormCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -365,9 +365,9 @@ function App() {
           path="/purchased-entry/:id"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <PurchasedEntryCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -375,9 +375,9 @@ function App() {
           path="/billing/:id"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <BillingCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -385,9 +385,9 @@ function App() {
           path="/sales-record"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <SalesRecordCopy />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -395,9 +395,9 @@ function App() {
           path="/attendance"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <AttendancePage />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -405,9 +405,9 @@ function App() {
           path="/staff-form"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <StaffForm />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -415,9 +415,9 @@ function App() {
           path="/staff-list"
           element={
             <ProtectedRoute>
-              <CopyLayout>
+              <AppLayout>
                 <StaffList />
-              </CopyLayout>
+              </AppLayout>
             </ProtectedRoute>
           }
         />

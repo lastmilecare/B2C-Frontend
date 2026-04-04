@@ -9,7 +9,7 @@ import {
   ArrowLeftStartOnRectangleIcon 
 } from "@heroicons/react/24/outline";
 
-const CopyHeader = ({ toggleSidebar }) => {
+const AppHeader = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const username = cookie.get("username") || "User";
@@ -101,4 +101,4 @@ const CopyHeader = ({ toggleSidebar }) => {
   );
 };
 
-export default CopyHeader;
+export default AppHeader;

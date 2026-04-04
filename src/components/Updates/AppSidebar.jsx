@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
 import { cookie } from "../../utils/cookie";
-const CopySidebar = ({ isOpen, setIsOpen }) => {
+const AppSidebar = ({ isOpen, setIsOpen }) => {
   const [menus, setMenus] = useState({
     patient: false,
     opd: false,
@@ -295,4 +295,4 @@ const CopySidebar = ({ isOpen, setIsOpen }) => {
   );
 };
 
-export default CopySidebar;
+export default AppSidebar;

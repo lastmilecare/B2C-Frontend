@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useGetPatientsQuery, useSearchUHIDQuery } from "../redux/apiSlice";
-import PatientTable from "../components/copy/PatientTable";
-import CopyFilterBar from "../components/copy/CopyFilterBar";
+import PatientTable from "../components/Updates/PatientTable";
+import CopyFilterBar from "../components/Updates/Filter";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
 import Avatar from "../components/common/Avatar";
