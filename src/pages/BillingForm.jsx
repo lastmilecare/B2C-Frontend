@@ -28,7 +28,7 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { cleanCurrency, getPharmaSellingFromCP } from "../utils/helper";
 import { Picaso_Paymode_Options } from "../utils/constants";
-import Swal from "sweetalert2";
+
 const BillingFormCopy = ({ refetchList }) => {
     const [activeStep, setActiveStep] = useState(1);
 

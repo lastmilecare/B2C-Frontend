@@ -24,13 +24,18 @@ const axiosBaseQuery =
     }
   };
 const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
+console.log("Auth URL from env:", VITE_AUTH_URL);
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
   tagTypes: ["Bill", "Inventory"],
   endpoints: (build) => ({
     login: build.mutation({
-      query: (body) => ({ url: VITE_AUTH_URL, method: "post", data: body }),
+      query: (body) => ({
+        url: `${VITE_AUTH_URL}auth/login`,
+        method: "post",
+        data: body,
+      }),
     }),
     signup: build.mutation({
       query: (body) => ({ url: "/auth/signup", method: "post", data: body }),
@@ -619,12 +624,66 @@ export const api = createApi({
       keepUnusedDataFor: 0,
     }),
     viewStockBills: build.query({
-  query: (params) => ({
-    url: "/medicine-inventory/stock/view",
-    method: "GET",
-    params,
-  }),
-}),
+      query: (params) => ({
+        url: "/medicine-inventory/stock/view",
+        method: "GET",
+        params,
+      }),
+    }),
+    getTenants: build.query({
+      query: (params = {}) => ({
+        url: `${VITE_AUTH_URL}tenants`,
+        method: "get",
+        params: {
+          page: params.page || 1,
+          limit: params.limit || 10,
+          name: params.name || undefined,
+          status: params.status !== undefined ? params.status : undefined,
+          startDate: params.startDate || undefined,
+          endDate: params.endDate || undefined,
+        },
+      }),
+      providesTags: ["Tenant"],
+    }),
+
+    getTenantById: build.query({
+      query: (id) => ({ url: `${VITE_AUTH_URL}tenants/${id}`, method: "get" }),
+      providesTags: (_result, _error, id) => [{ type: "Tenant", id }],
+    }),
+
+    createTenant: build.mutation({
+      query: (body) => ({
+        url: `${VITE_AUTH_URL}tenants`,
+        method: "post",
+        data: body,
+      }),
+      invalidatesTags: ["Tenant"],
+    }),
+
+    updateTenant: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `${VITE_AUTH_URL}tenants/${id}`,
+        method: "patch",
+        data: body,
+      }),
+      invalidatesTags: ["Tenant"],
+    }),
+
+    toggleTenantStatus: build.mutation({
+      query: (id) => ({
+        url: `${VITE_AUTH_URL}tenants/${id}/toggle-status`,
+        method: "patch",
+      }),
+      invalidatesTags: ["Tenant"],
+    }),
+
+    deleteTenant: build.mutation({
+      query: (id) => ({
+        url: `${VITE_AUTH_URL}tenants/${id}`,
+        method: "delete",
+      }),
+      invalidatesTags: ["Tenant"],
+    }),
   }),
 });
 
@@ -689,4 +748,10 @@ export const {
   useGetCalendarDataQuery,
   useLazyGetAttendanceExportQuery,
   useViewStockBillsQuery,
+  useGetTenantsQuery,
+  useGetTenantByIdQuery,
+  useCreateTenantMutation,
+  useUpdateTenantMutation,
+  useToggleTenantStatusMutation,
+  useDeleteTenantMutation,
 } = api;
