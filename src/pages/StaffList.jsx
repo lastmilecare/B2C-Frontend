@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useGetPatientsQuery, useSearchUHIDQuery } from "../redux/apiSlice";
-import PatientTable from "../components/copy/PatientTable";
-import CopyFilterBar from "../components/copy/CopyFilterBar";
+import PatientTable from "../components/Updates/PatientTable";
+import CopyFilterBar from "../components/Updates/Filter";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
 import Avatar from "../components/common/Avatar";
@@ -20,26 +20,56 @@ const StaffList = () => {
   });
 
   const [tempFilters, setTempFilters] = useState({
-    name: "",
-    contactNumber: "",
-    gender: "",
-    category: "",
-    startDate: "",
-    endDate: "",
-    external_id: "",
-    idProof_number: "",
-  });
+  staffName: "",
+  employeeId: "",
+  mobile: "",
+  gender: "",
+  department: "",
+  role: "",
+  startDate: "",
+  endDate: "",
+});
 
   const [filters, setFilters] = useState({});
 
-  const { data, isLoading } = useGetPatientsQuery({
-    page,
-    limit,
-    ...filters,
-  });
+  // const { data, isLoading } = useGetPatientsQuery({
+  //   page,
+  //   limit,
+  //   ...filters,
+  // });
+const staticStaff = [
+  {
+    id: 1,
+    staffName: "Dr Sachin Sharma",
+    employeeId: "EMP001",
+    mobile: "9876543210",
+    gender: "male",
+    department: "Doctors",
+    role: "Doctor",
+    joiningDate: "2025-01-10",
+  },
+  {
+    id: 2,
+    staffName: "Mukesh Kumar",
+    employeeId: "EMP002",
+    mobile: "9123456780",
+    gender: "male",
+    department: "Admin",
+    role: "Manager",
+    joiningDate: "2025-02-15",
+  },
+];
+const staff = staticStaff;
 
-  const patients = data?.data || [];
-  const pagination = data?.pagination || {};
+const pagination = {
+  totalRecords: staticStaff.length,
+  currentPage: page,
+};
+
+const isLoading = false;
+  // const patients = data?.data || [];
+  // const staff = data?.data || [];
+  // const pagination = data?.pagination || {};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -93,157 +123,134 @@ const StaffList = () => {
 
   const handleResetFilters = () => {
     setTempFilters({
-      name: "",
-      contactNumber: "",
-      gender: "",
-      category: "",
-      startDate: "",
-      endDate: "",
-      external_id: "",
-      idProof_number: "",
-    });
+  staffName: "",
+  employeeId: "",
+  mobile: "",
+  gender: "",
+  department: "",
+  role: "",
+  startDate: "",
+  endDate: "",
+});
     setFilters({});
     setPage(1);
   };
 
   const filtersConfig = [
-    {
-      label: "UHID",
-      name: "external_id",
-      type: "text",
-      suggestionConfig: {
-        minLength: 2,
-        keyField: "external_id",
-        valueField: "external_id",
-        secondaryField: "name",
-      },
-    },
+  { label: "Employee ID", name: "employeeId", type: "text" },
+  { label: "Staff Name", name: "staffName", type: "text" },
+  { label: "Mobile", name: "mobile", type: "text" },
 
-    { label: "Patient Name", name: "name", type: "text" },
-    { label: "Mobile", name: "contactNumber", type: "text" },
+  {
+    label: "Gender",
+    name: "gender",
+    type: "select",
+    options: [
+      { label: "Male", value: "male" },
+      { label: "Female", value: "female" },
+      { label: "Other", value: "other" },
+    ],
+  },
 
-    {
-      label: "Gender",
-      name: "gender",
-      type: "select",
-      options: [
-        { label: "Male", value: "male" },
-        { label: "Female", value: "female" },
-        { label: "Other", value: "other" },
-      ],
-    },
+  {
+    label: "Department",
+    name: "department",
+    type: "select",
+    options: [
+      { label: "Doctors", value: "doctors" },
+      { label: "Nursing", value: "nursing" },
+      { label: "Admin", value: "admin" },
+    ],
+  },
 
-    {
-      label: "Fin Category",
-      name: "category",
-      type: "select",
-      options: [
-        { label: "APL", value: "apl" },
-        { label: "BPL", value: "bpl" },
-      ],
-    },
+  {
+    label: "Role",
+    name: "role",
+    type: "select",
+    options: [
+      { label: "Doctor", value: "doctor" },
+      { label: "Staff", value: "staff" },
+      { label: "Manager", value: "manager" },
+    ],
+  },
 
-    { label: "Date from", name: "startDate", type: "date" },
-    { label: "Date to", name: "endDate", type: "date" },
-    { label: "Unique Id", name: "idProof_number", type: "text" },
-  ];
+  { label: "Date From", name: "startDate", type: "date" },
+  { label: "Date To", name: "endDate", type: "date" },
+];
 
   const columns = [
-    {
-      name: "Patient",
-      cell: (row) => (
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Avatar name={row.name} gender={row.gender} age={row.age} />
+  {
+    name: "Staff",
+    cell: (row) => (
+      <div className="flex items-center gap-3">
+        <Avatar name={row.staffName} />
 
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
-          </div>
-
-          <div className="leading-tight">
-            <p className="font-semibold text-gray-800">{row.name}</p>
-
-            <p className="text-xs text-gray-500">UHID : {row.external_id}</p>
-          </div>
+        <div className="leading-tight">
+          <p className="font-semibold text-gray-800">
+            {row.staffName}
+          </p>
+          <p className="text-xs text-gray-500">
+            ID : {row.employeeId}
+          </p>
         </div>
-      ),
-    },
+      </div>
+    ),
+  },
 
-    {
-      name: "Mobile",
-      selector: (row) => row.contactNumber,
-    },
+  {
+    name: "Mobile",
+    selector: (row) => row.mobile,
+  },
 
-    {
-      name: "Gender",
-      cell: (row) => {
-        const gender = row.gender?.toLowerCase();
+  {
+    name: "Gender",
+    cell: (row) => {
+      const gender = row.gender?.toLowerCase();
 
-        return (
-          <span
-            className={`px-2 py-1 text-xs rounded-full font-medium
-
-   ${
-     gender === "male"
-       ? "bg-blue-100 text-blue-700"
-       : gender === "female"
-         ? "bg-pink-100 text-pink-700"
-         : "bg-gray-100 text-gray-600"
-   }
-
-   `}
-          >
-            {gender === "male"
-              ? "👨 Male"
+      return (
+        <span
+          className={`px-2 py-1 text-xs rounded-full font-medium
+          ${
+            gender === "male"
+              ? "bg-blue-100 text-blue-700"
               : gender === "female"
-                ? "👩 Female"
-                : "Other"}
-          </span>
-        );
-      },
-    },
-
-    {
-      name: "Age",
-      cell: (row) => (
-        <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-          {row.age} yrs
+              ? "bg-pink-100 text-pink-700"
+              : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          {gender === "male"
+            ? "👨 Male"
+            : gender === "female"
+            ? "👩 Female"
+            : "Other"}
         </span>
-      ),
+      );
     },
+  },
 
-    {
-      name: "Category",
-      cell: (row) => {
-        const category = row.category || "N/A";
+  {
+    name: "Department",
+    selector: (row) => row.department,
+  },
 
-        return (
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-semibold
-     ${
-       category === "APL"
-         ? "bg-green-100 text-green-700"
-         : category === "BPL"
-           ? "bg-orange-100 text-orange-700"
-           : "bg-gray-100 text-gray-600"
-     }
-    `}
-          >
-            {category}
-          </span>
-        );
-      },
-    },
+  {
+    name: "Role",
+    selector: (row) => row.role,
+  },
 
-    {
-      name: "Added On",
-      selector: (row) => new Date(row.createdAt).toISOString().split("T")[0],
-    },
-  ];
+  {
+    name: "Joining Date",
+   selector: (row) =>
+  row.joiningDate
+    ? new Date(row.joiningDate).toISOString().split("T")[0]
+    : "-"
+  },
+];
 
   return (
     <div className="max-w-7xl mx-auto">
       <h1 className="text-2xl font-semibold text-gray-700 mb-6">
-        Patient List
+        Staff List
       </h1>
 
       <CopyFilterBar
@@ -258,7 +265,8 @@ const StaffList = () => {
       />
 
       <PatientTable
-        data={patients}
+      title="Staff List"
+        data={staff}
         columns={columns}
         totalRows={pagination.totalRecords || 0}
         currentPage={pagination.currentPage || page}
@@ -270,8 +278,8 @@ const StaffList = () => {
         }}
         isLoading={isLoading}
         onEdit={(row) => {
-          navigate(`/patient-registration/${row.id}`);
-        }}
+  navigate(`/staff/${row.id}`);
+}}
         onDelete={(row) => {
           console.log("Delete Patient", row);
         }}

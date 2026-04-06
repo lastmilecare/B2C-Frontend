@@ -8,7 +8,7 @@ import {
   ChevronRightIcon
 } from "@heroicons/react/24/outline";
 
-const CopyCommonList = ({ 
+const CommonList = ({ 
   columns, 
   data, 
   isLoading, 
@@ -128,4 +128,4 @@ const CopyCommonList = ({
   );
 };
 
-export default CopyCommonList;
+export default CommonList;

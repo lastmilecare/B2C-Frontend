@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import PatientTable from "../components/copy/PatientTable";
-import CopyFilterBar from "../components/copy/CopyFilterBar";
+import PatientTable from "../components/Updates/PatientTable";
+import CopyFilterBar from "../components/Updates/Filter";
 import {
   useTogglePrescriptionStatusMutation,
   useLazyExportPrescriptionsExcelQuery,
@@ -335,6 +335,7 @@ Prescription List
         onSelectSuggestion={handleSelectBillSuggestion}
       />
       <PatientTable
+       title="Prescription List"
  data={patients}
  columns={columns}
 

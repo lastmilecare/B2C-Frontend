@@ -14,7 +14,7 @@ import {
 } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 
-const DashboardCopy = () => {
+const AppDashboard = () => {
   const navigate = useNavigate();
   const username = cookie.get("username") || "User";
   const { data: patientData } = useGetPatientsQuery({ page: 1, limit: 100 });
@@ -262,4 +262,4 @@ const DashboardCopy = () => {
   );
 };
 
-export default DashboardCopy;
+export default AppDashboard;

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
-import CopyFilterBar from "../components/copy/CopyFilterBar";
+import CopyFilterBar from "../components/Updates/Filter";
 import {
   useGetSalesStockDetailsQuery,
   useGetComboQuery,

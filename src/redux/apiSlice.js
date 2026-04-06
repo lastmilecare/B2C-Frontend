@@ -618,6 +618,13 @@ export const api = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+    viewStockBills: build.query({
+  query: (params) => ({
+    url: "/medicine-inventory/stock/view",
+    method: "GET",
+    params,
+  }),
+}),
   }),
 });
 
@@ -680,5 +687,6 @@ export const {
   useGetMonthlyStatsQuery,
   useGetAdminDashboardQuery,
   useGetCalendarDataQuery,
-  useLazyGetAttendanceExportQuery
+  useLazyGetAttendanceExportQuery,
+  useViewStockBillsQuery,
 } = api;

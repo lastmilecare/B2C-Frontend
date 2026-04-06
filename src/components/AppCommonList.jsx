@@ -4,7 +4,7 @@ import DataTable from "react-data-table-component";
 import { EllipsisVerticalIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { healthAlert } from "../utils/healthSwal";
 import GlobalLoader from "./common/GlobalLoader";
-const CommonListCopy = ({
+const AppCommonList = ({
   title = "Records",
   columns = [],
   data = [],
@@ -284,7 +284,7 @@ const CommonListCopy = ({
   );
 };
 
-export default CommonListCopy;
+export default AppCommonList;
 
 const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenuRow }) => {
   const isOpen = openMenuRow === row;

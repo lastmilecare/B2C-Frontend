@@ -1,10 +1,11 @@
 import React from "react";
+// import CommonList from "../CommonList";
 import CommonList from "../CommonList";
 
 const PatientTable = ({
  data,
  columns,
- title="Patient List",
+ title={title},
  totalRows,
  currentPage,
  perPage,

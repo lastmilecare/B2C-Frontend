@@ -473,20 +473,30 @@ const StaffForm = ({ refetchList }) => {
               </span>
               Add Staff
             </h1>
+            <div className="flex gap-2">
+    {[1, 2, 3, 4].map((s) => (
+      <div
+        key={s}
+        className={`h-2 w-12 rounded-full ${
+          activeStep >= s ? "bg-sky-600" : "bg-sky-100"
+        }`}
+      />
+    ))}
+  </div>
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
             <div className="flex border-b">
               {[
                 { id: 1, label: "Staff", icon: ClipboardDocumentIcon },
-                { id: 2, label: "Medicine", icon: BeakerIcon },
-                { id: 3, label: "Items", icon: CreditCardIcon },
-                { id: 4, label: "Payment", icon: DocumentCheckIcon },
+                { id: 2, label: "Roles", icon: UserPlusIcon },
+                { id: 3, label: "Basic Info", icon: ClipboardDocumentIcon },
+                { id: 4, label: "Summary", icon: DocumentCheckIcon },
               ].map((step) => (
                 <button
                   key={step.id}
                   type="button"
-                  disabled
+                   disabled
                   onClick={() => setActiveStep(step.id)}
                   className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
                   ${activeStep === step.id ? "bg-white text-blue-600 shadow" : "text-gray-400"}`}
@@ -497,7 +507,14 @@ const StaffForm = ({ refetchList }) => {
                 </button>
               ))}
             </div>
-            <form onSubmit={formik.handleSubmit} className="space-y-6 p-6">
+            <form
+  onSubmit={(e) => {
+    e.preventDefault();
+    
+  }}
+  className="space-y-6 p-6"
+>
+           
               {activeStep === 1 && (
                 <section className="space-y-4">
                   <h3 className="text-sky-700 font-semibold text-lg">
@@ -530,6 +547,12 @@ const StaffForm = ({ refetchList }) => {
                       {...formik.getFieldProps("phone")}
                     />
                     <Input label="Email *" {...formik.getFieldProps("email")} />
+                    <Input label="Password *"
+                    type="password"
+                    {...formik.getFieldProps("password")} />
+                    <Input label="Confirm Password *"
+                    type="password"
+                     {...formik.getFieldProps("confirm password")} />
                   </div>
                 </section>
               )}
@@ -608,76 +631,37 @@ const StaffForm = ({ refetchList }) => {
               )}
 
               {activeStep === 4 && (
-                <section className="bg-gray-50 p-6 rounded-xl border">
-                  <h3 className="text-sky-700 font-semibold mb-4">
-                    Payment Summary
-                  </h3>
+  <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <Input
-                        label="Total Quantity"
-                        value={formik.values.totalQuantity}
-                        readOnly
-                      />
-                      <Input
-                        label="Total Discount"
-                        value={formik.values.totalDiscount}
-                        readOnly
-                      />
-                      <Input
-                        label="Total Amount"
-                        value={formik.values.totalAmount}
-                        readOnly
-                      />
-                      <Select
-                        label="Pay Mode *"
-                        {...formik.getFieldProps("payMode")}
-                      >
-                        <option value="">-- Select --</option>
-                        {Picaso_Paymode_Options.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.name}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Input
-                        label="CGST Amount"
-                        value={formik.values.cgstAmount}
-                        readOnly
-                      />
-                      <Input
-                        label="Gross Amount"
-                        value={formik.values.grossAmount}
-                        readOnly
-                      />
-                      <Input
-                        label="Paid Amount"
-                        {...formik.getFieldProps("paidAmount")}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Input
-                        label="SGST Amount"
-                        value={formik.values.sgstAmount}
-                        readOnly
-                      />
-                      <Input
-                        label="Taxable Amount"
-                        value={formik.values.taxableAmount}
-                        readOnly
-                      />
-                      <Input
-                        label="Due Amount"
-                        value={formik.values.dueAmount}
-                        readOnly
-                      />
-                    </div>
-                  </div>
-                </section>
-              )}
+    <h3 className="text-lg font-semibold text-sky-600">
+      Confirm Staff Details
+    </h3>
+
+    
+    <div className="grid md:grid-cols-2 gap-3 text-sm">
+      <p><b>Name:</b> {formik.values.Name}</p>
+      <p><b>Employee No:</b> {formik.values.EmployeeNo}</p>
+      <p><b>Mobile:</b> {formik.values.phone}</p>
+      <p><b>Email:</b> {formik.values.email}</p>
+    </div>
+
+    
+    <div className="border-t pt-3 text-sm grid md:grid-cols-2 gap-3">
+      <p><b>Designation:</b> {formik.values.designation}</p>
+      <p><b>Department:</b> {formik.values.department}</p>
+      <p><b>Employee Type:</b> {formik.values.employeeType}</p>
+      <p><b>Timings:</b> {formik.values.timings}</p>
+    </div>
+
+    
+    <div className="border-t pt-3 text-sm grid md:grid-cols-2 gap-3">
+      <p><b>Emergency Contact:</b> {formik.values.emergencyContact}</p>
+      <p><b>Address:</b> {formik.values.permanentAddress}</p>
+      <p><b>Qualification:</b> {formik.values.education}</p>
+    </div>
+
+  </div>
+)}
               <div className="flex justify-between items-center pt-6 border-t">
                 <div>
                   {activeStep > 1 && (
@@ -701,9 +685,14 @@ const StaffForm = ({ refetchList }) => {
                       Continue
                     </Button>
                   ) : (
-                    <Button type="submit" variant="sky">
-                      Save
-                    </Button>
+                   <Button
+  type="button"
+  variant="sky"
+  onClick={formik.handleSubmit}
+>
+  <CheckCircleIcon className="w-5 h-5 mr-1" />
+  Save
+</Button>
                   )}
                 </div>
               </div>
