@@ -37,6 +37,7 @@ import StaffForm from "./pages/StaffForm";
 import StaffList from "./pages/StaffList";
 import Permission from "./pages/Permission";
 import Roles from "./pages/Roles";
+import Dashboard from "./pages/AppDashboard";
 function App() {
   return (
     <BrowserRouter>
@@ -439,6 +440,16 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <Permission />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/AdminDashboard"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Dashboard />
               </AppLayout>
             </ProtectedRoute>
           }
