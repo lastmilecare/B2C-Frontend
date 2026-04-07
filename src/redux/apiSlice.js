@@ -691,6 +691,66 @@ export const api = createApi({
       }),
       invalidatesTags: ["Tenant"],
     }),
+    getPermissions: build.query({
+      query: (params = {}) => ({
+        url: `${VITE_AUTH_URL}permissions`,
+        method: "get",
+        params: {
+          page: params.page || 1,
+          limit: params.limit || 10,
+          action: params.action || undefined,
+          resource: params.resource || undefined,
+          startDate: params.startDate || undefined,
+          endDate: params.endDate || undefined,
+        },
+      }),
+      providesTags: ["Permission"],
+    }),
+
+    // ── Get Permissions Grouped by Resource ───────────────────────────────
+    getPermissionsGrouped: build.query({
+      query: () => ({ url: `${VITE_AUTH_URL}permissions/grouped`, method: "get" }),
+      providesTags: ["Permission"],
+    }),
+
+    // ── Get Permissions by Role ────────────────────────────────────────────
+    getPermissionsByRole: build.query({
+      query: (roleId) => ({
+        url: `${VITE_AUTH_URL}permissions/by-role/${roleId}`,
+        method: "get",
+      }),
+      providesTags: (_result, _error, roleId) => [
+        { type: "Permission", id: roleId },
+      ],
+    }),
+
+    // ── Get Single Permission ──────────────────────────────────────────────
+    getPermissionById: build.query({
+      query: (id) => ({ url: `${VITE_AUTH_URL}permissions/${id}`, method: "get" }),
+      providesTags: (_result, _error, id) => [{ type: "Permission", id }],
+    }),
+
+    // ── Create Permission ─────────────────────────────────────────────────
+    createPermission: build.mutation({
+      query: (body) => ({ url: `${VITE_AUTH_URL}permissions`, method: "post", data: body }),
+      invalidatesTags: ["Permission"],
+    }),
+
+    // ── Update Permission ─────────────────────────────────────────────────
+    updatePermission: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `${VITE_AUTH_URL}permissions/${id}`,
+        method: "patch",
+        data: body,
+      }),
+      invalidatesTags: ["Permission"],
+    }),
+
+    // ── Delete Permission ─────────────────────────────────────────────────
+    deletePermission: build.mutation({
+      query: (id) => ({ url: `${VITE_AUTH_URL}permissions/${id}`, method: "delete" }),
+      invalidatesTags: ["Permission"],
+    }),
   }),
 });
 
@@ -761,4 +821,11 @@ export const {
   useUpdateTenantMutation,
   useToggleTenantStatusMutation,
   useDeleteTenantMutation,
+  useGetPermissionsQuery,
+  useGetPermissionsGroupedQuery,
+  useGetPermissionsByRoleQuery,
+  useGetPermissionByIdQuery,
+  useCreatePermissionMutation,
+  useUpdatePermissionMutation,
+  useDeletePermissionMutation,
 } = api;
