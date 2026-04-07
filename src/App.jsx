@@ -37,6 +37,8 @@ import StaffForm from "./pages/StaffForm";
 import StaffList from "./pages/StaffList";
 import Permission from "./pages/Permission";
 import Roles from "./pages/Roles";
+import TenantForm from "./pages/TenantForm";
+import TenantList from "./pages/TenantList";
 import Dashboard from "./pages/AppDashboard";
 function App() {
   return (
@@ -414,7 +416,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/staff-list"
           element={
             <ProtectedRoute>
@@ -444,12 +446,32 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
+	<Route
           path="/AdminDashboard"
           element={
             <ProtectedRoute>
               <AppLayout>
                 <Dashboard />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+	<Route
+          path="/tenant-list"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <TenantList />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tenants"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <TenantForm />
               </AppLayout>
             </ProtectedRoute>
           }

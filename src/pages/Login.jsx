@@ -20,7 +20,13 @@ const Login = () => {
     try {
       const data = await login(values).unwrap();
       dispatch(setCredentials(data));
-      navigate("/");
+      // navigate("/");
+      const role = data?.data?.role;
+      if (role === "LMC_ADMIN") {
+        navigate("/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       healthAlert({
         icon: "error",
