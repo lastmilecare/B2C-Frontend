@@ -7,6 +7,7 @@ import {
 import CommonList from "../components/CommonList";
 import { healthAlert } from "../utils/healthSwal";
 import { useNavigate } from "react-router-dom";
+import CopyFilterBar from "../components/Updates/Filter";
 
 const TenantList = () => {
   const navigate = useNavigate();
@@ -31,8 +32,23 @@ const TenantList = () => {
   );
   const [deleteTenant] = useDeleteTenantMutation();
   const [toggleStatus] = useToggleTenantStatusMutation();
-  const tenants = data?.data || [];
+  const tenants = data?.data?.data || [];
+
   const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
+  const filtersConfig = [
+    { label: "Name", name: "name", type: "text" },
+    { label: "Date from ", name: "startDate", type: "date" },
+    { label: "Date to", name: "endDate", type: "date" },
+  ];
+  const handleResetFilters = () => {
+    setTempFilters({
+      name: "",
+      startDate: "",
+      endDate: "",
+    });
+    setFilters({});
+    setPage(1);
+  };
   const handleDelete = async (row) => {
     try {
       await deleteTenant(row.id).unwrap();
@@ -59,14 +75,53 @@ const TenantList = () => {
       });
     }
   };
+
   const handleEdit = (row) => {
-    navigate(`/tenant/${row.id}`);
+    if (!row || !row.id) {
+      healthAlert({
+        title: "Error",
+        text: "Tenant ID not found for this record.",
+        icon: "error",
+      });
+      return;
+    }
+    navigate(`/tenants`, {
+      state: {
+        editData: row,
+      },
+    });
   };
-  const handleFilterApply = () => {
+  const handleApplyFilters = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const { startDate, endDate } = tempFilters;
+
+    if (endDate && endDate > today) {
+      healthAlert({
+        title: "Tenant List",
+        text: `End date cannot be greater than today.`,
+        icon: "info",
+      });
+      return;
+    }
+
+    if (startDate && endDate && startDate > endDate) {
+      healthAlert({
+        title: "Tenant List",
+        text: `Start date cannot be after end date.`,
+        icon: "info",
+      });
+      return;
+    }
+
     setFilters(tempFilters);
     setPage(1);
   };
+
   const columns = [
+    {
+      name: "SL No",
+      selector: (_, x) => x + 1,
+    },
     {
       name: "Name",
       selector: (row) => row.name,
@@ -94,7 +149,12 @@ const TenantList = () => {
   return (
     <div className="max-w-6xl mx-auto">
       <h1 className="text-2xl font-semibold mb-4">Tenant List</h1>
-
+      <CopyFilterBar
+        filtersConfig={filtersConfig}
+        tempFilters={tempFilters}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+      />
       <CommonList
         data={tenants}
         columns={columns}

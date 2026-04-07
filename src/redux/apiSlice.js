@@ -631,16 +631,23 @@ export const api = createApi({
       }),
     }),
     getTenants: build.query({
-      query: (params = {}) => ({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        status,
+        startDate,
+        endDate,
+      } = {}) => ({
         url: `${VITE_AUTH_URL}tenants`,
         method: "get",
         params: {
-          page: params.page || 1,
-          limit: params.limit || 10,
-          name: params.name || undefined,
-          status: params.status !== undefined ? params.status : undefined,
-          startDate: params.startDate || undefined,
-          endDate: params.endDate || undefined,
+          page,
+          limit,
+          name,
+          status,
+          startDate,
+          endDate,
         },
       }),
       providesTags: ["Tenant"],
