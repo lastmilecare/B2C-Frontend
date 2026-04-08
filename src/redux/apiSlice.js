@@ -890,6 +890,10 @@ export const api = createApi({
       }),
       invalidatesTags: ["Users"],
     }),
+    getAllPermissionsCombo: build.query({
+      query: () => ({ url: `${VITE_AUTH_URL}permissions/combo`, method: "get" }),
+      providesTags: ["PermissionCombo"],
+    }),
   }),
 });
 
@@ -977,4 +981,5 @@ export const {
   useRemovePermissionMutation,
   useDeleteRoleMutation,
   useGetAllTenantsQuery,
+  useGetAllPermissionsComboQuery,
 } = api;

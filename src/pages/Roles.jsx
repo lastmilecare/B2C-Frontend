@@ -6,16 +6,18 @@ import {
   useCreateRoleMutation,
   useDeleteRoleMutation,
   useGetAllTenantsQuery,
+  useGetAllPermissionsComboQuery,
 } from "../redux/apiSlice";
 import { healthAlert } from "../utils/healthSwal";
-
+import { cookie } from "../utils/cookie";
 const Roles = () => {
   const [form, setForm] = useState({
     name: "",
     tenantId: "",
     description: "",
+    permissionIds: [],
   });
-
+  const role = cookie.get("role");
   const [filters, setFilters] = useState({
     page: 1,
     limit: 10,
@@ -33,31 +35,53 @@ const Roles = () => {
 
   // ── TEMP Tenants (replace with API later) ─────────────────
   const tenants = tenantData?.data?.data || [];
-  console.log("Tenants:", tenants);
+  const { data: permissionsData } = useGetAllPermissionsComboQuery();
+  const permissions = permissionsData?.data?.data || [];
+  const permissionFilters =
+    role === "LMC_Admin"
+      ? permissions
+      : permissions.filter(
+          (p) => p.resource !== "tenant" && p.resource !== "role",
+        );
   // ── Handlers ─────────────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+  const handlePermissionChange = (e) => {
+    const values = Array.from(e.target.selectedOptions, (opt) =>
+      Number(opt.value),
+    );
+
+    setForm((prev) => ({
+      ...prev,
+      permissionIds: values,
+    }));
+  };
 
   const handleSubmit = async () => {
-    if (!form.name || !form.tenantId) {
+    if (!form.name || !form.tenantId || form.permissionIds.length === 0) {
       healthAlert({
         title: "Role",
-        text: "Role name and tenant are required",
+        text: "Role name, tenant, and permissions are required",
         icon: "info",
       });
       return;
     }
-debugger;
     try {
       await createRole({
         name: form.name,
         tenantId: Number(form.tenantId),
         description: form.description,
+        permissionIds: form.permissionIds,
       }).unwrap();
 
       setForm({ name: "", tenantId: "", description: "" });
+      healthAlert({
+        title: "Role",
+        text: "Role created successfully",
+        icon: "success",
+      });
     } catch (error) {
       healthAlert({
         title: "Role",
@@ -135,7 +159,21 @@ debugger;
               ))}
             </select>
           </div>
-
+          <div>
+            <label className="text-sm">Permission *</label>
+            <select
+              multiple
+              value={form.permissionIds}
+              onChange={handlePermissionChange}
+              className="w-full mt-1 p-3 border rounded-lg h-40"
+            >
+              {permissionFilters.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.action}:{p.resource}
+                </option>
+              ))}
+            </select>
+          </div>
           {/* Description */}
           <div>
             <label className="text-sm">Description</label>
