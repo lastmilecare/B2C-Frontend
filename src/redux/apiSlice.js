@@ -891,8 +891,24 @@ export const api = createApi({
       invalidatesTags: ["Users"],
     }),
     getAllPermissionsCombo: build.query({
-      query: () => ({ url: `${VITE_AUTH_URL}permissions/combo`, method: "get" }),
+      query: () => ({
+        url: `${VITE_AUTH_URL}permissions/combo`,
+        method: "get",
+      }),
       providesTags: ["PermissionCombo"],
+    }),
+    getAllRoleCombo: build.query({
+      query: () => ({
+        url: `${VITE_AUTH_URL}roles/combo`,
+        method: "GET",
+      }),
+    }),
+    toggleUserStatus: build.mutation({
+      query: (id) => ({
+        url: `${VITE_AUTH_URL}users/${id}/toggle-status`,
+        method: "patch",
+      }),
+      invalidatesTags: ["Users"],
     }),
   }),
 });
@@ -982,4 +998,10 @@ export const {
   useDeleteRoleMutation,
   useGetAllTenantsQuery,
   useGetAllPermissionsComboQuery,
+  useGetUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+  useGetAllRoleComboQuery,
+  useToggleUserStatusMutation
 } = api;
