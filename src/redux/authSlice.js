@@ -43,7 +43,7 @@ const authSlice = createSlice({
   },
   reducers: {
     setCredentials: (state, action) => {
-      const { token, email, role, tenantId, permissions } = action.payload.data;
+      const { token, email, role, tenantId, permissions,username } = action.payload.data;
 
       state.user        = action.payload.data;
       state.token       = token;
@@ -57,6 +57,7 @@ const authSlice = createSlice({
       cookie.set("email",       email);
       cookie.set("tenantId",    tenantId ?? "");
       cookie.set("permissions", JSON.stringify(permissions));
+      cookie.set("username",     username);
     },
 
     logout: (state) => {
@@ -71,6 +72,7 @@ const authSlice = createSlice({
       cookie.remove("email");
       cookie.remove("tenantId");
       cookie.remove("permissions");
+      cookie.remove("username");
     },
   },
 });

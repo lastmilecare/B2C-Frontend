@@ -366,7 +366,7 @@ const StaffForm = () => {
                           </td>
                           <td className="px-4 py-3">
                             <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded-md text-xs font-medium">
-                              {staff.RoleB2C?.name || "—"}
+                              {staff.roleb2c?.name || "—"}
                             </span>
                           </td>
                           <td className="px-4 py-3">
