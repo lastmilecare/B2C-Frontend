@@ -45,6 +45,7 @@ import AppointmentVisit from "./pages/AppointmentVisit";
 import MedicalHistory from "./pages/MedicalHistory";
 import ClinicalExamination from "./pages/ClinicalExamination";
 import LaboratoryInvestigation from "./pages/LaboratoryInvestigation";
+import RadiologyScreen from "./pages/RadiologyScreen";
 function App() {
   return (
     <BrowserRouter>
@@ -527,6 +528,16 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <LaboratoryInvestigation />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/RadiologyScreen"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <RadiologyScreen />
               </AppLayout>
             </ProtectedRoute>
           }

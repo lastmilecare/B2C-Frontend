@@ -427,6 +427,14 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 >
                   Laboratory Investigation
                 </NavLink>
+                
+                <NavLink
+                  to="/RadiologyScreen"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  RadiologyScreen
+                </NavLink>
               </motion.div>
             )}
           </AnimatePresence>
