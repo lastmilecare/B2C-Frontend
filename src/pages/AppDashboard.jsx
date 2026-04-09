@@ -1,269 +1,266 @@
-import { motion } from "framer-motion";
+import React, { useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  UserIcon,
-  ClipboardDocumentIcon,
-  ArchiveBoxIcon,
-  DocumentTextIcon,
-} from "@heroicons/react/24/outline";
-
-import {
-  useGetPatientsQuery,
-  useGetOpdBillingQuery,
-  useGetPrescriptionsListQuery,
-  useViewStockBillsQuery
-} from "../redux/apiSlice";
+import { motion } from "framer-motion";
 import { cookie } from "../utils/cookie";
 
-const AppDashboard = () => {
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  BarChart,
+  Bar,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+
+const Dashboard = () => {
   const navigate = useNavigate();
-  const username = cookie.get("username") || "User";
-  const { data: patientData } = useGetPatientsQuery({ page: 1, limit: 100 });
-  const { data: opdData } = useGetOpdBillingQuery({ page: 1, limit: 100 });
-  const { data: prescriptionData } = useGetPrescriptionsListQuery({
-    page: 1,
-    limit: 100,
-  });
+  const username = cookie?.get?.("username") || "Admin";
 
-  const patients = patientData?.data || [];
-  const opd = opdData?.data || [];
-  const prescriptions = prescriptionData?.data || [];
-  const { data: stockData } = useViewStockBillsQuery({
-  page: 1,
-  limit: 200,
-});
+  const today = new Date().toISOString().split("T")[0];
 
-  const today = new Date().toDateString();
 
-  const todayPatients = patients.filter(
-    (p) => new Date(p.createdAt).toDateString() === today,
-  ).length;
 
-  const todayOpd = opd.filter(
-    (o) => new Date(o.AddedDate).toDateString() === today,
-  ).length;
+  const tenants = ["All", "Tenant A", "Tenant B"];
+  const centers = ["All", "Gurgaon", "Noida"];
+  const years = ["2026", "2025"];
 
-  const todayPrescription = prescriptions.filter(
-    (p) => new Date(p.addedDate).toDateString() === today,
-  ).length;
+ 
 
-  const recentPatients = patients.slice(0, 5);
-  const lowStock = stockData?.data?.filter(
-  (item) => item.BalQty < 10
-);
+  const initialFilters = {
+    tenant: "All",
+    center: "All",
+    from: "",
+    to: "",
+    year: "2026",
+    type: "Monthly",
+  };
 
-  /* ---------------- MODULES ---------------- */
+  const [filters, setFilters] = useState(initialFilters);
+  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
 
-  const modules = [
-    {
-      title: "Patients",
-      icon: <UserIcon className="w-6" />,
-      items: [
-        { name: "Patient Registration", path: "/patient-registration-copy" },
-        { name: "Patient List", path: "/patient-list-copy" },
-      ],
-    },
+ 
 
-    {
-      title: "OPD",
-      icon: <ClipboardDocumentIcon className="w-6" />,
-      items: [
-        { name: "OPD Form", path: "/opd-form-copy" },
-        { name: "OPD Billing", path: "/opd-list-copy" },
-      ],
-    },
+  const rawData = useMemo(() => [
+    { date: "2026-01-01", tenant: "Tenant A", center: "Gurgaon", tested: 40, pending: 200 },
+    { date: "2026-02-01", tenant: "Tenant A", center: "Noida", tested: 110, pending: 300 },
+    { date: "2026-03-01", tenant: "Tenant B", center: "Gurgaon", tested: 150, pending: 400 },
+    { date: "2026-04-01", tenant: "Tenant A", center: "Noida", tested: 380, pending: 3000 },
+    { date: "2026-04-05", tenant: "Tenant B", center: "Noida", tested: 120, pending: 500 },
+  ], []);
 
-    {
-      title: "Prescription",
-      icon: <DocumentTextIcon className="w-6" />,
-      items: [
-        { name: "Prescription Form", path: "/prescription-form-copy" },
-        { name: "Prescription List", path: "/prescription-list-copy" },
-      ],
-    },
+  
 
-    {
-      title: "Inventory",
-      icon: <ArchiveBoxIcon className="w-6" />,
-      items: [
-        { name: "Purchased Entry", path: "/purchased-entry-copy" },
-        { name: "Medicine Billing", path: "/billing-copy" },
-        { name: "Sales Record", path: "/sales-record-copy" },
-      ],
-    },
-  ];
+  const filteredData = useMemo(() => {
+    let data = [...rawData];
+
+    if (appliedFilters.tenant !== "All") {
+      data = data.filter(d => d.tenant === appliedFilters.tenant);
+    }
+
+    if (appliedFilters.center !== "All") {
+      data = data.filter(d => d.center === appliedFilters.center);
+    }
+
+    if (appliedFilters.year) {
+      data = data.filter(d => d.date.startsWith(appliedFilters.year));
+    }
+
+    if (appliedFilters.from) {
+      data = data.filter(d => new Date(d.date) >= new Date(appliedFilters.from));
+    }
+
+    if (appliedFilters.to) {
+      data = data.filter(d => new Date(d.date) <= new Date(appliedFilters.to));
+    }
+
+    return data;
+  }, [appliedFilters, rawData]);
+
+
+  const chartData = useMemo(() => {
+    const grouped = {};
+
+    filteredData.forEach(d => {
+      const key =
+        appliedFilters.type === "Yearly"
+          ? d.date.substring(0, 4)
+          : new Date(d.date).toLocaleString("default", { month: "short" });
+
+      if (!grouped[key]) {
+        grouped[key] = { label: key, tested: 0, pending: 0 };
+      }
+
+      grouped[key].tested += d.tested;
+      grouped[key].pending += d.pending;
+    });
+
+    return Object.values(grouped);
+  }, [filteredData, appliedFilters.type]);
+
+  
+
+  const stats = useMemo(() => {
+    const total = filteredData.reduce((a, c) => a + c.tested + c.pending, 0);
+    const tested = filteredData.reduce((a, c) => a + c.tested, 0);
+    const pending = filteredData.reduce((a, c) => a + c.pending, 0);
+
+    const todayTested =
+      filteredData.filter(d => d.date === today)
+        .reduce((a, c) => a + c.tested, 0);
+
+    const coverage =
+      total > 0 ? ((tested / total) * 100).toFixed(1) + "%" : "0%";
+
+    return { total, tested, pending, todayTested, coverage };
+  }, [filteredData, today]);
+
+
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  }, []);
+
+  const handleApply = () => setAppliedFilters(filters);
+
+  const handleReset = () => {
+    setFilters(initialFilters);
+    setAppliedFilters(initialFilters);
+  };
+
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-10"
-    >
-      {/* HEADER */}
+    <div className="space-y-6">
 
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
+    
+      <div className="bg-emerald-600 text-white p-6 rounded-xl flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Welcome back, {username} 👋</h2>
-
-          <p className="opacity-90">LMC Healthcare Management System</p>
+          <h2 className="text-lg font-bold">
+            Welcome back, {username} 👋
+          </h2>
+          <p className="text-sm">Healthcare Dashboard</p>
         </div>
 
-        <div className="text-right">
-          <p className="text-sm opacity-80">Today</p>
-
-          <p className="text-lg font-semibold">
-            {new Date().toLocaleDateString()}
-          </p>
-        </div>
-      </div>
-
-      {/* MODULE CARDS */}
-
-      <div className="grid grid-cols-4 gap-6">
-        {modules.map((m) => (
-          <motion.div
-            whileHover={{ y: -6 }}
-            key={m.title}
-            className="group relative bg-white/70 backdrop-blur-lg border border-white/30 shadow-lg rounded-2xl p-6 cursor-pointer transition"
-          >
-            <div className="flex items-center gap-3">
-              <div className="text-emerald-600">{m.icon}</div>
-
-              <h3 className="font-semibold text-gray-700">{m.title}</h3>
-            </div>
-
-            {/* dropdown */}
-
-            <div className="absolute left-0 top-16 hidden group-hover:block bg-white shadow-xl rounded-xl mt-2 w-56 p-4 z-[999]">
-              {m.items.map((item) => (
-                <div
-                  key={item.name}
-                  onClick={() => navigate(item.path)}
-                  className="text-sm py-2 hover:text-emerald-600 cursor-pointer"
-                >
-                  {item.name}
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* STATS */}
-
-      <div className="grid grid-cols-4 gap-6">
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm"
-        >
-          <p className="text-sm">Today Patients</p>
-
-          <h2 className="text-3xl font-bold">{todayPatients}</h2>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          className="bg-blue-50 border border-blue-200 text-blue-700 rounded-xl p-6 shadow-sm"
-        >
-          <p className="text-sm">Today's OPD</p>
-
-          <h2 className="text-3xl font-bold">{todayOpd}</h2>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-6 shadow-sm"
-        >
-          <p className="text-sm">Low Stock</p>
-
-          <h2 className="text-3xl font-bold">
-  {lowStock?.length || 0}
-</h2>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          className="bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl p-6 shadow-sm"
-        >
-          <p className="text-sm">Today Prescription</p>
-
-          <h2 className="text-3xl font-bold">{todayPrescription}</h2>
-        </motion.div>
-      </div>
-
-      {/* QUICK ACTION */}
-
-      <div className="grid grid-cols-4 gap-6">
-        <button
-          onClick={() => navigate("/patient-registration-copy")}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl shadow-sm transition"
-        >
-          Register Patient
-        </button>
-
-        <button
-          onClick={() => navigate("/opd-form")}
-          className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl shadow-sm transition"
-        >
-          Create OPD
-        </button>
-
-        <button
-          onClick={() => navigate("/purchased-entry")}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-xl shadow-sm transition"
-        >
-          Add Medicine
-        </button>
-
-        <button
-          onClick={() => navigate("/medicines-billing")}
-          className="bg-gray-700 hover:bg-gray-800 text-white p-4 rounded-xl shadow-sm transition"
-        >
-          Billing
-        </button>
         <button
           onClick={() => navigate("/attendance")}
-          className="bg-yellow-600 hover:bg-yellow-700 text-white p-4 rounded-xl"
+          className="bg-white text-emerald-600 px-4 py-2 rounded-lg"
         >
           Attendance
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div className="bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6">
-          <h3 className="font-semibold mb-4">Recent Patients</h3>
+      
+      <div className="bg-emerald-50 border rounded-xl p-4">
 
-          <div className="space-y-2 text-sm">
-            {recentPatients.map((p) => (
-              <div key={p.id} className="flex justify-between">
-                <span>{p.name}</span>
+        <div className="grid grid-cols-4 gap-4 mb-3">
+          <Select label="Tenant" name="tenant" value={filters.tenant} onChange={handleChange} options={tenants} />
+          <Select label="Center" name="center" value={filters.center} onChange={handleChange} options={centers} />
+          <Input label="From Date" type="date" name="from" max={today} value={filters.from} onChange={handleChange} />
+          <Input label="To Date" type="date" name="to" max={today} value={filters.to} onChange={handleChange} />
+        </div>
 
-                <span className="text-gray-400">
-                  {new Date(p.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-            ))}
+        <div className="grid grid-cols-4 gap-4 items-end">
+          <Select label="Year" name="year" value={filters.year} onChange={handleChange} options={years} />
+          <Select label="View Type" name="type" value={filters.type} onChange={handleChange} options={["Monthly", "Yearly"]} />
+
+          <div className="col-span-2 flex justify-end gap-2">
+            <button onClick={handleReset} className="px-4 py-2 border rounded-lg">
+              Reset
+            </button>
+            <button onClick={handleApply} className="px-4 py-2 bg-emerald-600 text-white rounded-lg">
+              Apply
+            </button>
           </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6">
-          <h3 className="font-semibold mb-4">Low Stock Medicines</h3>
-
-          <div className="space-y-2 text-sm">
-            {lowStock?.slice(0, 5).map((item) => (
-  <div key={item.ID} className="flex justify-between">
-    <span>{item.ItemName}</span>
-    <span className="text-red-500">
-      {item.BalQty} left
-    </span>
-  </div>
-))}
-          </div>
-        </div>
       </div>
-    </motion.div>
+
+  
+      <div className="grid grid-cols-5 gap-4">
+        <Card title="Total" value={stats.total} />
+        <Card title="Tested" value={stats.tested} color="text-green-600" />
+        <Card title="Pending" value={stats.pending} color="text-red-500" />
+        <Card title="Coverage" value={stats.coverage} />
+        <Card title="Today" value={stats.todayTested} />
+      </div>
+
+      
+      {chartData.length === 0 ? (
+        <div className="text-center text-gray-500 py-10">
+          No data found for selected filters
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+
+          <ChartCard title="Testing Trend">
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="label" />
+              <YAxis />
+              <Tooltip />
+              <Line dataKey="tested" stroke="#059669" />
+            </LineChart>
+          </ChartCard>
+
+          <ChartCard title="Tested vs Pending">
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="label" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="tested" fill="#059669" />
+              <Bar dataKey="pending" fill="#ef4444" />
+            </BarChart>
+          </ChartCard>
+
+        </div>
+      )}
+
+    </div>
   );
 };
 
-export default AppDashboard;
+
+
+const Select = ({ label, name, value, onChange, options }) => (
+  <div>
+    <label className="text-xs text-gray-600">{label}</label>
+    <select
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="w-full border p-2 rounded-lg text-sm"
+    >
+      {options.map(o => <option key={o}>{o}</option>)}
+    </select>
+  </div>
+);
+
+const Input = ({ label, ...props }) => (
+  <div>
+    <label className="text-xs text-gray-600">{label}</label>
+    <input {...props} className="w-full border p-2 rounded-lg text-sm" />
+  </div>
+);
+
+const Card = ({ title, value, color }) => (
+  <motion.div whileHover={{ scale: 1.05 }} className="bg-white p-4 rounded-lg shadow text-center">
+    <p className="text-xs text-gray-500">{title}</p>
+    <h2 className={`text-lg font-bold ${color || ""}`}>{value}</h2>
+  </motion.div>
+);
+
+const ChartCard = ({ title, children }) => (
+  <div className="bg-white p-4 rounded-xl shadow">
+    <h3 className="text-sm font-semibold mb-2">{title}</h3>
+    <ResponsiveContainer width="100%" height={200}>
+      {children}
+    </ResponsiveContainer>
+  </div>
+);
+
+export default Dashboard;

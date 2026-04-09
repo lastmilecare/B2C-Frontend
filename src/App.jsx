@@ -39,6 +39,13 @@ import Permission from "./pages/Permission";
 import Roles from "./pages/Roles";
 import TenantForm from "./pages/TenantForm";
 import TenantList from "./pages/TenantList";
+import Dashboard from "./pages/AppDashboard";
+import PatientRegistrationOhc from "./pages/PatientFormOhc";
+import AppointmentVisit from "./pages/AppointmentVisit";
+import MedicalHistory from "./pages/MedicalHistory";
+import ClinicalExamination from "./pages/ClinicalExamination";
+import LaboratoryInvestigation from "./pages/LaboratoryInvestigation";
+import RadiologyScreen from "./pages/RadiologyScreen";
 function App() {
   return (
     <BrowserRouter>
@@ -465,6 +472,77 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Dashboard />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/PatientRegistrationOhc"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <PatientRegistrationOhc />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/appointmentvisit"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <AppointmentVisit />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/medicalhistory"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <MedicalHistory />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ClinicalExamination"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <ClinicalExamination />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/LaboratoryInvestigation"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <LaboratoryInvestigation />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/RadiologyScreen"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <RadiologyScreen />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        
         <Route path="/print-opd-form" element={<PrintOpdForm />} />
         {/* <Route path="/staff-form" element={<StaffForm />} /> */}
         {/* <Route path="/staff-list" element={<StaffList />} /> */}

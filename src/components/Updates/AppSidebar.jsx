@@ -24,6 +24,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     staff: false,
     Rolemanagement: false,
     Tenants: false,
+    OHC: false,
   });
   const role = cookie.get("role") || "USER";
   const toggleSubMenu = (menu) =>
@@ -365,6 +366,74 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                   onClick={() => setIsOpen(false)}
                 >
                   Tenant List
+                </NavLink>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        
+        <div className="space-y-1">
+          <button
+            onClick={() => toggleSubMenu("OHC")}
+            className="flex justify-between items-center w-full px-4 py-2.5 text-gray-600 rounded-xl hover:bg-emerald-50"
+          >
+            <span className="flex items-center gap-3">
+              <BuildingLibraryIcon className="w-5" /> OHC
+            </span>
+            <ChevronDownIcon
+              className={`w-4 transition-transform ${menus.OHC ? "rotate-180" : ""}`}
+            />
+          </button>
+          <AnimatePresence>
+            {menus.OHC && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="ml-9 space-y-1 overflow-hidden"
+              >
+                <NavLink
+                  to="/PatientRegistrationOhc"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  PatientRegistrationOhc
+                </NavLink>
+                <NavLink
+                  to="/appointmentvisit"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Apointment Visit
+                </NavLink>
+                <NavLink
+                  to="/medicalhistory"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Medical History
+                </NavLink>
+                <NavLink
+                  to="/ClinicalExamination"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Clinical Examination
+                </NavLink>
+                <NavLink
+                  to="/LaboratoryInvestigation"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Laboratory Investigation
+                </NavLink>
+                
+                <NavLink
+                  to="/RadiologyScreen"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  RadiologyScreen
                 </NavLink>
               </motion.div>
             )}
