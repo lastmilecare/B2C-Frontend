@@ -11,7 +11,7 @@ import {
   XMarkIcon,
   UserGroupIcon,
   ShieldCheckIcon,
-  BuildingLibraryIcon
+  BuildingLibraryIcon,
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
 import { cookie } from "../../utils/cookie";
@@ -25,6 +25,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     Rolemanagement: false,
     Tenants: false,
     OHC: false,
+    Staff: false,
   });
   const role = cookie.get("role") || "USER";
   const toggleSubMenu = (menu) =>
@@ -371,7 +372,45 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
           </AnimatePresence>
         </div>
-        
+
+        <div className="space-y-1">
+          <button
+            onClick={() => toggleSubMenu("Staff")}
+            className="flex justify-between items-center w-full px-4 py-2.5 text-gray-600 rounded-xl hover:bg-emerald-50"
+          >
+            <span className="flex items-center gap-3">
+              <BuildingLibraryIcon className="w-5" /> Staff
+            </span>
+            <ChevronDownIcon
+              className={`w-4 transition-transform ${menus.Staff ? "rotate-180" : ""}`}
+            />
+          </button>
+          <AnimatePresence>
+            {menus.Staff && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="ml-9 space-y-1 overflow-hidden"
+              >
+                <NavLink
+                  to="/staff-form"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Staff
+                </NavLink>
+                <NavLink
+                  to="/staff-list"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Staff List
+                </NavLink>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         <div className="space-y-1">
           <button
             onClick={() => toggleSubMenu("OHC")}
@@ -397,7 +436,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                   className={subNavItem}
                   onClick={() => setIsOpen(false)}
                 >
-                  PatientRegistrationOhc
+                  Patient Registration Ohc
                 </NavLink>
                 <NavLink
                   to="/appointmentvisit"
@@ -427,7 +466,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 >
                   Laboratory Investigation
                 </NavLink>
-                
+
                 <NavLink
                   to="/RadiologyScreen"
                   className={subNavItem}
