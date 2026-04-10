@@ -46,6 +46,8 @@ import MedicalHistory from "./pages/MedicalHistory";
 import ClinicalExamination from "./pages/ClinicalExamination";
 import LaboratoryInvestigation from "./pages/LaboratoryInvestigation";
 import RadiologyScreen from "./pages/RadiologyScreen";
+import DoctorAssessment from "./pages/DoctorAssessment";
+import FitnessCertificate from "./pages/FitnessCertificate";
 function App() {
   return (
     <BrowserRouter>
@@ -473,7 +475,7 @@ function App() {
           }
         />
         <Route
-          path="/dashboard"
+          path="/ohcdashboard"
           element={
             <ProtectedRoute>
               <AppLayout>
@@ -538,6 +540,26 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <RadiologyScreen />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/DoctorAssessment"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <DoctorAssessment />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/FitnessCertificate"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <FitnessCertificate />
               </AppLayout>
             </ProtectedRoute>
           }

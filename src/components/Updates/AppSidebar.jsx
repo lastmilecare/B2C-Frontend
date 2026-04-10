@@ -435,6 +435,29 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 >
                   RadiologyScreen
                 </NavLink>
+                <NavLink
+                  to="/DoctorAssessment"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  DoctorAssessment
+                </NavLink>
+          
+                
+                <NavLink
+                  to="/FitnessCertificate"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  FitnessCertificate
+                </NavLink>
+                <NavLink
+                  to="/ohcdashboard"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  ohcdashboard
+                </NavLink>
               </motion.div>
             )}
           </AnimatePresence>
