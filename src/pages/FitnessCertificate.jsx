@@ -33,14 +33,14 @@ const FitnessCertificate = () => {
     selectedBill ? String(selectedBill) : skipToken
   );
 
-  
+ 
   useEffect(() => {
     if (!selectedBill && billSearch.length >= 1) {
       setSuggestionsList(suggestions);
     }
   }, [suggestions, billSearch, selectedBill]);
 
-  l
+  
   useEffect(() => {
     if (!patientData) return;
 
@@ -109,10 +109,10 @@ const FitnessCertificate = () => {
           </div>
         </div>
 
-        
+       
         <div className="bg-white rounded-3xl shadow-xl border overflow-hidden">
 
-         
+          
           <div className="flex border-b">
             {["Patient","Details","Preview","Download"].map((l,i)=>(
               <div key={i} className={`flex-1 py-4 text-center font-semibold ${
@@ -125,6 +125,7 @@ const FitnessCertificate = () => {
 
           <form className="p-9 space-y-8">
 
+           
             {activeStep === 1 && (
               <section>
                 <h3 className="text-sky-700 font-semibold mb-4">
@@ -216,7 +217,7 @@ const FitnessCertificate = () => {
               </div>
             )}
 
-           
+            
             {activeStep === 4 && (
               <div className="flex gap-4">
                 <Button onClick={handlePrint}>
