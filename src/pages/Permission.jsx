@@ -5,10 +5,11 @@ import {
   useGetPermissionsQuery,
   useCreatePermissionMutation,
   useDeletePermissionMutation,
+  useGetAllResourceComboQuery,
 } from "../redux/apiSlice";
 import { healthAlert } from "../utils/healthSwal";
 const ACTIONS = ["read", "create", "update", "delete", "assign"];
-const RESOURCES = ["user", "role", "permission", "tenant"];
+// const RESOURCES = ["user", "role", "permission", "tenant"];
 
 const Permission = () => {
   const [form, setForm] = useState({ action: "", resource: "" });
@@ -24,10 +25,12 @@ const Permission = () => {
   const [createPermission, { isLoading: isCreating }] =
     useCreatePermissionMutation();
   const [deletePermission] = useDeletePermissionMutation();
+  const { data: ResourceCombo } = useGetAllResourceComboQuery();
 
   const permissions = data?.data?.data || [];
   const pagination = data?.data?.pagination || {};
-
+  const RESOURCES = ResourceCombo?.data?.data || [];
+  console.log("Resources:", RESOURCES);
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -80,10 +83,10 @@ const Permission = () => {
   const handlePageChange = (page) => {
     setFilters((prev) => ({ ...prev, page }));
   };
-
+  const formatName = (name) =>
+    name ? name.charAt(0).toUpperCase() + name.slice(1) : "";
   return (
     <div className="p-8 space-y-8 bg-gray-100 min-h-screen">
-      {/* ── Header ───────────────────────────────────────────────────────── */}
       <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-[2.5rem] p-6 flex items-center gap-4 shadow-xl">
         <div className="bg-white/20 p-3 rounded-xl">
           <KeyIcon className="h-6 w-6" />
@@ -93,8 +96,6 @@ const Permission = () => {
           <p className="text-xs opacity-80">Action & Resource Mapping</p>
         </div>
       </div>
-
-      {/* ── Create Form ───────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl shadow-md p-6 space-y-6 border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-700">
           Create Permission
@@ -119,7 +120,6 @@ const Permission = () => {
             </select>
           </div>
 
-          {/* Resource */}
           <div>
             <label className="text-sm font-medium text-gray-700">
               Resource
@@ -131,9 +131,9 @@ const Permission = () => {
               className="w-full mt-1 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none"
             >
               <option value="">Select Resource</option>
-              {RESOURCES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
+              {RESOURCES?.map((r) => (
+                <option key={r.id} value={r.name}>
+                  {formatName(r.name)}
                 </option>
               ))}
             </select>
@@ -195,8 +195,8 @@ const Permission = () => {
             >
               <option value="">All Resources</option>
               {RESOURCES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
+                <option key={r.id} value={r.name}>
+                  {formatName(r.name)}
                 </option>
               ))}
             </select>

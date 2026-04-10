@@ -48,6 +48,7 @@ import LaboratoryInvestigation from "./pages/LaboratoryInvestigation";
 import RadiologyScreen from "./pages/RadiologyScreen";
 import DoctorAssessment from "./pages/DoctorAssessment";
 import FitnessCertificate from "./pages/FitnessCertificate";
+
 function App() {
   return (
     <BrowserRouter>
