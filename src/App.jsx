@@ -48,6 +48,8 @@ import LaboratoryInvestigation from "./pages/LaboratoryInvestigation";
 import RadiologyScreen from "./pages/RadiologyScreen";
 import DoctorAssessment from "./pages/DoctorAssessment";
 import FitnessCertificate from "./pages/FitnessCertificate";
+import RoleList from "./pages/Roles_list";
+import PermissionList from "./pages/Permission_list";
 function App() {
   return (
     <BrowserRouter>
@@ -560,6 +562,26 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <FitnessCertificate />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rolelist"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <RoleList />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/PermissionList"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <PermissionList />
               </AppLayout>
             </ProtectedRoute>
           }

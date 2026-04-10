@@ -20,6 +20,13 @@ import {
 import { Input, Select, Button } from "../components/UIComponents";
 import { healthAlert } from "../utils/healthSwal";
 
+
+const STEPS = [
+  { id: 1, label: "Staff Details", icon: ClipboardDocumentIcon },
+  { id: 2, label: "Role", icon: UserPlusIcon },
+  { id: 3, label: "Confirm", icon: CheckCircleIcon },
+];
+
 const StaffForm = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [editUser, setEditUser] = useState(null);
@@ -33,16 +40,13 @@ const StaffForm = () => {
 
   const roles = rolesData?.data || [];
 
-  // ✅ EDIT MODE AUTO SET
+  
   useEffect(() => {
     if (location.state?.editData) {
       setEditUser(location.state.editData);
     }
   }, [location.state]);
 
-  // ─────────────────────────────
-  // FORMIK
-  // ─────────────────────────────
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -60,9 +64,9 @@ const StaffForm = () => {
       const errors = {};
 
       if (activeStep === 1) {
-        if (!values.name) errors.name = "Name is required";
-        if (!values.email) errors.email = "Email is required";
-        if (!values.phone) errors.phone = "Mobile is required";
+        if (!values.name) errors.name = "Name required";
+        if (!values.email) errors.email = "Email required";
+        if (!values.phone) errors.phone = "Mobile required";
 
         if (!editUser) {
           if (!values.password) errors.password = "Password required";
@@ -85,66 +89,58 @@ const StaffForm = () => {
           (r) => String(r.id) === String(values.b2cRoleId)
         );
 
-        if (!selectedRole) {
-          return healthAlert({
-            icon: "error",
-            title: "Invalid Role",
-          });
-        }
-
         const payload = {
           ...values,
-          tenantId: selectedRole.tenantId,
+          tenantId: selectedRole?.tenantId || tenantId,
         };
 
         const { confirmPassword, ...finalPayload } = payload;
 
         if (editUser) {
           const { password, ...updatePayload } = finalPayload;
-
           await updateStaff({
             id: editUser.id,
             ...updatePayload,
           }).unwrap();
-
-          healthAlert({
-            icon: "success",
-            title: "Updated",
-            text: "Staff updated successfully",
-          });
         } else {
           await createStaff(finalPayload).unwrap();
-
-          healthAlert({
-            icon: "success",
-            title: "Created",
-            text: "Staff created successfully",
-          });
         }
 
+        healthAlert({
+          icon: "success",
+          title: editUser ? "Updated" : "Created",
+        });
+
         formik.resetForm();
-        setEditUser(null);
         setActiveStep(1);
+        setEditUser(null);
 
       } catch (err) {
         healthAlert({
           icon: "error",
           title: "Error",
-          text: err?.data?.message || "Something went wrong",
+          text: err?.data?.message || "Failed",
         });
       }
     },
   });
 
-  // ─────────────────────────────
-  // STEP CONTROL
-  // ─────────────────────────────
+  
   const nextStep = async () => {
     const errors = await formik.validateForm();
 
-    if (Object.keys(errors).length > 0) {
+    const stepFields = {
+      1: ["name", "email", "phone", "password", "confirmPassword"],
+      2: ["b2cRoleId"],
+    };
+
+    const currentFields = stepFields[activeStep] || [];
+
+    const hasError = currentFields.some((f) => errors[f]);
+
+    if (hasError) {
       formik.setTouched(
-        Object.keys(errors).reduce((acc, key) => {
+        currentFields.reduce((acc, key) => {
           acc[key] = true;
           return acc;
         }, {})
@@ -157,14 +153,11 @@ const StaffForm = () => {
 
   const prevStep = () => setActiveStep((prev) => prev - 1);
 
-  // ─────────────────────────────
-  // UI
-  // ─────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
       <div className="max-w-[1400px] mx-auto px-8">
 
-        {/* HEADER */}
+        
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <span className="bg-blue-100 p-2 rounded-xl">
@@ -174,26 +167,23 @@ const StaffForm = () => {
           </h1>
 
           <div className="flex gap-2">
-            {[1, 2].map((s) => (
+            {STEPS.map((s) => (
               <div
-                key={s}
+                key={s.id}
                 className={`h-2 w-12 rounded-full ${
-                  activeStep >= s ? "bg-sky-600" : "bg-blue-100"
+                  activeStep >= s.id ? "bg-sky-600" : "bg-blue-100"
                 }`}
               />
             ))}
           </div>
         </div>
 
-        {/* CARD */}
+        
         <div className="bg-white rounded-3xl shadow-xl border overflow-hidden">
 
-          {/* STEP TABS */}
+          
           <div className="flex border-b">
-            {[
-              { id: 1, label: "Staff Details", icon: ClipboardDocumentIcon },
-              { id: 2, label: "Role", icon: UserPlusIcon },
-            ].map((step) => (
+            {STEPS.map((step) => (
               <button
                 key={step.id}
                 disabled
@@ -209,70 +199,40 @@ const StaffForm = () => {
             ))}
           </div>
 
-          <form className="p-9 space-y-8">
+          <form onSubmit={(e) => e.preventDefault()} className="p-9 space-y-8">
 
-            {/* STEP 1 */}
+           
             {activeStep === 1 && (
-              <section>
-                <h3 className="text-lg font-semibold text-sky-700 mb-4 flex items-center gap-2">
-                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
-                  Staff Details
-                </h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                <Input label="Name *" {...formik.getFieldProps("name")} />
+                <Input label="Username" {...formik.getFieldProps("username")} />
+                <Input label="Employee No" {...formik.getFieldProps("employeeNo")} />
+                <Input label="Mobile *" {...formik.getFieldProps("phone")} />
+                <Input label="Email *" {...formik.getFieldProps("email")} disabled={!!editUser} />
 
-                <div className="grid md:grid-cols-3 gap-6">
-
-                  <div>
-                    <Input label="Name *" {...formik.getFieldProps("name")} />
-                    {formik.touched.name && formik.errors.name && (
-                      <p className="text-red-500 text-xs">{formik.errors.name}</p>
-                    )}
-                  </div>
-
-                  <Input label="Username" {...formik.getFieldProps("username")} />
-
-                  <Input label="Employee No" {...formik.getFieldProps("employeeNo")} />
-
-                  <div>
-                    <Input label="Mobile *" {...formik.getFieldProps("phone")} />
-                    {formik.touched.phone && formik.errors.phone && (
-                      <p className="text-red-500 text-xs">{formik.errors.phone}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Input
-                      label="Email *"
-                      {...formik.getFieldProps("email")}
-                      disabled={!!editUser}
-                    />
-                    {formik.touched.email && formik.errors.email && (
-                      <p className="text-red-500 text-xs">{formik.errors.email}</p>
-                    )}
-                  </div>
-
-                  {!editUser && (
-                    <>
-                      <Input label="Password *" type="password" {...formik.getFieldProps("password")} />
-                      <Input label="Confirm Password *" type="password" {...formik.getFieldProps("confirmPassword")} />
-                    </>
-                  )}
-
-                </div>
-              </section>
+                {!editUser && (
+                  <>
+                    <Input type="password" label="Password" {...formik.getFieldProps("password")} />
+                    <Input type="password" label="Confirm Password" {...formik.getFieldProps("confirmPassword")} />
+                  </>
+                )}
+              </div>
             )}
 
-            {/* STEP 2 */}
+           
             {activeStep === 2 && (
-              <section>
-                <h3 className="text-lg font-semibold text-sky-700 mb-4 flex items-center gap-2">
-                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
+              <section className="bg-sky-50/40 p-6 rounded-xl border border-sky-100 space-y-4">
+                <h3 className="text-sky-700 font-semibold text-lg">
                   Assign Role
                 </h3>
 
                 <div className="grid md:grid-cols-2 gap-6">
 
                   <div>
-                    <Select {...formik.getFieldProps("b2cRoleId")} label="Role *">
+                    <Select
+                      label="Role *"
+                      {...formik.getFieldProps("b2cRoleId")}
+                    >
                       <option value="">Select Role</option>
                       {roles.map((r) => (
                         <option key={r.id} value={r.id}>
@@ -282,23 +242,30 @@ const StaffForm = () => {
                     </Select>
 
                     {formik.touched.b2cRoleId && formik.errors.b2cRoleId && (
-                      <p className="text-red-500 text-xs">{formik.errors.b2cRoleId}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {formik.errors.b2cRoleId}
+                      </p>
                     )}
                   </div>
 
-                  {/* ROLE PREVIEW */}
+                  
                   {formik.values.b2cRoleId && (
-                    <div className="bg-sky-50 border rounded-xl p-4">
-                      <p className="text-xs text-gray-500">Selected Role</p>
-                      <p className="text-sky-700 font-semibold">
-                        {
-                          roles.find(
+                    <div className="bg-white border border-sky-200 rounded-xl p-4 flex items-center gap-3">
+                      <div className="bg-sky-100 p-2 rounded-lg">
+                        <UserPlusIcon className="w-5 h-5 text-sky-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">
+                          Selected Role
+                        </p>
+                        <p className="text-sm font-semibold text-sky-700">
+                          {roles.find(
                             (r) =>
                               String(r.id) ===
                               String(formik.values.b2cRoleId)
-                          )?.name
-                        }
-                      </p>
+                          )?.name || "—"}
+                        </p>
+                      </div>
                     </div>
                   )}
 
@@ -306,46 +273,67 @@ const StaffForm = () => {
               </section>
             )}
 
-            {/* BUTTONS */}
-            <div className="flex justify-between border-t pt-6">
+            
+            {activeStep === 3 && (
+              <div className="bg-sky-50 p-6 rounded-xl border space-y-3">
+                <h3 className="font-semibold text-sky-700">
+                  Confirm Details
+                </h3>
 
-              <div>
-                {activeStep > 1 && (
-                  <Button variant="gray" onClick={prevStep}>
-                    Back
-                  </Button>
-                )}
+                <p><b>Name:</b> {formik.values.name}</p>
+                <p><b>Email:</b> {formik.values.email}</p>
+                <p><b>Mobile:</b> {formik.values.phone}</p>
+                <p><b>Role:</b> {
+                  roles.find(
+                    (r) =>
+                      String(r.id) ===
+                      String(formik.values.b2cRoleId)
+                  )?.name
+                }</p>
               </div>
+            )}
 
-              <div className="flex gap-3">
+           
+         <div className="flex justify-between items-center pt-6 border-t border-gray-100">
 
-                <Button variant="gray" onClick={formik.handleReset}>
-                  <ArrowPathIcon className="w-5 h-5 mr-1" />
-                  Reset
-                </Button>
+ 
+  <div className="flex gap-3">
+    {activeStep > 1 && (
+      <Button type="button" variant="gray" onClick={prevStep}>
+        Back
+      </Button>
+    )}
 
-                {activeStep < 2 ? (
-                  <Button variant="sky" onClick={nextStep}>
-                    Continue
-                  </Button>
-                ) : (
-                  <Button
-                    variant="sky"
-                    onClick={formik.handleSubmit}
-                    disabled={isCreating || isUpdating}
-                  >
-                    <CheckCircleIcon className="w-5 h-5 mr-1" />
-                    {isCreating || isUpdating
-                      ? "Saving..."
-                      : editUser
-                      ? "Update"
-                      : "Save"}
-                  </Button>
-                )}
+    <Button
+      type="button"
+      variant="gray"
+      onClick={formik.handleReset}
+    >
+      <ArrowPathIcon className="w-5 h-5 inline mr-1" />
+      Reset
+    </Button>
+  </div>
 
-              </div>
-            </div>
+  
+  <div>
+    {activeStep < STEPS.length ? (
+      <Button type="button" variant="sky" onClick={nextStep}>
+        Continue
+      </Button>
+    ) : (
+      <Button
+        type="button"
+        variant="sky"
+        onClick={formik.handleSubmit}
+        disabled={isCreating || isUpdating}
+      >
+        <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+        {isCreating || isUpdating ? "Saving..." : "Save Staff"}
+      </Button>
+    )}
+  </div>
 
+</div>
           </form>
         </div>
       </div>
