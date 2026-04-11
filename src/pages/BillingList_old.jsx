@@ -61,7 +61,7 @@ const BillingList = () => {
   const parseCurrency = (value) => {
     if (!value) return 0;
 
-    // Remove $ and commas safely
+    
     const cleaned = value.replace(/[^0-9.-]+/g, "");
     const parsed = Number(cleaned);
 
@@ -99,7 +99,7 @@ const BillingList = () => {
       // footerItems: undefined,
     };
   });
-  console.log("Stock data:", Stock);
+  
   const pagination = data?.pagination || {};
 
   const userLookup = React.useMemo(() => {

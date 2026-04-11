@@ -58,7 +58,7 @@ const CommonList = ({
       return;
     }
     onFilterApply(tempFilters);
-    setOpenMenuRow(null); // Filter lagne par menu band
+    setOpenMenuRow(null); 
   };
 
   const handleReset = () => {

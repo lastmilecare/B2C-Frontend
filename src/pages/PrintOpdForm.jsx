@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect } from "react";
 
 const PrintOpdForm = forwardRef(({ data }, ref) => {
-  console.log(data, "opd");
+  
   const add = import.meta.env.VITE_CENTER_ADD;
   const mobile = import.meta.env.VITE_CENTER_MOBILE;
   function formatToIST(dateString) {

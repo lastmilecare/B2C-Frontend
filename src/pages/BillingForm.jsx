@@ -347,7 +347,7 @@ const BillingFormCopy = ({ refetchList }) => {
     }, [patientData, selectedBill]);
 
     useEffect(() => {
-        console.log(stockDetails, "stock details");
+        
         const updates = {
             cgst: stockDetails?.data[0].CGST || 0,
             sgst: stockDetails?.data[0].SGST || 0,
@@ -385,7 +385,7 @@ const BillingFormCopy = ({ refetchList }) => {
     };
 
     const addItemToList = async () => {
-        console.log("Adding item with values:", formik.values);
+        
         const canAdd =
             formik.values.medicine && formik.values.quantity && formik.values.cp;
         if (!canAdd) {
@@ -406,7 +406,7 @@ const BillingFormCopy = ({ refetchList }) => {
             Number(formik.values.quantity),
             Number(cleanCurrency(formik.values.discountPercent)),
         );
-        console.log("Calculated selling item cost:", sellingItemCost);
+        
         const expDate = stockDetails?.data?.[0]?.ExpiryDate
             ? new Date(stockDetails.data[0].ExpiryDate).toISOString().split("T")[0]
             : null;

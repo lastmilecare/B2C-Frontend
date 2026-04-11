@@ -2,29 +2,29 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
-    async ({ url, method, data, params, responseType }) => {
-      try {
-        const isAbsoluteUrl = url.startsWith("http");
-        const result = await axiosClient({
-          url: isAbsoluteUrl ? url : baseUrl + url,
-          method,
-          data,
-          params,
-          responseType: responseType || "json",
-        });
+  async ({ url, method, data, params, responseType }) => {
+    try {
+      const isAbsoluteUrl = url.startsWith("http");
+      const result = await axiosClient({
+        url: isAbsoluteUrl ? url : baseUrl + url,
+        method,
+        data,
+        params,
+        responseType: responseType || "json",
+      });
 
-        return { data: result.data };
-      } catch (error) {
-        return {
-          error: {
-            status: error.response?.status,
-            data: error.response?.data || error.message,
-          },
-        };
-      }
-    };
+      return { data: result.data };
+    } catch (error) {
+      return {
+        error: {
+          status: error.response?.status,
+          data: error.response?.data || error.message,
+        },
+      };
+    }
+  };
 const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
-console.log("Auth URL from env:", VITE_AUTH_URL);
+
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
@@ -910,6 +910,12 @@ export const api = createApi({
       }),
       invalidatesTags: ["Users"],
     }),
+    getAllResourceCombo: build.query({
+      query: () => ({
+        url: `${VITE_AUTH_URL}permissions/resource-combo`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -1004,4 +1010,5 @@ export const {
   useDeleteUserMutation,
   useGetAllRoleComboQuery,
   useToggleUserStatusMutation,
+  useGetAllResourceComboQuery
 } = api;

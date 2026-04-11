@@ -60,7 +60,7 @@ const CampBillingList = () => {
   const parseCurrency = (value) => {
     if (!value) return 0;
 
-    // Remove $ and commas safely
+   
     const cleaned = value.replace(/[^0-9.-]+/g, "");
     const parsed = Number(cleaned);
 
@@ -90,7 +90,7 @@ const CampBillingList = () => {
 
     return {
       ...header,
-      // override aggregated fields
+      
       TaxableAmount: formatCurrency(totalTaxableAmount),
       TotalQty: totalQty,
       ItemName: itemNames.join(", "),

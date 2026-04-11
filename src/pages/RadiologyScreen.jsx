@@ -80,7 +80,7 @@ const RadiologyScreen = () => {
                 ...values,
                 tests: testList,
             };
-            console.log("FINAL DATA 👉", payload);
+            
         },
     });
 

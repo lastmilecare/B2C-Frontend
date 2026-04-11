@@ -303,7 +303,7 @@ title="Patient List"
  }}
 
  onDelete={(row)=>{
-   console.log("Delete Patient",row)
+   
  }}
 />
 

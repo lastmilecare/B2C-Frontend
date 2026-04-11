@@ -50,6 +50,9 @@ import DoctorAssessment from "./pages/DoctorAssessment";
 import FitnessCertificate from "./pages/FitnessCertificate";
 import RoleList from "./pages/Roles_list";
 import PermissionList from "./pages/Permission_list";
+import Permissionold from "./pages/Permissionold";
+import Rolesold from "./pages/Roles_old";
+import StaffFormold from "./pages/Staff_old";
 function App() {
   return (
     <BrowserRouter>
@@ -586,6 +589,36 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/Permissionold"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Permissionold />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rolesold"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Rolesold />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staffold"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <StaffFormold />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
         
         <Route path="/print-opd-form" element={<PrintOpdForm />} />
         {/* <Route path="/staff-form" element={<StaffForm />} /> */}
@@ -599,3 +632,4 @@ function App() {
 }
 
 export default App;
+

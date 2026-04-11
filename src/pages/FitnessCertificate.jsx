@@ -68,7 +68,7 @@ const FitnessCertificate = () => {
       doctor: "",
     },
     onSubmit: (values) => {
-      console.log(values);
+      
     },
   });
 

@@ -327,10 +327,9 @@ const PrescriptionForm = () => {
       setPrescriptionList(mappedAdviceList);
     }
 
-    // Convert DB string -> array of names
+    
     const complaintNames = parseChiefComplaintNames(row.chiefComplaints);
 
-    // Create lookup map (O(1))
     const diseaseMap = new Map(
       diseaseOptions.map((d) => [d.name?.toLowerCase().trim(), d]),
     );

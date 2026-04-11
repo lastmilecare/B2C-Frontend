@@ -63,13 +63,13 @@ const FilterBar = ({
                     }`}
                 />
 
-                {/* ✅ Generic Suggestion Dropdown */}
+               
                 {filter.suggestionConfig &&
                   activeField === filter.name &&
                   tempFilters[filter.name]?.length >=
                   filter.suggestionConfig.minLength &&
                   (() => {
-                    // 🔥 Decide which suggestion source to use
+                    
                     const fieldSuggestions =
                       suggestionsMap?.[filter.name] ?? suggestions ?? [];
 
@@ -87,7 +87,7 @@ const FilterBar = ({
                               onMouseDown={(e) => {
                                 e.preventDefault();
 
-                                // ✅ If multi-field mode
+                               
                                 if (suggestionsMap?.[filter.name]) {
                                   onSelectSuggestion(
                                     filter.name,
@@ -95,7 +95,7 @@ const FilterBar = ({
                                   );
                                 }
                                 
-                                // ✅ If old single-field mode
+                                
                                 else {
                                   onSelectSuggestion(item[valueField]);
                                 }
