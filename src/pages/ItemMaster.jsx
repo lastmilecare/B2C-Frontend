@@ -65,7 +65,7 @@ const ItemMaster = () => {
         formik.setFieldValue("addedby", currentUserId);
 
       } catch (error) {
-        console.log(error);
+        
         healthAlerts.error("Something went wrong");
       }
     },
@@ -244,7 +244,7 @@ const ItemMaster = () => {
 
                   handleSearch(); 
                 } catch (error) {
-                  console.log(error);
+                  
                   healthAlerts.error("Operation Failed");
                 }
               }}

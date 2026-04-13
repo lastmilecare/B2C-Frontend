@@ -1,5 +1,4 @@
 import React from "react";
-// import CommonList from "../CommonList";
 import CommonList from "../CommonList";
 
 const PatientTable = ({

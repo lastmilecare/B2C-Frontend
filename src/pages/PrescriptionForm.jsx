@@ -367,9 +367,9 @@ driver_id: patientData?.PatientID || null,
 
   useEffect(() => {
     if (!id || !row) return;
-    if (!diseaseOptions.length) return; // wait until diseases loaded
+    if (!diseaseOptions.length) return; 
 
-    // Map advice list safely
+   
     const mappedAdviceList = Array.isArray(row.adviceList)
       ? row.adviceList.map((item) => ({
         itemId: item.itemId,

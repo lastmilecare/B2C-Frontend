@@ -324,11 +324,26 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                   Role
                 </NavLink>
                 <NavLink
+                  to="/rolelist"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Role List
+                </NavLink>
+                
+                <NavLink
                   to="/permissions"
                   className={subNavItem}
                   onClick={() => setIsOpen(false)}
                 >
                   Permission
+                </NavLink>
+                <NavLink
+                  to="/PermissionList"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Permission List
                 </NavLink>
               </motion.div>
             )}

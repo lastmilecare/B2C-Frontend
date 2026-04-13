@@ -286,7 +286,7 @@ useEffect(() => {
     Gender: header.Gender || "",
     FinCategory: header.PatientType,
 
-    // 🔥 medicine section fill
+    
     medicine: firstItem?.description || "",
     quantity: firstItem?.qty || "",
     cp: firstItem?.basePrice || "",

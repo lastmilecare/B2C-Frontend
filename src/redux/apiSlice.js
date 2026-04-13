@@ -24,7 +24,7 @@ const axiosBaseQuery =
     }
   };
 const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
-console.log("Auth URL from env:", VITE_AUTH_URL);
+
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),

@@ -100,7 +100,7 @@ const BillingListCopy = () => {
       // footerItems: undefined,
     };
   });
-  console.log("Stock data:", Stock);
+  
   const pagination = data?.pagination || {};
 
   const userLookup = React.useMemo(() => {
