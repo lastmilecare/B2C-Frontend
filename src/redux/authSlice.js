@@ -3,23 +3,47 @@
 
 // const authSlice = createSlice({
 //   name: "auth",
-//   initialState: { user: null, token: cookie.get("token") || null },
+//   initialState: {
+//     user:        null,
+//     token:       cookie.get("token")       || null,
+//     role:        cookie.get("role")        || null,
+//     tenantId:    cookie.get("tenantId")    || null,
+//     permissions: cookie.get("permissions")
+//                    ? JSON.parse(cookie.get("permissions"))
+//                    : [],
+//   },
 //   reducers: {
 //     setCredentials: (state, action) => {
-//       state.user = action.payload.data;
-//       state.token = action.payload.data.token;
-//       cookie.set("token", action.payload.data.token);
-//       cookie.set("username", action.payload.data.username);
-//       cookie.set("user_id", action.payload.data.user_id);
-//       cookie.set("role", action.payload.data.role);
+//       const { token, email, role, tenantId, permissions,username } = action.payload.data;
+
+//       state.user        = action.payload.data;
+//       state.token       = token;
+//       state.role        = role;
+//       state.tenantId    = tenantId;
+//       state.permissions = permissions;
+
+//       // Persist to cookies
+//       cookie.set("token",       token);
+//       cookie.set("role",        role);
+//       cookie.set("email",       email);
+//       cookie.set("tenantId",    tenantId ?? "");
+//       cookie.set("permissions", JSON.stringify(permissions));
+//       cookie.set("username",     username);
 //     },
+
 //     logout: (state) => {
-//       state.user = null;
-//       state.token = null;
+//       state.user        = null;
+//       state.token       = null;
+//       state.role        = null;
+//       state.tenantId    = null;
+//       state.permissions = [];
+
 //       cookie.remove("token");
-//       cookie.remove("username");
-//       cookie.remove("user_id");
 //       cookie.remove("role");
+//       cookie.remove("email");
+//       cookie.remove("tenantId");
+//       cookie.remove("permissions");
+//       cookie.remove("username");
 //     },
 //   },
 // });
@@ -27,6 +51,7 @@
 // export const { setCredentials, logout } = authSlice.actions;
 // export default authSlice.reducer;
 
+// src/redux/authSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 import { cookie } from "../utils/cookie";
 
@@ -34,30 +59,33 @@ const authSlice = createSlice({
   name: "auth",
   initialState: {
     user:        null,
-    token:       cookie.get("token")       || null,
-    role:        cookie.get("role")        || null,
-    tenantId:    cookie.get("tenantId")    || null,
+    token:       cookie.get("token")    || null,
+    role:        cookie.get("role")     || null,
+    tenantId:    cookie.get("tenantId") || null,
     permissions: cookie.get("permissions")
                    ? JSON.parse(cookie.get("permissions"))
                    : [],
   },
   reducers: {
     setCredentials: (state, action) => {
-      const { token, email, role, tenantId, permissions,username } = action.payload.data;
+      // Response: { status, code, data: { token, role, permissions... }, message }
+      // action.payload.data = { token, role, permissions, tenantId, ... }
+      const data = action.payload.data;
 
-      state.user        = action.payload.data;
-      state.token       = token;
-      state.role        = role;
-      state.tenantId    = tenantId;
-      state.permissions = permissions;
+      state.user        = data;
+      state.token       = data.token;
+      state.role        = data.role;
+      state.tenantId    = data.tenantId;
+      state.permissions = data.permissions || [];
 
-      // Persist to cookies
-      cookie.set("token",       token);
-      cookie.set("role",        role);
-      cookie.set("email",       email);
-      cookie.set("tenantId",    tenantId ?? "");
-      cookie.set("permissions", JSON.stringify(permissions));
-      cookie.set("username",     username);
+      cookie.set("token",       data.token);
+      cookie.set("role",        data.role        ?? "");
+      cookie.set("email",       data.email       ?? "");
+      cookie.set("tenantId",    data.tenantId    ?? "");
+      cookie.set("username",    data.username    ?? "");
+      cookie.set("name",        data.name        ?? "");
+      cookie.set("user_id",     data.user_id     ?? "");
+      cookie.set("permissions", JSON.stringify(data.permissions || []));
     },
 
     logout: (state) => {
@@ -71,8 +99,10 @@ const authSlice = createSlice({
       cookie.remove("role");
       cookie.remove("email");
       cookie.remove("tenantId");
-      cookie.remove("permissions");
       cookie.remove("username");
+      cookie.remove("name");
+      cookie.remove("user_id");
+      cookie.remove("permissions");
     },
   },
 });

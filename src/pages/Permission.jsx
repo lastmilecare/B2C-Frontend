@@ -12,6 +12,7 @@ import { useCreatePermissionMutation, useGetAllPermissionsComboQuery } from "../
 import { healthAlert } from "../utils/healthSwal";
 import { Select, Button } from "../components/FormControls";
 
+
 const Permission = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [createPermission, { isLoading: isCreating }] = useCreatePermissionMutation();
