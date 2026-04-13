@@ -279,7 +279,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         )}
 
         {/* ── Role Management — LMC Admin only ─────────────── */}
-        {can("read:user") && (
+        {can("read:role") && (
           <MenuGroup
             menuKey="roles"
             icon={ShieldCheckIcon}
