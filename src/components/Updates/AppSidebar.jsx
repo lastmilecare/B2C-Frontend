@@ -330,7 +330,7 @@
 //                 >
 //                   Role List
 //                 </NavLink>
-                
+
 //                 <NavLink
 //                   to="/permissions"
 //                   className={subNavItem}
@@ -496,8 +496,7 @@
 //                 >
 //                   DoctorAssessment
 //                 </NavLink>
-          
-                
+
 //                 <NavLink
 //                   to="/FitnessCertificate"
 //                   className={subNavItem}
@@ -525,14 +524,21 @@
 
 // src/components/Updates/AppSidebar.jsx
 import React, { useState } from "react";
-import { NavLink }         from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSelector }     from "react-redux";
+import { useSelector } from "react-redux";
 import {
-  UserCircleIcon, ArchiveBoxIcon, BuildingOffice2Icon,
-  ClipboardDocumentListIcon, ChevronDownIcon, HomeIcon,
-  XMarkIcon, UserGroupIcon, ShieldCheckIcon,
-  BuildingLibraryIcon, KeyIcon,
+  UserCircleIcon,
+  ArchiveBoxIcon,
+  BuildingOffice2Icon,
+  ClipboardDocumentListIcon,
+  ChevronDownIcon,
+  HomeIcon,
+  XMarkIcon,
+  UserGroupIcon,
+  ShieldCheckIcon,
+  BuildingLibraryIcon,
+  KeyIcon,
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
 
@@ -545,14 +551,14 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
   };
 
   const [menus, setMenus] = useState({
-    patient:      false,
-    opd:          false,
+    patient: false,
+    opd: false,
     prescription: false,
-    inventory:    false,
-    staff:        false,
-    roles:        false,
-    tenants:      false,
-    ohc:          false,
+    inventory: false,
+    staff: false,
+    roles: false,
+    tenants: false,
+    ohc: false,
   });
 
   const toggleSubMenu = (menu) =>
@@ -626,9 +632,12 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
 
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <nav className="flex-1 overflow-y-auto p-4 space-y-2 min-w-[260px] custom-scrollbar">
-
         {/* Dashboard — everyone */}
-        <NavLink to="/dashboard" className={navItem} onClick={() => setIsOpen(false)}>
+        <NavLink
+          to="/dashboard"
+          className={navItem}
+          onClick={() => setIsOpen(false)}
+        >
           <HomeIcon className="w-5" /> Dashboard
         </NavLink>
 
@@ -636,11 +645,19 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         {can("read:patient") && (
           <MenuGroup menuKey="patient" icon={UserCircleIcon} label="Patient">
             {can("create:patient") && (
-              <NavLink to="/patient-registration" className={subNavItem} onClick={() => setIsOpen(false)}>
+              <NavLink
+                to="/patient-registration"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
                 Patient Registration
               </NavLink>
             )}
-            <NavLink to="/patient-list" className={subNavItem} onClick={() => setIsOpen(false)}>
+            <NavLink
+              to="/patient-list"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
               Patient List
             </NavLink>
           </MenuGroup>
@@ -650,11 +667,19 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         {can("read:opd") && (
           <MenuGroup menuKey="opd" icon={BuildingOffice2Icon} label="OPD">
             {can("create:opd") && (
-              <NavLink to="/opd-form" className={subNavItem} onClick={() => setIsOpen(false)}>
+              <NavLink
+                to="/opd-form"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
                 OPD Form
               </NavLink>
             )}
-            <NavLink to="/opd-list" className={subNavItem} onClick={() => setIsOpen(false)}>
+            <NavLink
+              to="/opd-list"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
               OPD List
             </NavLink>
           </MenuGroup>
@@ -662,13 +687,25 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
 
         {/* ── Prescription ─────────────────────────────────── */}
         {can("read:prescription") && (
-          <MenuGroup menuKey="prescription" icon={ClipboardDocumentListIcon} label="Prescription">
+          <MenuGroup
+            menuKey="prescription"
+            icon={ClipboardDocumentListIcon}
+            label="Prescription"
+          >
             {can("create:prescription") && (
-              <NavLink to="/prescription-form" className={subNavItem} onClick={() => setIsOpen(false)}>
+              <NavLink
+                to="/prescription-form"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
                 Prescription Form
               </NavLink>
             )}
-            <NavLink to="/prescription-list" className={subNavItem} onClick={() => setIsOpen(false)}>
+            <NavLink
+              to="/prescription-list"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
               Prescription List
             </NavLink>
           </MenuGroup>
@@ -676,26 +713,50 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
 
         {/* ── Inventory / Pharmacy ──────────────────────────── */}
         {can("read:pharmacy") && (
-          <MenuGroup menuKey="inventory" icon={ArchiveBoxIcon} label="Inventory">
+          <MenuGroup
+            menuKey="inventory"
+            icon={ArchiveBoxIcon}
+            label="Inventory"
+          >
             {can("create:pharmacy") && (
-              <NavLink to="/purchased-entry" className={subNavItem} onClick={() => setIsOpen(false)}>
+              <NavLink
+                to="/purchased-entry"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
                 Purchase Entry
               </NavLink>
             )}
             {can("create:billing") && (
-              <NavLink to="/billing" className={subNavItem} onClick={() => setIsOpen(false)}>
+              <NavLink
+                to="/billing"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
                 Billing
               </NavLink>
             )}
-            <NavLink to="/expiry-items" className={subNavItem} onClick={() => setIsOpen(false)}>
+            <NavLink
+              to="/expiry-items"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
               Expiry Items
             </NavLink>
             {can("create:billing") && (
-              <NavLink to="/camp-billing" className={subNavItem} onClick={() => setIsOpen(false)}>
+              <NavLink
+                to="/camp-billing"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
                 Camp Billing
               </NavLink>
             )}
-            <NavLink to="/sales-record" className={subNavItem} onClick={() => setIsOpen(false)}>
+            <NavLink
+              to="/sales-record"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
               Sales Record
             </NavLink>
           </MenuGroup>
@@ -704,10 +765,18 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         {/* ── Staff ────────────────────────────────────────── */}
         {can("read:user") && (
           <MenuGroup menuKey="staff" icon={UserGroupIcon} label="Staff">
-            <NavLink to="/staff-form" className={subNavItem} onClick={() => setIsOpen(false)}>
+            <NavLink
+              to="/staff-form"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
               Staff
             </NavLink>
-            <NavLink to="/attendance" className={subNavItem} onClick={() => setIsOpen(false)}>
+            <NavLink
+              to="/attendance"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
               Attendance
             </NavLink>
           </MenuGroup>
@@ -715,12 +784,24 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
 
         {/* ── Role Management — LMC Admin only ─────────────── */}
         {can("read:role") && (
-          <MenuGroup menuKey="roles" icon={ShieldCheckIcon} label="Role Management">
-            <NavLink to="/roles" className={subNavItem} onClick={() => setIsOpen(false)}>
+          <MenuGroup
+            menuKey="roles"
+            icon={ShieldCheckIcon}
+            label="Role Management"
+          >
+            <NavLink
+              to="/roles"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
               Roles
             </NavLink>
             {can("read:permission") && (
-              <NavLink to="/permissions" className={subNavItem} onClick={() => setIsOpen(false)}>
+              <NavLink
+                to="/permissions"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
                 Permissions
               </NavLink>
             )}
@@ -729,12 +810,24 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
 
         {/* ── Tenants — LMC Admin only ──────────────────────── */}
         {can("read:tenant") && (
-          <MenuGroup menuKey="tenants" icon={BuildingLibraryIcon} label="Tenants">
-            <NavLink to="/tenant-list" className={subNavItem} onClick={() => setIsOpen(false)}>
+          <MenuGroup
+            menuKey="tenants"
+            icon={BuildingLibraryIcon}
+            label="Tenants"
+          >
+            <NavLink
+              to="/tenant-list"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
               Tenant List
             </NavLink>
             {can("create:tenant") && (
-              <NavLink to="/tenants" className={subNavItem} onClick={() => setIsOpen(false)}>
+              <NavLink
+                to="/tenants"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
                 Add Tenant
               </NavLink>
             )}
@@ -744,38 +837,89 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         {/* ── OHC ─────────────────────────────────────────── */}
         {can("read:clinical") && (
           <MenuGroup menuKey="ohc" icon={BuildingLibraryIcon} label="OHC">
-            {can("create:patient") && (
-              <NavLink to="/PatientRegistrationOhc" className={subNavItem} onClick={() => setIsOpen(false)}>
+            {can("create:ohc_patient_registration") && (
+              <NavLink
+                to="/PatientRegistrationOhc"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
                 Patient Registration
               </NavLink>
             )}
-            <NavLink to="/appointmentvisit" className={subNavItem} onClick={() => setIsOpen(false)}>
-              Appointment Visit
-            </NavLink>
-            <NavLink to="/medicalhistory" className={subNavItem} onClick={() => setIsOpen(false)}>
-              Medical History
-            </NavLink>
-            <NavLink to="/ClinicalExamination" className={subNavItem} onClick={() => setIsOpen(false)}>
-              Clinical Examination
-            </NavLink>
-            <NavLink to="/LaboratoryInvestigation" className={subNavItem} onClick={() => setIsOpen(false)}>
-              Lab Investigation
-            </NavLink>
-            <NavLink to="/RadiologyScreen" className={subNavItem} onClick={() => setIsOpen(false)}>
-              Radiology
-            </NavLink>
-            <NavLink to="/DoctorAssessment" className={subNavItem} onClick={() => setIsOpen(false)}>
-              Doctor Assessment
-            </NavLink>
-            <NavLink to="/FitnessCertificate" className={subNavItem} onClick={() => setIsOpen(false)}>
-              Fitness Certificate
-            </NavLink>
-            <NavLink to="/ohcdashboard" className={subNavItem} onClick={() => setIsOpen(false)}>
-              OHC Dashboard
-            </NavLink>
+            {can("create:ohc_patient_registration") && (
+              <NavLink
+                to="/appointmentvisit"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Appointment Visit
+              </NavLink>
+            )}
+            {can("create:ohc_patient_registration") && (
+              <NavLink
+                to="/medicalhistory"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Medical History
+              </NavLink>
+            )}
+            {can("create:ohc_patient_registration") && (
+              <NavLink
+                to="/ClinicalExamination"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Clinical Examination
+              </NavLink>
+            )}
+            {can("create:ohc_patient_registration") && (
+              <NavLink
+                to="/LaboratoryInvestigation"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Lab Investigation
+              </NavLink>
+            )}
+            {can("create:ohc_patient_registration") && (
+              <NavLink
+                to="/RadiologyScreen"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Radiology
+              </NavLink>
+            )}
+            {can("create:ohc_patient_registration") && (
+              <NavLink
+                to="/DoctorAssessment"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Doctor Assessment
+              </NavLink>
+            )}
+            {can("create:ohc_patient_registration") && (
+              <NavLink
+                to="/FitnessCertificate"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Fitness Certificate
+              </NavLink>
+            )}
+            {can("create:ohc_patient_registration") && (
+              <NavLink
+                to="/ohcdashboard"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                OHC Dashboard
+              </NavLink>
+            )}
           </MenuGroup>
         )}
-
       </nav>
     </motion.aside>
   );

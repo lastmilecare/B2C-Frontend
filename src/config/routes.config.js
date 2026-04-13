@@ -1,6 +1,6 @@
 // src/config/routes.config.js
 import AppDashboard from "../pages/Dashboard";
-import Dashboard from "../pages/AppDashboard";
+import OHCDashboard from "../pages/AppDashboard";
 import PatientListCopy from "../pages/PatientList";
 import PatientRegistrationCopy from "../pages/PatientForm";
 import OpdFormCopy from "../pages/OpdForm";
@@ -28,6 +28,7 @@ import RadiologyScreen from "../pages/RadiologyScreen";
 import DoctorAssessment from "../pages/DoctorAssessment";
 import FitnessCertificate from "../pages/FitnessCertificate";
 import RoleList from "../pages/RoleList";
+// import ohc
 
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -48,8 +49,8 @@ export const ROUTES = [
   },
   {
     path: "/ohcdashboard",
-    component: Dashboard,
-    permission: null,
+    component: OHCDashboard,
+    permission: "read:ohc_dashboard",
     label: "OHC Dashboard",
     icon: "HomeIcon",
     group: "Dashboard",
