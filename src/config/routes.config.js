@@ -1,315 +1,332 @@
-import PatientListCopy        from "../pages/PatientList";
+// src/config/routes.config.js
+import AppDashboard from "../pages/Dashboard";
+import Dashboard from "../pages/AppDashboard";
+import PatientListCopy from "../pages/PatientList";
 import PatientRegistrationCopy from "../pages/PatientForm";
-import AppDashboard           from "../pages/Dashboard";
-import OpdFormCopy            from "../pages/OpdForm";
-import PrescriptionFormCopy   from "../pages/PrescriptionForm";
-import PurchasedEntryCopy     from "../pages/PurchasedEntry";
-import BillingCopy            from "../pages/Billing";
-import CampBillingCopy        from "../pages/CampBilling";
-import OpdBillingListCopy     from "../pages/OpdBillingList";
-import PrescriptionListCopy   from "../pages/PrescriptionList";
-import ExpiryItemsCopy        from "../pages/ExpiryItems";
-import SalesRecordCopy        from "../pages/salesrecord";
-import AttendancePage         from "../pages/AttendancePage";
-import StaffForm              from "../pages/StaffForm";
-import StaffList              from "../pages/StaffList";
-import Permission             from "../pages/Permission";
-import Roles                  from "../pages/Roles";
-import TenantForm             from "../pages/TenantForm";
-import TenantList             from "../pages/TenantList";
-import Dashboard              from "../pages/AppDashboard";
+import OpdFormCopy from "../pages/OpdForm";
+import PrescriptionFormCopy from "../pages/PrescriptionForm";
+import PurchasedEntryCopy from "../pages/PurchasedEntry";
+import BillingCopy from "../pages/Billing";
+import CampBillingCopy from "../pages/CampBilling";
+import OpdBillingListCopy from "../pages/OpdBillingList";
+import PrescriptionListCopy from "../pages/PrescriptionList";
+import ExpiryItemsCopy from "../pages/ExpiryItems";
+import SalesRecordCopy from "../pages/salesrecord";
+import AttendancePage from "../pages/AttendancePage";
+import StaffForm from "../pages/StaffForm";
+import StaffList from "../pages/StaffList";
+import Permission from "../pages/Permission";
+import Roles from "../pages/Roles";
+import TenantForm from "../pages/TenantForm";
+import TenantList from "../pages/TenantList";
 import PatientRegistrationOhc from "../pages/PatientFormOhc";
-import AppointmentVisit       from "../pages/AppointmentVisit";
-import MedicalHistory         from "../pages/MedicalHistory";
-import ClinicalExamination    from "../pages/ClinicalExamination";
+import AppointmentVisit from "../pages/AppointmentVisit";
+import MedicalHistory from "../pages/MedicalHistory";
+import ClinicalExamination from "../pages/ClinicalExamination";
 import LaboratoryInvestigation from "../pages/LaboratoryInvestigation";
-import RadiologyScreen        from "../pages/RadiologyScreen";
-import DoctorAssessment       from "../pages/DoctorAssessment";
-import FitnessCertificate     from "../pages/FitnessCertificate";
+import RadiologyScreen from "../pages/RadiologyScreen";
+import DoctorAssessment from "../pages/DoctorAssessment";
+import FitnessCertificate from "../pages/FitnessCertificate";
+import RoleList from "../pages/RoleList";
 
 export const ROUTES = [
+  // ── Dashboard ─────────────────────────────────────────────────────────────
   {
-    path:       "/",
-    component:  AppDashboard,
-    permission: null,           // everyone
-    showInSidebar: false,       // already handled separately
-  },
-  {
-    path:       "/dashboard",
-    component:  AppDashboard,
-    permission: null,
-    label:      "Dashboard",
-    icon:       "HomeIcon",
-    showInSidebar: true,
-  },
-  {
-    path:       "/ohcdashboard",
-    component:  Dashboard,
+    path: "/",
+    component: AppDashboard,
     permission: null,
     showInSidebar: false,
   },
   {
-    path:       "/tenants",
-    component:  TenantForm,
-    permission: "create:tenant",
-    label:      "Add Tenant",
-    icon:       "BuildingOfficeIcon",
+    path: "/dashboard",
+    component: AppDashboard,
+    permission: null,
+    label: "Dashboard",
+    icon: "HomeIcon",
+    group: "Dashboard",
     showInSidebar: true,
-    group:      "Administration",
   },
   {
-    path:       "/tenant-list",
-    component:  TenantList,
+    path: "/ohcdashboard",
+    component: Dashboard,
+    permission: null,
+    label: "OHC Dashboard",
+    icon: "HomeIcon",
+    group: "Dashboard",
+    showInSidebar: true,
+  },
+
+  // ── Administration (LMC Admin only) ───────────────────────────────────────
+  {
+    path: "/tenant-list",
+    component: TenantList,
     permission: "read:tenant",
-    label:      "Tenant List",
-    icon:       "BuildingOffice2Icon",
+    label: "Tenants",
+    icon: "BuildingOfficeIcon",
+    group: "Administration",
     showInSidebar: true,
-    group:      "Administration",
   },
   {
-    path:       "/roles",
-    component:  Roles,
+    path: "/tenants",
+    component: TenantForm,
+    permission: "create:tenant",
+    showInSidebar: false,
+  },
+  {
+    path: "/roles",
+    component: Roles,
     permission: "read:role",
-    label:      "Roles",
-    icon:       "ShieldCheckIcon",
+    label: "Roles",
+    icon: "ShieldCheckIcon",
+    group: "Administration",
     showInSidebar: true,
-    group:      "Administration",
   },
   {
-    path:       "/permissions",
-    component:  Permission,
+    path: "/roles-list",
+    component: RoleList,
+    permission: "read:role",
+    label: "Roles",
+    icon: "ShieldCheckIcon",
+    group: "Administration",
+    showInSidebar: true,
+  },
+  {
+    path: "/permissions",
+    component: Permission,
     permission: "read:permission",
-    label:      "Permissions",
-    icon:       "KeyIcon",
+    label: "Permissions",
+    icon: "KeyIcon",
+    group: "Administration",
     showInSidebar: true,
-    group:      "Administration",
   },
+
+  // ── Staff ─────────────────────────────────────────────────────────────────
   {
-    path:       "/staff-form",
-    component:  StaffForm,
-    permission: "create:user",
-    label:      "Add Staff",
-    icon:       "UserPlusIcon",
-    showInSidebar: true,
-    group:      "Staff",
-  },
-  {
-    path:       "/staff-list",
-    component:  StaffList,
+    path: "/staff-form",
+    component: StaffForm,
     permission: "read:user",
-    label:      "Staff List",
-    icon:       "UsersIcon",
+    label: "Staff",
+    icon: "UsersIcon",
+    group: "Staff",
     showInSidebar: true,
-    group:      "Staff",
   },
   {
-    path:       "/attendance",
-    component:  AttendancePage,
+    path: "/staff-list",
+    component: StaffList,
     permission: "read:user",
-    label:      "Attendance",
-    icon:       "CalendarDaysIcon",
-    showInSidebar: true,
-    group:      "Staff",
-  },
-  {
-    path:       "/patient-registration",
-    component:  PatientRegistrationCopy,
-    permission: "create:patient",
-    label:      "Patient Registration",
-    icon:       "UserPlusIcon",
-    showInSidebar: true,
-    group:      "Patient",
-  },
-  {
-    path:       "/patient-registration/:id",
-    component:  PatientRegistrationCopy,
-    permission: "create:patient",
     showInSidebar: false,
   },
   {
-    path:       "/patient-list",
-    component:  PatientListCopy,
+    path: "/attendance",
+    component: AttendancePage,
+    permission: "read:user",
+    label: "Attendance",
+    icon: "CalendarDaysIcon",
+    group: "Staff",
+    showInSidebar: true,
+  },
+
+  // ── Patient ───────────────────────────────────────────────────────────────
+  {
+    path: "/patient-list",
+    component: PatientListCopy,
     permission: "read:patient",
-    label:      "Patient List",
-    icon:       "ClipboardDocumentListIcon",
+    label: "Patients",
+    icon: "ClipboardDocumentListIcon",
+    group: "Patient",
     showInSidebar: true,
-    group:      "Patient",
   },
   {
-    path:       "/PatientRegistrationOhc",
-    component:  PatientRegistrationOhc,
+    path: "/patient-registration",
+    component: PatientRegistrationCopy,
     permission: "create:patient",
-    label:      "OHC Registration",
-    icon:       "UserPlusIcon",
-    showInSidebar: true,
-    group:      "Patient",
-  },
-  {
-    path:       "/opd-form",
-    component:  OpdFormCopy,
-    permission: "create:opd",
-    label:      "OPD Form",
-    icon:       "DocumentTextIcon",
-    showInSidebar: true,
-    group:      "OPD",
-  },
-  {
-    path:       "/opd-form/:ID",
-    component:  OpdFormCopy,
-    permission: "create:opd",
     showInSidebar: false,
   },
   {
-    path:       "/opd-list",
-    component:  OpdBillingListCopy,
+    path: "/patient-registration/:id",
+    component: PatientRegistrationCopy,
+    permission: "create:patient",
+    showInSidebar: false,
+  },
+  {
+    path: "/PatientRegistrationOhc",
+    component: PatientRegistrationOhc,
+    permission: "create:patient",
+    label: "OHC Registration",
+    icon: "UserPlusIcon",
+    group: "Patient",
+    showInSidebar: true,
+  },
+
+  // ── OPD ───────────────────────────────────────────────────────────────────
+  {
+    path: "/opd-list",
+    component: OpdBillingListCopy,
     permission: "read:opd",
-    label:      "OPD List",
-    icon:       "ClipboardDocumentListIcon",
+    label: "OPD List",
+    icon: "ClipboardDocumentListIcon",
+    group: "OPD",
     showInSidebar: true,
-    group:      "OPD",
   },
   {
-    path:       "/prescription-form",
-    component:  PrescriptionFormCopy,
-    permission: "create:prescription",
-    label:      "Prescription",
-    icon:       "DocumentPlusIcon",
-    showInSidebar: true,
-    group:      "Prescription",
-  },
-  {
-    path:       "/prescription-form/:id",
-    component:  PrescriptionFormCopy,
-    permission: "create:prescription",
+    path: "/opd-form",
+    component: OpdFormCopy,
+    permission: "create:opd",
     showInSidebar: false,
   },
   {
-    path:       "/prescription-list",
-    component:  PrescriptionListCopy,
+    path: "/opd-form/:ID",
+    component: OpdFormCopy,
+    permission: "create:opd",
+    showInSidebar: false,
+  },
+
+  // ── Prescription ──────────────────────────────────────────────────────────
+  {
+    path: "/prescription-list",
+    component: PrescriptionListCopy,
     permission: "read:prescription",
-    label:      "Prescription List",
-    icon:       "ClipboardDocumentListIcon",
+    label: "Prescriptions",
+    icon: "DocumentTextIcon",
+    group: "Prescription",
     showInSidebar: true,
-    group:      "Prescription",
   },
   {
-    path:       "/billing",
-    component:  BillingCopy,
+    path: "/prescription-form",
+    component: PrescriptionFormCopy,
+    permission: "create:prescription",
+    showInSidebar: false,
+  },
+  {
+    path: "/prescription-form/:id",
+    component: PrescriptionFormCopy,
+    permission: "create:prescription",
+    showInSidebar: false,
+  },
+
+  // ── Billing ───────────────────────────────────────────────────────────────
+  {
+    path: "/billing",
+    component: BillingCopy,
     permission: "create:billing",
-    label:      "Billing",
-    icon:       "CreditCardIcon",
+    label: "Billing",
+    icon: "CreditCardIcon",
+    group: "Billing",
     showInSidebar: true,
-    group:      "Billing",
   },
   {
-    path:       "/billing/:id",
-    component:  BillingCopy,
+    path: "/billing/:id",
+    component: BillingCopy,
     permission: "create:billing",
     showInSidebar: false,
   },
   {
-    path:       "/camp-billing",
-    component:  CampBillingCopy,
+    path: "/camp-billing",
+    component: CampBillingCopy,
     permission: "create:billing",
-    label:      "Camp Billing",
-    icon:       "BuildingStorefrontIcon",
+    label: "Camp Billing",
+    icon: "BuildingStorefrontIcon",
+    group: "Billing",
     showInSidebar: true,
-    group:      "Billing",
   },
+
+  // ── Pharmacy ──────────────────────────────────────────────────────────────
   {
-    path:       "/purchased-entry",
-    component:  PurchasedEntryCopy,
+    path: "/purchased-entry",
+    component: PurchasedEntryCopy,
     permission: "create:pharmacy",
-    label:      "Purchase Entry",
-    icon:       "ShoppingCartIcon",
+    label: "Purchase Entry",
+    icon: "ShoppingCartIcon",
+    group: "Pharmacy",
     showInSidebar: true,
-    group:      "Pharmacy",
   },
   {
-    path:       "/purchased-entry/:id",
-    component:  PurchasedEntryCopy,
+    path: "/purchased-entry/:id",
+    component: PurchasedEntryCopy,
     permission: "create:pharmacy",
     showInSidebar: false,
   },
   {
-    path:       "/sales-record",
-    component:  SalesRecordCopy,
+    path: "/sales-record",
+    component: SalesRecordCopy,
     permission: "read:pharmacy",
-    label:      "Sales Record",
-    icon:       "ChartBarIcon",
+    label: "Sales Record",
+    icon: "ChartBarIcon",
+    group: "Pharmacy",
     showInSidebar: true,
-    group:      "Pharmacy",
   },
   {
-    path:       "/expiry-items",
-    component:  ExpiryItemsCopy,
+    path: "/expiry-items",
+    component: ExpiryItemsCopy,
     permission: "read:pharmacy",
-    label:      "Expiry Items",
-    icon:       "ExclamationTriangleIcon",
+    label: "Expiry Items",
+    icon: "ExclamationTriangleIcon",
+    group: "Pharmacy",
     showInSidebar: true,
-    group:      "Pharmacy",
+  },
+
+  // ── Clinical (OHC) ────────────────────────────────────────────────────────
+  {
+    path: "/appointmentvisit",
+    component: AppointmentVisit,
+    permission: "read:clinical",
+    label: "Appointment Visit",
+    icon: "CalendarIcon",
+    group: "Clinical",
+    showInSidebar: true,
   },
   {
-    path:       "/appointmentvisit",
-    component:  AppointmentVisit,
+    path: "/medicalhistory",
+    component: MedicalHistory,
     permission: "read:clinical",
-    label:      "Appointment Visit",
-    icon:       "CalendarIcon",
+    label: "Medical History",
+    icon: "BookOpenIcon",
+    group: "Clinical",
     showInSidebar: true,
-    group:      "Clinical",
   },
   {
-    path:       "/medicalhistory",
-    component:  MedicalHistory,
+    path: "/ClinicalExamination",
+    component: ClinicalExamination,
     permission: "read:clinical",
-    label:      "Medical History",
-    icon:       "BookOpenIcon",
+    label: "Clinical Examination",
+    icon: "BeakerIcon",
+    group: "Clinical",
     showInSidebar: true,
-    group:      "Clinical",
   },
   {
-    path:       "/ClinicalExamination",
-    component:  ClinicalExamination,
+    path: "/LaboratoryInvestigation",
+    component: LaboratoryInvestigation,
     permission: "read:clinical",
-    label:      "Clinical Examination",
-    icon:       "BeakerIcon",
+    label: "Lab Investigation",
+    icon: "MagnifyingGlassIcon",
+    group: "Clinical",
     showInSidebar: true,
-    group:      "Clinical",
   },
   {
-    path:       "/LaboratoryInvestigation",
-    component:  LaboratoryInvestigation,
+    path: "/RadiologyScreen",
+    component: RadiologyScreen,
     permission: "read:clinical",
-    label:      "Lab Investigation",
-    icon:       "MagnifyingGlassIcon",
+    label: "Radiology",
+    icon: "PhotoIcon",
+    group: "Clinical",
     showInSidebar: true,
-    group:      "Clinical",
   },
   {
-    path:       "/RadiologyScreen",
-    component:  RadiologyScreen,
+    path: "/DoctorAssessment",
+    component: DoctorAssessment,
     permission: "read:clinical",
-    label:      "Radiology",
-    icon:       "PhotoIcon",
+    label: "Doctor Assessment",
+    icon: "UserIcon",
+    group: "Clinical",
     showInSidebar: true,
-    group:      "Clinical",
   },
   {
-    path:       "/DoctorAssessment",
-    component:  DoctorAssessment,
+    path: "/FitnessCertificate",
+    component: FitnessCertificate,
     permission: "read:clinical",
-    label:      "Doctor Assessment",
-    icon:       "UserIcon",
+    label: "Fitness Certificate",
+    icon: "DocumentCheckIcon",
+    group: "Clinical",
     showInSidebar: true,
-    group:      "Clinical",
-  },
-  {
-    path:       "/FitnessCertificate",
-    component:  FitnessCertificate,
-    permission: "read:clinical",
-    label:      "Fitness Certificate",
-    icon:       "DocumentCheckIcon",
-    showInSidebar: true,
-    group:      "Clinical",
   },
 ];

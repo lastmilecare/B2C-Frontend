@@ -8,7 +8,7 @@ import {
     ShieldCheckIcon,
     DocumentCheckIcon 
 } from "@heroicons/react/24/outline";
-import { useCreatePermissionMutation } from "../redux/apiSlice";
+import { useCreatePermissionMutation,useGetAllResourceComboQuery } from "../redux/apiSlice";
 import { healthAlert } from "../utils/healthSwal";
 import { Select, Button } from "../components/FormControls";
 
