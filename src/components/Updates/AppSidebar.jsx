@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,7 +14,7 @@ import {
   ShieldCheckIcon,
   BuildingLibraryIcon,
   KeyIcon,
-  HeartIcon
+  HeartIcon,
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
 
@@ -251,30 +250,35 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         )}
 
         {/* ── Staff ────────────────────────────────────────── */}
-        {can("read:staff") && (
+        {can("read:staff_form") && (
           <MenuGroup menuKey="staff" icon={UserGroupIcon} label="Staff">
-            <NavLink
-              to="/staff-form"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Staff
-            </NavLink>
-
-            <NavLink
-              to="/staff-list"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Staff List
-            </NavLink>
-            <NavLink
-              to="/attendance"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Attendance
-            </NavLink>
+            {can("read:staff_form") && (
+              <NavLink
+                to="/staff-form"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Staff
+              </NavLink>
+            )}
+            {can("read:staff_form") && (
+              <NavLink
+                to="/staff-list"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Staff List
+              </NavLink>
+            )}
+            {can("read:attendance") && (
+              <NavLink
+                to="/attendance"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Attendance
+              </NavLink>
+            )}
           </MenuGroup>
         )}
 
@@ -286,14 +290,14 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             label="Role Management"
           >
             {can("create:role") && (
-            <NavLink
-              to="/roles"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Roles
-            </NavLink>
-              )}
+              <NavLink
+                to="/roles"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Roles
+              </NavLink>
+            )}
             {can("read:roles-list") && (
               <NavLink
                 to="/role-list"
@@ -304,14 +308,14 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
             )}
             {can("read:permission") && (
-            <NavLink
-              to="/permissions"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Permissions
-            </NavLink>
-            )} 
+              <NavLink
+                to="/permissions"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Permissions
+              </NavLink>
+            )}
           </MenuGroup>
         )}
 
