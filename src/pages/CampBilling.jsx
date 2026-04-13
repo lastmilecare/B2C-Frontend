@@ -54,7 +54,7 @@ const CampBillingCopy = () => {
 
       </div>
 
-      {/* Content */}
+      
 
       {/* <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100"> */}
 

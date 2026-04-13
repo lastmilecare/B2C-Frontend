@@ -136,7 +136,7 @@
         UserloginID: Number(userId) || 0,
         AddedBy: Number(userId) || 0,
         ModifiedDate: new Date(),
-        ModifiedBy: 0, // To be set from auth state
+        ModifiedBy: 0, 
         Isopen: false,
         StockStatus: 0,
         items: [],
@@ -544,7 +544,7 @@
                       }}
                       autoComplete="off"
                     />
-                    {/* Medicine Search Suggestions List */}
+                    
                     {!isEditMode && medicineSuggestions.length > 0 && (
                       <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                         {medicineSuggestions.map((item) => (
@@ -757,7 +757,7 @@
         Confirm GRN Summary
       </h3>
 
-      {/* GRN Info */}
+     
       <div className="grid md:grid-cols-2 gap-3 text-sm">
         <p><b>Invoice No:</b> {formik.values.RecieptNo}</p>
         <p><b>Invoice Date:</b> {formik.values.InvoiceDate}</p>
@@ -765,12 +765,12 @@
         <p><b>Rack No:</b> {formik.values.RagNo}</p>
       </div>
 
-      {/* Items */}
+    
       <div className="border-t pt-3 text-sm">
         <p><b>Total Items:</b> {formik.values.items.length}</p>
       </div>
 
-      {/* Totals */}
+  
       <div className="border-t pt-3 grid md:grid-cols-2 gap-3 text-sm">
         <p><b>Total Qty:</b> {totals.qty}</p>
         <p><b>Total CP:</b> ₹ {totals.totalCp.toFixed(2)}</p>

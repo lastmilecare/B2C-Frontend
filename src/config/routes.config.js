@@ -33,11 +33,10 @@ import RoleList from "../pages/RoleList";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
-    path: "/",
+	path: "/",
     component: AppDashboard,
-    permission: null,
-    showInSidebar: false,
-  },
+    permission: null,           
+    showInSidebar: false,  },
   {
     path: "/dashboard",
     component: AppDashboard,

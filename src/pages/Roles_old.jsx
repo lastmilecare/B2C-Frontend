@@ -1,4 +1,3 @@
-// src/pages/Roles.jsx
 import React, { useState } from "react";
 import { ShieldCheckIcon } from "@heroicons/react/24/solid";
 import {
@@ -25,7 +24,7 @@ const Rolesold = () => {
     tenantId: "",
   });
 
-  // ── API Hooks ─────────────────────────────────────────────
+ 
   const { data, isLoading, isFetching } = useGetRolesQuery(filters);
   const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
   const [deleteRole] = useDeleteRoleMutation();
@@ -41,7 +40,7 @@ const Rolesold = () => {
       : permissions.filter(
           (p) => p.resource !== "tenant" && p.resource !== "role",
         );
-  // ── Handlers ─────────────────────────────────────────────
+ 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));

@@ -17,7 +17,7 @@ const PatientRegistration = () => {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
 
-  // API Queries & Mutations
+  
   const { data: patientApiResponse, isLoading: isFetching } = useGetPatientByIdQuery(id, {
     skip: !isEdit,
   });
@@ -155,7 +155,7 @@ const PatientRegistration = () => {
 
 
       loadDiseases();
-      // Update local state to trigger address dropdowns
+      
       setCountryId(p.country_id || "");
       setStateId(p.state_id || "");
     }

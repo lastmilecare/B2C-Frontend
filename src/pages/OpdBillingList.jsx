@@ -116,7 +116,7 @@ const OpdBillingListCopy = () => {
   const [printRow1, setPrintRow1] = useState(null);
   const printRef = useRef();
   const printRef1 = useRef();
-  // API call (assumes this hook exists in your apiSlice)
+  
   const { data, isLoading, isError, error } = useGetOpdBillingQuery(
     {
       page,
@@ -230,7 +230,7 @@ const OpdBillingListCopy = () => {
     }
     const n = Number(v);
     if (!Number.isFinite(n)) return `₹0.00`;
-    return `₹${n.toFixed(0)}`; // change as per need the value value ex 2
+    return `₹${n.toFixed(0)}`; 
   };
   const safeString = (v, fallback = "-") =>
     v === null || v === undefined || v === "" ? fallback : String(v);

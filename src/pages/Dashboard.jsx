@@ -101,7 +101,7 @@ const AppDashboard = () => {
       transition={{ duration: 0.4 }}
       className="space-y-10"
     >
-      {/* HEADER */}
+      
 
       <div className="bg-gradient-to-r from-emerald-600 via-emerald-350 to-emerald-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
         <div>
@@ -120,7 +120,7 @@ const AppDashboard = () => {
         </div>
       </div>
 
-      {/* MODULE CARDS */}
+    
 
       <div className="grid grid-cols-4 gap-6 overflow-visible">
         {modules.map((m) => (
@@ -135,7 +135,7 @@ const AppDashboard = () => {
               <h3 className="font-semibold text-gray-700">{m.title}</h3>
             </div>
 
-            {/* dropdown */}
+            
 
             <div className="absolute left-0 top-16 hidden group-hover:block bg-white shadow-xl rounded-xl mt-2 w-56 p-4 z-[999]">
               {m.items.map((item) => (
@@ -152,7 +152,7 @@ const AppDashboard = () => {
         ))}
       </div>
 
-      {/* STATS */}
+     
 
       <div className="grid grid-cols-4 gap-6">
         <motion.div
@@ -192,7 +192,7 @@ const AppDashboard = () => {
         </motion.div>
       </div>
 
-      {/* QUICK ACTION */}
+      
 
       {/* <div className="grid grid-cols-4 gap-6">
 

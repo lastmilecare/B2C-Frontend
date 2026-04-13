@@ -1,15 +1,14 @@
 import React, { useState } from "react";
-import { 
-    useGetPermissionsQuery, 
-    useDeletePermissionMutation 
+import {
+    useGetPermissionsQuery,
+    useDeletePermissionMutation,
+    useGetAllPermissionsComboQuery
 } from "../redux/apiSlice";
 import CopyFilterBar from "../components/Updates/Filter";
 import PatientTable from "../components/Updates/PatientTable";
 import { KeyIcon } from "@heroicons/react/24/outline";
 import { healthAlert } from "../utils/healthSwal";
 
-const ACTIONS = ["read", "create", "update", "delete", "assign"];
-const RESOURCES = ["user", "role", "permission", "tenant"];
 
 const PermissionList = () => {
     const [page, setPage] = useState(1);
@@ -19,6 +18,10 @@ const PermissionList = () => {
 
     const { data, isLoading, isFetching } = useGetPermissionsQuery({ page, limit, ...filters });
     const [deletePermission] = useDeletePermissionMutation();
+    const { data: permissionComboData } = useGetAllPermissionsComboQuery();
+    const comboPermissions = permissionComboData?.data?.data || [];
+    const ACTIONS = [...new Set(comboPermissions.map(p => p?.action))];
+    const RESOURCES = [...new Set(comboPermissions.map(p => p?.resource))];
 
     const permissions = data?.data?.data || [];
     const pagination = data?.data?.pagination || {};
@@ -35,32 +38,37 @@ const PermissionList = () => {
     };
 
     const handleDelete = async (row) => {
-        healthAlert({
-            title: "Are you sure?",
-            text: `Do you want to delete permission "${row.action}:${row.resource}"?`,
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, delete it!",
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    await deletePermission(row.id).unwrap();
-                    healthAlert({ title: "Deleted!", text: "Permission removed.", icon: "success" });
-                } catch (err) {
-                    healthAlert({ title: "Error", text: err?.data?.message || "Failed", icon: "error" });
-                }
-            }
-        });
-    };
+   const result = await healthAlert({
+    title: "Are you sure?",
+    text: `Do you want to delete permission "${row.action}:${row.resource}"?`,
+    type: "confirm"
+});
+    if (result.isConfirmed) {
+        try {
+            await deletePermission(row.id).unwrap();
+
+           healthAlert({
+    title: "Deleted!",
+    text: "Permission removed.",
+    type: "success"
+});
+        } catch (err) {
+            healthAlert({
+                title: "Error",
+                text: err?.data?.message || "Failed"
+            });
+        }
+    }
+};
 
     const filtersConfig = [
-        { 
-            label: "Action", name: "action", type: "select", 
-            options: ACTIONS.map(a => ({ label: a.toUpperCase(), value: a })) 
+        {
+            label: "Action", name: "action", type: "select",
+            options: ACTIONS.map(a => ({ label: a.toUpperCase(), value: a }))
         },
-        { 
-            label: "Resource", name: "resource", type: "select", 
-            options: RESOURCES.map(r => ({ label: r.toUpperCase(), value: r })) 
+        {
+            label: "Resource", name: "resource", type: "select",
+            options: RESOURCES.map(r => ({ label: r.toUpperCase(), value: r }))
         },
     ];
 
@@ -100,7 +108,7 @@ const PermissionList = () => {
         <div className="max-w-7xl mx-auto py-10 px-6">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-slate-800">Permission List</h1>
-                
+
             </div>
 
             <CopyFilterBar
@@ -126,7 +134,7 @@ const PermissionList = () => {
                     enableActions={true}
                     actionButtons={["delete"]}
                 />
-                 
+
             </div>
         </div>
     );

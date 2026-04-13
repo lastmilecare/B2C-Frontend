@@ -15,7 +15,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/print-opd-form" element={<PrintOpdForm />} />
-        {ROUTES.map(({ path, component: Component, permission }) => (
+       {ROUTES.map(({ path, component: Component, permission }) => (
           <Route
             key={path}
             path={path}

@@ -272,7 +272,7 @@ export const api = createApi({
       providesTags: ["Inventory"],
     }),
 
-    // 2. Add New Inventory Item
+   
     createInventoryItem: build.mutation({
       query: (body) => ({
         url: "/inventory/add",
@@ -282,7 +282,7 @@ export const api = createApi({
       invalidatesTags: ["Inventory"],
     }),
 
-    // 3. Update Inventory Item
+  
     updateInventoryItem: build.mutation({
       query: ({ id, body }) => ({
         url: `/inventory/update/${id}`,
@@ -292,7 +292,7 @@ export const api = createApi({
       invalidatesTags: ["Inventory"],
     }),
 
-    // 4. Delete Inventory Item
+  
     deleteInventoryItem: build.mutation({
       query: (id) => ({
         url: `/inventory/delete/${id}`,
@@ -300,7 +300,7 @@ export const api = createApi({
       }),
       invalidatesTags: ["Inventory"],
     }),
-    // 🔍 1. Search OPD Bill No (autosuggest)
+    
     searchOpdBillNo: build.query({
       query: (bill_no) => ({
         url: "/opd-billing",
@@ -309,7 +309,7 @@ export const api = createApi({
       }),
     }),
 
-    // 📄 2. Get billing details by bill no
+   
     getBillingByBillNo: build.query({
       query: (bill_no) => ({
         url: "/billing/by-bill-no",
@@ -409,7 +409,7 @@ export const api = createApi({
       query: (id) => ({
         url: `/picasoid-prescription/${id}/toggle-status`,
         method: "PATCH",
-        data: {}, // 👈 add empty body for axios safety
+        data: {}, 
       }),
       invalidatesTags: ["PrescriptionDetail"],
     }),
@@ -707,7 +707,7 @@ export const api = createApi({
       providesTags: ["Permission"],
     }),
 
-    // ── Get Permissions Grouped by Resource ───────────────────────────────
+ 
     getPermissionsGrouped: build.query({
       query: () => ({
         url: `${VITE_AUTH_URL}permissions/grouped`,
@@ -716,7 +716,6 @@ export const api = createApi({
       providesTags: ["Permission"],
     }),
 
-    // ── Get Permissions by Role ────────────────────────────────────────────
     getPermissionsByRole: build.query({
       query: (roleId) => ({
         url: `${VITE_AUTH_URL}permissions/by-role/${roleId}`,
@@ -727,7 +726,7 @@ export const api = createApi({
       ],
     }),
 
-    // ── Get Single Permission ──────────────────────────────────────────────
+    
     getPermissionById: build.query({
       query: (id) => ({
         url: `${VITE_AUTH_URL}permissions/${id}`,
@@ -736,7 +735,6 @@ export const api = createApi({
       providesTags: (_result, _error, id) => [{ type: "Permission", id }],
     }),
 
-    // ── Create Permission ─────────────────────────────────────────────────
     createPermission: build.mutation({
       query: (body) => ({
         url: `${VITE_AUTH_URL}permissions`,
@@ -746,7 +744,6 @@ export const api = createApi({
       invalidatesTags: ["Permission"],
     }),
 
-    // ── Update Permission ─────────────────────────────────────────────────
     updatePermission: build.mutation({
       query: ({ id, ...body }) => ({
         url: `${VITE_AUTH_URL}permissions/${id}`,
@@ -756,7 +753,6 @@ export const api = createApi({
       invalidatesTags: ["Permission"],
     }),
 
-    // ── Delete Permission ─────────────────────────────────────────────────
     deletePermission: build.mutation({
       query: (id) => ({
         url: `${VITE_AUTH_URL}permissions/${id}`,
@@ -774,17 +770,17 @@ export const api = createApi({
       invalidatesTags: ["Role"],
     }),
 
-    // ── Get All Roles ───────────────────────────────────────
+   
     getRoles: build.query({
       query: (params) => ({
         url: `${VITE_AUTH_URL}roles`,
         method: "get",
-        params, // page, limit, name, tenantId, etc.
+        params, 
       }),
       providesTags: ["Role"],
     }),
 
-    // ── Get Single Role ─────────────────────────────────────
+  
     getRoleById: build.query({
       query: (id) => ({
         url: `${VITE_AUTH_URL}roles/${id}`,
@@ -793,7 +789,7 @@ export const api = createApi({
       providesTags: ["Role"],
     }),
 
-    // ── Update Role ─────────────────────────────────────────
+    
     updateRole: build.mutation({
       query: ({ id, ...body }) => ({
         url: `${VITE_AUTH_URL}roles/${id}`,
@@ -803,7 +799,6 @@ export const api = createApi({
       invalidatesTags: ["Role"],
     }),
 
-    // ── Toggle Role Status ──────────────────────────────────
     toggleRoleStatus: build.mutation({
       query: (id) => ({
         url: `${VITE_AUTH_URL}roles/${id}/toggle-status`,
@@ -812,7 +807,6 @@ export const api = createApi({
       invalidatesTags: ["Role"],
     }),
 
-    // ── Assign Permissions ──────────────────────────────────
     assignPermissions: build.mutation({
       query: ({ id, permissionIds }) => ({
         url: `${VITE_AUTH_URL}roles/${id}/permissions`,
@@ -822,7 +816,6 @@ export const api = createApi({
       invalidatesTags: ["Role"],
     }),
 
-    // ── Sync Permissions ────────────────────────────────────
     syncPermissions: build.mutation({
       query: ({ id, permissionIds }) => ({
         url: `${VITE_AUTH_URL}roles/${id}/permissions/sync`,
@@ -832,7 +825,7 @@ export const api = createApi({
       invalidatesTags: ["Role"],
     }),
 
-    // ── Remove Permission ───────────────────────────────────
+
     removePermission: build.mutation({
       query: ({ id, permissionId }) => ({
         url: `${VITE_AUTH_URL}roles/${id}/permissions/${permissionId}`,
@@ -841,7 +834,6 @@ export const api = createApi({
       invalidatesTags: ["Role"],
     }),
 
-    // ── Delete Role ─────────────────────────────────────────
     deleteRole: build.mutation({
       query: (id) => ({
         url: `${VITE_AUTH_URL}roles/${id}`,
@@ -855,7 +847,7 @@ export const api = createApi({
       providesTags: ["Tenant"],
     }),
 
-    // ── Users APIs ───────────────────────────────────────────────────────────
+
     getUsers: build.query({
       query: (params) => ({
         url: `${VITE_AUTH_URL}users`,

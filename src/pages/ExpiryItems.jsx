@@ -211,7 +211,7 @@ const ExpiryItemsCopy = () => {
 
       
 
-      {/* TABLE */}
+      
 
       <div className="bg-white rounded-xl shadow-sm border p-2">
 
@@ -232,7 +232,7 @@ const ExpiryItemsCopy = () => {
 
       </div>
 
-      {/* FOOTER */}
+    
 
      <section className="border rounded-xl bg-emerald-50 px-6 py-3 shadow-sm">
 

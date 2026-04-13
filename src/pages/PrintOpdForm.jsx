@@ -24,7 +24,7 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
   };
 
   const label = {
-    width: "120px", // fixed width for alignment
+    width: "120px", 
     fontWeight: "bold",
     position: "relative",
   };
@@ -40,7 +40,7 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
   };
   const rowBlock = {
     display: "grid",
-    gridTemplateColumns: "200px 15px 1fr", // label | colon | value
+    gridTemplateColumns: "200px 15px 1fr", 
     alignItems: "start",
     marginTop: "12px",
   };

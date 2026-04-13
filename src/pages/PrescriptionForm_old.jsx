@@ -145,7 +145,7 @@ const PrescriptionForm = () => {
       weight: values.weight ? Number(values.weight) : null,
       chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
       history: values.history || "",
-      physicalFindings: "", // TODO: need to figure out
+      physicalFindings: "", 
       treatmentPlan: "", // TODO: need to figure out
       labs: values.labs || "",
       otherLabs: values.otherlabs || "",
@@ -586,7 +586,7 @@ const PrescriptionForm = () => {
             />
           </div>
         </section>
-        {/* ================= BILLING DETAILS ================= */}{" "}
+       {" "}
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
@@ -634,7 +634,7 @@ const PrescriptionForm = () => {
             />
           </div>
         </section>
-        {/* ================= Medical Prescription DETAILS ================= */}
+      
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Medical

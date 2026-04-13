@@ -194,8 +194,8 @@ const PrescriptionFormCopy = () => {
       weight: values.weight ? Number(values.weight) : null,
       chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
       history: values.history || "",
-      physicalFindings: "", // TODO: need to figure out
-      treatmentPlan: "", // TODO: need to figure out
+      physicalFindings: "",
+      treatmentPlan: "", 
       labs: values.labs || "",
       otherLabs: values.otherlabs || "",
       preventiveAdvice: values.advice || "",
@@ -225,7 +225,7 @@ driver_id: patientData?.PatientID || null,
         typeOfMedicine: item.type,
         addedBy: values.AddedBy,
         addedDate,
-        companyId: 10, // fix later
+        companyId: 10, 
         isActive: true,
       })),
     };
@@ -386,10 +386,10 @@ driver_id: patientData?.PatientID || null,
       setPrescriptionList(mappedAdviceList);
     }
 
-    // Convert DB string -> array of names
+    
     const complaintNames = parseChiefComplaintNames(row.chiefComplaints);
 
-    // Create lookup map (O(1))
+  
     const diseaseMap = new Map(
       diseaseOptions.map((d) => [d.name?.toLowerCase().trim(), d]),
     );
@@ -716,7 +716,7 @@ ${activeStep === step.id
                 </div>
               </section>
             )}
-            {/* ================= BILLING DETAILS ================= */}{" "}
+           {" "}
             {activeStep === 3 && (
               <section>
                 <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -766,7 +766,7 @@ ${activeStep === step.id
                 </div>
               </section>
             )}
-            {/* ================= Medical Prescription DETAILS ================= */}
+           
             {activeStep === 4 && (
 
               <section>
@@ -796,7 +796,7 @@ ${activeStep === step.id
                       autoComplete="off"
                     />
 
-                    {/* Medicine Search Suggestions List */}
+                   
                     {medicineSuggestions.length > 0 && (
                       <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                         {medicineSuggestions.map((item) => (
@@ -999,7 +999,7 @@ ${activeStep === step.id
             )}
             <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
 
-  {/* LEFT SIDE */}
+ 
   <div className="flex gap-2">
 
     {activeStep > 1 && (
@@ -1036,7 +1036,7 @@ ${activeStep === step.id
 
   </div>
 
-  {/* RIGHT SIDE */}
+  
   {activeStep < 5 ? (
 
     <Button type="button" variant="sky" onClick={nextStep}>
@@ -1047,10 +1047,10 @@ ${activeStep === step.id
 
     <div className="flex gap-2">
 
-      {/* PRINT */}
+     
       
 
-      {/* SAVE */}
+    
       <Button type="submit" variant="sky" disabled={isLoading}>
         {isLoading ? "Saving..." : id ? "Update" : "Save"}
       </Button>
