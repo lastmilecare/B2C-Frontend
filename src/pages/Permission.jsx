@@ -6,20 +6,23 @@ import {
   ArrowPathIcon,
   CheckCircleIcon,
   ShieldCheckIcon,
-  DocumentCheckIcon
+  DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
-import { useCreatePermissionMutation, useGetAllPermissionsComboQuery } from "../redux/apiSlice";
+import {
+  useCreatePermissionMutation,
+  useGetAllResourceComboQuery,
+} from "../redux/apiSlice";
 import { healthAlert } from "../utils/healthSwal";
 import { Select, Button } from "../components/FormControls";
 
-
 const Permission = () => {
   const [activeStep, setActiveStep] = useState(1);
-  const [createPermission, { isLoading: isCreating }] = useCreatePermissionMutation();
-  const { data: permissionData } = useGetAllPermissionsComboQuery();
-  const permissions = permissionData?.data?.data || [];
-  const ACTIONS = [...new Set(permissions.map(p => p.action))];
-  const RESOURCES = [...new Set(permissions.map(p => p.resource))];
+  const [createPermission, { isLoading: isCreating }] =
+    useCreatePermissionMutation();
+  const { data: ResourceData } = useGetAllResourceComboQuery();
+  const RESOURCES = ResourceData?.data?.data || [];
+  const ACTIONS = ["read", "create", "update", "delete", "assign"];
+
   const formik = useFormik({
     initialValues: {
       action: "",
@@ -61,7 +64,6 @@ const Permission = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10 px-4">
       <div className="max-w-6xl mx-auto">
-
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
             <span className="bg-blue-100 p-2 rounded-xl">
@@ -71,18 +73,26 @@ const Permission = () => {
           </h1>
           <div className="flex gap-2">
             {[1, 2].map((s) => (
-              <div key={s} className={`h-2 w-16 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"}`} />
+              <div
+                key={s}
+                className={`h-2 w-16 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"}`}
+              />
             ))}
           </div>
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl shadow-blue-100 border border-gray-100 overflow-hidden">
-
           <div className="flex border-b">
-            <button disabled className={`flex-1 py-4 flex items-center justify-center gap-2 ${activeStep === 1 ? "text-sky-600 font-bold" : "text-gray-400"}`}>
+            <button
+              disabled
+              className={`flex-1 py-4 flex items-center justify-center gap-2 ${activeStep === 1 ? "text-sky-600 font-bold" : "text-gray-400"}`}
+            >
               <ShieldCheckIcon className="w-5 h-5" /> Mapping
             </button>
-            <button disabled className={`flex-1 py-4 flex items-center justify-center gap-2 ${activeStep === 2 ? "text-sky-600 font-bold" : "text-gray-400"}`}>
+            <button
+              disabled
+              className={`flex-1 py-4 flex items-center justify-center gap-2 ${activeStep === 2 ? "text-sky-600 font-bold" : "text-gray-400"}`}
+            >
               <DocumentCheckIcon className="w-5 h-5" /> Confirm
             </button>
           </div>
@@ -92,7 +102,8 @@ const Permission = () => {
               {activeStep === 1 && (
                 <section className="animate-in fade-in duration-500">
                   <h3 className="text-lg font-semibold text-sky-700 mb-6 flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Permission Mapping
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                    Permission Mapping
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Select
@@ -103,7 +114,7 @@ const Permission = () => {
                       <option value="">Select Action</option>
                       {ACTIONS.map((a) => (
                         <option key={a} value={a}>
-                          {a.toUpperCase()}
+                          {a}
                         </option>
                       ))}
                     </Select>
@@ -114,9 +125,9 @@ const Permission = () => {
                       error={formik.touched.resource && formik.errors.resource}
                     >
                       <option value="">Select Resource</option>
-                      {RESOURCES.map((r) => (
-                        <option key={r} value={r}>
-                          {r.toUpperCase()}
+                      {RESOURCES?.map((r) => (
+                        <option key={r.id} value={r.name}>
+                          {`${r.name} - ${r.description}`}
                         </option>
                       ))}
                     </Select>
@@ -124,8 +135,12 @@ const Permission = () => {
 
                   {formik.values.action && formik.values.resource && (
                     <div className="mt-6 p-4 bg-sky-50 rounded-2xl border border-sky-100">
-                      <p className="text-xs text-sky-600 font-bold uppercase tracking-wider mb-1">Generated Key</p>
-                      <code className="text-lg font-mono text-sky-800">{formik.values.action}:{formik.values.resource}</code>
+                      <p className="text-xs text-sky-600 font-bold uppercase tracking-wider mb-1">
+                        Generated Key
+                      </p>
+                      <code className="text-lg font-mono text-sky-800">
+                        {formik.values.action}:{formik.values.resource}
+                      </code>
                     </div>
                   )}
                 </section>
@@ -134,20 +149,35 @@ const Permission = () => {
               {activeStep === 2 && (
                 <section className="animate-in fade-in duration-500">
                   <div className="bg-sky-50 p-8 rounded-3xl border border-sky-100 space-y-6">
-                    <h3 className="text-xl font-bold text-sky-800">Confirm Permission Mapping</h3>
+                    <h3 className="text-xl font-bold text-sky-800">
+                      Confirm Permission Mapping
+                    </h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="bg-white p-4 rounded-2xl shadow-sm">
-                        <p className="text-gray-500 font-medium">Selected Action</p>
-                        <p className="text-lg font-bold text-slate-800 uppercase">{formik.values.action}</p>
+                        <p className="text-gray-500 font-medium">
+                          Selected Action
+                        </p>
+                        <p className="text-lg font-bold text-slate-800 uppercase">
+                          {formik.values.action}
+                        </p>
                       </div>
                       <div className="bg-white p-4 rounded-2xl shadow-sm">
-                        <p className="text-gray-500 font-medium">Selected Resource</p>
-                        <p className="text-lg font-bold text-slate-800 uppercase">{formik.values.resource}</p>
+                        <p className="text-gray-500 font-medium">
+                          Selected Resource
+                        </p>
+                        <p className="text-lg font-bold text-slate-800 uppercase">
+                          {formik.values.resource}
+                        </p>
                       </div>
                     </div>
                     <div className="p-4 bg-white rounded-2xl border border-sky-200">
-                      <p className="text-sm text-gray-500">The following unique key will be registered in the system:</p>
-                      <p className="text-xl font-mono font-black text-sky-600 mt-2">{formik.values.action}:{formik.values.resource}</p>
+                      <p className="text-sm text-gray-500">
+                        The following unique key will be registered in the
+                        system:
+                      </p>
+                      <p className="text-xl font-mono font-black text-sky-600 mt-2">
+                        {formik.values.action}:{formik.values.resource}
+                      </p>
                     </div>
                   </div>
                 </section>
@@ -156,17 +186,34 @@ const Permission = () => {
               <div className="flex justify-between pt-8 border-t border-slate-50">
                 <div className="flex gap-3">
                   {activeStep > 1 && (
-                    <Button type="button" variant="gray" onClick={() => setActiveStep(1)}>Back</Button>
+                    <Button
+                      type="button"
+                      variant="gray"
+                      onClick={() => setActiveStep(1)}
+                    >
+                      Back
+                    </Button>
                   )}
-                  <Button type="button" variant="gray" onClick={() => formik.resetForm()}>
+                  <Button
+                    type="button"
+                    variant="gray"
+                    onClick={() => formik.resetForm()}
+                  >
                     <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
                   </Button>
                 </div>
 
                 {activeStep < 2 ? (
-                  <Button type="button" variant="sky" onClick={nextStep}>Continue</Button>
+                  <Button type="button" variant="sky" onClick={nextStep}>
+                    Continue
+                  </Button>
                 ) : (
-                  <Button type="button" variant="sky" onClick={formik.handleSubmit} disabled={isCreating}>
+                  <Button
+                    type="button"
+                    variant="sky"
+                    onClick={formik.handleSubmit}
+                    disabled={isCreating}
+                  >
                     <CheckCircleIcon className="w-5 h-5 inline mr-1" />
                     {isCreating ? "Saving..." : "Save Permission"}
                   </Button>

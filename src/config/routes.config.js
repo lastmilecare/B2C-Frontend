@@ -28,7 +28,7 @@ import RadiologyScreen from "../pages/RadiologyScreen";
 import DoctorAssessment from "../pages/DoctorAssessment";
 import FitnessCertificate from "../pages/FitnessCertificate";
 import RoleList from "../pages/RoleList";
-// import ohc
+import PermissionList from "../pages/Permission_list";
 
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-    path: "/ohcdashboard",
+    path: "/ohc-dashboard",
     component: OHCDashboard,
     permission: "read:ohc_dashboard",
     label: "OHC Dashboard",
@@ -93,18 +93,28 @@ export const ROUTES = [
   {
     path: "/permissions",
     component: Permission,
-    permission: "read:permission",
+    permission: "create:permission",
     label: "Permissions",
     icon: "KeyIcon",
     group: "Administration",
     showInSidebar: true,
   },
+  {
+    path: "/permission-list",
+    component: PermissionList,
+    permission: "read:permission",
+    label: "Permission List",
+    icon: "KeyIcon",
+    group: "Administration",
+    showInSidebar: true,
+  },
+  
 
   // ── Staff ─────────────────────────────────────────────────────────────────
   {
     path: "/staff-form",
     component: StaffForm,
-    permission: "read:user",
+    permission: "create:staff",
     label: "Staff",
     icon: "UsersIcon",
     group: "Staff",
@@ -113,13 +123,13 @@ export const ROUTES = [
   {
     path: "/staff-list",
     component: StaffList,
-    permission: "read:user",
+    permission: "read:staff-list",
     showInSidebar: false,
   },
   {
     path: "/attendance",
     component: AttendancePage,
-    permission: "read:user",
+    permission: "read:attendance",
     label: "Attendance",
     icon: "CalendarDaysIcon",
     group: "Staff",
@@ -130,7 +140,7 @@ export const ROUTES = [
   {
     path: "/patient-list",
     component: PatientListCopy,
-    permission: "read:patient",
+    permission: "read:patient_registration",
     label: "Patients",
     icon: "ClipboardDocumentListIcon",
     group: "Patient",
@@ -139,19 +149,19 @@ export const ROUTES = [
   {
     path: "/patient-registration",
     component: PatientRegistrationCopy,
-    permission: "create:patient",
+    permission: "create:patient_registration",
     showInSidebar: false,
   },
   {
     path: "/patient-registration/:id",
     component: PatientRegistrationCopy,
-    permission: "create:patient",
+    permission: "create:patient_registration",
     showInSidebar: false,
   },
   {
     path: "/PatientRegistrationOhc",
     component: PatientRegistrationOhc,
-    permission: "create:patient",
+    permission: "create:patient_registration",
     label: "OHC Registration",
     icon: "UserPlusIcon",
     group: "Patient",
@@ -267,9 +277,9 @@ export const ROUTES = [
 
   // ── Clinical (OHC) ────────────────────────────────────────────────────────
   {
-    path: "/appointmentvisit",
+    path: "/appointment-visit",
     component: AppointmentVisit,
-    permission: "read:clinical",
+    permission: "read:appointment_visit",
     label: "Appointment Visit",
     icon: "CalendarIcon",
     group: "Clinical",
@@ -278,7 +288,7 @@ export const ROUTES = [
   {
     path: "/medicalhistory",
     component: MedicalHistory,
-    permission: "read:clinical",
+    permission: "read:medical_history",
     label: "Medical History",
     icon: "BookOpenIcon",
     group: "Clinical",
@@ -287,7 +297,7 @@ export const ROUTES = [
   {
     path: "/ClinicalExamination",
     component: ClinicalExamination,
-    permission: "read:clinical",
+    permission: "read:clinical_examination",
     label: "Clinical Examination",
     icon: "BeakerIcon",
     group: "Clinical",
@@ -296,7 +306,7 @@ export const ROUTES = [
   {
     path: "/LaboratoryInvestigation",
     component: LaboratoryInvestigation,
-    permission: "read:clinical",
+    permission: "read:laboratory_investigation",
     label: "Lab Investigation",
     icon: "MagnifyingGlassIcon",
     group: "Clinical",
@@ -305,7 +315,7 @@ export const ROUTES = [
   {
     path: "/RadiologyScreen",
     component: RadiologyScreen,
-    permission: "read:clinical",
+    permission: "read:radiology",
     label: "Radiology",
     icon: "PhotoIcon",
     group: "Clinical",
@@ -314,7 +324,7 @@ export const ROUTES = [
   {
     path: "/DoctorAssessment",
     component: DoctorAssessment,
-    permission: "read:clinical",
+    permission: "read:doctor_assessment",
     label: "Doctor Assessment",
     icon: "UserIcon",
     group: "Clinical",
@@ -323,7 +333,7 @@ export const ROUTES = [
   {
     path: "/FitnessCertificate",
     component: FitnessCertificate,
-    permission: "read:clinical",
+    permission: "read:fitness_certificate",
     label: "Fitness Certificate",
     icon: "DocumentCheckIcon",
     group: "Clinical",
