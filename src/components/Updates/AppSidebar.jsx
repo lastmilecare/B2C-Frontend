@@ -285,6 +285,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             icon={ShieldCheckIcon}
             label="Role Management"
           >
+            {can("create:role") && (
             <NavLink
               to="/roles"
               className={subNavItem}
@@ -292,6 +293,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             >
               Roles
             </NavLink>
+              )}
             {can("read:roles-list") && (
               <NavLink
                 to="/role-list"
@@ -301,7 +303,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Role List
               </NavLink>
             )}
-            {/* {can("read:permission") && ( */}
+            {can("read:permission") && (
             <NavLink
               to="/permissions"
               className={subNavItem}
@@ -309,7 +311,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             >
               Permissions
             </NavLink>
-            {/* )} */}
+            )} 
           </MenuGroup>
         )}
 

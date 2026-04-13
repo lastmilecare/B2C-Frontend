@@ -75,7 +75,7 @@ export const ROUTES = [
   {
     path: "/roles",
     component: Roles,
-    permission: "read:role",
+    permission: "create:role",
     label: "Roles",
     icon: "ShieldCheckIcon",
     group: "Administration",
