@@ -92,7 +92,7 @@ const AppDashboard = () => {
       transition={{ duration: 0.4 }}
       className="space-y-10"
     >
-      {/* HEADER */}
+      
 
       <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
         <div>

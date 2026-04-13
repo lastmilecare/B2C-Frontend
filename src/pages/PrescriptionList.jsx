@@ -235,7 +235,7 @@ const PrescriptionListCopy = () => {
       name: "Phone",
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNo, "-"),
-      // width: "150px",
+      
       grow: 1,
     },
    {

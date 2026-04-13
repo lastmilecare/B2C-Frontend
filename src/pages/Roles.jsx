@@ -87,8 +87,8 @@ const Roles = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
+      <div className="max-w-6xl mx-auto">
+        
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
             <span className="bg-blue-100 p-2 rounded-xl">

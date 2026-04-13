@@ -31,8 +31,8 @@ export const ROUTES = [
   {
     path:       "/",
     component:  AppDashboard,
-    permission: null,           // everyone
-    showInSidebar: false,       // already handled separately
+    permission: null,           
+    showInSidebar: false,       
   },
   {
     path:       "/dashboard",

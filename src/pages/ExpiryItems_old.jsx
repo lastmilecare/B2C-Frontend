@@ -37,7 +37,7 @@ const ExpiryItems = () => {
         let colorClass = "text-amber-700"; 
 
         if (diffDays <= 30) {
-          colorClass = "text-red-600 font-semibold"; // urgent
+          colorClass = "text-red-600 font-semibold";
         }
 
         return (

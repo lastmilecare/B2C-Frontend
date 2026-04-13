@@ -62,7 +62,7 @@ const BillingListCopy = () => {
   const parseCurrency = (value) => {
     if (!value) return 0;
 
-    // Remove $ and commas safely
+    
     const cleaned = value.replace(/[^0-9.-]+/g, "");
     const parsed = Number(cleaned);
 
@@ -83,8 +83,7 @@ const BillingListCopy = () => {
     for (const footer of footerItems) {
       totalTaxableAmount += parseCurrency(footer.TaxableAmount);
       totalQty += Number(footer.IssueQty) || 0;
-      DueAmount = parseCurrency(footer.DueAmount); // This did by intentianaliy kept as DueAmount because in some cases due amount is coming from backend and in some cases we need to calculate it by GrossAmount - PaidAmount. So to avoid confusion I kept the same name. We can change it later when we are sure about the data coming from backend.
-
+      DueAmount = parseCurrency(footer.DueAmount); 
       if (footer.ItemName) {
         itemNames.push(footer.ItemName);
       }
@@ -92,7 +91,7 @@ const BillingListCopy = () => {
 
     return {
       ...header,
-      // override aggregated fields
+   
       TaxableAmount: formatCurrency(totalTaxableAmount),
       TotalQty: totalQty,
       ItemName: itemNames.join(", "),
@@ -326,10 +325,10 @@ const BillingListCopy = () => {
  return (
   <div className="p-2 space-y-4">
 
-    {/* Stats Cards */}
+    
   
 
-    {/* FilterBar */}
+    
     <div className="bg-white/80 backdrop-blur-lg shadow rounded-xl p-4 border">
       <CopyFilterBar
         filtersConfig={filtersConfig}

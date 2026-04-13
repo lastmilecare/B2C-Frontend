@@ -97,7 +97,7 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
           </table>
         </div>
 
-        {/* Bill Header Row */}
+       
         <div className="flex justify-between items-center text-[11px] font-semibold mb-3 py-2 px-3 border border-gray-300 rounded-md shadow-sm bg-gray-50">
           <div>Bill No : {data?.bill_no || ""}</div>
           <div className="text-[#1A73E8] font-bold text-[12px] uppercase tracking-wide">
@@ -106,7 +106,7 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
           <div>Bill Date: {billDate}</div>
         </div>
 
-        {/* Items Table */}
+       
         <div className="rounded-md shadow-sm overflow-hidden border border-gray-300 mb-4 bg-white">
           <table className="w-full border-collapse text-[11px]">
             <thead className="bg-[#1A73E8] text-white">
@@ -136,7 +136,7 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
           </table>
         </div>
 
-        {/* Bottom Details */}
+       
         <div className="grid grid-cols-2 gap-4 text-[11px]">
           <div className="space-y-1">
             <p>
@@ -192,12 +192,12 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
           </div>
         </div>
 
-        {/* Signature */}
+       
         <div className="text-right mt-16 mb-4">
           <p className="font-semibold text-[12px]">Signature</p>
         </div>
 
-        {/* Footer */}
+        
         <div className="grid grid-cols-2 text-[10px] italic text-gray-600 mt-6 border-t pt-2">
           <p>Powered By : Last Mile Care</p>
           <p className="text-right">Prepared By : {data?.added_by}</p>

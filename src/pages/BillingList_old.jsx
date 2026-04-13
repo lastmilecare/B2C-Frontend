@@ -82,8 +82,7 @@ const BillingList = () => {
     for (const footer of footerItems) {
       totalTaxableAmount += parseCurrency(footer.TaxableAmount);
       totalQty += Number(footer.IssueQty) || 0;
-      DueAmount = parseCurrency(footer.DueAmount); // This did by intentianaliy kept as DueAmount because in some cases due amount is coming from backend and in some cases we need to calculate it by GrossAmount - PaidAmount. So to avoid confusion I kept the same name. We can change it later when we are sure about the data coming from backend.
-
+      DueAmount = parseCurrency(footer.DueAmount); 
       if (footer.ItemName) {
         itemNames.push(footer.ItemName);
       }
@@ -91,7 +90,7 @@ const BillingList = () => {
 
     return {
       ...header,
-      // override aggregated fields
+      
       TaxableAmount: formatCurrency(totalTaxableAmount),
       TotalQty: totalQty,
       ItemName: itemNames.join(", "),

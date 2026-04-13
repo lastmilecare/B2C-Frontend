@@ -621,10 +621,6 @@ function App() {
         />
         
         <Route path="/print-opd-form" element={<PrintOpdForm />} />
-        {/* <Route path="/staff-form" element={<StaffForm />} /> */}
-        {/* <Route path="/staff-list" element={<StaffList />} /> */}
-        {/* <Route path="/signup" element={<Signup />} /> */}
-        {/* <Route path="/login" element={<Login />} /> */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

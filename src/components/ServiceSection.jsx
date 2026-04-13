@@ -56,7 +56,7 @@ const ServiceSection = ({
       0
     );
 
-    setBillingTotals(total, payMode); // pass payMode explicitly
+    setBillingTotals(total, payMode); 
   }, [selectedServices, payMode]);
 
 

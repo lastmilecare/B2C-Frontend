@@ -67,7 +67,7 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
         Last Mile Care Pvt Ltd
       </div>
       <img src="/images/LMC_logo.webp" alt="logo" />
-      {/* Header */}
+      
       <div style={{ textAlign: "center", marginBottom: "10px" }}>
         <h2 style={{ color: "#00397A", margin: 0, fontWeight: "800" }}>
           MEDI KAVACH

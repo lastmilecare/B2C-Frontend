@@ -36,7 +36,7 @@ const AppHeader = ({ toggleSidebar }) => {
       className="bg-white border-b border-sky-100 px-6 py-3 flex justify-between items-center shadow-sm sticky top-0 z-30"
     >
       <div className="flex items-center gap-4">
-        {/* Light Green Hamburger Menu Icon */}
+       
         <button 
           onClick={toggleSidebar}
           className="p-2 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors group"

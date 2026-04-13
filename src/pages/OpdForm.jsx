@@ -62,7 +62,7 @@ const OpdFormCopy = () => {
     const editData = location.state?.editData;
     const { ID: billNo } = useParams();
 
-    // Track if we've already populated data for this UHID
+  
     const populatedUhidRef = useRef("");
 
     const [printRow, setPrintRow] = useState(null);
@@ -193,20 +193,20 @@ const OpdFormCopy = () => {
             PicasoNo: values.UHID,
             Mobile: values.Mobile,
             ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
-            PatientType: values.FinCategory == "BPL" ? 1 : 2,   // NEED TO CHECK VALUE
+            PatientType: values.FinCategory == "BPL" ? 1 : 2,   
             PaidAmount: Number(values.PaidAmount || 0),
             CashAmount: Number(values.CashAmount || 0),
             CardAmount: Number(values.CardAmount || 0),
             PayMode: Number(values.PayMode),
             DueAmount: Number(values.DueAmount || 0),
-            AddedBy: 178, // this need to add user id
+            AddedBy: 178,
             DepartmentID: values.Department,
             ConsultantDoctorID: Number(values.Doctor),
             DoctorId: Number(values.Doctor),
             TotalServiceAmount: finalAmount,
             HospitalID: selectedServices[0]?.HospitalID || 1,
             FinancialYearID: currentYear,
-            CenterID: 49, // Need to manage Center id
+            CenterID: 49, 
             ReferTo: Number(values.ReferBy || 0),
             IsActive: true,
             complaint: chiefComplaintStr,
@@ -229,7 +229,7 @@ const OpdFormCopy = () => {
             Isdiscount: false,
             DiscountBy: 0,
             DoctorID: Number(values.Doctor),
-            AddedBy: 1, //Need to manage this
+            AddedBy: 1, 
             MonthID: currentMonth,
             IsActive: true
         }));
@@ -342,7 +342,7 @@ const OpdFormCopy = () => {
         populatedUhidRef.current = "";
         setIsPaidManuallyEdited(false);
     };
-    // Inside your component
+    
     useEffect(() => {
         if (Object.keys(formik.errors).length > 0) {
         }
@@ -462,7 +462,7 @@ const OpdFormCopy = () => {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
             <div className="max-w-6xl mx-auto">
 
-                {/* Header */}
+                
 
                 <div className="flex justify-between items-center mb-10">
                     <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
@@ -717,7 +717,7 @@ const OpdFormCopy = () => {
                                     />
                                 </section>
                             )}
-                            {/* ================= BILLING DETAILS ================= */}
+                           
                             {activeStep === 3 && (
                                 <section>
                                     <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -846,7 +846,7 @@ className="cursor-pointer h-4 w-4 text-green-600 focus:ring-green-500 border-gra
 )}
                            <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
 
-    {/* LEFT */}
+   
     <div className="flex gap-2">
         {activeStep > 1 && (
             <Button type="button" variant="gray" onClick={prevStep}>
@@ -871,7 +871,7 @@ className="cursor-pointer h-4 w-4 text-green-600 focus:ring-green-500 border-gra
             </Button>
     </div>
 
-    {/* RIGHT */}
+   
     {activeStep < 4 ? (
         <Button type="button" variant="sky" onClick={nextStep}>
             Continue

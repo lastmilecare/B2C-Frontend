@@ -37,12 +37,12 @@ const Navbar = () => {
     <nav className="bg-white border-b border-gray-200 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          {/* Brand */}
+          
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-sky-700">🏥 LMC Portal</h1>
           </div>
 
-          {/* Hamburger (for mobile) */}
+          
           <div className="flex items-center sm:hidden">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -52,9 +52,9 @@ const Navbar = () => {
             </button>
           </div>
 
-          {/* Desktop Menu */}
+         
           <div className="hidden sm:flex sm:items-center sm:gap-4">
-            {/* Patient Menu */}
+           
             <div className="relative">
               <button
                 onClick={() => setOpenPatient(!openPatient)}
@@ -76,7 +76,7 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* OPD Menu */}
+            
             <div className="relative">
               <button
                 onClick={() => setOpenOpd(!openOpd)}
@@ -98,7 +98,7 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Prescription Menu */}
+            
             <div className="relative">
               <button
                 onClick={() => setOpenPrescription(!openPrescription)}
@@ -119,7 +119,7 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-            {/* Inventory Menu - New Added */}
+           
             <div>
           <button
             onClick={() => setOpenInventory(!openInventory)}
@@ -138,7 +138,7 @@ const Navbar = () => {
             </div>
           )}
         </div>
-            {/* Signup / Logout */}
+           
             <NavLink to="/login" className={navItemClass}>
               <UserPlusIcon className="w-5 h-5 text-sky-600" /> Login
             </NavLink>
@@ -151,10 +151,10 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+     
       {menuOpen && (
         <div className="sm:hidden px-2 pt-2 pb-4 space-y-1 bg-white border-t border-gray-200">
-          {/* Patient */}
+        
           <div>
             <button
               onClick={() => setOpenPatient(!openPatient)}
@@ -177,7 +177,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* OPD */}
+          
           <div>
             <button
               onClick={() => setOpenOpd(!openOpd)}
@@ -200,7 +200,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Prescription */}
+         
           <div>
             <button
               onClick={() => setOpenPrescription(!openPrescription)}
@@ -223,7 +223,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Signup / Logout */}
+        
           <NavLink to="/login" className={navItemClass}>
             <UserPlusIcon className="w-5 h-5 text-sky-600" /> <Login></Login>
           </NavLink>

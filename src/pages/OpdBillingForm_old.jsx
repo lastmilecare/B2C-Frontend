@@ -35,7 +35,7 @@ const OpdBilling = () => {
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
 
-  // Track if we've already populated data for this UHID
+ 
   const populatedUhidRef = useRef("");
 
   const [printRow, setPrintRow] = useState(null);
@@ -166,7 +166,7 @@ const OpdBilling = () => {
       PicasoNo: values.UHID,
       Mobile: values.Mobile,
       ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
-      PatientType: values.FinCategory == "BPL" ? 1 : 2,   // NEED TO CHECK VALUE
+      PatientType: values.FinCategory == "BPL" ? 1 : 2,   
       PaidAmount: Number(values.PaidAmount || 0),
       CashAmount: Number(values.CashAmount || 0),
       CardAmount: Number(values.CardAmount || 0),
@@ -631,7 +631,7 @@ const OpdBilling = () => {
           />
         </section>
 
-        {/* ================= BILLING DETAILS ================= */}
+      
         <section>
           <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Billing

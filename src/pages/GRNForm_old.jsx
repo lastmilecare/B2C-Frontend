@@ -25,7 +25,7 @@ import { cookie } from "../utils/cookie";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useLocation } from "react-router-dom";
 import { useParams } from "react-router-dom";
-const username = cookie.get("username"); // Ensure auth token is loaded for API calls
+const username = cookie.get("username"); 
 const userId = cookie.get("user_id");
 const GRNForm = () => {
   const centerIdFromCookie = cookie.get("center_id");
@@ -121,7 +121,7 @@ const GRNForm = () => {
       UserloginID: Number(userId) || 0,
       AddedBy: Number(userId) || 0,
       ModifiedDate: new Date(),
-      ModifiedBy: 0, // To be set from auth state
+      ModifiedBy: 0, 
       Isopen: false,
       StockStatus: 0,
       items: [],
@@ -270,7 +270,7 @@ const GRNForm = () => {
     }
   }, [medicineList, debouncedMedicine, formik.values.ItemName, formik.values.ItemID]);
 
-  // Auto-calc Qty & Financials
+  
   useEffect(() => {
     const unit = Number(formik.values.NoStrip || 0);
     const qty = Number(formik.values.NoQtyperStrip || 0);

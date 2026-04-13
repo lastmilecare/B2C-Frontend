@@ -186,7 +186,7 @@ const PatientRegistrationCopy = () => {
 
 
             loadDiseases();
-            // Update local state to trigger address dropdowns
+            
             setCountryId(p.country_id || "");
             setStateId(p.state_id || "");
         }
@@ -276,7 +276,7 @@ const PatientRegistrationCopy = () => {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
             <div className="max-w-6xl mx-auto">
 
-                {/* Header */}
+               
                 <div className="flex justify-between items-center mb-10">
                     <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
                         <span className="bg-blue-100 p-2 rounded-xl">
@@ -571,7 +571,6 @@ ${activeStep === step.id
         Confirm Patient Registration
       </h3>
 
-      {/* Basic Info */}
       <div className="grid md:grid-cols-2 gap-3 text-sm">
         <p><b>Name:</b> {formik.values.name}</p>
         <p><b>Contact:</b> {formik.values.contactNumber}</p>
@@ -581,7 +580,6 @@ ${activeStep === step.id
         <p><b>Blood Group:</b> {formik.values.blood_group}</p>
       </div>
 
-      {/* Address */}
       <div className="border-t pt-3 text-sm">
         <p><b>Address:</b> {formik.values.localAddress}</p>
         <p><b>Pin:</b> {formik.values.pin}</p>

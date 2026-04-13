@@ -295,16 +295,16 @@
 // const MySwal = withReactContent(Swal);
 
 const healthTheme = {
-    // Clean health color palette
-    confirmButtonColor: "#10b981",  // Medical green
-    cancelButtonColor: "#ef4444",   // Alert red
-    denyButtonColor: "#f59e0b",     // Warning amber
+    
+    confirmButtonColor: "#10b981",  
+    cancelButtonColor: "#ef4444",  
+    denyButtonColor: "#f59e0b",     
 
-    // Glass morphism background
+    
     background: "rgba(255, 255, 255, 0.95)",
     color: "#1f2937",
 
-    // Quick animations
+    
     showClass: {
         popup: "animate__animated animate__zoomIn animate__faster"
     },
@@ -312,7 +312,7 @@ const healthTheme = {
         popup: "animate__animated animate__zoomOut animate__faster"
     },
 
-    // Compact sizing
+    
     width: "24rem",
     padding: "1.25rem",
     borderRadius: "0.75rem",
@@ -333,7 +333,6 @@ const healthTheme = {
     }
 };
 
-// Inject enhanced Tailwind-based styles with futuristic elements
 const injectHealthStyles = () => {
     if (document.getElementById("health-alert-styles")) return;
 
@@ -356,7 +355,7 @@ const injectHealthStyles = () => {
             100% { left: 100%; }
         }
         
-        /* Popup container - Glass morphism with subtle glow */
+       
         .health-popup {
             backdrop-filter: blur(10px) !important;
             -webkit-backdrop-filter: blur(10px) !important;
@@ -369,7 +368,7 @@ const injectHealthStyles = () => {
             overflow: hidden !important;
         }
         
-        /* Futuristic accent line at top */
+        
         .health-popup::before {
             content: '' !important;
             position: absolute !important;
@@ -382,7 +381,7 @@ const injectHealthStyles = () => {
             animation: shimmer 3s linear infinite !important;
         }
         
-        /* Title */
+       
         .health-title {
             font-size: 1.125rem !important;
             font-weight: 700 !important;
@@ -392,7 +391,7 @@ const injectHealthStyles = () => {
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
         }
         
-        /* Text content */
+        
         .health-text {
             font-size: 0.875rem !important;
             color: #4b5563 !important;
@@ -400,7 +399,7 @@ const injectHealthStyles = () => {
             margin: 0.75rem 0 !important;
         }
         
-        /* Icon - with pulse animation and glow */
+       
         .swal2-icon {
             width: 3rem !important;
             height: 3rem !important;
@@ -413,7 +412,7 @@ const injectHealthStyles = () => {
             font-size: 2rem !important;
         }
         
-        /* Success checkmark with glow */
+        
         .swal2-icon.swal2-success {
             border-color: #10b981 !important;
             animation: iconPulse 2s ease-in-out infinite, glowPulse 2s ease-in-out infinite !important;
@@ -448,7 +447,7 @@ const injectHealthStyles = () => {
             gap: 0.5rem !important;
         }
         
-        /* Base button styles */
+        
         .health-btn {
             font-size: 0.875rem !important;
             font-weight: 600 !important;
@@ -462,7 +461,7 @@ const injectHealthStyles = () => {
             overflow: hidden !important;
         }
         
-        /* Confirm button - gradient with shimmer effect */
+       
         .health-btn-confirm {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
             color: white !important;
@@ -495,7 +494,7 @@ const injectHealthStyles = () => {
             outline-offset: 2px !important;
         }
         
-        /* Cancel button */
+        
         .health-btn-cancel {
             background: #f3f4f6 !important;
             color: #374151 !important;
@@ -507,7 +506,7 @@ const injectHealthStyles = () => {
             transform: translateY(-1px) !important;
         }
         
-        /* Deny button */
+        
         .health-btn-deny {
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
             color: #92400e !important;
@@ -519,7 +518,7 @@ const injectHealthStyles = () => {
             transform: translateY(-1px) !important;
         }
         
-        /* Input field styling */
+     
         .health-input,
         .swal2-input {
             border: 2px solid #e5e7eb !important;
@@ -538,12 +537,12 @@ const injectHealthStyles = () => {
             background: white !important;
         }
         
-        /* Timer progress bar */
+        
         .swal2-timer-progress-bar {
             background: linear-gradient(90deg, #10b981, #059669) !important;
         }
         
-        /* Error icon */
+      
         .swal2-icon.swal2-error {
             border-color: #ef4444 !important;
             animation: iconPulse 2s ease-in-out infinite !important;
@@ -553,34 +552,34 @@ const injectHealthStyles = () => {
             background-color: #ef4444 !important;
         }
         
-        /* Warning icon */
+       
         .swal2-icon.swal2-warning {
             border-color: #f59e0b !important;
             color: #f59e0b !important;
             animation: iconPulse 2s ease-in-out infinite !important;
         }
         
-        /* Info icon */
+     
         .swal2-icon.swal2-info {
             border-color: #3b82f6 !important;
             color: #3b82f6 !important;
             animation: iconPulse 2s ease-in-out infinite !important;
         }
         
-        /* Question icon */
+        
         .swal2-icon.swal2-question {
             border-color: #8b5cf6 !important;
             color: #8b5cf6 !important;
             animation: iconPulse 2s ease-in-out infinite !important;
         }
         
-        /* Toast specific styles */
+      
         .swal2-toast.health-popup {
             backdrop-filter: blur(10px) !important;
             box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.2) !important;
         }
         
-        /* Loading spinner */
+        
         .swal2-loader {
             border-color: #10b981 transparent #10b981 transparent !important;
         }
@@ -747,7 +746,7 @@ export const healthAlert = ({
     timer = 4000
     
 }) => {
-
+    return new Promise((resolve) => {
     const alert = document.createElement("div");
 
     alert.innerHTML = `
@@ -775,7 +774,7 @@ export const healthAlert = ({
                 overflow: hidden;
             ">
 
-                <!-- Top Gradient -->
+                
                 <div style="
                     position:absolute;
                     top:0;
@@ -786,14 +785,14 @@ export const healthAlert = ({
                     animation: shimmer 3s infinite linear;
                 "></div>
 
-                <!-- Logo Pulse -->
+            
                 <img src="/images/LMC_logo.webp" style="
                     width:70px;
                     margin:0 auto 10px;
                     animation:pulse 1.5s infinite;
                 "/>
 
-                <!-- Title -->
+               
                 <div style="
                     font-size:18px;
                     font-weight:600;
@@ -803,7 +802,7 @@ export const healthAlert = ({
                     ${title}
                 </div>
 
-                <!-- Message -->
+                
                 <div style="
                     font-size:14px;
                     color:#6b7280;
@@ -812,7 +811,7 @@ export const healthAlert = ({
                     ${text}
                 </div>
 
-                <!-- ECG Line -->
+              
                 <svg viewBox="0 0 200 40" style="width:100%; margin-bottom:12px;">
                     <polyline 
                         fill="none" 
@@ -823,19 +822,51 @@ export const healthAlert = ({
                     />
                 </svg>
 
-                <!-- Button -->
-                <button id="closeAlertBtn" style="
-                    width:100%;
-                    background:#10b981;
-                    color:white;
-                    border:none;
-                    padding:10px;
-                    border-radius:10px;
-                    cursor:pointer;
-                    font-weight:500;
-                ">
-                    OK
-                </button>
+               
+             ${type === "confirm" ? `
+<div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+
+    <button id="confirmBtn" style="
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 500;
+    ">
+        Confirm
+    </button>
+
+    <button id="cancelBtn" style="
+        background: #f3f4f6;
+        color: #374151;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 500;
+    ">
+        Cancel
+    </button>
+
+</div>
+` : `
+<button id="closeBtn" style="
+    width:100%;
+    background:#10b981;
+    color:white;
+    border:none;
+    padding:10px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:500;
+">
+    OK
+</button>
+`}
+                
+              
 
             </div>
         </div>
@@ -872,19 +903,32 @@ export const healthAlert = ({
 
     document.body.appendChild(alert);
 
-    alert.querySelector("#closeAlertBtn").onclick = () => {
+    // alert.querySelector("#closeAlertBtn").onclick = () => {
+    //     alert.remove();
+    // };
+    // Confirm
+if (type === "confirm") {
+
+    alert.querySelector("#confirmBtn").onclick = () => {
         alert.remove();
+        resolve({ isConfirmed: true });
     };
 
-    if (timer) {
-        setTimeout(() => {
-            alert.remove();
-        }, timer);
-    }
+    alert.querySelector("#cancelBtn").onclick = () => {
+        alert.remove();
+        resolve({ isConfirmed: false });
+    };
+
+} else {
+
+    alert.querySelector("#closeBtn").onclick = () => {
+        alert.remove();
+        resolve({ isConfirmed: true });
+    };
+}
+});
 };
-/**
- * Quick presets for common scenarios
- */
+
 export const healthAlerts = {
     success: (message, title = "Success") =>
         healthAlert({ title, text: message }),
