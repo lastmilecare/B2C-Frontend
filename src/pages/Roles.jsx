@@ -31,7 +31,9 @@ const Roles = () => {
   const filteredPermissions =
     userRole === "LMC_Admin"
       ? permissions
-      : permissions.filter((p) => p.resource !== "tenant" && p.resource !== "role");
+      : permissions.filter(
+          (p) => p.resource !== "tenant" && p.resource !== "role",
+        );
 
   const formik = useFormik({
     initialValues: {
@@ -41,7 +43,27 @@ const Roles = () => {
       permissionIds: [],
     },
     validationSchema: Yup.object({
-      name: Yup.string().required("Role name is required"),
+      // name: Yup.string().required("Role name is required"),
+      name: Yup.string()
+        .required("Role name is required")
+        .test(
+          "tenant-in-name",
+          "Role name must include tenant name",
+          function (value) {
+            const { tenantId } = this.parent;
+            if (!tenantId || !value) return true;
+
+            const tenant = tenants.find((t) => t.id === Number(tenantId));
+            if (!tenant) return true;
+
+            const formattedTenant = tenant.name
+              .trim()
+              .replace(/\s+/g, "_")
+              .toLowerCase();
+
+            return value.toLowerCase().includes(formattedTenant);
+          },
+        ),
       tenantId: Yup.string().required("Tenant selection is required"),
       permissionIds: Yup.array().min(1, "At least one permission is required"),
     }),
@@ -52,11 +74,19 @@ const Roles = () => {
           tenantId: Number(values.tenantId),
         }).unwrap();
 
-        healthAlert({ title: "Success", text: "Role created successfully", icon: "success" });
+        healthAlert({
+          title: "Success",
+          text: "Role created successfully",
+          icon: "success",
+        });
         formik.resetForm();
         setActiveStep(1);
       } catch (error) {
-        healthAlert({ title: "Error", text: error?.data?.message || "Failed", icon: "error" });
+        healthAlert({
+          title: "Error",
+          text: error?.data?.message || "Failed",
+          icon: "error",
+        });
       }
     },
   });
@@ -76,19 +106,19 @@ const Roles = () => {
 
   const prevStep = () => setActiveStep((prev) => prev - 1);
 
-  
   const getSelectedPermissionNames = () => {
     return filteredPermissions
       .filter((p) => formik.values.permissionIds.includes(Number(p.id)))
       .map((p) => `${p.action}:${p.resource}`);
   };
 
-  const selectedTenantName = tenants.find((t) => t.id === Number(formik.values.tenantId))?.name;
+  const selectedTenantName = tenants.find(
+    (t) => t.id === Number(formik.values.tenantId),
+  )?.name;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10 px-4">
       <div className="max-w-6xl mx-auto">
-        
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
             <span className="bg-blue-100 p-2 rounded-xl">
@@ -121,7 +151,9 @@ const Roles = () => {
                 type="button"
                 disabled
                 className={`flex-1 py-4 flex items-center justify-center gap-2 transition-colors ${
-                  activeStep === step.id ? "bg-white text-sky-600 font-bold" : "text-gray-400"
+                  activeStep === step.id
+                    ? "bg-white text-sky-600 font-bold"
+                    : "text-gray-400"
                 }`}
               >
                 <step.icon className="w-5 h-5" />
@@ -132,11 +164,11 @@ const Roles = () => {
 
           <div className="p-10">
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-             
               {activeStep === 1 && (
                 <section className="animate-in fade-in duration-500">
                   <h3 className="text-lg font-semibold text-sky-700 mb-6 flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Role Information
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                    Role Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Input
@@ -170,11 +202,11 @@ const Roles = () => {
                 </section>
               )}
 
-              
               {activeStep === 2 && (
                 <section className="animate-in fade-in duration-500">
                   <h3 className="text-lg font-semibold text-sky-700 mb-6 flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Access Control
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                    Access Control
                   </h3>
                   <div className="space-y-4">
                     <label className="block text-sm font-medium text-slate-700">
@@ -184,60 +216,87 @@ const Roles = () => {
                       <select
                         multiple
                         className={`w-full p-3 border-2 rounded-2xl min-h-[250px] bg-slate-50 transition-all focus:ring-4 focus:ring-sky-100 outline-none ${
-                          formik.touched.permissionIds && formik.errors.permissionIds
+                          formik.touched.permissionIds &&
+                          formik.errors.permissionIds
                             ? "border-red-300"
                             : "border-slate-100 focus:border-sky-400"
                         }`}
                         value={formik.values.permissionIds}
                         onChange={(e) => {
-                          const values = Array.from(e.target.selectedOptions, (opt) =>
-                            Number(opt.value)
+                          const values = Array.from(
+                            e.target.selectedOptions,
+                            (opt) => Number(opt.value),
                           );
                           formik.setFieldValue("permissionIds", values);
                         }}
                       >
                         {filteredPermissions.map((p) => (
-                          <option key={p.id} value={p.id} className="p-3 border-b border-slate-100 last:border-0 rounded-lg m-1 check-sky">
-                             {p.action.toUpperCase()} : {p.resource.replace("_", " ")}
+                          <option
+                            key={p.id}
+                            value={p.id}
+                            className="p-3 border-b border-slate-100 last:border-0 rounded-lg m-1 check-sky"
+                          >
+                            {p.action.toUpperCase()} :{" "}
+                            {p.resource.replace("_", " ")}
                           </option>
                         ))}
                       </select>
                     </div>
-                    {formik.touched.permissionIds && formik.errors.permissionIds && (
-                      <p className="text-xs text-red-500 mt-1">{formik.errors.permissionIds}</p>
-                    )}
+                    {formik.touched.permissionIds &&
+                      formik.errors.permissionIds && (
+                        <p className="text-xs text-red-500 mt-1">
+                          {formik.errors.permissionIds}
+                        </p>
+                      )}
                     <p className="text-xs text-slate-400 italic">
-                      Tip: Use Ctrl (Windows) or Command (Mac) to select multiple permissions.
+                      Tip: Use Ctrl (Windows) or Command (Mac) to select
+                      multiple permissions.
                     </p>
                   </div>
                 </section>
               )}
 
-              
               {activeStep === 3 && (
                 <section className="animate-in fade-in duration-500">
                   <div className="bg-sky-50 p-8 rounded-3xl border border-sky-100 space-y-6">
                     <h3 className="text-xl font-bold text-sky-800 flex items-center gap-2">
-                      <ClipboardDocumentCheckIcon className="w-6 h-6" /> Confirm Role Details
+                      <ClipboardDocumentCheckIcon className="w-6 h-6" /> Confirm
+                      Role Details
                     </h3>
 
                     <div className="grid md:grid-cols-2 gap-8 text-sm">
                       <div className="space-y-3">
-                        <p className="text-slate-500 uppercase tracking-wider text-[10px] font-bold">Role Identity</p>
-                        <p className="text-slate-800 text-base"><b>Name:</b> {formik.values.name}</p>
-                        <p className="text-slate-800 text-base"><b>Tenant:</b> {selectedTenantName || "N/A"}</p>
+                        <p className="text-slate-500 uppercase tracking-wider text-[10px] font-bold">
+                          Role Identity
+                        </p>
+                        <p className="text-slate-800 text-base">
+                          <b>Name:</b> {formik.values.name}
+                        </p>
+                        <p className="text-slate-800 text-base">
+                          <b>Tenant:</b> {selectedTenantName || "N/A"}
+                        </p>
                       </div>
                       <div className="space-y-3">
-                        <p className="text-slate-500 uppercase tracking-wider text-[10px] font-bold">Description</p>
-                        <p className="text-slate-700 italic">{formik.values.description || "No description provided"}</p>
+                        <p className="text-slate-500 uppercase tracking-wider text-[10px] font-bold">
+                          Description
+                        </p>
+                        <p className="text-slate-700 italic">
+                          {formik.values.description ||
+                            "No description provided"}
+                        </p>
                       </div>
                     </div>
 
                     <div className="border-t border-sky-200 pt-6">
-                      <p className="text-slate-500 uppercase tracking-wider text-[10px] font-bold mb-3">Assigned Permissions</p>
+                      <p className="text-slate-500 uppercase tracking-wider text-[10px] font-bold mb-3">
+                        Assigned Permissions
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {getSelectedPermissionNames().map((name, i) => (
-                          <span key={i} className="bg-white px-3 py-1 rounded-full text-sky-700 border border-sky-200 text-xs font-medium shadow-sm">
+                          <span
+                            key={i}
+                            className="bg-white px-3 py-1 rounded-full text-sky-700 border border-sky-200 text-xs font-medium shadow-sm"
+                          >
                             {name}
                           </span>
                         ))}
@@ -247,7 +306,6 @@ const Roles = () => {
                 </section>
               )}
 
-              
               <div className="flex justify-between pt-8 border-t border-slate-50">
                 <div className="flex gap-3">
                   {activeStep > 1 && (
