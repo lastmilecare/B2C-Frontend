@@ -4,10 +4,6 @@ import { useSelector } from "react-redux";
 const ProtectedRoute = ({ children, permission }) => {  // ← rename prop
   
   const { token, permissions } = useSelector((state) => state.auth);
-
-  console.log("token:", token);
-console.log("permissions:", permissions);
-
   if (!token) return <Navigate to="/login" replace />;
 
   if (permission && !permissions?.includes(permission)) {

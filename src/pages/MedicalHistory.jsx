@@ -32,7 +32,6 @@ const MedicalHistory = () => {
     }),
 
     onSubmit: (values) => {
-      console.log("Medical History:", values);
       healthAlerts.success("Medical History Saved", "Success");
     },
   });

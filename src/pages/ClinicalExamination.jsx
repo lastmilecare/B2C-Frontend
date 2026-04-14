@@ -35,7 +35,6 @@ const ClinicalExamination = () => {
     }),
 
     onSubmit: (values) => {
-      console.log(values);
       healthAlerts.success("Clinical Examination Saved", "Success");
     },
   });

@@ -49,7 +49,6 @@ const AppointmentVisit = () => {
     }),
 
     onSubmit: (values) => {
-      console.log("Final Payload:", values);
       healthAlerts.success("Appointment Saved Successfully", "Success");
     },
   });

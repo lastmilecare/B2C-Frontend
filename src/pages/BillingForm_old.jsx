@@ -337,7 +337,6 @@ useEffect(() => {
   }, [patientData, selectedBill]);
 
   useEffect(() => {
-    console.log(stockDetails, "stock details");
     const updates = {
       cgst: stockDetails?.data[0].CGST || 0,
       sgst: stockDetails?.data[0].SGST || 0,
