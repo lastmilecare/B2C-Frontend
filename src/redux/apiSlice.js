@@ -908,6 +908,13 @@ export const api = createApi({
         method: "GET",
       }),
     }),
+    createResource: build.mutation({
+  query: (body) => ({
+    url: `${VITE_AUTH_URL}permissions/resource`,
+    method: "post",
+    data: body,
+  }),
+}),
   }),
 });
 
@@ -1002,5 +1009,6 @@ export const {
   useDeleteUserMutation,
   useGetAllRoleComboQuery,
   useToggleUserStatusMutation,
-  useGetAllResourceComboQuery
+  useGetAllResourceComboQuery,
+  useCreateResourceMutation,
 } = api;

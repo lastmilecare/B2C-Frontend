@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-const ProtectedRoute = ({ children, permission }) => {  // ← rename prop
+const ProtectedRoute = ({ children, permission }) => {  // ? rename prop
   
   const { token, permissions } = useSelector((state) => state.auth);
   if (!token) return <Navigate to="/login" replace />;

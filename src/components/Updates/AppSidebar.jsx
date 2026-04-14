@@ -41,17 +41,15 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     setMenus((prev) => ({ ...prev, [menu]: !prev[menu] }));
 
   const navItem = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${
-      isActive
-        ? "bg-emerald-600 text-white shadow-lg font-semibold"
-        : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
+    `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${isActive
+      ? "bg-emerald-600 text-white shadow-lg font-semibold"
+      : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
     }`;
 
   const subNavItem = ({ isActive }) =>
-    `block py-2 px-4 text-sm transition-colors rounded-lg ${
-      isActive
-        ? "text-emerald-700 font-bold bg-emerald-50"
-        : "text-gray-500 hover:text-emerald-600 hover:bg-gray-50"
+    `block py-2 px-4 text-sm transition-colors rounded-lg ${isActive
+      ? "text-emerald-700 font-bold bg-emerald-50"
+      : "text-gray-500 hover:text-emerald-600 hover:bg-gray-50"
     }`;
 
   // ── Reusable collapsible group ───────────────────────────────────────────
@@ -316,6 +314,13 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Permissions
               </NavLink>
             )}
+            <NavLink
+              to="/resource"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Resources
+            </NavLink>
           </MenuGroup>
         )}
 

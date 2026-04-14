@@ -29,6 +29,7 @@ import DoctorAssessment from "../pages/DoctorAssessment";
 import FitnessCertificate from "../pages/FitnessCertificate";
 import RoleList from "../pages/RoleList";
 import PermissionList from "../pages/Permission_list";
+import Resources from "../pages/Resources";
 
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -339,4 +340,14 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
+  {
+    path: "/resource",
+    component: Resources,
+    permission: null,
+    label: "Resources",
+    icon: "ShieldCheckIcon",
+    group: "Administration",
+    showInSidebar: true,
+  }
+ 
 ];

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
@@ -27,6 +27,9 @@ const Roles = () => {
   const userRole = cookie.get("role");
   const tenants = tenantData?.data?.data || [];
   const permissions = permissionsData?.data?.data || [];
+  const [permissionSearch, setPermissionSearch] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef();
 
   const filteredPermissions =
     userRole === "LMC_Admin"
@@ -90,6 +93,24 @@ const Roles = () => {
       }
     },
   });
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  const filteredPermissionList = filteredPermissions.filter((p) =>
+    `${p.action} ${p.resource}`
+      .toLowerCase()
+      .includes(permissionSearch.toLowerCase())
+  );
 
   const nextStep = async () => {
     const errors = await formik.validateForm();
@@ -202,59 +223,127 @@ const Roles = () => {
                 </section>
               )}
 
-              {activeStep === 2 && (
+             {activeStep === 2 && (
                 <section className="animate-in fade-in duration-500">
+
                   <h3 className="text-lg font-semibold text-sky-700 mb-6 flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
-                    Access Control
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Access Control
                   </h3>
+
                   <div className="space-y-4">
+
                     <label className="block text-sm font-medium text-slate-700">
                       Select Permissions <span className="text-red-500">*</span>
                     </label>
-                    <div className="relative group">
-                      <select
-                        multiple
-                        className={`w-full p-3 border-2 rounded-2xl min-h-[250px] bg-slate-50 transition-all focus:ring-4 focus:ring-sky-100 outline-none ${
-                          formik.touched.permissionIds &&
-                          formik.errors.permissionIds
+
+                    
+                    <div className="relative" ref={dropdownRef}>
+
+                      <input
+                        type="text"
+                        placeholder="Search permissions..."
+                        value={permissionSearch}
+                        onChange={(e) => {
+                          setPermissionSearch(e.target.value);
+                          setShowDropdown(true);
+                        }}
+                        onFocus={() => setShowDropdown(true)}
+                        className={`w-full p-3 border-2 rounded-2xl bg-slate-50 transition-all 
+          focus:ring-4 focus:ring-sky-100 outline-none text-sm
+          ${formik.touched.permissionIds && formik.errors.permissionIds
                             ? "border-red-300"
                             : "border-slate-100 focus:border-sky-400"
-                        }`}
-                        value={formik.values.permissionIds}
-                        onChange={(e) => {
-                          const values = Array.from(
-                            e.target.selectedOptions,
-                            (opt) => Number(opt.value),
-                          );
-                          formik.setFieldValue("permissionIds", values);
-                        }}
-                      >
-                        {filteredPermissions.map((p) => (
-                          <option
-                            key={p.id}
-                            value={p.id}
-                            className="p-3 border-b border-slate-100 last:border-0 rounded-lg m-1 check-sky"
-                          >
-                            {p.action.toUpperCase()} :{" "}
-                            {p.resource.replace("_", " ")}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {formik.touched.permissionIds &&
-                      formik.errors.permissionIds && (
-                        <p className="text-xs text-red-500 mt-1">
-                          {formik.errors.permissionIds}
-                        </p>
+                          }`}
+                      />
+
+                      
+                      {showDropdown && (
+                        <div className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-auto z-50 shadow-lg">
+
+                          {filteredPermissionList.length > 0 ? (
+                            filteredPermissionList.map((p) => {
+                              const id = Number(p.id);
+
+                              return (
+                                <div
+                                  key={p.id}
+                                  onMouseDown={() => {
+                                    if (!formik.values.permissionIds.includes(id)) {
+                                      formik.setFieldValue("permissionIds", [
+                                        ...formik.values.permissionIds,
+                                        id,
+                                      ]);
+                                    }
+
+                                    setShowDropdown(false); 
+                                    setPermissionSearch(""); 
+                                  }}
+                                  className="px-3 py-2 text-sm hover:bg-sky-50 cursor-pointer"
+                                >
+                                  {p.action.toUpperCase()} : {p.resource.replace("_", " ")}
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="p-3 text-xs text-gray-400">
+                              No permissions found
+                            </div>
+                          )}
+
+                        </div>
                       )}
+                    </div>
+
+                    
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {formik.values.permissionIds.map((id) => {
+                        const perm = filteredPermissions.find(
+                          (p) => Number(p.id) === Number(id)
+                        );
+
+                        if (!perm) return null;
+
+                        return (
+                          <div
+                            key={id}
+                            className="flex items-center gap-2 bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs border border-sky-200"
+                          >
+                            {perm.action}:{perm.resource}
+
+                            <span
+                              onClick={() => {
+                                formik.setFieldValue(
+                                  "permissionIds",
+                                  formik.values.permissionIds.filter(
+                                    (pid) => Number(pid) !== Number(id)
+                                  )
+                                );
+                              }}
+                              className="cursor-pointer text-red-500 font-bold"
+                            >
+                              ✕
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                  
+                    {formik.touched.permissionIds && formik.errors.permissionIds && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {formik.errors.permissionIds}
+                      </p>
+                    )}
+
+                    
                     <p className="text-xs text-slate-400 italic">
-                      Tip: Use Ctrl (Windows) or Command (Mac) to select
-                      multiple permissions.
+                      Tip: Search and click to select permissions one by one.
                     </p>
+
                   </div>
                 </section>
               )}
+
 
               {activeStep === 3 && (
                 <section className="animate-in fade-in duration-500">
