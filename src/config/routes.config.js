@@ -114,7 +114,7 @@ export const ROUTES = [
   {
     path: "/staff-form",
     component: StaffForm,
-    permission: "create:staff",
+    permission: "create:staff_form",
     label: "Staff",
     icon: "UsersIcon",
     group: "Staff",
@@ -123,7 +123,7 @@ export const ROUTES = [
   {
     path: "/staff-list",
     component: StaffList,
-    permission: "read:staff-list",
+    permission: "read:staff_list",
     showInSidebar: false,
   },
   {
@@ -172,7 +172,7 @@ export const ROUTES = [
   {
     path: "/opd-list",
     component: OpdBillingListCopy,
-    permission: "read:opd",
+    permission: "read:opd_list",
     label: "OPD List",
     icon: "ClipboardDocumentListIcon",
     group: "OPD",
@@ -181,13 +181,13 @@ export const ROUTES = [
   {
     path: "/opd-form",
     component: OpdFormCopy,
-    permission: "create:opd",
+    permission: "create:opd_form",
     showInSidebar: false,
   },
   {
     path: "/opd-form/:ID",
     component: OpdFormCopy,
-    permission: "create:opd",
+    permission: "create:opd_form",
     showInSidebar: false,
   },
 
@@ -195,7 +195,7 @@ export const ROUTES = [
   {
     path: "/prescription-list",
     component: PrescriptionListCopy,
-    permission: "read:prescription",
+    permission: "read:prescription_list",
     label: "Prescriptions",
     icon: "DocumentTextIcon",
     group: "Prescription",
@@ -204,13 +204,13 @@ export const ROUTES = [
   {
     path: "/prescription-form",
     component: PrescriptionFormCopy,
-    permission: "create:prescription",
+    permission: "create:prescription_form",
     showInSidebar: false,
   },
   {
     path: "/prescription-form/:id",
     component: PrescriptionFormCopy,
-    permission: "create:prescription",
+    permission: "create:prescription_form",
     showInSidebar: false,
   },
 
@@ -233,7 +233,7 @@ export const ROUTES = [
   {
     path: "/camp-billing",
     component: CampBillingCopy,
-    permission: "create:billing",
+    permission: "create:camp_billing",
     label: "Camp Billing",
     icon: "BuildingStorefrontIcon",
     group: "Billing",
@@ -244,7 +244,7 @@ export const ROUTES = [
   {
     path: "/purchased-entry",
     component: PurchasedEntryCopy,
-    permission: "create:pharmacy",
+    permission: "create:sales_record",
     label: "Purchase Entry",
     icon: "ShoppingCartIcon",
     group: "Pharmacy",
@@ -253,13 +253,13 @@ export const ROUTES = [
   {
     path: "/purchased-entry/:id",
     component: PurchasedEntryCopy,
-    permission: "create:pharmacy",
+    permission: "create:sales_record",
     showInSidebar: false,
   },
   {
     path: "/sales-record",
     component: SalesRecordCopy,
-    permission: "read:pharmacy",
+    permission: "read:sales_record",
     label: "Sales Record",
     icon: "ChartBarIcon",
     group: "Pharmacy",
@@ -268,7 +268,7 @@ export const ROUTES = [
   {
     path: "/expiry-items",
     component: ExpiryItemsCopy,
-    permission: "read:pharmacy",
+    permission: "read:sales_record",
     label: "Expiry Items",
     icon: "ExclamationTriangleIcon",
     group: "Pharmacy",
@@ -286,7 +286,7 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-    path: "/medicalhistory",
+    path: "/medical-history",
     component: MedicalHistory,
     permission: "read:medical_history",
     label: "Medical History",
@@ -295,7 +295,7 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-    path: "/ClinicalExamination",
+    path: "/clinical-examination",
     component: ClinicalExamination,
     permission: "read:clinical_examination",
     label: "Clinical Examination",
@@ -304,7 +304,7 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-    path: "/LaboratoryInvestigation",
+    path: "/laboratory-investigation",
     component: LaboratoryInvestigation,
     permission: "read:laboratory_investigation",
     label: "Lab Investigation",
@@ -313,7 +313,7 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-    path: "/RadiologyScreen",
+    path: "/radiology-screen",
     component: RadiologyScreen,
     permission: "read:radiology",
     label: "Radiology",
@@ -322,7 +322,7 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-    path: "/DoctorAssessment",
+    path: "/doctor-assessment",
     component: DoctorAssessment,
     permission: "read:doctor_assessment",
     label: "Doctor Assessment",
@@ -331,7 +331,7 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-    path: "/FitnessCertificate",
+    path: "/fitness-certificate",
     component: FitnessCertificate,
     permission: "read:fitness_certificate",
     label: "Fitness Certificate",

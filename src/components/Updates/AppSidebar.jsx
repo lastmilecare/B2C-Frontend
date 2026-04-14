@@ -377,7 +377,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
             {can("create:medical_history") && (
               <NavLink
-                to="/medicalhistory"
+                to="/medical-history"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
@@ -386,7 +386,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
             {can("create:clinical_examination") && (
               <NavLink
-                to="/ClinicalExamination"
+                to="/clinical-examination"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
@@ -395,7 +395,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
             {can("create:laboratory_investigation") && (
               <NavLink
-                to="/LaboratoryInvestigation"
+                to="/laboratory-investigation"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
@@ -404,7 +404,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
             {can("create:radiology") && (
               <NavLink
-                to="/RadiologyScreen"
+                to="/radiology-screen"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
@@ -413,7 +413,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
             {can("create:doctor_assessment") && (
               <NavLink
-                to="/DoctorAssessment"
+                to="/doctor-assessment"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
@@ -422,7 +422,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
             {can("create:fitness_certificate") && (
               <NavLink
-                to="/FitnessCertificate"
+                to="/fitness-certificate"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >

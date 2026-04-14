@@ -24,8 +24,8 @@ const Login = () => {
       const role = data?.data?.role;
       if (role === "LMC_ADMIN") {
         navigate("/dashboard");
-      } else {
-        navigate("/dashboard");
+      } else if (role === "OHC_ADMIN") {
+        navigate("/ohc-dashboard");
       }
     } catch (error) {
       healthAlert({
