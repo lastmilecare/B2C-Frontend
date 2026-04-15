@@ -118,6 +118,7 @@ const PatientRegistrationCopy = () => {
                     await createPatient(payload).unwrap();
                     healthAlerts.success("Patient Data Saved Successfully", "Patient Saved");
                     handleReset();
+                    navigate("/patient-list");
                 }
             } catch (err) {
                 error.message("Submit error:", err);

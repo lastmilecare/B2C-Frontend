@@ -373,22 +373,24 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
             {can("create:appointment_visit") && (
               <NavLink
-                to="/appointment-visit"
+                to="/appointment"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                Appointment Visit
+                Appointment
               </NavLink>
             )}
+           
             {can("create:medical_history") && (
               <NavLink
                 to="/medical-history"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                Medical History
+                Medical History 
               </NavLink>
             )}
+            
             {can("create:clinical_examination") && (
               <NavLink
                 to="/clinical-examination"
@@ -398,6 +400,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Clinical Examination
               </NavLink>
             )}
+            
             {can("create:laboratory_investigation") && (
               <NavLink
                 to="/laboratory-investigation"
@@ -407,6 +410,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Lab Investigation
               </NavLink>
             )}
+           
             {can("create:radiology") && (
               <NavLink
                 to="/radiology-screen"
@@ -416,6 +420,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Radiology
               </NavLink>
             )}
+           
             {can("create:doctor_assessment") && (
               <NavLink
                 to="/doctor-assessment"
@@ -425,6 +430,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Doctor Assessment
               </NavLink>
             )}
+            
             {can("create:fitness_certificate") && (
               <NavLink
                 to="/fitness-certificate"
@@ -434,6 +440,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Fitness Certificate
               </NavLink>
             )}
+             
           </MenuGroup>
         )}
       </nav>

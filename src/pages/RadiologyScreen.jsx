@@ -16,6 +16,7 @@ import {
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlerts } from "../utils/healthSwal";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
+import { useNavigate } from "react-router-dom";
 
 const RadiologyScreen = () => {
     const [activeStep, setActiveStep] = useState(1);
@@ -23,7 +24,7 @@ const RadiologyScreen = () => {
     const [selectedBill, setSelectedBill] = useState("");
     const [suggestionsList, setSuggestionsList] = useState([]);
     const [testList, setTestList] = useState([]);
-
+    const navigate = useNavigate();
     const debouncedBill = useDebounce(billSearch, 500);
     const populatedRef = useRef("");
 
@@ -80,6 +81,11 @@ const RadiologyScreen = () => {
                 ...values,
                 tests: testList,
             };
+            healthAlerts.success("Radiology Saved", "Success");
+
+      navigate("/radiology", {
+        state: { goToList: true }
+      });
             
         },
     });

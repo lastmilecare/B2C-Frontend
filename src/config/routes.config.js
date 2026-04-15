@@ -19,17 +19,25 @@ import Permission from "../pages/Permission";
 import Roles from "../pages/Roles";
 import TenantForm from "../pages/TenantForm";
 import TenantList from "../pages/TenantList";
-import PatientRegistrationOhc from "../pages/PatientFormOhc";
-import AppointmentVisit from "../pages/AppointmentVisit";
-import MedicalHistory from "../pages/MedicalHistory";
-import ClinicalExamination from "../pages/ClinicalExamination";
-import LaboratoryInvestigation from "../pages/LaboratoryInvestigation";
-import RadiologyScreen from "../pages/RadiologyScreen";
-import DoctorAssessment from "../pages/DoctorAssessment";
-import FitnessCertificate from "../pages/FitnessCertificate";
+// import PatientRegistrationOhc from "../pages/PatientFormOhc";
+// import AppointmentVisit from "../pages/AppointmentVisit";
+// import MedicalHistory from "../pages/MedicalHistory";
+// import ClinicalExamination from "../pages/ClinicalExamination";
+// import LaboratoryInvestigation from "../pages/LaboratoryInvestigation";
+// import RadiologyScreen from "../pages/RadiologyScreen";
+// import DoctorAssessment from "../pages/DoctorAssessment";
+// import FitnessCertificate from "../pages/FitnessCertificate";
 import RoleList from "../pages/RoleList";
 import PermissionList from "../pages/Permission_list";
 import Resources from "../pages/Resources";
+import Appointment from "../pages/Appointment";
+import MedicalHistoryPage from "../pages/MedicalHistoryPage";
+import ClinicalExaminationPage from "../pages/ClinicalExaminationPage";
+import LaboratoryInvestigationPage from "../pages/LaboratoryInvestigationPage";
+import RadiologyPage from "../pages/RadiologyPage";
+import DoctorAssessmentPage from "../pages/DoctorAssessmentPage";
+import FitnessCertificatePage from "../pages/FitnessCertificatePage";
+import PatientPage from "../pages/PatientPage";
 
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -161,7 +169,7 @@ export const ROUTES = [
   },
   {
     path: "/PatientRegistrationOhc",
-    component: PatientRegistrationOhc,
+    component: PatientPage,
     permission: "create:patient_registration",
     label: "OHC Registration",
     icon: "UserPlusIcon",
@@ -278,62 +286,68 @@ export const ROUTES = [
 
   // ── Clinical (OHC) ────────────────────────────────────────────────────────
   {
-    path: "/appointment-visit",
-    component: AppointmentVisit,
+    path: "/appointment",
+    component: Appointment,
     permission: "read:appointment_visit",
-    label: "Appointment Visit",
+    label: "Appointment",
     icon: "CalendarIcon",
     group: "Clinical",
     showInSidebar: true,
   },
+  
   {
     path: "/medical-history",
-    component: MedicalHistory,
+    component: MedicalHistoryPage,
     permission: "read:medical_history",
     label: "Medical History",
     icon: "BookOpenIcon",
     group: "Clinical",
     showInSidebar: true,
   },
+  
   {
     path: "/clinical-examination",
-    component: ClinicalExamination,
+    component: ClinicalExaminationPage,
     permission: "read:clinical_examination",
     label: "Clinical Examination",
     icon: "BeakerIcon",
     group: "Clinical",
     showInSidebar: true,
   },
+  
   {
     path: "/laboratory-investigation",
-    component: LaboratoryInvestigation,
+    component: LaboratoryInvestigationPage,
     permission: "read:laboratory_investigation",
     label: "Lab Investigation",
     icon: "MagnifyingGlassIcon",
     group: "Clinical",
     showInSidebar: true,
   },
+  
   {
     path: "/radiology-screen",
-    component: RadiologyScreen,
+    component: RadiologyPage,
     permission: "read:radiology",
     label: "Radiology",
     icon: "PhotoIcon",
     group: "Clinical",
     showInSidebar: true,
   },
+   
   {
     path: "/doctor-assessment",
-    component: DoctorAssessment,
+    component: DoctorAssessmentPage,
     permission: "read:doctor_assessment",
     label: "Doctor Assessment",
     icon: "UserIcon",
     group: "Clinical",
     showInSidebar: true,
   },
+ 
   {
     path: "/fitness-certificate",
-    component: FitnessCertificate,
+    component: FitnessCertificatePage,
     permission: "read:fitness_certificate",
     label: "Fitness Certificate",
     icon: "DocumentCheckIcon",

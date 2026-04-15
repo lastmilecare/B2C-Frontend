@@ -10,10 +10,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { Input, Select, Button } from "../components/FormControls";
 import { healthAlerts } from "../utils/healthSwal";
+import { useNavigate } from "react-router-dom";
 
 const ClinicalExamination = () => {
   const [activeStep, setActiveStep] = useState(1);
-
+  const navigate = useNavigate();
   const formik = useFormik({
     initialValues: {
       generalAppearance: "",
@@ -36,6 +37,9 @@ const ClinicalExamination = () => {
 
     onSubmit: (values) => {
       healthAlerts.success("Clinical Examination Saved", "Success");
+      navigate("/clinical-exam", {
+        state: { goToList: true }
+      });
     },
   });
 

@@ -14,13 +14,14 @@ import {
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlerts } from "../utils/healthSwal";
 import { Input, Select, Button } from "../components/FormControls";
+import { useNavigate } from "react-router-dom";
 
 const DoctorAssessment = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [billSearch, setBillSearch] = useState("");
   const [selectedBill, setSelectedBill] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
-
+  const navigate = useNavigate();
   const debouncedBill = useDebounce(billSearch, 500);
   const populatedRef = useRef("");
 
@@ -75,6 +76,10 @@ const DoctorAssessment = () => {
     },
     onSubmit: (values) => {
       console.log("FINAL DATA 👉", values);
+      healthAlerts.success("Doctor Assessment Saved", "Success");
+      navigate("/doctor-assessment", {
+        state: { goToList: true }
+      });
     },
   });
 
