@@ -120,11 +120,12 @@ const PatientRegistrationOhc = () => {
                 if (isEdit) {
                     await updatePatient({ id, body: payload }).unwrap();
                     healthAlerts.success("Patient Updated Successfully", "Patient Updated");
-                    navigate("/patient-list");
+                    navigate("/PatientRegistrationOhc", { state: { goToList: true } });
                 } else {
                     await createPatient(payload).unwrap();
                     healthAlerts.success("Patient Data Saved Successfully", "Patient Saved");
                     handleReset();
+                    navigate("/PatientRegistrationOhc", { state: { goToList: true } });
                 }
             } catch (err) {
                 error.message("Submit error:", err);
@@ -380,7 +381,7 @@ ${activeStep === step.id
                                         />
                                         <Input
                                             {...formik.getFieldProps("Candidate_id")}
-                                            label="Candidate ID / Application ID"
+                                            label="Employee Id"
                                             required
                                             error={formik.touched.name && formik.errors.name}
                                         />

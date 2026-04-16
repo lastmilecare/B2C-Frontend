@@ -11,10 +11,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { Input, Select, Button } from "../components/FormControls";
 import { healthAlerts } from "../utils/healthSwal";
+import { useNavigate } from "react-router-dom";
 
 const MedicalHistory = () => {
   const [activeStep, setActiveStep] = useState(1);
-
+  const navigate = useNavigate();
   const formik = useFormik({
     initialValues: {
       pastIllness: "",
@@ -33,6 +34,9 @@ const MedicalHistory = () => {
 
     onSubmit: (values) => {
       healthAlerts.success("Medical History Saved", "Success");
+      navigate("/medical-history", {
+    state: { goToList: true }
+  });
     },
   });
 

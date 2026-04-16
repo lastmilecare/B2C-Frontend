@@ -17,10 +17,11 @@ import {
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlerts } from "../utils/healthSwal";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
+import { useNavigate } from "react-router-dom";
 
 const LaboratoryInvestigation = () => {
   const [activeStep, setActiveStep] = useState(1);
-
+  const navigate = useNavigate();
   const [billSearch, setBillSearch] = useState("");
   const [selectedBill, setSelectedBill] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
@@ -85,7 +86,12 @@ const LaboratoryInvestigation = () => {
         bloodTests: bloodTestList,
       };
 
-      console.log("FINAL PAYLOAD 👉", payload);
+      console.log("FINAL PAYLOAD ", payload);
+       healthAlerts.success("Lab Investigation Saved", "Success");
+
+      navigate("/lab-investigation", {
+        state: { goToList: true }
+      });
     },
   });
 
@@ -205,38 +211,36 @@ const LaboratoryInvestigation = () => {
 
                   
                   <div className="relative">
-                    <input
-                      className={baseInput}
-                      placeholder="Search Bill No"
-                      value={billSearch}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, "");
-                        setBillSearch(val);
-                        setSelectedBill("");
-                        formik.setFieldValue("billno", "");
-                        setSuggestionsList([]);
-                      }}
-                    />
-
-                    {suggestionsList.length > 0 && (
-                      <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-                        {suggestionsList.map((item) => (
-                          <li
-                            key={item.ID}
-                            onClick={() => {
-                              setSelectedBill(item.ID);
-                              formik.setFieldValue("billno", item.ID);
-                              setBillSearch(item.ID);
-                              setSuggestionsList([]);
-                            }}
-                            className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
-                          >
-                            {item.ID}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+                                      <Input
+                                        label="Bill No"
+                                        value={billSearch}
+                                        onChange={(e)=>{
+                                          const val=e.target.value.replace(/\D/g,"");
+                                          setBillSearch(val);
+                                          setSelectedBill("");
+                                          formik.setFieldValue("billno","");
+                                        }}
+                                      />
+                  
+                                      {suggestionsList.length > 0 && (
+                                        <ul className="absolute z-50 bg-white border rounded-lg shadow w-full mt-1 max-h-48 overflow-auto">
+                                          {suggestionsList.map((item)=>(
+                                            <li
+                                              key={item.ID}
+                                              onClick={()=>{
+                                                setSelectedBill(item.ID);
+                                                setBillSearch(item.ID);
+                                                formik.setFieldValue("billno",item.ID);
+                                                setSuggestionsList([]);
+                                              }}
+                                              className="px-4 py-2 hover:bg-sky-100 cursor-pointer"
+                                            >
+                                              {item.ID}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      )}
+                                    </div>
 
                   <Input label="Name" {...formik.getFieldProps("Name")} readOnly className="bg-sky-50"/>
                   <Input label="UHID" {...formik.getFieldProps("UHID")} readOnly className="bg-sky-50"/>

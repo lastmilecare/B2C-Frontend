@@ -49,7 +49,7 @@ export const IDENTIFICATION_TYPES = [
   { value: "passport", label: "Passport" },
   { value: "driving_license", label: "Driving License" },
   { value: "ration_card", label: "Ration Card" },
-  { value: "employee_id", label: "Employee ID" },
+  // { value: "employee_id", label: "Employee ID" },
   { value: "student_id", label: "Student ID" },
   { value: "health_card", label: "Health Card" },
   { value: "other", label: "Other" },

@@ -41,17 +41,15 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     setMenus((prev) => ({ ...prev, [menu]: !prev[menu] }));
 
   const navItem = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${
-      isActive
-        ? "bg-emerald-600 text-white shadow-lg font-semibold"
-        : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
+    `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${isActive
+      ? "bg-emerald-600 text-white shadow-lg font-semibold"
+      : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
     }`;
 
   const subNavItem = ({ isActive }) =>
-    `block py-2 px-4 text-sm transition-colors rounded-lg ${
-      isActive
-        ? "text-emerald-700 font-bold bg-emerald-50"
-        : "text-gray-500 hover:text-emerald-600 hover:bg-gray-50"
+    `block py-2 px-4 text-sm transition-colors rounded-lg ${isActive
+      ? "text-emerald-700 font-bold bg-emerald-50"
+      : "text-gray-500 hover:text-emerald-600 hover:bg-gray-50"
     }`;
 
   // ── Reusable collapsible group ───────────────────────────────────────────
@@ -316,6 +314,13 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Permissions
               </NavLink>
             )}
+            <NavLink
+              to="/resource"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Resources
+            </NavLink>
           </MenuGroup>
         )}
 
@@ -368,22 +373,24 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
             {can("create:appointment_visit") && (
               <NavLink
-                to="/appointment-visit"
+                to="/appointment"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                Appointment Visit
+                Appointment
               </NavLink>
             )}
+           
             {can("create:medical_history") && (
               <NavLink
                 to="/medical-history"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                Medical History
+                Medical History 
               </NavLink>
             )}
+            
             {can("create:clinical_examination") && (
               <NavLink
                 to="/clinical-examination"
@@ -393,6 +400,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Clinical Examination
               </NavLink>
             )}
+            
             {can("create:laboratory_investigation") && (
               <NavLink
                 to="/laboratory-investigation"
@@ -402,6 +410,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Lab Investigation
               </NavLink>
             )}
+           
             {can("create:radiology") && (
               <NavLink
                 to="/radiology-screen"
@@ -411,6 +420,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Radiology
               </NavLink>
             )}
+           
             {can("create:doctor_assessment") && (
               <NavLink
                 to="/doctor-assessment"
@@ -420,6 +430,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Doctor Assessment
               </NavLink>
             )}
+            
             {can("create:fitness_certificate") && (
               <NavLink
                 to="/fitness-certificate"
@@ -429,6 +440,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Fitness Certificate
               </NavLink>
             )}
+             
           </MenuGroup>
         )}
       </nav>

@@ -14,13 +14,14 @@ import {
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlerts } from "../utils/healthSwal";
 import { Input, Select, Button } from "../components/FormControls";
+import { useNavigate } from "react-router-dom";
 
 const FitnessCertificate = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [billSearch, setBillSearch] = useState("");
   const [selectedBill, setSelectedBill] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
-
+  const navigate = useNavigate();
   const printRef = useRef();
 
   const debouncedBill = useDebounce(billSearch, 500);
@@ -68,8 +69,17 @@ const FitnessCertificate = () => {
       doctor: "",
     },
     onSubmit: (values) => {
+
+      console.log("FINAL DATA 👉", values);
+
       
-    },
+      healthAlerts.success("Fitness Certificate Generated", "Success");
+
+      
+      navigate("/fitness-certificate", {
+        state: { goToList: true }
+      });
+    }
   });
 
   const nextStep = () => {
