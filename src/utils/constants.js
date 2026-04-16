@@ -87,3 +87,10 @@ export const GENDER_OPTIONS = [
   { label: "Female", value: "female" },
   { label: "Other", value: "other" },
 ];
+
+export const Tenant_Type_Options = [
+  { label: "Ohc", value: "ohc" },
+  { label: "Company", value: "company" },
+  { label: "Hospital", value: "hospital" },
+  { label: "Corporate", value: "corporate" }
+];  

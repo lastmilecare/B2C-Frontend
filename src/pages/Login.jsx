@@ -5,13 +5,14 @@ import { healthAlert } from "../utils/healthSwal";
 import { useNavigate } from "react-router-dom";
 import { setCredentials } from "../redux/authSlice";
 import { useDispatch } from "react-redux";
+import { cookie } from "../utils/cookie";
 const Login = () => {
   const [form] = Form.useForm();
   const [deleteForm] = Form.useForm();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [searchType, setSearchType] = useState("email");
-
+  const tenantType = cookie.get("tenantType") || null;
   const navigate = useNavigate();
   const [login] = useLoginMutation();
   const dispatch = useDispatch();
@@ -24,8 +25,10 @@ const Login = () => {
       const role = data?.data?.role;
       if (role === "LMC_ADMIN") {
         navigate("/dashboard");
-      } else if (role === "OHC_ADMIN") {
+      } else if (tenantType === "ohc") {
         navigate("/ohc-dashboard");
+      } else if (tenantType === "company") {
+        navigate("/dashboard");
       }
     } catch (error) {
       healthAlert({

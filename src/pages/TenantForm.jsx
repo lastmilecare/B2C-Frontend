@@ -1,9 +1,16 @@
 import React from "react";
 import { useFormik, FormikProvider } from "formik";
-import { CheckCircleIcon, ArrowPathIcon, UserPlusIcon } from "@heroicons/react/24/outline";
+import {
+  CheckCircleIcon,
+  ArrowPathIcon,
+  UserPlusIcon,
+} from "@heroicons/react/24/outline";
 import { useCreateTenantMutation } from "../redux/apiSlice";
 import { healthAlert } from "../utils/healthSwal";
 import { Input, Button } from "../components/UIComponents";
+import { Tenant_Type_Options } from "../utils/constants";
+import { Select } from "../components/FormControls";
+import * as Yup from "yup";
 
 const TenantForm = ({ refetchList }) => {
   const [createTenant, { isLoading }] = useCreateTenantMutation();
@@ -11,7 +18,12 @@ const TenantForm = ({ refetchList }) => {
   const formik = useFormik({
     initialValues: {
       name: "",
+      tenant_type: "",
     },
+    validationSchema: Yup.object({
+      name: Yup.string().required("Tenant Name is required"),
+      tenant_type: Yup.string().required("Tenant Type is required"),
+    }),
     onSubmit: async (values, { resetForm }) => {
       try {
         await createTenant(values).unwrap();
@@ -45,9 +57,24 @@ const TenantForm = ({ refetchList }) => {
         <form onSubmit={formik.handleSubmit} className="space-y-4">
           <Input
             label="Tenant Name"
+            required
             {...formik.getFieldProps("name")}
+             error={formik.touched.name && formik.errors.name ? formik.errors.name : null}
           />
 
+          <Select
+            {...formik.getFieldProps("tenant_type")}
+            label="Tenant Type"
+            required
+            error={formik.touched.tenant_type && formik.errors.tenant_type ? formik.errors.tenant_type : null}
+          >
+            <option value="">Select</option>
+            {Tenant_Type_Options.map((b) => (
+              <option key={b.value} value={b.value}>
+                {b.label}
+              </option>
+            ))}
+          </Select>
           <div className="flex gap-3">
             <Button type="button" variant="gray" onClick={formik.handleReset}>
               <ArrowPathIcon className="w-4 mr-1" />

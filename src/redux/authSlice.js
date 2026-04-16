@@ -35,6 +35,7 @@ const authSlice = createSlice({
       cookie.set("username", data.username ?? "");
       cookie.set("name", data.name ?? "");
       cookie.set("user_id", data.user_id ?? "");
+      cookie.set("tenantType", data.tenantType ?? "");
       // cookie.set("permissions", JSON.stringify(data.permissions || []));
       localStorage.setItem("permissions", JSON.stringify(data.permissions));
       localStorage.setItem("token", JSON.stringify(data.token));
@@ -54,6 +55,7 @@ const authSlice = createSlice({
       cookie.remove("username");
       cookie.remove("name");
       cookie.remove("user_id");
+      cookie.remove("tenantType");
       // cookie.remove("permissions");
       localStorage.removeItem("permissions");
       localStorage.removeItem("token");
