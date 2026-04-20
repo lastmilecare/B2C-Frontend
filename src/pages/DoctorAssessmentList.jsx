@@ -147,12 +147,12 @@ const DoctorAssessmentList = () => {
       ],
     },
     {
-      label: "From Date",
+      label: "Date Form",
       name: "fromDate",
       type: "date",
     },
     {
-      label: "To Date",
+      label: "Date To",
       name: "toDate",
       type: "date",
     },

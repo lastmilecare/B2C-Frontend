@@ -29,7 +29,7 @@ import TenantList from "../pages/TenantList";
 // import FitnessCertificate from "../pages/FitnessCertificate";
 import RoleList from "../pages/RoleList";
 import PermissionList from "../pages/Permission_list";
-import Resources from "../pages/Resources";
+// import Resources from "../pages/Resources";
 import Appointment from "../pages/Appointment";
 import MedicalHistoryPage from "../pages/MedicalHistoryPage";
 import ClinicalExaminationPage from "../pages/ClinicalExaminationPage";
@@ -39,6 +39,8 @@ import DoctorAssessmentPage from "../pages/DoctorAssessmentPage";
 import FitnessCertificatePage from "../pages/FitnessCertificatePage";
 import PatientPage from "../pages/PatientPage";
 
+import VitalsPage from "../pages/VitalsPage";
+import ResourcePage from "../pages/ResourcePage";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -356,9 +358,18 @@ export const ROUTES = [
   },
   {
     path: "/resource",
-    component: Resources,
+    component: ResourcePage,
     permission: null,
     label: "Resources",
+    icon: "ShieldCheckIcon",
+    group: "Administration",
+    showInSidebar: true,
+  },
+   {
+    path: "/vitals",
+    component: VitalsPage,
+    permission: null,
+    label: "Vitals",
     icon: "ShieldCheckIcon",
     group: "Administration",
     showInSidebar: true,

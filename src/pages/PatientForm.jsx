@@ -23,9 +23,17 @@ const PatientRegistrationCopy = () => {
     const { id } = useParams();
     const isEdit = Boolean(id);
     const navigate = useNavigate();
-    const { data: patientApiResponse, isLoading: isFetching } = useGetPatientByIdQuery(id, {
-        skip: !isEdit,
-    });
+    // const { data: patientApiResponse, isLoading: isFetching } = useGetPatientByIdQuery(id, {
+    //     skip: !isEdit,
+    // });
+    const {
+  data: patientApiResponse,
+  isLoading,
+  isFetching
+} = useGetPatientByIdQuery(id, {
+  skip: !isEdit,
+});
+    
     const [createPatient, { isLoading: isCreating }] = useRegisterPatientsMutation();
     const [updatePatient, { isLoading: isUpdating }] = useUpdatePatientMutation();
 
@@ -86,6 +94,7 @@ const PatientRegistrationCopy = () => {
             creditamount: "",
             idProof_number: "",
             idProof_name: "",
+            employeeId: "",
         },
         enableReinitialize: true,
         validationSchema: Yup.object({
@@ -99,7 +108,8 @@ const PatientRegistrationCopy = () => {
             country: Yup.string().required("Country is required"),
             localAddressState: Yup.string().required("State is required"),
             occupation: Yup.string().required("Occupation is required"),
-            CO: Yup.string().required("Co is required")
+            CO: Yup.string().required("Co is required"),
+            employeeId: Yup.string().required("EmployeeId is required")
         }),
 
         onSubmit: async (values) => {
@@ -182,6 +192,7 @@ const PatientRegistrationCopy = () => {
                     creditamount: p.creditamount || 0,
                     idProof_number: p.idProof_number || "",
                     idProof_name: p.idProof_name || "",
+                    employeeId: p.employeeId || "",
                 });
             };
 
@@ -229,7 +240,8 @@ const PatientRegistrationCopy = () => {
             residentialstatus: values.residentialstatus,
             title: values.title,
             co: values.CO,
-            relationship: values.relationship
+            relationship: values.relationship,
+            employeeId: values.employeeId
         };
 
         if (!isEdit) {
@@ -268,9 +280,13 @@ const PatientRegistrationCopy = () => {
         formik.setFieldValue("age", `${years}y ${months}m ${days}d`);
     };
 
-    if (isEdit && isFetching) {
-        return <div className="text-center mt-10 font-bold text-sky-700">Loading Patient Data...</div>;
-    }
+ if (isEdit && (isLoading || isFetching)) {
+  return (
+    <div className="text-center mt-10 font-bold text-sky-700">
+      Loading Patient Data...
+    </div>
+  );
+}
 
     return (
 
@@ -417,6 +433,12 @@ ${activeStep === step.id
                                                 formik.setFieldValue("contactNumber", onlyNumbers);
                                             }}
                                             error={formik.touched.contactNumber && formik.errors.contactNumber}
+                                        />
+                                        <Input
+                                            {...formik.getFieldProps("employeeId")}
+                                            label="Employee Id"
+                                            required
+                                            error={formik.touched.employeeId && formik.errors.employeeId}
                                         />
 
                                     </div>

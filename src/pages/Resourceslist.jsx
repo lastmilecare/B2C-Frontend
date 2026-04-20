@@ -3,50 +3,41 @@ import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
 import { useNavigate } from "react-router-dom";
 
-const ClinicalExaminationList = () => {
+const ResourceList = () => {
   const navigate = useNavigate();
 
- 
+  
   const [records] = useState([
     {
       id: 1,
-      patientName: "Ravi Kumar",
+      name: "User Management",
+      description: "Handles user roles and permissions",
       date: "2026-04-10",
-      generalAppearance: "Normal",
-      vision: "6/6",
-      colorBlindness: "No",
-      ear: "Normal",
-      nose: "Clear",
-      throat: "Normal",
-      cardiovascular: "Normal",
-      respiratory: "Normal",
-      skin: "Healthy",
     },
     {
       id: 2,
-      patientName: "Amit Singh",
+      name: "Inventory",
+      description: "Manage stock and medicines",
       date: "2026-04-12",
-      generalAppearance: "Weak",
-      vision: "6/9",
-      colorBlindness: "Yes",
-      ear: "Infection",
-      nose: "Blocked",
-      throat: "Irritated",
-      cardiovascular: "Mild Issue",
-      respiratory: "Normal",
-      skin: "Dry",
+    },
+    {
+      id: 3,
+      name: "Billing",
+      description: "Handles billing and invoices",
+      date: "2026-04-15",
     },
   ]);
 
-
+ 
   const [tempFilters, setTempFilters] = useState({
-    patientName: "",
-    colorBlindness: "",
+    name: "",
+    description: "",
     fromDate: "",
     toDate: "",
   });
 
   const [filters, setFilters] = useState({});
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,14 +48,16 @@ const ClinicalExaminationList = () => {
     }));
   };
 
+
   const handleApplyFilters = () => {
     setFilters(tempFilters);
   };
 
+
   const handleResetFilters = () => {
     const reset = {
-      patientName: "",
-      colorBlindness: "",
+      name: "",
+      description: "",
       fromDate: "",
       toDate: "",
     };
@@ -74,34 +67,31 @@ const ClinicalExaminationList = () => {
 
 
   const filteredData = records.filter((item) => {
-    const { patientName, colorBlindness, fromDate, toDate } = filters;
+    const { name, description, fromDate, toDate } = filters;
 
     return (
-      (!patientName ||
-        item.patientName.toLowerCase().includes(patientName.toLowerCase())) &&
+      (!name ||
+        item.name.toLowerCase().includes(name.toLowerCase())) &&
 
-      (!colorBlindness || item.colorBlindness === colorBlindness) &&
+      (!description ||
+        item.description.toLowerCase().includes(description.toLowerCase())) &&
 
       (!fromDate || item.date >= fromDate) &&
       (!toDate || item.date <= toDate)
     );
   });
 
-  
+ 
   const filtersConfig = [
     {
-      label: "Patient Name",
-      name: "patientName",
+      label: "Resource Name",
+      name: "name",
       type: "text",
     },
     {
-      label: "Color Blindness",
-      name: "colorBlindness",
-      type: "select",
-      options: [
-        { label: "No", value: "No" },
-        { label: "Yes", value: "Yes" },
-      ],
+      label: "Description",
+      name: "description",
+      type: "text",
     },
     {
       label: "Date Form",
@@ -115,43 +105,19 @@ const ClinicalExaminationList = () => {
     },
   ];
 
-  
+
   const columns = [
     {
-      name: "Patient",
-      selector: (row) => row.patientName,
+      name: "Resource Name",
+      selector: (row) => row.name,
+    },
+    {
+      name: "Description",
+      selector: (row) => row.description,
     },
     {
       name: "Date",
       selector: (row) => row.date,
-    },
-    {
-      name: "General",
-      selector: (row) => row.generalAppearance,
-    },
-    {
-      name: "Vision",
-      selector: (row) => row.vision,
-    },
-    {
-      name: "Color Blindness",
-      selector: (row) => row.colorBlindness,
-    },
-    {
-      name: "ENT",
-      cell: (row) => `${row.ear}, ${row.nose}, ${row.throat}`,
-    },
-    {
-      name: "Cardio",
-      selector: (row) => row.cardiovascular,
-    },
-    {
-      name: "Respiratory",
-      selector: (row) => row.respiratory,
-    },
-    {
-      name: "Skin",
-      selector: (row) => row.skin,
     },
   ];
 
@@ -159,10 +125,10 @@ const ClinicalExaminationList = () => {
     <div className="max-w-7xl mx-auto">
 
       <h1 className="text-2xl font-semibold text-gray-700 mb-6">
-        Clinical Examination List
+        Resource List
       </h1>
 
-      
+   
       <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
@@ -171,9 +137,9 @@ const ClinicalExaminationList = () => {
         onReset={handleResetFilters}
       />
 
-      
+     
       <PatientTable
-        title="Clinical Examination"
+        title="Resources"
         data={filteredData}
         columns={columns}
         totalRows={filteredData.length}
@@ -184,7 +150,7 @@ const ClinicalExaminationList = () => {
         isLoading={false}
 
         onEdit={(row) => {
-          navigate(`/clinical-exam/${row.id}`);
+          navigate(`/resource/${row.id}`);
         }}
 
         onDelete={(row) => {
@@ -196,4 +162,4 @@ const ClinicalExaminationList = () => {
   );
 };
 
-export default ClinicalExaminationList;
+export default ResourceList;

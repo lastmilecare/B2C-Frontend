@@ -3,45 +3,50 @@ import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
 import { useNavigate } from "react-router-dom";
 
-const ClinicalExaminationList = () => {
+const VitalsList = () => {
   const navigate = useNavigate();
 
- 
+  
   const [records] = useState([
     {
       id: 1,
+      billno: "5001",
       patientName: "Ravi Kumar",
+      uhid: "UH123",
       date: "2026-04-10",
-      generalAppearance: "Normal",
-      vision: "6/6",
-      colorBlindness: "No",
-      ear: "Normal",
-      nose: "Clear",
-      throat: "Normal",
-      cardiovascular: "Normal",
-      respiratory: "Normal",
-      skin: "Healthy",
+      bpsystolic: "120",
+      bpdiastolic: "80",
+      pulserate: "72",
+      spo2: "98",
+      temprature: "98.6",
+      height: "170",
+      weight: "70",
+      bmi: "24.22",
+      respiratoryRate: "18",
     },
     {
       id: 2,
+      billno: "5002",
       patientName: "Amit Singh",
+      uhid: "UH124",
       date: "2026-04-12",
-      generalAppearance: "Weak",
-      vision: "6/9",
-      colorBlindness: "Yes",
-      ear: "Infection",
-      nose: "Blocked",
-      throat: "Irritated",
-      cardiovascular: "Mild Issue",
-      respiratory: "Normal",
-      skin: "Dry",
+      bpsystolic: "140",
+      bpdiastolic: "90",
+      pulserate: "85",
+      spo2: "95",
+      temprature: "99",
+      height: "165",
+      weight: "80",
+      bmi: "29.38",
+      respiratoryRate: "22",
     },
   ]);
 
-
+ 
   const [tempFilters, setTempFilters] = useState({
     patientName: "",
-    colorBlindness: "",
+    billno: "",
+    uhid: "",
     fromDate: "",
     toDate: "",
   });
@@ -64,7 +69,8 @@ const ClinicalExaminationList = () => {
   const handleResetFilters = () => {
     const reset = {
       patientName: "",
-      colorBlindness: "",
+      billno: "",
+      uhid: "",
       fromDate: "",
       toDate: "",
     };
@@ -72,22 +78,25 @@ const ClinicalExaminationList = () => {
     setFilters({});
   };
 
-
+  
   const filteredData = records.filter((item) => {
-    const { patientName, colorBlindness, fromDate, toDate } = filters;
+    const { patientName, billno, uhid, fromDate, toDate } = filters;
 
     return (
       (!patientName ||
         item.patientName.toLowerCase().includes(patientName.toLowerCase())) &&
 
-      (!colorBlindness || item.colorBlindness === colorBlindness) &&
+      (!billno || item.billno.includes(billno)) &&
+
+      (!uhid ||
+        item.uhid.toLowerCase().includes(uhid.toLowerCase())) &&
 
       (!fromDate || item.date >= fromDate) &&
       (!toDate || item.date <= toDate)
     );
   });
 
-  
+ 
   const filtersConfig = [
     {
       label: "Patient Name",
@@ -95,21 +104,22 @@ const ClinicalExaminationList = () => {
       type: "text",
     },
     {
-      label: "Color Blindness",
-      name: "colorBlindness",
-      type: "select",
-      options: [
-        { label: "No", value: "No" },
-        { label: "Yes", value: "Yes" },
-      ],
+      label: "Bill No",
+      name: "billno",
+      type: "text",
     },
     {
-      label: "Date Form",
+      label: "UHID",
+      name: "uhid",
+      type: "text",
+    },
+    {
+      label: "From Date",
       name: "fromDate",
       type: "date",
     },
     {
-      label: "Date To",
+      label: "To Date",
       name: "toDate",
       type: "date",
     },
@@ -118,40 +128,44 @@ const ClinicalExaminationList = () => {
   
   const columns = [
     {
+      name: "Bill No",
+      selector: (row) => row.billno,
+    },
+    {
       name: "Patient",
       selector: (row) => row.patientName,
+    },
+    {
+      name: "UHID",
+      selector: (row) => row.uhid,
     },
     {
       name: "Date",
       selector: (row) => row.date,
     },
     {
-      name: "General",
-      selector: (row) => row.generalAppearance,
+      name: "BP",
+      cell: (row) => `${row.bpsystolic}/${row.bpdiastolic}`,
     },
     {
-      name: "Vision",
-      selector: (row) => row.vision,
+      name: "Pulse",
+      selector: (row) => row.pulserate,
     },
     {
-      name: "Color Blindness",
-      selector: (row) => row.colorBlindness,
+      name: "SPO2",
+      selector: (row) => row.spo2,
     },
     {
-      name: "ENT",
-      cell: (row) => `${row.ear}, ${row.nose}, ${row.throat}`,
+      name: "Temp",
+      selector: (row) => row.temprature,
     },
     {
-      name: "Cardio",
-      selector: (row) => row.cardiovascular,
+      name: "BMI",
+      selector: (row) => row.bmi,
     },
     {
-      name: "Respiratory",
-      selector: (row) => row.respiratory,
-    },
-    {
-      name: "Skin",
-      selector: (row) => row.skin,
+      name: "Resp Rate",
+      selector: (row) => row.respiratoryRate,
     },
   ];
 
@@ -159,10 +173,10 @@ const ClinicalExaminationList = () => {
     <div className="max-w-7xl mx-auto">
 
       <h1 className="text-2xl font-semibold text-gray-700 mb-6">
-        Clinical Examination List
+        Vitals List
       </h1>
 
-      
+     
       <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
@@ -173,7 +187,7 @@ const ClinicalExaminationList = () => {
 
       
       <PatientTable
-        title="Clinical Examination"
+        title="Vitals Records"
         data={filteredData}
         columns={columns}
         totalRows={filteredData.length}
@@ -184,7 +198,7 @@ const ClinicalExaminationList = () => {
         isLoading={false}
 
         onEdit={(row) => {
-          navigate(`/clinical-exam/${row.id}`);
+          navigate(`/vitals/${row.id}`);
         }}
 
         onDelete={(row) => {
@@ -196,4 +210,4 @@ const ClinicalExaminationList = () => {
   );
 };
 
-export default ClinicalExaminationList;
+export default VitalsList;

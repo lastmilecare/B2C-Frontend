@@ -371,6 +371,13 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Patient Registration
               </NavLink>
             )}
+             <NavLink
+                to="/vitals"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Vitals Form
+              </NavLink>
             {can("create:appointment_visit") && (
               <NavLink
                 to="/appointment"

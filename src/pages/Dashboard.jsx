@@ -12,6 +12,7 @@ import {
   useGetPatientsQuery,
   useGetOpdBillingQuery,
   useGetPrescriptionsListQuery,
+  useGetStockDetailsQuery
 } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 
@@ -21,6 +22,11 @@ const AppDashboard = () => {
   const { data: patientData } = useGetPatientsQuery({ page: 1, limit: 100 });
   const { data: opdData } = useGetOpdBillingQuery({ page: 1, limit: 100 });
   const { data: prescriptionData } = useGetPrescriptionsListQuery({
+    page: 1,
+    limit: 100,
+  });
+  const { data: stockData, isLoading: stockLoading } =
+  useGetStockDetailsQuery({
     page: 1,
     limit: 100,
   });
@@ -45,6 +51,11 @@ const AppDashboard = () => {
 
   const recentPatients = patients.slice(0, 5);
   const username = cookie.get("username") || "User";
+  const stockItems = stockData?.data || [];
+
+const lowStockItems = stockItems.filter(
+  (item) => Number(item.BalQty) <= 10
+);
   /* ---------------- MODULES ---------------- */
 
   const modules = [
@@ -179,7 +190,9 @@ const AppDashboard = () => {
         >
           <p className="text-sm">Low Stock</p>
 
-          <h2 className="text-3xl font-bold">6</h2>
+          <h2 className="text-3xl font-bold">
+  {stockLoading ? "..." : lowStockItems.length}
+</h2>
         </motion.div>
 
         <motion.div
@@ -251,23 +264,24 @@ const AppDashboard = () => {
 
         <div className="bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6">
           <h3 className="font-semibold mb-4">Low Stock Medicines</h3>
-
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span>Paracetamol</span>
-              <span className="text-red-500 font-semibold">5 left</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Vitamin D</span>
-              <span className="text-red-500 font-semibold">3 left</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Amoxicillin</span>
-              <span className="text-red-500 font-semibold">2 left</span>
-            </div>
-          </div>
+            <div className="space-y-2 text-sm">
+  {stockLoading ? (
+    <p>Loading...</p>
+  ) : lowStockItems.length === 0 ? (
+    <p>No low stock items</p>
+  ) : (
+    lowStockItems.map((item) => (
+      <div key={item.ID} className="flex justify-between">
+        <span>{item.ItemName}</span>
+        <span className="text-red-500 font-semibold">
+          {item.BalQty} left
+        </span>
+      </div>
+    ))
+  )}
+</div>
+          
+          
         </div>
       </div>
     </motion.div>

@@ -129,12 +129,12 @@ const AppointmentList = () => {
       ],
     },
     {
-      label: "From Date",
+      label: "Date From",
       name: "startDate",
       type: "date",
     },
     {
-      label: "To Date",
+      label: "Date To",
       name: "endDate",
       type: "date",
     },
