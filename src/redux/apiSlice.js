@@ -915,6 +915,53 @@ export const api = createApi({
     data: body,
   }),
 }),
+
+
+
+getAppointments: build.query({
+  query: () => ({
+    url: "/ohc-appointments",
+    method: "GET",
+  }),
+  providesTags: ["Appointment"],
+}),
+
+getAppointmentById: build.query({
+  query: (id) => ({
+    url: `/ohc-appointments/${id}`,
+    method: "GET",
+  }),
+  providesTags: ["Appointment"],
+}),
+
+
+createAppointment: build.mutation({
+  query: (body) => ({
+    url: "/ohc-appointments",
+    method: "POST",
+    data: body,
+  }),
+  invalidatesTags: ["Appointment"],
+}),
+
+
+updateAppointment: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-appointments/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+  invalidatesTags: ["Appointment"],
+}),
+
+
+deleteAppointment: build.mutation({
+  query: (id) => ({
+    url: `/ohc-appointments/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Appointment"],
+}),
   }),
 });
 
@@ -1011,4 +1058,9 @@ export const {
   useToggleUserStatusMutation,
   useGetAllResourceComboQuery,
   useCreateResourceMutation,
+  useGetAppointmentsQuery,
+  useGetAppointmentByIdQuery,
+  useCreateAppointmentMutation,
+  useUpdateAppointmentMutation,
+  useDeleteAppointmentMutation,
 } = api;

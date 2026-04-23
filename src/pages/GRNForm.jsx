@@ -491,6 +491,7 @@
                     disabled={isEditMode}
                     error={formik.touched.InvoiceDate && formik.errors.InvoiceDate}
                     {...formik.getFieldProps("InvoiceDate")}
+                    onClick={(e) => e.target.showPicker && e.target.showPicker()}
                   />
                   <Input
                     label="Invoice No"

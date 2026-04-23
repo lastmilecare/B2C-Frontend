@@ -11,55 +11,175 @@ import {
 } from "@heroicons/react/24/outline";
 import { Input, Select, Button } from "../components/FormControls";
 import { healthAlerts } from "../utils/healthSwal";
+import {
+  useGetComboQuery,
+  useCreateAppointmentMutation,
+  useUpdateAppointmentMutation,
+} from "../redux/apiSlice";
 
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  formatDate,
+  formatTime,
+  combineDateTime,
+} from "../utils/dateTime";
 const AppointmentVisit = () => {
   const [activeStep, setActiveStep] = useState(1);
 
-  
+
   const dateRef = useRef(null);
   const timeRef = useRef(null);
   const checkInRef = useRef(null);
   const checkOutRef = useRef(null);
 
-  
-  const doctors = ["Dr. Sharma", "Dr. Gupta", "Dr. Khan"];
-  const locations = ["Noida OHC", "Delhi OHC", "Plant Site"];
 
-  
+  // const doctors = ["Dr. Sharma", "Dr. Gupta", "Dr. Khan"];
+  const locations = ["Noida OHC", "Delhi OHC", "Plant Site"];
+  const { data: doctors = [], isLoading: doctorsComboLoading } = useGetComboQuery("doctor");
+  const navigate = useNavigate();
+  const locationHook = useLocation();
+  const editData = locationHook.state?.editData;
+  const [createAppointment, { isLoading: createLoading }] =
+    useCreateAppointmentMutation();
+
+  const [updateAppointment, { isLoading: updateLoading }] =
+    useUpdateAppointmentMutation();
+
+  const isLoading = createLoading || updateLoading;
+  //   const combineDateTime = (date, time) => {
+  //   if (!date || !time) return null;
+  //     const local = new Date(`${date}T${time}:00`);
+  //   return local.toISOString();
+  // };
+
+  // const formatTime = (iso) => {
+  //   if (!iso) return "";
+  //   const d = new Date(iso);
+
+  //   return d.toLocaleTimeString("en-GB", {
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //     hour12: false,
+  //   });
+  // };
+
+  // const formatDate = (iso) => {
+  //   if (!iso) return "";
+
+  //   const d = new Date(iso);
+  //   return d.toLocaleDateString("en-CA"); 
+  // };
+  const isPastTime = (date, time) => {
+    if (!date || !time) return false;
+    const now = new Date();
+    const selected = new Date(`${date}T${time}:00`);
+    return selected < now;
+  };
   const formik = useFormik({
     initialValues: {
       appointmentDate: "",
       appointmentTime: "",
       location: "",
-      doctor: "",
+      doctorId: "",
       visitType: "",
       tokenNumber: "",
-      department: "",
-      complaint: "",
-      priority: "",
       checkIn: "",
       checkOut: "",
       status: "Scheduled",
       remarks: "",
+      employeeId: "",
     },
 
     validationSchema: Yup.object({
-      appointmentDate: Yup.string().required("Required"),
-      doctor: Yup.string().required("Required"),
+      appointmentDate: Yup.string().required("Date Required"),
+      employeeId: Yup.string().required("Employee ID Required"),
+      appointmentTime: Yup.string().required("Time Required"),
+      doctorId: Yup.string().required("Doctor Required"),
     }),
 
-    onSubmit: (values) => {
-      healthAlerts.success("Appointment Saved Successfully", "Success");
+
+    onSubmit: async (values) => {
+      console.log("DATE:", values.appointmentDate);
+      console.log("TIME:", values.appointmentTime);
+      if (isPastTime(values.appointmentDate, values.appointmentTime)) {
+        healthAlerts.error("Past date/time not allowed");
+        return;
+      }
+      try {
+        const payload = {
+          emp_id: Number(values.employeeId),
+          appointment_datetime: combineDateTime(
+            values.appointmentDate,
+            values.appointmentTime
+          ),
+
+          ohc_location: values.location,
+          doctor_id: Number(values.doctorId),
+          visit_type: values.visitType,
+          token_number: Number(values.tokenNumber || 0),
+          check_in_time: values.checkIn
+            ? combineDateTime(values.appointmentDate, values.checkIn)
+            : null,
+
+          check_out_time: values.checkOut
+            ? combineDateTime(values.appointmentDate, values.checkOut)
+            : null,
+
+
+
+          status: values.status.toUpperCase(),
+          remark: values.remarks,
+        };
+
+        if (editData) {
+          await updateAppointment({
+            id: editData.id,
+            body: payload,
+          }).unwrap();
+
+          healthAlerts.success("Updated Successfully");
+        } else {
+          await createAppointment(payload).unwrap();
+          healthAlerts.success("Saved Successfully");
+        }
+
+        navigate("/appointment", { state: { goToList: true } });
+
+      } catch (err) {
+        healthAlerts.error(err?.data?.message || "Error");
+      }
     },
+
   });
+  useEffect(() => {
+    console.log("EDIT DATA:", editData);
+
+    if (!editData) return;
+
+    formik.setValues({
+      employeeId: editData.employeeId || "",
+      appointmentDate: editData.appointmentDate || formatDate(editData.appointment_datetime),
+      appointmentTime: editData.appointmentTime || formatTime(editData.appointment_datetime),
+      location: editData.location || "",
+      doctorId: editData.doctorId || "",
+      visitType: editData.visitType || "",
+      tokenNumber: editData.tokenNumber || "",
+      checkIn: editData.checkIn || "",
+      checkOut: editData.checkOut || "",
+      status:
+        editData.status?.charAt(0).toUpperCase() +
+        editData.status?.slice(1).toLowerCase(),
+      remarks: editData.remark || "",
+    });
+  }, [editData]);
 
   // ✅ auto token generate
-//   useEffect(() => {
-//     const token = Math.floor(100 + Math.random() * 900);
-//     formik.setFieldValue("tokenNumber", token);
-//   }, []);
+  //   useEffect(() => {
+  //     const token = Math.floor(100 + Math.random() * 900);
+  //     formik.setFieldValue("tokenNumber", token);
+  //   }, []);
 
-  
+
   const openPicker = useCallback((ref) => {
     if (ref?.current?.showPicker) {
       ref.current.showPicker();
@@ -68,14 +188,18 @@ const AppointmentVisit = () => {
     }
   }, []);
 
-  
+
   const nextStep = useCallback(async () => {
     const errors = await formik.validateForm();
 
-    if (activeStep === 1 && (errors.appointmentDate || errors.doctor)) {
+    if (
+      activeStep === 1 &&
+      (errors.appointmentDate || errors.doctorId || errors.employeeId)
+    ) {
       formik.setTouched({
         appointmentDate: true,
-        doctor: true,
+        doctorId: true,
+        employeeId: true,
       });
       healthAlerts.error("Please fill required fields", "Error");
       return;
@@ -103,7 +227,7 @@ const AppointmentVisit = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
       <div className="max-w-6xl mx-auto">
 
-        
+
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
             <span className="bg-blue-100 p-2 rounded-xl">
@@ -113,12 +237,11 @@ const AppointmentVisit = () => {
           </h1>
 
           <div className="flex gap-2">
-            {[1, 2, 3, 4].map((s) => (
+            {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${
-                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                }`}
+                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                  }`}
               />
             ))}
           </div>
@@ -126,23 +249,22 @@ const AppointmentVisit = () => {
 
         <div className="bg-white rounded-3xl shadow-xl shadow-blue-100 border border-gray-100 overflow-hidden">
 
-          
+
           <div className="flex border-b mb-6">
             {[
               { id: 1, label: "Appointment", icon: CalendarIcon },
               { id: 2, label: "Visit", icon: MapPinIcon },
-              { id: 3, label: "Tracking", icon: ClockIcon },
-              { id: 4, label: "Confirm", icon: DocumentCheckIcon },
+
+              { id: 3, label: "Confirm", icon: DocumentCheckIcon },
             ].map((step) => (
               <button
                 key={step.id}
                 type="button"
                 onClick={() => setActiveStep(step.id)}
-                className={`flex-1 py-4 flex items-center justify-center gap-2 ${
-                  activeStep === step.id
-                    ? "bg-white text-sky-600 shadow"
-                    : "text-gray-400"
-                }`}
+                className={`flex-1 py-4 flex items-center justify-center gap-2 ${activeStep === step.id
+                  ? "bg-white text-sky-600 shadow"
+                  : "text-gray-400"
+                  }`}
               >
                 <step.icon className="w-4 h-4" />
                 {step.label}
@@ -151,9 +273,9 @@ const AppointmentVisit = () => {
           </div>
 
           <div className="p-10">
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
+            <form onSubmit={formik.handleSubmit} className="space-y-5">
 
-              
+
               {activeStep === 1 && (
                 <section>
                   <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -163,20 +285,29 @@ const AppointmentVisit = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
-                    
+                    <Input
+                      label="Employee ID"
+                      {...formik.getFieldProps("employeeId")}
+                      error={formik.errors.employeeId}
+                      touched={formik.touched.employeeId}
+                    />
                     <div>
                       <label className="block text-sm mb-1">Appointment Date</label>
                       <input
                         ref={dateRef}
                         type="date"
                         {...formik.getFieldProps("appointmentDate")}
-                        onClick={() => openPicker(dateRef)}
-                        onFocus={() => openPicker(dateRef)}
-                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 outline-none"
+                        className={`w-full border rounded-lg px-3 py-2 outline-none ${formik.touched.appointmentDate && formik.errors.appointmentDate
+                            ? "border-red-500 ring-1 ring-red-500" 
+                            : "focus:ring-2 focus:ring-sky-500 border-gray-300"
+                          }`}
+                        min={new Date().toISOString().split("T")[0]} 
                       />
+                      {formik.touched.appointmentDate && formik.errors.appointmentDate && (
+                        <p className="text-red-500 text-xs mt-1">{formik.errors.appointmentDate}</p>
+                      )}
                     </div>
 
-                    
                     <div>
                       <label className="block text-sm mb-1">Appointment Time</label>
                       <input
@@ -194,9 +325,13 @@ const AppointmentVisit = () => {
                       {locations.map((l) => <option key={l}>{l}</option>)}
                     </Select>
 
-                    <Select label="Doctor Assigned" {...formik.getFieldProps("doctor")}>
+                    <Select label="Doctor Assigned" {...formik.getFieldProps("doctorId")}>
                       <option value="">Select</option>
-                      {doctors.map((d) => <option key={d}>{d}</option>)}
+                      {doctors.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name || d.doctor_name}
+                        </option>
+                      ))}
                     </Select>
 
                     <Select label="Visit Type" {...formik.getFieldProps("visitType")}>
@@ -210,7 +345,7 @@ const AppointmentVisit = () => {
                 </section>
               )}
 
-            
+
               {activeStep === 2 && (
                 <section>
                   <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -219,29 +354,7 @@ const AppointmentVisit = () => {
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <Input label="Token Number" value={formik.values.tokenNumber}  />
-                    <Input label="Department" {...formik.getFieldProps("department")} />
-                    <Input label="Complaint / Reason" {...formik.getFieldProps("complaint")} />
-
-                    <Select label="Priority" {...formik.getFieldProps("priority")}>
-                      <option value="">Select</option>
-                      <option>Normal</option>
-                      <option>Urgent</option>
-                    </Select>
-                  </div>
-                </section>
-              )}
-
-              
-              {activeStep === 3 && (
-                <section>
-                  <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
-                    Visit Tracking
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-
+                    <Input label="Token Number" {...formik.getFieldProps("tokenNumber")} />
                     <div>
                       <label className="block text-sm mb-1">Check-in Time</label>
                       <input
@@ -277,19 +390,23 @@ const AppointmentVisit = () => {
                 </section>
               )}
 
-              
-              {activeStep === 4 && (
+
+
+
+
+              {activeStep === 3 && (
                 <section>
                   <div className="bg-blue-50 p-6 rounded-xl space-y-2">
+                    <p><b>Employee:</b> {formik.values.employeeId}</p>
                     <p><b>Date:</b> {formik.values.appointmentDate}</p>
                     <p><b>Time:</b> {formik.values.appointmentTime}</p>
-                    <p><b>Doctor:</b> {formik.values.doctor}</p>
+                    <p><b>Doctor:</b> {formik.values.doctorId}</p>
                     <p><b>Status:</b> {formik.values.status}</p>
                   </div>
                 </section>
               )}
 
-             
+
               <div className="flex justify-between pt-6 border-t border-gray-100">
                 <div className="flex gap-2">
                   {activeStep > 1 && (
@@ -304,7 +421,7 @@ const AppointmentVisit = () => {
                   </Button>
                 </div>
 
-                {activeStep < 4 ? (
+                {activeStep < 3 ? (
                   <Button type="button" variant="sky" onClick={nextStep}>
                     Continue
                   </Button>

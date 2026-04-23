@@ -37,8 +37,17 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     ohc: false,
   });
 
-  const toggleSubMenu = (menu) =>
-    setMenus((prev) => ({ ...prev, [menu]: !prev[menu] }));
+ const toggleSubMenu = (menu) => {
+  setMenus((prev) => {
+    const updatedMenus = {};
+
+    Object.keys(prev).forEach((key) => {
+      updatedMenus[key] = key === menu ? !prev[key] : false;
+    });
+
+    return updatedMenus;
+  });
+};
 
   const navItem = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${isActive

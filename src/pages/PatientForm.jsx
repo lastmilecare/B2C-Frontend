@@ -388,6 +388,7 @@ ${activeStep === step.id
                                             {...formik.getFieldProps("dob")}
                                             onChange={handleDOBChange}
                                             max={new Date().toISOString().split("T")[0]}
+                                            onClick={(e) => e.target.showPicker && e.target.showPicker()}
                                         />
 
                                         <Input

@@ -296,6 +296,12 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
+  {
+  path: "/appointment/:id",
+  component: Appointment,
+  permission: "read:appointment_visit",
+  showInSidebar: false,
+},
   
   {
     path: "/medical-history",
