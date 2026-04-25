@@ -379,6 +379,12 @@ export const ROUTES = [
     icon: "ShieldCheckIcon",
     group: "Administration",
     showInSidebar: true,
-  }
+  },
+   {
+  path: "/vitals/:id",
+  component: VitalsPage,
+  permission: null,
+  showInSidebar: false,
+}
  
 ];

@@ -2,129 +2,207 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
-ArrowPathIcon,
-UserIcon,
-ClipboardDocumentIcon,
-DocumentCheckIcon,
+  ArrowPathIcon,
+  UserIcon,
+  ClipboardDocumentIcon,
+  DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import {
-useSearchEmployeeQuery,
-useGetPatientByEmployeeIdQuery
+  useSearchEmployeeQuery,
+  useGetPatientByEmployeeIdQuery,
+  useCreateVitalsMutation,
+  useUpdateVitalsMutation,
+  useGetVitalsByIdQuery
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlerts } from "../utils/healthSwal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input, Button, baseInput } from "../components/FormControls";
 const VitalsForm = () => {
-const [activeStep, setActiveStep] = useState(1);
-const [empSearch, setEmpSearch] = useState("");
-const [selectedEmp, setSelectedEmp] = useState("");
-const [suggestionsList, setSuggestionsList] = useState([]);
-const populatedUhidRef = useRef("");
-const navigate = useNavigate();
-const { data: patientData } = useGetPatientByEmployeeIdQuery(
-  selectedEmp ? selectedEmp : skipToken
-);
-const { data: suggestions = [] } = useSearchEmployeeQuery(empSearch, {
-  skip: empSearch.length < 1,
-});
-const formik = useFormik({
-initialValues: {
-EmployeeId: "",
-Name: "",
-Gender: "",
-Age: "",
-bpsystolic: "",
-bpdiastolic: "",
-pulserate: "",
-spo2: "",
-temprature: "",
-height: "",
-weight: "",
-bmi: "",
-respiratoryRate: "",
-},
-validationSchema: Yup.object({
-respiratoryRate: Yup.number().min(5).max(60),
-}),
-onSubmit: () => {
-  healthAlerts.success("Vitals Saved Successfully");
-  navigate("/vitals", {
-    state: { goToList: true }
+  const [activeStep, setActiveStep] = useState(1);
+  const [empSearch, setEmpSearch] = useState("");
+  const [selectedEmp, setSelectedEmp] = useState("");
+  const [suggestionsList, setSuggestionsList] = useState([]);
+  const populatedUhidRef = useRef("");
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
+
+  const [createVitals] = useCreateVitalsMutation();
+  const [updateVitals] = useUpdateVitalsMutation();
+
+  const { data: editData } = useGetVitalsByIdQuery(id, {
+    skip: !id,
   });
-}
-});
-
-const bmiValue = useMemo(() => {
-const h = Number(formik.values.height);
-const w = Number(formik.values.weight);
-if (h > 0 && w > 0) {
-return (w / ((h / 100) * (h / 100))).toFixed(2);
-}
-return "";
-}, [formik.values.height, formik.values.weight]);
-useEffect(() => {
-formik.setFieldValue("bmi", bmiValue);
-}, [bmiValue]);
-useEffect(() => {
-  if (!empSearch || selectedEmp) return;
-  setSuggestionsList(suggestions);
-}, [suggestions, empSearch, selectedEmp]);
-// useEffect(() => {
-// if (!patientData) return;
-// if (patientData.ID !== selectedEmp) return;
-// if (populatedUhidRef.current === selectedBill) return;
-// populatedUhidRef.current = selectedBill;
-// formik.setValues({
-//   ...formik.values,
-//   UHID: patientData.PicasoNo || "",
-//   Name: patientData.driverDetails[0]?.name || "",
-//   Gender: patientData.driverDetails[0]?.gender || "",
-//   Mobile: patientData.Mobile || "",
-//   FinCategory: patientData.driverDetails[0]?.category || "",
-//   Age: patientData.driverDetails[0]?.age || "",
-//   billno: selectedBill,
-// });
-// }, [patientData, selectedBill]);
-useEffect(() => {
-  if (!patientData) return;
-  if (populatedUhidRef.current === selectedEmp) return;
-
-  populatedUhidRef.current = selectedEmp;
-
-  formik.setValues({
-    ...formik.values,
-    EmployeeId: patientData.employeeId || "",
-    Name: patientData.name || "",
-    Gender: patientData.gender || "",
-    Age: patientData.age || "",
+  const { data: patientData } = useGetPatientByEmployeeIdQuery(
+    selectedEmp ? selectedEmp : skipToken
+  );
+  const { data: suggestions = [] } = useSearchEmployeeQuery(empSearch, {
+    skip: empSearch.length < 1,
   });
+  const formik = useFormik({
+    initialValues: {
+      EmployeeId: "",
+      Name: "",
+      Gender: "",
+      Age: "",
+      bpsystolic: "",
+      bpdiastolic: "",
+      pulserate: "",
+      spo2: "",
+      temprature: "",
+      height: "",
+      weight: "",
+      bmi: "",
+      respiratoryRate: "",
+    },
+    validationSchema: Yup.object({
+      respiratoryRate: Yup.number().min(5).max(60),
+    }),
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        const payload = {
+          employee_id: values.EmployeeId,
+          name: values.Name,
+          gender: values.Gender,
+          age: Number(values.Age),
 
-}, [patientData, selectedEmp]);
+          bpsystolic: Number(values.bpsystolic),
+          bpdiastolic: Number(values.bpdiastolic),
+          pulserate: Number(values.pulserate),
+          spo2: Number(values.spo2),
 
-const nextStep = async () => {
-const errors = await formik.validateForm();
+          temperature: Number(values.temprature),
+          height: Number(values.height),
+          weight: Number(values.weight),
+          bmi: Number(values.bmi),
+          respiratory_rate: Number(values.respiratoryRate),
+        };
+
+        let res;
+
+        if (isEditMode) {
+          res = await updateVitals({
+            id,
+            body: payload,
+          }).unwrap();
+        } else {
+          res = await createVitals(payload).unwrap();
+        }
+
+        healthAlerts.success(
+          res.message || "Vitals saved successfully"
+        );
+
+        resetForm();
+
+        navigate("/vitals", {
+          state: { goToList: true },
+        });
+
+      } catch (error) {
+        healthAlerts.error(
+          error?.data?.message || "Save failed"
+        );
+      }
+    }
+  });
+  useEffect(() => {
+    console.log(editData);
+    if (!editData?.data) return;
+
+    const v = editData.data;
+
+    formik.setValues({
+      EmployeeId: v.employee_id || "",
+      Name: v.name || "",
+      Gender: v.gender || "",
+      Age: v.age || "",
+
+      bpsystolic: v.bpsystolic || "",
+      bpdiastolic: v.bpdiastolic || "",
+      pulserate: v.pulserate || "",
+      spo2: v.spo2 || "",
+
+      temprature: v.temperature || "",
+      height: v.height || "",
+      weight: v.weight || "",
+      bmi: v.bmi || "",
+      respiratoryRate: v.respiratory_rate || "",
+    });
+
+  }, [editData]);
+
+  const bmiValue = useMemo(() => {
+    const h = Number(formik.values.height);
+    const w = Number(formik.values.weight);
+    if (h > 0 && w > 0) {
+      return (w / ((h / 100) * (h / 100))).toFixed(2);
+    }
+    return "";
+  }, [formik.values.height, formik.values.weight]);
+  useEffect(() => {
+    formik.setFieldValue("bmi", bmiValue);
+  }, [bmiValue]);
+  useEffect(() => {
+    if (!empSearch || selectedEmp) return;
+    setSuggestionsList(suggestions);
+  }, [suggestions, empSearch, selectedEmp]);
+  // useEffect(() => {
+  // if (!patientData) return;
+  // if (patientData.ID !== selectedEmp) return;
+  // if (populatedUhidRef.current === selectedBill) return;
+  // populatedUhidRef.current = selectedBill;
+  // formik.setValues({
+  //   ...formik.values,
+  //   UHID: patientData.PicasoNo || "",
+  //   Name: patientData.driverDetails[0]?.name || "",
+  //   Gender: patientData.driverDetails[0]?.gender || "",
+  //   Mobile: patientData.Mobile || "",
+  //   FinCategory: patientData.driverDetails[0]?.category || "",
+  //   Age: patientData.driverDetails[0]?.age || "",
+  //   billno: selectedBill,
+  // });
+  // }, [patientData, selectedBill]);
+  useEffect(() => {
+    if (!patientData) return;
+    if (populatedUhidRef.current === selectedEmp) return;
+
+    populatedUhidRef.current = selectedEmp;
+
+    formik.setValues({
+      ...formik.values,
+      EmployeeId: patientData.employeeId || "",
+      Name: patientData.name || "",
+      Gender: patientData.gender || "",
+      Age: patientData.age || "",
+    });
+
+  }, [patientData, selectedEmp]);
+
+  const nextStep = async () => {
+    const errors = await formik.validateForm();
 
 
-if (activeStep === 1 && !formik.values.EmployeeId) {
-  healthAlerts.warning("Employee ID is required");
-  return;
-}
+    if (activeStep === 1 && !formik.values.EmployeeId) {
+      healthAlerts.warning("Employee ID is required");
+      return;
+    }
 
-if (activeStep === 2 && Object.keys(errors).length > 0) {
-  const firstError = Object.values(errors)[0];
-  healthAlerts.warning(firstError);
-  return;
-}
+    if (activeStep === 2 && Object.keys(errors).length > 0) {
+      const firstError = Object.values(errors)[0];
+      healthAlerts.warning(firstError);
+      return;
+    }
 
-setActiveStep((prev) => prev + 1);
+    setActiveStep((prev) => prev + 1);
 
 
-};
+  };
 
-const prevStep = () => setActiveStep((prev) => prev - 1);
+  const prevStep = () => setActiveStep((prev) => prev - 1);
 
-return ( <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10"> <div className="max-w-[1400px] mx-auto px-8">
+  return (<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10"> <div className="max-w-[1400px] mx-auto px-8">
 
 
     <div className="flex justify-between items-center mb-10">
@@ -132,16 +210,15 @@ return ( <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white t
         <span className="bg-blue-100 p-2 rounded-xl">
           <ClipboardDocumentIcon className="w-6 text-blue-600" />
         </span>
-       Vitals Form 
+        Vitals Form
       </h1>
 
       <div className="flex gap-2">
         {[1, 2, 3].map((s) => (
           <div
             key={s}
-            className={`h-2 w-12 rounded-full ${
-              activeStep >= s ? "bg-sky-600" : "bg-blue-100"
-            }`}
+            className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-blue-100"
+              }`}
           />
         ))}
       </div>
@@ -191,42 +268,42 @@ return ( <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white t
                   // inputMode="numeric"
                   className={baseInput}
                   placeholder="Search Employee ID"
-                  value={empSearch}
+                  value={empSearch || formik.values.EmployeeId}
                   onChange={(e) => {
-  const val = e.target.value;
-  setEmpSearch(val);
-  setSelectedEmp("");
-  formik.setFieldValue("EmployeeId", "");
-  setSuggestionsList([]);
-  populatedUhidRef.current = "";
-}}
+                    const val = e.target.value;
+                    setEmpSearch(val);
+                    setSelectedEmp("");
+                    formik.setFieldValue("EmployeeId", "");
+                    setSuggestionsList([]);
+                    populatedUhidRef.current = "";
+                  }}
                 />
 
-              {suggestionsList.length > 0 && (
-  <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-    {suggestionsList.map((item) => (
-      <li
-        key={item.employeeId}
-        onClick={() => {
-          setSelectedEmp(item.employeeId);
-          formik.setFieldValue("EmployeeId", item.employeeId);
-          setEmpSearch(item.employeeId);
-          setSuggestionsList([]);
-        }}
-        className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
-      >
-        {item.employeeId}
-      </li>
-    ))}
-  </ul>
-)}
+                {suggestionsList.length > 0 && (
+                  <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                    {suggestionsList.map((item) => (
+                      <li
+                        key={item.employeeId}
+                        onClick={() => {
+                          setSelectedEmp(item.employeeId);
+                          formik.setFieldValue("EmployeeId", item.employeeId);
+                          setEmpSearch(item.employeeId);
+                          setSuggestionsList([]);
+                        }}
+                        className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
+                      >
+                        {item.employeeId}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
-              <Input label="Name" {...formik.getFieldProps("Name")} readOnly className="bg-sky-50"/>
-             
-              <Input label="Age" {...formik.getFieldProps("Age")} readOnly className="bg-sky-50"/>
-              <Input label="Gender" {...formik.getFieldProps("Gender")} readOnly className="bg-sky-50"/>
-              
+              <Input label="Name" {...formik.getFieldProps("Name")} readOnly className="bg-sky-50" />
+
+              <Input label="Age" {...formik.getFieldProps("Age")} readOnly className="bg-sky-50" />
+              <Input label="Gender" {...formik.getFieldProps("Gender")} readOnly className="bg-sky-50" />
+
 
             </div>
           </section>
@@ -243,7 +320,7 @@ return ( <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white t
               <Input label="Temperature" {...formik.getFieldProps("temprature")} />
               <Input label="Height (cm)" {...formik.getFieldProps("height")} />
               <Input label="Weight (kg)" {...formik.getFieldProps("weight")} />
-              <Input label="BMI" value={formik.values.bmi} readOnly className="bg-sky-50"/>
+              <Input label="BMI" value={formik.values.bmi} readOnly className="bg-sky-50" />
               <Input label="Respiratory Rate" {...formik.getFieldProps("respiratoryRate")} />
 
             </div>
@@ -310,10 +387,10 @@ return ( <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white t
       </form>
     </div>
   </div>
-</div>
+  </div>
 
 
-);
+  );
 };
 
 export default VitalsForm;

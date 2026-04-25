@@ -1,116 +1,101 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
 import { useNavigate } from "react-router-dom";
+import {
+  useGetVitalsQuery,
+  useDeleteVitalsMutation,
+  useSearchEmployeeQuery,
+} from "../redux/apiSlice";
+import { healthAlerts } from "../utils/healthSwal";
 
 const VitalsList = () => {
   const navigate = useNavigate();
-
-  
-  const [records] = useState([
-    {
-      id: 1,
-      billno: "5001",
-      patientName: "Ravi Kumar",
-      uhid: "UH123",
-      date: "2026-04-10",
-      bpsystolic: "120",
-      bpdiastolic: "80",
-      pulserate: "72",
-      spo2: "98",
-      temprature: "98.6",
-      height: "170",
-      weight: "70",
-      bmi: "24.22",
-      respiratoryRate: "18",
-    },
-    {
-      id: 2,
-      billno: "5002",
-      patientName: "Amit Singh",
-      uhid: "UH124",
-      date: "2026-04-12",
-      bpsystolic: "140",
-      bpdiastolic: "90",
-      pulserate: "85",
-      spo2: "95",
-      temprature: "99",
-      height: "165",
-      weight: "80",
-      bmi: "29.38",
-      respiratoryRate: "22",
-    },
-  ]);
-
- 
+  const { data, isLoading } = useGetVitalsQuery();
+  const [deleteVitals] = useDeleteVitalsMutation();
   const [tempFilters, setTempFilters] = useState({
-    patientName: "",
-    billno: "",
-    uhid: "",
+    employee_id: "",
+    name: "",
     fromDate: "",
     toDate: "",
   });
+  const { data: empSuggestions = [] } = useSearchEmployeeQuery(
+  tempFilters.employee_id,
+  {
+    skip: !tempFilters.employee_id,
+  }
+);
 
   const [filters, setFilters] = useState({});
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setTempFilters((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
-
   const handleApplyFilters = () => {
     setFilters(tempFilters);
+    
   };
-
   const handleResetFilters = () => {
     const reset = {
-      patientName: "",
-      billno: "",
-      uhid: "",
+      employee_id: "",
+      name: "",
       fromDate: "",
       toDate: "",
     };
     setTempFilters(reset);
     setFilters({});
+    
   };
+  const records = (data?.data || []).map((item) => ({
+    id: item.id,
+    employee_id: item.employee_id,
+    name: item.name,
+    date: item.created_at?.split("T")[0],
+    bpsystolic: item.bpsystolic,
+    bpdiastolic: item.bpdiastolic,
+    pulserate: item.pulserate,
+    spo2: item.spo2,
+    temperature: item.temperature,
+    bmi: item.bmi,
+    respiratory_rate: item.respiratory_rate,
+  }));
 
   
   const filteredData = records.filter((item) => {
-    const { patientName, billno, uhid, fromDate, toDate } = filters;
+    const { employee_id, name, fromDate, toDate } = filters;
 
     return (
-      (!patientName ||
-        item.patientName.toLowerCase().includes(patientName.toLowerCase())) &&
+      (!employee_id ||
+        item.employee_id
+          ?.toLowerCase()
+          .includes(employee_id.toLowerCase())) &&
 
-      (!billno || item.billno.includes(billno)) &&
-
-      (!uhid ||
-        item.uhid.toLowerCase().includes(uhid.toLowerCase())) &&
+      (!name ||
+        item.name?.toLowerCase().includes(name.toLowerCase())) &&
 
       (!fromDate || item.date >= fromDate) &&
       (!toDate || item.date <= toDate)
     );
   });
 
- 
+  
   const filtersConfig = [
     {
-      label: "Patient Name",
-      name: "patientName",
+      label: "Employee ID",
+      name: "employee_id",
       type: "text",
+      suggestionConfig: {
+      minLength: 1,
+      keyField: "employeeId",
+      valueField: "employeeId",
+    },
     },
     {
-      label: "Bill No",
-      name: "billno",
-      type: "text",
-    },
-    {
-      label: "UHID",
-      name: "uhid",
+      label: "Name",
+      name: "name",
       type: "text",
     },
     {
@@ -126,47 +111,30 @@ const VitalsList = () => {
   ];
 
   
+  const handleDelete = async (row) => {
+    try {
+      await deleteVitals(row.id).unwrap();
+      healthAlerts.success("Vitals deleted successfully");
+    } catch (err) {
+      healthAlerts.error(err?.data?.message || "Delete failed");
+    }
+  };
+
+  
   const columns = [
-    {
-      name: "Bill No",
-      selector: (row) => row.billno,
-    },
-    {
-      name: "Patient",
-      selector: (row) => row.patientName,
-    },
-    {
-      name: "UHID",
-      selector: (row) => row.uhid,
-    },
-    {
-      name: "Date",
-      selector: (row) => row.date,
-    },
+    { name: "Employee ID", selector: (row) => row.employee_id },
+    { name: "Name", selector: (row) => row.name },
+    { name: "Date", selector: (row) => row.date },
     {
       name: "BP",
-      cell: (row) => `${row.bpsystolic}/${row.bpdiastolic}`,
+      cell: (row) =>
+        `${row.bpsystolic || "-"} / ${row.bpdiastolic || "-"}`,
     },
-    {
-      name: "Pulse",
-      selector: (row) => row.pulserate,
-    },
-    {
-      name: "SPO2",
-      selector: (row) => row.spo2,
-    },
-    {
-      name: "Temp",
-      selector: (row) => row.temprature,
-    },
-    {
-      name: "BMI",
-      selector: (row) => row.bmi,
-    },
-    {
-      name: "Resp Rate",
-      selector: (row) => row.respiratoryRate,
-    },
+    { name: "Pulse", selector: (row) => row.pulserate || "-" },
+    { name: "SPO2", selector: (row) => row.spo2 || "-" },
+    { name: "Temp", selector: (row) => row.temperature || "-" },
+    { name: "BMI", selector: (row) => row.bmi || "-" },
+    { name: "Resp Rate", selector: (row) => row.respiratory_rate || "-" },
   ];
 
   return (
@@ -176,16 +144,29 @@ const VitalsList = () => {
         Vitals List
       </h1>
 
-     
-      <CopyFilterBar
-        filtersConfig={filtersConfig}
-        tempFilters={tempFilters}
-        onChange={handleChange}
-        onApply={handleApplyFilters}
-        onReset={handleResetFilters}
-      />
-
       
+     
+        <CopyFilterBar
+          filtersConfig={filtersConfig}
+          tempFilters={tempFilters}
+          onChange={handleChange}
+          onApply={handleApplyFilters}
+          onReset={handleResetFilters}
+           suggestionsMap={{
+    employee_id: empSuggestions,
+  }}
+
+  onSelectSuggestion={(field, value) => {
+    setTempFilters((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }}
+        />
+
+    
+
+     
       <PatientTable
         title="Vitals Records"
         data={filteredData}
@@ -195,17 +176,10 @@ const VitalsList = () => {
         perPage={10}
         onPageChange={() => {}}
         onPerPageChange={() => {}}
-        isLoading={false}
-
-        onEdit={(row) => {
-          navigate(`/vitals/${row.id}`);
-        }}
-
-        onDelete={(row) => {
-          console.log("Delete", row);
-        }}
+        isLoading={isLoading}
+        onEdit={(row) => navigate(`/vitals/${row.id}`)}
+        onDelete={handleDelete}
       />
-
     </div>
   );
 };

@@ -977,6 +977,47 @@ searchEmployee: build.query({
     params: { query },
   }),
 }),
+getVitals: build.query({
+  query: () => ({
+    url: "/ohc-vitals",
+    method: "GET",
+  }),
+  providesTags: ["Vitals"],
+}),
+
+getVitalsById: build.query({
+  query: (id) => ({
+    url: `/ohc-vitals/${id}`,
+    method: "GET",
+  }),
+  providesTags: ["Vitals"],
+}),
+
+createVitals: build.mutation({
+  query: (body) => ({
+    url: "/ohc-vitals",
+    method: "POST",
+    data: body,
+  }),
+  invalidatesTags: ["Vitals"],
+}),
+
+updateVitals: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-vitals/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+  invalidatesTags: ["Vitals"],
+}),
+
+deleteVitals: build.mutation({
+  query: (id) => ({
+    url: `/ohc-vitals/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Vitals"],
+}),
   }),
 });
 
@@ -1080,4 +1121,9 @@ export const {
   useDeleteAppointmentMutation,
   useGetPatientByEmployeeIdQuery,
   useSearchEmployeeQuery,
+  useGetVitalsQuery,
+  useGetVitalsByIdQuery,
+  useCreateVitalsMutation,
+  useUpdateVitalsMutation,
+  useDeleteVitalsMutation,
 } = api;
