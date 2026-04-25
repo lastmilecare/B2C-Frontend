@@ -964,7 +964,7 @@ deleteAppointment: build.mutation({
 }),
 getPatientByEmployeeId: build.query({
   query: (employeeId) => ({
-    url: "/patient/basic-by-employee",
+    url: "/patient/by-employee-id",
     method: "GET",
     params: { employeeId },
   }),
