@@ -8,39 +8,32 @@ ClipboardDocumentIcon,
 DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import {
-useSearchOpdBillNoQuery,
-useGetOpdBillByIdQuery,
+useSearchEmployeeQuery,
+useGetPatientByEmployeeIdQuery
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlerts } from "../utils/healthSwal";
 import { useNavigate } from "react-router-dom";
 import { Input, Button, baseInput } from "../components/FormControls";
-
 const VitalsForm = () => {
 const [activeStep, setActiveStep] = useState(1);
-const [billSearch, setBillSearch] = useState("");
-const [selectedBill, setSelectedBill] = useState("");
+const [empSearch, setEmpSearch] = useState("");
+const [selectedEmp, setSelectedEmp] = useState("");
 const [suggestionsList, setSuggestionsList] = useState([]);
 const populatedUhidRef = useRef("");
 const navigate = useNavigate();
-
-const { data: patientData } = useGetOpdBillByIdQuery(
-selectedBill ? String(selectedBill) : skipToken
+const { data: patientData } = useGetPatientByEmployeeIdQuery(
+  selectedEmp ? selectedEmp : skipToken
 );
-
-const { data: suggestions = [] } = useSearchOpdBillNoQuery(billSearch, {
-skip: billSearch.length < 1,
+const { data: suggestions = [] } = useSearchEmployeeQuery(empSearch, {
+  skip: empSearch.length < 1,
 });
-
 const formik = useFormik({
 initialValues: {
-UHID: "",
+EmployeeId: "",
 Name: "",
-Mobile: "",
 Gender: "",
 Age: "",
-FinCategory: "",
-billno: "",
 bpsystolic: "",
 bpdiastolic: "",
 pulserate: "",
@@ -70,44 +63,51 @@ return (w / ((h / 100) * (h / 100))).toFixed(2);
 }
 return "";
 }, [formik.values.height, formik.values.weight]);
-
 useEffect(() => {
 formik.setFieldValue("bmi", bmiValue);
 }, [bmiValue]);
-
 useEffect(() => {
-if (!billSearch || selectedBill) return;
-setSuggestionsList(suggestions);
-}, [suggestions, billSearch, selectedBill]);
-
+  if (!empSearch || selectedEmp) return;
+  setSuggestionsList(suggestions);
+}, [suggestions, empSearch, selectedEmp]);
+// useEffect(() => {
+// if (!patientData) return;
+// if (patientData.ID !== selectedEmp) return;
+// if (populatedUhidRef.current === selectedBill) return;
+// populatedUhidRef.current = selectedBill;
+// formik.setValues({
+//   ...formik.values,
+//   UHID: patientData.PicasoNo || "",
+//   Name: patientData.driverDetails[0]?.name || "",
+//   Gender: patientData.driverDetails[0]?.gender || "",
+//   Mobile: patientData.Mobile || "",
+//   FinCategory: patientData.driverDetails[0]?.category || "",
+//   Age: patientData.driverDetails[0]?.age || "",
+//   billno: selectedBill,
+// });
+// }, [patientData, selectedBill]);
 useEffect(() => {
-if (!patientData) return;
-if (patientData.ID !== selectedBill) return;
-if (populatedUhidRef.current === selectedBill) return;
+  if (!patientData) return;
+  if (populatedUhidRef.current === selectedEmp) return;
 
+  populatedUhidRef.current = selectedEmp;
 
-populatedUhidRef.current = selectedBill;
+  formik.setValues({
+    ...formik.values,
+    EmployeeId: patientData.employeeId || "",
+    Name: patientData.name || "",
+    Gender: patientData.gender || "",
+    Age: patientData.age || "",
+  });
 
-formik.setValues({
-  ...formik.values,
-  UHID: patientData.PicasoNo || "",
-  Name: patientData.driverDetails[0]?.name || "",
-  Gender: patientData.driverDetails[0]?.gender || "",
-  Mobile: patientData.Mobile || "",
-  FinCategory: patientData.driverDetails[0]?.category || "",
-  Age: patientData.driverDetails[0]?.age || "",
-  billno: selectedBill,
-});
-
-
-}, [patientData, selectedBill]);
+}, [patientData, selectedEmp]);
 
 const nextStep = async () => {
 const errors = await formik.validateForm();
 
 
-if (activeStep === 1 && !formik.values.billno) {
-  healthAlerts.warning("Bill No is required");
+if (activeStep === 1 && !formik.values.EmployeeId) {
+  healthAlerts.warning("Employee ID is required");
   return;
 }
 
@@ -183,50 +183,50 @@ return ( <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white t
 
               <div className="relative">
                 <label className="text-sm text-gray-600 block mb-1">
-                  Bill no <span className="text-red-500">*</span>
+                  Employee ID <span className="text-red-500">*</span>
                 </label>
 
                 <input
                   type="text"
-                  inputMode="numeric"
+                  // inputMode="numeric"
                   className={baseInput}
-                  placeholder="Search Bill no"
-                  value={billSearch}
+                  placeholder="Search Employee ID"
+                  value={empSearch}
                   onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "");
-                    setBillSearch(val);
-                    setSelectedBill("");
-                    formik.setFieldValue("billno", "");
-                    setSuggestionsList([]);
-                    populatedUhidRef.current = "";
-                  }}
+  const val = e.target.value;
+  setEmpSearch(val);
+  setSelectedEmp("");
+  formik.setFieldValue("EmployeeId", "");
+  setSuggestionsList([]);
+  populatedUhidRef.current = "";
+}}
                 />
 
-                {suggestionsList.length > 0 && (
-                  <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-                    {suggestionsList.map((item) => (
-                      <li
-                        key={item.ID}
-                        onClick={() => {
-                          setSelectedBill(item.ID);
-                          formik.setFieldValue("billno", item.ID);
-                          setBillSearch(item.ID);
-                          setSuggestionsList([]);
-                        }}
-                        className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
-                      >
-                        {item.ID}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+              {suggestionsList.length > 0 && (
+  <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+    {suggestionsList.map((item) => (
+      <li
+        key={item.employeeId}
+        onClick={() => {
+          setSelectedEmp(item.employeeId);
+          formik.setFieldValue("EmployeeId", item.employeeId);
+          setEmpSearch(item.employeeId);
+          setSuggestionsList([]);
+        }}
+        className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
+      >
+        {item.employeeId}
+      </li>
+    ))}
+  </ul>
+)}
               </div>
 
               <Input label="Name" {...formik.getFieldProps("Name")} readOnly className="bg-sky-50"/>
-              <Input label="UHID" {...formik.getFieldProps("UHID")} readOnly className="bg-sky-50"/>
+             
               <Input label="Age" {...formik.getFieldProps("Age")} readOnly className="bg-sky-50"/>
               <Input label="Gender" {...formik.getFieldProps("Gender")} readOnly className="bg-sky-50"/>
-              <Input label="Mobile" {...formik.getFieldProps("Mobile")} readOnly className="bg-sky-50"/>
+              
 
             </div>
           </section>
@@ -253,7 +253,7 @@ return ( <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white t
         {activeStep === 3 && (
           <div className="bg-sky-50 p-6 rounded-xl border space-y-2">
             <p><b>Name:</b> {formik.values.Name}</p>
-            <p><b>UHID:</b> {formik.values.UHID}</p>
+            <p><b>Employee ID:</b> {formik.values.EmployeeId}</p><p><b>UHID:</b> {formik.values.UHID}</p>
             <p><b>BMI:</b> {formik.values.bmi}</p>
             <p><b>Resp Rate:</b> {formik.values.respiratoryRate}</p>
           </div>

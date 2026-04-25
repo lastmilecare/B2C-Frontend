@@ -962,6 +962,21 @@ deleteAppointment: build.mutation({
   }),
   invalidatesTags: ["Appointment"],
 }),
+getPatientByEmployeeId: build.query({
+  query: (employeeId) => ({
+    url: "/patient/basic-by-employee",
+    method: "GET",
+    params: { employeeId },
+  }),
+}),
+
+searchEmployee: build.query({
+  query: (query) => ({
+    url: "/patient/search-employee",
+    method: "GET",
+    params: { query },
+  }),
+}),
   }),
 });
 
@@ -1063,4 +1078,6 @@ export const {
   useCreateAppointmentMutation,
   useUpdateAppointmentMutation,
   useDeleteAppointmentMutation,
+  useGetPatientByEmployeeIdQuery,
+  useSearchEmployeeQuery,
 } = api;
