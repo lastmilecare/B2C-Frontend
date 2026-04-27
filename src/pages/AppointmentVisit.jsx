@@ -8,6 +8,7 @@ import {
   MapPinIcon,
   ClockIcon,
   DocumentCheckIcon,
+  UserIcon
 } from "@heroicons/react/24/outline";
 import { Input, Select, Button } from "../components/FormControls";
 import { healthAlerts } from "../utils/healthSwal";
@@ -23,6 +24,7 @@ import {
   formatTime,
   combineDateTime,
 } from "../utils/dateTime";
+import PatientSelector from "../components/common/PatientSelector";
 const AppointmentVisit = () => {
   const [activeStep, setActiveStep] = useState(1);
 
@@ -87,12 +89,16 @@ const AppointmentVisit = () => {
       checkOut: "",
       status: "Scheduled",
       remarks: "",
-      employeeId: "",
+      EmployeeId: "",
+      patient_id: "",
+      Name: "",
+      Gender: "",
+      Age: "",
     },
 
     validationSchema: Yup.object({
       appointmentDate: Yup.string().required("Date Required"),
-      employeeId: Yup.string().required("Employee ID Required"),
+      patient_id: Yup.string().required("patient ID Required"),
       appointmentTime: Yup.string().required("Time Required"),
       doctorId: Yup.string().required("Doctor Required"),
     }),
@@ -107,7 +113,11 @@ const AppointmentVisit = () => {
       }
       try {
         const payload = {
-          emp_id: Number(values.employeeId),
+          employee_id: values.EmployeeId,
+          patient_id: values.patient_id,
+          name: values.Name,
+          gender: values.Gender,
+          age: Number(values.Age),
           appointment_datetime: combineDateTime(
             values.appointmentDate,
             values.appointmentTime
@@ -157,7 +167,11 @@ const AppointmentVisit = () => {
     if (!editData) return;
 
     formik.setValues({
-      employeeId: editData.employeeId || "",
+       EmployeeId: editData.employeeId || "",
+    patient_id: editData.patientId || "",
+    Name: editData.name || "",
+    Gender: editData.gender || "",
+    Age: editData.age || "",
       appointmentDate: editData.appointmentDate || formatDate(editData.appointment_datetime),
       appointmentTime: editData.appointmentTime || formatTime(editData.appointment_datetime),
       location: editData.location || "",
@@ -193,13 +207,13 @@ const AppointmentVisit = () => {
     const errors = await formik.validateForm();
 
     if (
-      activeStep === 1 &&
+      activeStep === 2 &&
       (errors.appointmentDate || errors.doctorId || errors.employeeId)
     ) {
       formik.setTouched({
         appointmentDate: true,
         doctorId: true,
-        employeeId: true,
+        
       });
       healthAlerts.error("Please fill required fields", "Error");
       return;
@@ -237,7 +251,7 @@ const AppointmentVisit = () => {
           </h1>
 
           <div className="flex gap-2">
-            {[1, 2, 3].map((s) => (
+            {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
                 className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
@@ -252,10 +266,11 @@ const AppointmentVisit = () => {
 
           <div className="flex border-b mb-6">
             {[
-              { id: 1, label: "Appointment", icon: CalendarIcon },
-              { id: 2, label: "Visit", icon: MapPinIcon },
+              { id: 1, label: "Patient", icon: UserIcon },
+              { id: 2, label: "Appointment", icon: CalendarIcon },
+              { id: 3, label: "Visit", icon: MapPinIcon },
 
-              { id: 3, label: "Confirm", icon: DocumentCheckIcon },
+              { id: 4, label: "Confirm", icon: DocumentCheckIcon },
             ].map((step) => (
               <button
                 key={step.id}
@@ -274,9 +289,15 @@ const AppointmentVisit = () => {
 
           <div className="p-10">
             <form onSubmit={formik.handleSubmit} className="space-y-5">
-
-
               {activeStep === 1 && (
+          <section>
+              <PatientSelector formik={formik} />
+                      
+                      </section>
+                    )}
+
+
+              {activeStep === 2 && (
                 <section>
                   <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
                     <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
@@ -285,12 +306,7 @@ const AppointmentVisit = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
-                    <Input
-                      label="Employee ID"
-                      {...formik.getFieldProps("employeeId")}
-                      error={formik.errors.employeeId}
-                      touched={formik.touched.employeeId}
-                    />
+                    
                     <div>
                       <label className="block text-sm mb-1">Appointment Date</label>
                       <input
@@ -346,7 +362,7 @@ const AppointmentVisit = () => {
               )}
 
 
-              {activeStep === 2 && (
+              {activeStep === 3 && (
                 <section>
                   <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
                     <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
@@ -394,7 +410,7 @@ const AppointmentVisit = () => {
 
 
 
-              {activeStep === 3 && (
+              {activeStep === 4 && (
                 <section>
                   <div className="bg-blue-50 p-6 rounded-xl space-y-2">
                     <p><b>Employee:</b> {formik.values.employeeId}</p>
@@ -421,7 +437,7 @@ const AppointmentVisit = () => {
                   </Button>
                 </div>
 
-                {activeStep < 3 ? (
+                {activeStep < 4 ? (
                   <Button type="button" variant="sky" onClick={nextStep}>
                     Continue
                   </Button>

@@ -299,7 +299,7 @@ export const ROUTES = [
   {
   path: "/appointment/:id",
   component: Appointment,
-  permission: "read:appointment_visit",
+  permission: "update:appointment_visit",
   showInSidebar: false,
 },
   
@@ -312,6 +312,12 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
+  {
+  path: "/medical-history/:id",
+  component: MedicalHistoryPage,
+  permission: "update:medical_history",
+  showInSidebar: false,
+},
   
   {
     path: "/clinical-examination",

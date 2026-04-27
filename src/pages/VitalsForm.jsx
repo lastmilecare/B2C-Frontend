@@ -8,22 +8,21 @@ import {
   DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import {
-  useSearchEmployeeQuery,
-  useGetPatientByEmployeeIdQuery,
   useCreateVitalsMutation,
   useUpdateVitalsMutation,
   useGetVitalsByIdQuery
 } from "../redux/apiSlice";
-import { skipToken } from "@reduxjs/toolkit/query";
+
 import { healthAlerts } from "../utils/healthSwal";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input, Button, baseInput } from "../components/FormControls";
+import PatientSelector from "../components/common/PatientSelector";
 const VitalsForm = () => {
   const [activeStep, setActiveStep] = useState(1);
-  const [empSearch, setEmpSearch] = useState("");
-  const [selectedEmp, setSelectedEmp] = useState("");
-  const [suggestionsList, setSuggestionsList] = useState([]);
-  const populatedUhidRef = useRef("");
+  // const [empSearch, setEmpSearch] = useState("");
+  // const [selectedEmp, setSelectedEmp] = useState("");
+  // const [suggestionsList, setSuggestionsList] = useState([]);
+  // const populatedUhidRef = useRef("");
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = Boolean(id);
@@ -34,14 +33,15 @@ const VitalsForm = () => {
   const { data: editData } = useGetVitalsByIdQuery(id, {
     skip: !id,
   });
-  const { data: patientData } = useGetPatientByEmployeeIdQuery(
-    selectedEmp ? selectedEmp : skipToken
-  );
-  const { data: suggestions = [] } = useSearchEmployeeQuery(empSearch, {
-    skip: empSearch.length < 1,
-  });
+  // const { data: patientData } = useGetPatientByEmployeeIdQuery(
+    // selectedEmp ? selectedEmp : skipToken
+  // );
+  // const { data: suggestions = [] } = useSearchEmployeeQuery(empSearch, {
+    // skip: empSearch.length < 1,
+  // });
   const formik = useFormik({
     initialValues: {
+      patient_id: "",
       EmployeeId: "",
       Name: "",
       Gender: "",
@@ -63,6 +63,7 @@ const VitalsForm = () => {
       try {
         const payload = {
           employee_id: values.EmployeeId,
+          patient_id: values.patient_id,
           name: values.Name,
           gender: values.Gender,
           age: Number(values.Age),
@@ -144,10 +145,10 @@ const VitalsForm = () => {
   useEffect(() => {
     formik.setFieldValue("bmi", bmiValue);
   }, [bmiValue]);
-  useEffect(() => {
-    if (!empSearch || selectedEmp) return;
-    setSuggestionsList(suggestions);
-  }, [suggestions, empSearch, selectedEmp]);
+  // useEffect(() => {
+  //   if (!empSearch || selectedEmp) return;
+  //   setSuggestionsList(suggestions);
+  // }, [suggestions, empSearch, selectedEmp]);
   // useEffect(() => {
   // if (!patientData) return;
   // if (patientData.ID !== selectedEmp) return;
@@ -164,28 +165,28 @@ const VitalsForm = () => {
   //   billno: selectedBill,
   // });
   // }, [patientData, selectedBill]);
-  useEffect(() => {
-    if (!patientData) return;
-    if (populatedUhidRef.current === selectedEmp) return;
+  // useEffect(() => {
+  //   if (!patientData) return;
+  //   if (populatedUhidRef.current === selectedEmp) return;
 
-    populatedUhidRef.current = selectedEmp;
+  //   populatedUhidRef.current = selectedEmp;
 
-    formik.setValues({
-      ...formik.values,
-      EmployeeId: patientData.employeeId || "",
-      Name: patientData.name || "",
-      Gender: patientData.gender || "",
-      Age: patientData.age || "",
-    });
+  //   formik.setValues({
+  //     ...formik.values,
+  //     EmployeeId: patientData.employeeId || "",
+  //     Name: patientData.name || "",
+  //     Gender: patientData.gender || "",
+  //     Age: patientData.age || "",
+  //   });
 
-  }, [patientData, selectedEmp]);
+  // }, [patientData, selectedEmp]);
 
   const nextStep = async () => {
     const errors = await formik.validateForm();
 
 
-    if (activeStep === 1 && !formik.values.EmployeeId) {
-      healthAlerts.warning("Employee ID is required");
+    if (activeStep === 1 && !formik.values.patient_id) {
+      healthAlerts.warning("Patient ID is required");
       return;
     }
 
@@ -256,9 +257,9 @@ const VitalsForm = () => {
 
         {activeStep === 1 && (
           <section>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8"> */}
 
-              <div className="relative">
+              {/* <div className="relative">
                 <label className="text-sm text-gray-600 block mb-1">
                   Employee ID <span className="text-red-500">*</span>
                 </label>
@@ -297,15 +298,15 @@ const VitalsForm = () => {
                     ))}
                   </ul>
                 )}
-              </div>
+              </div> */}
 
-              <Input label="Name" {...formik.getFieldProps("Name")} readOnly className="bg-sky-50" />
+              {/* <Input label="Name" {...formik.getFieldProps("Name")} readOnly className="bg-sky-50" />
 
               <Input label="Age" {...formik.getFieldProps("Age")} readOnly className="bg-sky-50" />
-              <Input label="Gender" {...formik.getFieldProps("Gender")} readOnly className="bg-sky-50" />
+              <Input label="Gender" {...formik.getFieldProps("Gender")} readOnly className="bg-sky-50" /> */}
 
-
-            </div>
+                <PatientSelector formik={formik} />
+            {/* </div> */}
           </section>
         )}
 
@@ -330,59 +331,61 @@ const VitalsForm = () => {
         {activeStep === 3 && (
           <div className="bg-sky-50 p-6 rounded-xl border space-y-2">
             <p><b>Name:</b> {formik.values.Name}</p>
-            <p><b>Employee ID:</b> {formik.values.EmployeeId}</p><p><b>UHID:</b> {formik.values.UHID}</p>
+            <p><b>Employee ID:</b> {formik.values.EmployeeId}</p>
+            
             <p><b>BMI:</b> {formik.values.bmi}</p>
             <p><b>Resp Rate:</b> {formik.values.respiratoryRate}</p>
           </div>
         )}
 
-        <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
+       <div className="flex justify-between items-center pt-6 border-t border-gray-100">
+  
+  {/* LEFT SIDE */}
+  <div className="flex gap-2">
+    {activeStep > 1 && (
+      <button
+        type="button"
+        onClick={prevStep}
+        className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition"
+      >
+        Back
+      </button>
+    )}
 
-          <div className="flex gap-2">
-            {activeStep > 1 && (
-              <button
-                type="button"
-                onClick={prevStep}
-                className="px-4 py-2 bg-gray-200 rounded"
-              >
-                Back
-              </button>
-            )}
+    <button
+      type="button"
+      onClick={formik.handleReset}
+      className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition flex items-center gap-1"
+    >
+      Reset
+    </button>
+  </div>
 
-            <button
-              type="button"
-              onClick={formik.handleReset}
-              className="px-4 py-2 bg-gray-200 rounded"
-            >
-              Reset
-            </button>
-          </div>
-
-          {activeStep < 3 ? (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                nextStep();
-              }}
-              className="px-5 py-2 bg-sky-600 text-white rounded"
-            >
-              Continue
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                formik.handleSubmit();
-              }}
-              className="px-5 py-2 bg-sky-600 text-white rounded"
-            >
-              Save
-            </button>
-          )}
-
-        </div>
+  {/* RIGHT SIDE */}
+  {activeStep < 3 ? (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        nextStep();
+      }}
+      className="px-6 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-medium transition"
+    >
+      Continue
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        formik.handleSubmit();
+      }}
+      className="px-6 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-medium transition"
+    >
+      Save
+    </button>
+  )}
+</div>
 
       </form>
     </div>

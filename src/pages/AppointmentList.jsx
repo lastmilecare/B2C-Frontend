@@ -13,54 +13,60 @@ const AppointmentList = () => {
     const [deleteAppointment, { isLoading: deleteLoading }] =
         useDeleteAppointmentMutation();
     const appointments = data?.map((item) => {
-  const doc = doctors.find((d) => d.id === item.doctor_id);
+        const doc = doctors.find((d) => d.id === item.doctor_id);
 
-  return {
-    id: item.id,
-    employeeId: item.emp_id,
-    // appointment_datetime: item.appointment_datetime,
-appointmentDate: formatDate(item.appointment_datetime),
-appointmentTime: formatTime(item.appointment_datetime),
+        return {
+            id: item.id,
+            employeeId: item.employee_id,
+            patientId: item.patient_id,
+            name: item.name,
+            gender: item.gender,
+            age: item.age,
+            // appointment_datetime: item.appointment_datetime,
+            appointmentDate: formatDate(item.appointment_datetime),
+            appointmentTime: formatTime(item.appointment_datetime),
 
-    doctor: doc ? (doc.name || doc.doctor_name) : "-", 
-    doctorId: item.doctor_id,
+            doctor: doc ? (doc.name || doc.doctor_name) : "-",
+            doctorId: item.doctor_id,
 
-    location: item.ohc_location,
-    status: item.status,
+            location: item.ohc_location,
+            status: item.status,
 
-    visitType: item.visit_type || "",
-    tokenNumber: item.token_number || "",
-    remark: item.remark || "",
+            visitType: item.visit_type || "",
+            tokenNumber: item.token_number || "",
+            remark: item.remark || "",
 
-    checkIn: formatTime(item.check_in_time),
-checkOut: formatTime(item.check_out_time),
-  };
-}) || [];
+            checkIn: formatTime(item.check_in_time),
+            checkOut: formatTime(item.check_out_time),
+        };
+    }) || [];
     const [tempFilters, setTempFilters] = useState({
-  employeeId: "",
-  doctor: "",
-  location: "",
-  status: "",
-  startDate: "",
-  endDate: "",
-});
-
-const [filters, setFilters] = useState({});
-const location = useLocation();
-
-useEffect(() => {
-  if (location.state?.goToList) {
-    setFilters({});
-    setTempFilters({
-      employeeId: "",
-      doctor: "",
-      location: "",
-      status: "",
-      startDate: "",
-      endDate: "",
+        patientId: "",
+        name: "",
+        doctor: "",
+        location: "",
+        status: "",
+        startDate: "",
+        endDate: "",
     });
-  }
-}, [location.state]);
+
+    const [filters, setFilters] = useState({});
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.state?.goToList) {
+            setFilters({});
+            setTempFilters({
+                patientId: "",
+                name: "",
+                doctor: "",
+                location: "",
+                status: "",
+                startDate: "",
+                endDate: "",
+            });
+        }
+    }, [location.state]);
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -78,7 +84,8 @@ useEffect(() => {
 
     const handleResetFilters = () => {
         const reset = {
-            employeeId: "",
+            patientId: "",
+            name: "",
             doctor: "",
             location: "",
             status: "",
@@ -91,7 +98,7 @@ useEffect(() => {
 
     const handleDelete = async (row) => {
         try {
-            
+
             const result = await healthAlert({
                 title: "Delete Appointment?",
                 text: "Are you sure you want to delete this appointment?",
@@ -115,24 +122,30 @@ useEffect(() => {
         }
     };
     const filteredAppointments = appointments.filter((item) => {
-  const { employeeId, doctor, location, status, startDate, endDate } = filters;
+       const { patientId, name, doctor, location, status, startDate, endDate } = filters;
 
 
-  return (
-    (!employeeId || item.employeeId?.toString().includes(employeeId)) &&
-    (!doctor || item.doctor === doctor) &&
-    (!location || item.location === location) &&
-    (!status || item.status === status) &&
-    (!startDate || item.appointmentDate >= startDate) &&
-    (!endDate || item.appointmentDate <= endDate)
-  );
-});
+        return (
+            (!patientId || item.patientId?.toString().includes(patientId)) &&
+            (!name || item.name?.toLowerCase().includes(name.toLowerCase())) &&
+            (!doctor || item.doctor === doctor) &&
+            (!location || item.location === location) &&
+            (!status || item.status === status) &&
+            (!startDate || item.appointmentDate >= startDate) &&
+            (!endDate || item.appointmentDate <= endDate)
+        );
+    });
 
 
     const filtersConfig = [
         {
-            label: "Employee ID",
-            name: "employeeId",
+            label: "Patient ID",
+            name: "patientId",
+            type: "text",
+        },
+        {
+            label: "Name",
+            name: "name",
             type: "text",
         },
         {
@@ -179,8 +192,12 @@ useEffect(() => {
 
     const columns = [
         {
-            name: "Employee ID",
-            selector: (row) => row.employeeId,
+            name: "Patient ID",
+            selector: (row) => row.patientId,
+        },
+        {
+            name: "Name",
+            selector: (row) => row.name,
         },
         {
             name: "Date",
@@ -216,7 +233,7 @@ useEffect(() => {
             ),
         },
     ];
-    
+
     return (
         <div className="max-w-7xl mx-auto">
 
@@ -246,10 +263,10 @@ useEffect(() => {
                 isLoading={false}
 
                 onEdit={(row) => {
-  navigate(`/appointment/${row.id}`, {
-    state: { editData: row },
-  });
-}}
+                    navigate(`/appointment/${row.id}`, {
+                        state: { editData: row },
+                    });
+                }}
 
                 onDelete={(row) => handleDelete(row)}
             />

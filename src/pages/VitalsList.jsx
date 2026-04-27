@@ -51,7 +51,7 @@ const VitalsList = () => {
   };
   const records = (data?.data || []).map((item) => ({
     id: item.id,
-    employee_id: item.employee_id,
+    patient_id: item.patient_id,
     name: item.name,
     date: item.created_at?.split("T")[0],
     bpsystolic: item.bpsystolic,
@@ -122,7 +122,7 @@ const VitalsList = () => {
 
   
   const columns = [
-    { name: "Employee ID", selector: (row) => row.employee_id },
+    { name: "Patient ID", selector: (row) => row.patient_id },
     { name: "Name", selector: (row) => row.name },
     { name: "Date", selector: (row) => row.date },
     {

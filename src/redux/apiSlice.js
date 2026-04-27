@@ -1018,6 +1018,57 @@ deleteVitals: build.mutation({
   }),
   invalidatesTags: ["Vitals"],
 }),
+getMedicalHistory: build.query({
+  query: () => ({
+    url: "/ohc-medical-history",
+    method: "GET",
+  }),
+}),
+
+getMedicalHistoryById: build.query({
+  query: (id) => ({
+    url: `/ohc-medical-history/edit/${id}`,
+    method: "GET",
+  }),
+}),
+
+createMedicalHistory: build.mutation({
+  query: (body) => ({
+    url: "/ohc-medical-history",
+    method: "POST",
+    data: body,
+  }),
+}),
+
+updateMedicalHistory: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-medical-history/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
+deleteMedicalHistory: build.mutation({
+  query: (id) => ({
+    url: `/ohc-medical-history/${id}`,
+    method: "DELETE",
+  }),
+}),
+searchName: build.query({
+  query: (query) => ({
+    url: "/patient/search-name",
+    method: "GET",
+    params: { query },
+  }),
+}),
+
+searchNameFull: build.query({
+  query: (query) => ({
+    url: "/patient/search-name-full",
+    method: "GET",
+    params: { query },
+  }),
+}),
   }),
 });
 
@@ -1126,4 +1177,11 @@ export const {
   useCreateVitalsMutation,
   useUpdateVitalsMutation,
   useDeleteVitalsMutation,
+  useGetMedicalHistoryQuery,
+useGetMedicalHistoryByIdQuery,
+useCreateMedicalHistoryMutation,
+useUpdateMedicalHistoryMutation,
+useDeleteMedicalHistoryMutation,
+useSearchNameFullQuery,
+useSearchNameQuery
 } = api;
