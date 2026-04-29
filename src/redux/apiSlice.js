@@ -1069,6 +1069,217 @@ searchNameFull: build.query({
     params: { query },
   }),
 }),
+
+getClinicalExam: build.query({
+  query: () => ({
+    url: "/ohc-clinical-examination",
+    method: "GET",
+  }),
+}),
+
+getClinicalExamById: build.query({
+  query: (id) => ({
+    url: `/ohc-clinical-examination/${id}`,
+    method: "GET",
+  }),
+}),
+
+createClinicalExam: build.mutation({
+  query: (body) => ({
+    url: "/ohc-clinical-examination",
+    method: "POST",
+    data: body,
+  }),
+}),
+
+updateClinicalExam: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-clinical-examination/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
+deleteClinicalExam: build.mutation({
+  query: (id) => ({
+    url: `/ohc-clinical-examination/${id}`,
+    method: "DELETE",
+  }),
+}),
+
+getLabInvestigations: build.query({
+  query: () => ({
+    url: "/ohc-labs",
+    method: "GET",
+  }),
+}),
+
+getLabById: build.query({
+  query: (id) => ({
+    url: `/ohc-labs/${id}`,
+    method: "GET",
+  }),
+}),
+
+createLab: build.mutation({
+  query: (body) => ({
+    url: "/ohc-labs",
+    method: "POST",
+    data: body,
+  }),
+}),
+
+updateLab: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-labs/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
+deleteLab: build.mutation({
+  query: (id) => ({
+    url: `/ohc-labs/${id}`,
+    method: "DELETE",
+  }),
+}),
+uploadLabFile: build.mutation({
+  query: (formData) => ({
+    url: "/ohc-labs/upload",
+    method: "POST",
+    data: formData,
+      
+  }),
+}),
+
+getRadiology: build.query({
+  query: () => ({
+    url: "/ohc-radiology",
+    method: "GET",
+  }),
+  providesTags: ["Radiology"], 
+}),
+
+getRadiologyById: build.query({
+  query: (id) => ({
+    url: `/ohc-radiology/${id}`,
+    method: "GET",
+  }),
+}),
+
+createRadiology: build.mutation({
+  query: (body) => ({
+    url: "/ohc-radiology",
+    method: "POST",
+    data: body,
+  }),
+}),
+
+updateRadiology: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-radiology/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
+deleteRadiology: build.mutation({
+  query: (id) => ({
+    url: `/ohc-radiology/${id}`,
+    method: "DELETE",
+  }),
+   invalidatesTags: ["Radiology"],
+}),
+
+uploadRadiologyFile: build.mutation({
+  query: (formData) => ({
+    url: "/ohc-radiology/upload",
+    method: "POST",
+    data: formData,
+  }),
+}),
+
+getDoctorAssessment: build.query({
+  query: () => ({
+    url: "/ohc-doctor-assessment",
+    method: "GET",
+  }),
+  providesTags: ["DoctorAssessment"],
+}),
+
+getDoctorAssessmentById: build.query({
+  query: (id) => ({
+    url: `/ohc-doctor-assessment/${id}`,
+    method: "GET",
+  }),
+}),
+
+createDoctorAssessment: build.mutation({
+  query: (body) => ({
+    url: "/ohc-doctor-assessment",
+    method: "POST",
+    data: body,
+  }),
+  invalidatesTags: ["DoctorAssessment"],
+}),
+
+updateDoctorAssessment: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-doctor-assessment/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+  invalidatesTags: ["DoctorAssessment"],
+}),
+
+deleteDoctorAssessment: build.mutation({
+  query: (id) => ({
+    url: `/ohc-doctor-assessment/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["DoctorAssessment"],
+}),
+
+getFitnessCertificates: build.query({
+  query: () => ({
+    url: "/ohc-fitness",
+    method: "GET",
+  }),
+  providesTags: ["Fitness"],
+}),
+
+getFitnessById: build.query({
+  query: (id) => ({
+    url: `/ohc-fitness/${id}`,
+    method: "GET",
+  }),
+}),
+
+createFitness: build.mutation({
+  query: (body) => ({
+    url: "/ohc-fitness",
+    method: "POST",
+    data: body,
+  }),
+  invalidatesTags: ["Fitness"],
+}),
+
+updateFitness: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-fitness/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+  invalidatesTags: ["Fitness"],
+}),
+
+deleteFitness: build.mutation({
+  query: (id) => ({
+    url: `/ohc-fitness/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Fitness"],
+}),
   }),
 });
 
@@ -1183,5 +1394,32 @@ useCreateMedicalHistoryMutation,
 useUpdateMedicalHistoryMutation,
 useDeleteMedicalHistoryMutation,
 useSearchNameFullQuery,
-useSearchNameQuery
+useSearchNameQuery,
+useGetClinicalExamQuery,
+useGetClinicalExamByIdQuery,
+useCreateClinicalExamMutation,
+useUpdateClinicalExamMutation,
+useDeleteClinicalExamMutation,
+useGetLabByIdQuery,
+useGetLabInvestigationsQuery,
+useCreateLabMutation,
+useUpdateLabMutation,
+useDeleteLabMutation,
+useUploadLabFileMutation,
+useGetRadiologyQuery,
+useGetRadiologyByIdQuery,
+useCreateRadiologyMutation,
+useUpdateRadiologyMutation,
+useDeleteRadiologyMutation,
+useUploadRadiologyFileMutation,
+useGetDoctorAssessmentQuery,
+useGetDoctorAssessmentByIdQuery,
+useCreateDoctorAssessmentMutation,
+useUpdateDoctorAssessmentMutation,
+useDeleteDoctorAssessmentMutation,
+useGetFitnessCertificatesQuery,
+useGetFitnessByIdQuery,
+useCreateFitnessMutation,
+useUpdateFitnessMutation,
+useDeleteFitnessMutation,
 } = api;

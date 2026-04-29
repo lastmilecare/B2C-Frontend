@@ -8,95 +8,127 @@ import {
     BeakerIcon,
 } from "@heroicons/react/24/outline";
 import { PlusIcon } from "@heroicons/react/24/solid";
-import useDebounce from "../hooks/useDebounce";
 import {
-    useSearchOpdBillNoQuery,
-    useGetOpdBillByIdQuery,
+  useCreateRadiologyMutation,
+  useUploadRadiologyFileMutation,
+  useGetRadiologyByIdQuery,
+  useUpdateRadiologyMutation
 } from "../redux/apiSlice";
-import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlerts } from "../utils/healthSwal";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { useNavigate } from "react-router-dom";
-
+import PatientSelector from "../components/common/PatientSelector";
+import { useParams } from "react-router-dom";
 const RadiologyScreen = () => {
     const [activeStep, setActiveStep] = useState(1);
-    const [billSearch, setBillSearch] = useState("");
-    const [selectedBill, setSelectedBill] = useState("");
-    const [suggestionsList, setSuggestionsList] = useState([]);
+   
     const [testList, setTestList] = useState([]);
     const navigate = useNavigate();
-    const debouncedBill = useDebounce(billSearch, 500);
-    const populatedRef = useRef("");
+    const [createRadiology] = useCreateRadiologyMutation();
+const [uploadFile] = useUploadRadiologyFileMutation();
+const { id } = useParams();
 
-    
-    const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedBill, {
-        skip: debouncedBill.length < 1,
-    });
+const { data: editData } = useGetRadiologyByIdQuery(id, {
+  skip: !id,
+});
 
-   
-    const { data: patientData } = useGetOpdBillByIdQuery(
-        selectedBill ? String(selectedBill) : skipToken
-    );
-
-    
-    useEffect(() => {
-        if (!selectedBill && billSearch.length >= 1) {
-            setSuggestionsList(suggestions);
-        }
-    }, [suggestions, selectedBill, billSearch]);
-
-   
-    useEffect(() => {
-        if (!patientData) return;
-        if (populatedRef.current === selectedBill) return;
-
-        populatedRef.current = selectedBill;
-
-        formik.setValues({
-            ...formik.values,
-            billno: selectedBill,
-            UHID: patientData.PicasoNo || "",
-            Name: patientData.driverDetails?.[0]?.name || "",
-            Gender: patientData.driverDetails?.[0]?.gender || "",
-            Mobile: patientData.Mobile || "",
-            Age: patientData.driverDetails?.[0]?.age || "",
-        });
-    }, [patientData]);
+const [updateRadiology] = useUpdateRadiologyMutation();
 
     const formik = useFormik({
         initialValues: {
-            billno: "",
-            Name: "",
-            UHID: "",
-            Age: "",
-            Gender: "",
-            Mobile: "",
+             EmployeeId: "",
+      patient_id: "",
+      Name: "",
+      Gender: "",
+      Age: "",
             testType: "",
             resultSummary: "",
             doctorRemarks: "",
             reportFile: null,
         },
-        onSubmit: (values) => {
-            const payload = {
-                ...values,
-                tests: testList,
-            };
-            healthAlerts.success("Radiology Saved", "Success");
+       onSubmit: async (values) => {
+  try {
+    let fileUrl = testList[0]?.report_url || "";
 
-      navigate("/radiology", {
+    // upload new file if exists
+    if (values.reportFile) {
+      const formData = new FormData();
+      formData.append("file", values.reportFile);
+
+      const res = await uploadFile(formData).unwrap();
+      fileUrl = res.path;
+    }
+
+    const payload = {
+  patient_id: values.patient_id,
+  name: values.Name,
+  gender: values.Gender,
+  age: Number(values.Age),
+  employee_id: values.EmployeeId,
+
+  tests: testList.map((t) => ({
+    test_type: t.testType,
+    result_summary: t.resultSummary,
+    doctor_remarks: t.doctorRemarks,
+    report_url: fileUrl,
+  })),
+};
+
+    if (id) {
+    
+      await updateRadiology({ id, body: payload }).unwrap();
+      healthAlerts.success("Updated Successfully");
+    } else {
+      
+      await createRadiology(payload).unwrap();
+      healthAlerts.success("Created Successfully");
+    }
+
+      navigate("/radiology-screen", {
         state: { goToList: true }
       });
-            
-        },
+     } catch (err) {
+    healthAlerts.error("Save Failed");
+  }
+ },
+  });
+useEffect(() => {
+  if (editData) {
+    formik.setValues({
+      EmployeeId: editData.employee_id || "",
+      patient_id: editData.patient_id || "",
+      Name: editData.name || "",
+      Gender: editData.gender || "",
+      Age: editData.age || "",
+      reportFile: null,
     });
+
+    const mappedTests =
+      editData.tests?.map((t) => ({
+        testType: t.test_type || "",
+        resultSummary: t.result_summary || "",
+        doctorRemarks: t.doctor_remarks || "",
+        report_url: t.report_url || "",
+      })) || [];
+
+    setTestList(mappedTests);
+
+    
+    if (mappedTests.length > 0) {
+      formik.setFieldValue("testType", mappedTests[0].testType);
+      formik.setFieldValue("resultSummary", mappedTests[0].resultSummary);
+      formik.setFieldValue("doctorRemarks", mappedTests[0].doctorRemarks);
+    }
+  }
+}, [editData]);
 
     
     const nextStep = () => {
-        if (activeStep === 1 && !formik.values.billno) {
-            healthAlerts.warning("Bill No is required");
-            return;
-        }
-
+        
+        if (activeStep === 1 && !formik.values.patient_id) {
+  healthAlerts.warning("Select patient");
+  return;
+}
         if (activeStep === 2 && testList.length === 0) {
             healthAlerts.warning("Add at least one test");
             return;
@@ -178,59 +210,12 @@ const RadiologyScreen = () => {
                     <form className="p-9 space-y-8">
 
                        
-                        {activeStep === 1 && (
-                            <section>
-                                <h3 className="text-lg font-semibold text-sky-700 mb-4 flex gap-2">
-                                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
-                                    Patient Details
-                                </h3>
-
-                                <div className="grid md:grid-cols-3 gap-6">
-
-                                    
-                                    <div className="relative">
-                                        <Input
-                                            label="Bill No"
-                                            placeholder="Search Bill No"
-                                            value={billSearch}
-                                            onChange={(e) => {
-                                                const val = e.target.value.replace(/\D/g, "");
-                                                setBillSearch(val);
-                                                setSelectedBill("");
-                                                formik.setFieldValue("billno", "");
-                                                setSuggestionsList([]);
-                                            }}
-                                        />
-
-                                        {suggestionsList.length > 0 && (
-                                            <ul className="absolute z-20 bg-white border rounded-md shadow w-full max-h-48 overflow-auto">
-                                                {suggestionsList.map((item) => (
-                                                    <li
-                                                        key={item.ID}
-                                                        onClick={() => {
-                                                            setSelectedBill(item.ID);
-                                                            formik.setFieldValue("billno", item.ID);
-                                                            setBillSearch(item.ID);
-                                                            setSuggestionsList([]);
-                                                        }}
-                                                        className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
-                                                    >
-                                                        {item.ID}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-
-                                    <Input label="Name" {...formik.getFieldProps("Name")} readOnly className="bg-sky-50" />
-                                    <Input label="UHID" {...formik.getFieldProps("UHID")} readOnly className="bg-sky-50" />
-                                    <Input label="Age" {...formik.getFieldProps("Age")} readOnly className="bg-sky-50" />
-                                    <Input label="Gender" {...formik.getFieldProps("Gender")} readOnly className="bg-sky-50" />
-                                    <Input label="Mobile" {...formik.getFieldProps("Mobile")} readOnly className="bg-sky-50" />
-
-                                </div>
-                            </section>
-                        )}
+                       {activeStep === 1 && (
+          <section>
+              <PatientSelector formik={formik} />
+                      
+                      </section>
+                    )}
 
                         
                         {activeStep === 2 && (

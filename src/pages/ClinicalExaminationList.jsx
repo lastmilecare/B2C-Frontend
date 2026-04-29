@@ -2,43 +2,28 @@ import React, { useState } from "react";
 import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
 import { useNavigate } from "react-router-dom";
-
+import {
+  useGetClinicalExamQuery,
+  useDeleteClinicalExamMutation
+} from "../redux/apiSlice";
 const ClinicalExaminationList = () => {
   const navigate = useNavigate();
-
- 
-  const [records] = useState([
-    {
-      id: 1,
-      patientName: "Ravi Kumar",
-      date: "2026-04-10",
-      generalAppearance: "Normal",
-      vision: "6/6",
-      colorBlindness: "No",
-      ear: "Normal",
-      nose: "Clear",
-      throat: "Normal",
-      cardiovascular: "Normal",
-      respiratory: "Normal",
-      skin: "Healthy",
-    },
-    {
-      id: 2,
-      patientName: "Amit Singh",
-      date: "2026-04-12",
-      generalAppearance: "Weak",
-      vision: "6/9",
-      colorBlindness: "Yes",
-      ear: "Infection",
-      nose: "Blocked",
-      throat: "Irritated",
-      cardiovascular: "Mild Issue",
-      respiratory: "Normal",
-      skin: "Dry",
-    },
-  ]);
-
-
+const { data = [], isLoading } = useGetClinicalExamQuery();
+const [deleteClinicalExam] = useDeleteClinicalExamMutation();
+const records = data?.map((item) => ({
+  id: item.id,
+  patientName: item.name,
+  date: item.created_at,
+  generalAppearance: item.general_appearance,
+  vision: item.eye_examination,
+  colorBlindness: "-", 
+  ear: item.ear,
+  nose: item.nose,
+  throat: item.throat,
+  cardiovascular: item.cardiovascular_system,
+  respiratory: item.respiratory_system,
+  skin: item.skin_condition,
+}));
   const [tempFilters, setTempFilters] = useState({
     patientName: "",
     colorBlindness: "",
@@ -184,12 +169,19 @@ const ClinicalExaminationList = () => {
         isLoading={false}
 
         onEdit={(row) => {
-          navigate(`/clinical-exam/${row.id}`);
-        }}
+  navigate(`/clinical-examination/${row.id}`, {
+    state: { editData: row },
+  });
+}}
 
-        onDelete={(row) => {
-          console.log("Delete", row);
-        }}
+        onDelete={async (row) => {
+  try {
+    await deleteClinicalExam(row.id).unwrap();
+    healthAlerts.success("Deleted Successfully");
+  } catch (err) {
+    healthAlerts.error("Delete Failed");
+  }
+}}
       />
 
     </div>

@@ -2,57 +2,27 @@ import React, { useState } from "react";
 import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
 import { useNavigate } from "react-router-dom";
-
+import { useGetRadiologyQuery, useDeleteRadiologyMutation } from "../redux/apiSlice";
 const RadiologyList = () => {
   const navigate = useNavigate();
-
-  
-  const [records] = useState([
-    {
-      id: 1,
-      billno: "2001",
-      patientName: "Ravi Kumar",
-      uhid: "UH123",
-      date: "2026-04-10",
-      tests: [
-        { testType: "Chest X-ray", resultSummary: "Normal", doctorRemarks: "OK" },
-        { testType: "ECG", resultSummary: "Normal", doctorRemarks: "Stable" },
-      ],
-    },
-    {
-      id: 2,
-      billno: "2002",
-      patientName: "Amit Singh",
-      uhid: "UH124",
-      date: "2026-04-12",
-      tests: [
-        { testType: "Audiometry", resultSummary: "Mild Loss", doctorRemarks: "Check Again" },
-      ],
-    },
-    {
-      id: 3,
-      billno: "2003",
-      patientName: "Neha Verma",
-      uhid: "UH125",
-      date: "2026-04-15",
-      tests: [
-        { testType: "Vision Test", resultSummary: "6/9", doctorRemarks: "Glasses Needed" },
-      ],
-    },
-  ]);
-
+const { data: records = [], isLoading } = useGetRadiologyQuery();
+const [deleteRadiology] = useDeleteRadiologyMutation();
  
   const [tempFilters, setTempFilters] = useState({
     patientName: "",
-    billno: "",
-    uhid: "",
+    
     testType: "",
     fromDate: "",
     toDate: "",
   });
-
+  
   const [filters, setFilters] = useState({});
-
+const formattedData = records.map((item) => ({
+  id: item.id,
+  patientName: item.name,
+  date: item.created_at?.split("T")[0],
+  tests: item.tests || [],
+}));
  
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,8 +42,7 @@ const RadiologyList = () => {
   const handleResetFilters = () => {
     const reset = {
       patientName: "",
-      billno: "",
-      uhid: "",
+     
       testType: "",
       fromDate: "",
       toDate: "",
@@ -82,36 +51,22 @@ const RadiologyList = () => {
     setFilters({});
   };
 
-  const filteredData = records.filter((item) => {
-    const {
-      patientName,
-      billno,
-      uhid,
-      testType,
-      fromDate,
-      toDate,
-    } = filters;
+const filteredData = formattedData.filter((item) => {
+  const { patientName, testType, fromDate, toDate } = filters;
 
-    return (
-      (!patientName ||
-        item.patientName.toLowerCase().includes(patientName.toLowerCase())) &&
+  return (
+    (!patientName ||
+      item.patientName.toLowerCase().includes(patientName.toLowerCase())) &&
 
-      (!billno || item.billno.includes(billno)) &&
+    (!testType ||
+      item.tests.some((t) =>
+        t.test_type?.toLowerCase().includes(testType.toLowerCase())
+      )) &&
 
-      (!uhid ||
-        item.uhid.toLowerCase().includes(uhid.toLowerCase())) &&
-
-      
-      (!testType ||
-        item.tests.some((t) =>
-          t.testType.toLowerCase().includes(testType.toLowerCase())
-        )) &&
-
-      
-      (!fromDate || item.date >= fromDate) &&
-      (!toDate || item.date <= toDate)
-    );
-  });
+    (!fromDate || item.date >= fromDate) &&
+    (!toDate || item.date <= toDate)
+  );
+});
 
   
   const filtersConfig = [
@@ -120,16 +75,8 @@ const RadiologyList = () => {
       name: "patientName",
       type: "text",
     },
-    {
-      label: "Bill No",
-      name: "billno",
-      type: "text",
-    },
-    {
-      label: "UHID",
-      name: "uhid",
-      type: "text",
-    },
+    
+   
     {
       label: "Test Type",
       name: "testType",
@@ -148,40 +95,32 @@ const RadiologyList = () => {
   ];
 
   
-  const columns = [
-    {
-      name: "Bill No",
-      selector: (row) => row.billno,
-    },
-    {
-      name: "Patient",
-      selector: (row) => row.patientName,
-    },
-    {
-      name: "UHID",
-      selector: (row) => row.uhid,
-    },
-    {
-      name: "Date",
-      selector: (row) => row.date,
-    },
-    {
-      name: "Total Tests",
-      cell: (row) => row.tests.length,
-    },
-    {
-      name: "Test Summary",
-      cell: (row) => (
-        <div className="text-xs space-y-1">
-          {row.tests.map((t, i) => (
-            <div key={i}>
-              {t.testType}: {t.resultSummary}
-            </div>
-          ))}
-        </div>
-      ),
-    },
-  ];
+ const columns = [
+  {
+    name: "Patient",
+    selector: (row) => row.patientName,
+  },
+  {
+    name: "Date",
+    selector: (row) => row.date,
+  },
+  {
+    name: "Total Tests",
+    selector: (row) => row.tests.length,
+  },
+  {
+    name: "Test Summary",
+    cell: (row) => (
+      <div className="text-xs space-y-1">
+        {row.tests.map((t, i) => (
+          <div key={i}>
+            {t.test_type} ({t.result_summary})
+          </div>
+        ))}
+      </div>
+    ),
+  },
+];
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -209,15 +148,20 @@ const RadiologyList = () => {
         perPage={10}
         onPageChange={() => {}}
         onPerPageChange={() => {}}
-        isLoading={false}
+        isLoading={isLoading}
 
         onEdit={(row) => {
-          navigate(`/radiology/${row.id}`);
+          navigate(`/radiology-screen/${row.id}`);
         }}
 
-        onDelete={(row) => {
-          console.log("Delete", row);
-        }}
+       onDelete={async (row) => {
+  try {
+    await deleteRadiology(row.id).unwrap();
+    healthAlerts.success("Deleted Successfully");
+  } catch {
+    healthAlerts.error("Delete Failed");
+  }
+}}
       />
 
     </div>

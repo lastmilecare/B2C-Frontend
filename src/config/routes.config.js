@@ -328,7 +328,12 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
-  
+  {
+  path: "/clinical-examination/:id",
+  component: ClinicalExaminationPage,
+  permission: "update:clinical_examination",
+  showInSidebar: false,
+},
   {
     path: "/laboratory-investigation",
     component: LaboratoryInvestigationPage,
@@ -338,6 +343,12 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
+  {
+  path: "/laboratory-investigation/:id",
+  component: LaboratoryInvestigationPage,
+  permission: "update:laboratory_investigation",
+  showInSidebar: false,
+},
   
   {
     path: "/radiology-screen",
@@ -348,6 +359,12 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
+   {
+  path: "/radiology-screen/:id",
+  component: RadiologyPage,
+  permission: "update:radiology",
+  showInSidebar: false,
+},
    
   {
     path: "/doctor-assessment",
@@ -358,6 +375,12 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
+   {
+  path: "/doctor-assessment/:id",
+  component: DoctorAssessmentPage,
+  permission: "update:doctor_assessment",
+  showInSidebar: false,
+},
  
   {
     path: "/fitness-certificate",
