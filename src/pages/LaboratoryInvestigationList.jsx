@@ -2,64 +2,27 @@ import React, { useState } from "react";
 import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
 import { useNavigate } from "react-router-dom";
-
+import { useGetLabInvestigationsQuery, useDeleteLabMutation } from "../redux/apiSlice";
+import { healthAlerts } from "../utils/healthSwal";
 const LaboratoryInvestigationList = () => {
   const navigate = useNavigate();
-
-  
-  const [records] = useState([
-    {
-      id: 1,
-      billno: "1001",
-      patientName: "Ravi Kumar",
-      uhid: "UH123",
-      commonTest: "Fever Panel",
-      totalTests: 2,
-      date: "2026-04-10",
-      tests: [
-        { name: "CBC", result: "Normal" },
-        { name: "Hemoglobin", result: "13" },
-      ],
-    },
-    {
-      id: 2,
-      billno: "1002",
-      patientName: "Amit Singh",
-      uhid: "UH124",
-      commonTest: "Diabetes Check",
-      totalTests: 1,
-      date: "2026-04-12",
-      tests: [{ name: "Blood Sugar", result: "180" }],
-    },
-    {
-      id: 3,
-      billno: "1003",
-      patientName: "Neha Verma",
-      uhid: "UH125",
-      commonTest: "Full Body Check",
-      totalTests: 3,
-      date: "2026-04-15",
-      tests: [
-        { name: "CBC", result: "Normal" },
-        { name: "LFT", result: "Normal" },
-        { name: "KFT", result: "Normal" },
-      ],
-    },
-  ]);
-
-  
+  const { data: records = [], isLoading } = useGetLabInvestigationsQuery();
+  const [deleteLab] = useDeleteLabMutation();
   const [tempFilters, setTempFilters] = useState({
     patientName: "",
-    billno: "",
-    uhid: "",
-    commonTest: "",
     testName: "",
     fromDate: "",
     toDate: "",
   });
 
-  const [filters, setFilters] = useState({});
-
+const [filters, setFilters] = useState({});
+const formattedData = records.map((item) => ({
+  id: item.id,
+  patientName: item.name,
+  totalTests: item.tests?.length || 0,
+  date: item.investigation_date,
+  tests: item.tests || [],
+}));
  
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -91,12 +54,9 @@ const LaboratoryInvestigationList = () => {
   };
 
   
-  const filteredData = records.filter((item) => {
+  const filteredData = formattedData.filter((item) => {
     const {
       patientName,
-      billno,
-      uhid,
-      commonTest,
       testName,
       fromDate,
       toDate,
@@ -106,18 +66,11 @@ const LaboratoryInvestigationList = () => {
       (!patientName ||
         item.patientName.toLowerCase().includes(patientName.toLowerCase())) &&
 
-      (!billno || item.billno.includes(billno)) &&
-
-      (!uhid ||
-        item.uhid.toLowerCase().includes(uhid.toLowerCase())) &&
-
-      (!commonTest ||
-        item.commonTest.toLowerCase().includes(commonTest.toLowerCase())) &&
-
+     
       
       (!testName ||
         item.tests.some((t) =>
-          t.name.toLowerCase().includes(testName.toLowerCase())
+          t.test_name.toLowerCase().includes(testName.toLowerCase())
         )) &&
 
       
@@ -132,21 +85,7 @@ const LaboratoryInvestigationList = () => {
       name: "patientName",
       type: "text",
     },
-    {
-      label: "Bill No",
-      name: "billno",
-      type: "text",
-    },
-    {
-      label: "UHID",
-      name: "uhid",
-      type: "text",
-    },
-    {
-      label: "Common Test",
-      name: "commonTest",
-      type: "text",
-    },
+   
     {
       label: "Test Name",
       name: "testName",
@@ -166,26 +105,17 @@ const LaboratoryInvestigationList = () => {
 
   
   const columns = [
-    {
-      name: "Bill No",
-      selector: (row) => row.billno,
-    },
+    
     {
       name: "Patient",
       selector: (row) => row.patientName,
     },
-    {
-      name: "UHID",
-      selector: (row) => row.uhid,
-    },
+   
     {
       name: "Date",
       selector: (row) => row.date,
     },
-    {
-      name: "Common Test",
-      selector: (row) => row.commonTest,
-    },
+   
     {
       name: "Total Tests",
       selector: (row) => row.totalTests,
@@ -195,10 +125,10 @@ const LaboratoryInvestigationList = () => {
       cell: (row) => (
         <div className="text-xs space-y-1">
           {row.tests.map((t, i) => (
-            <div key={i}>
-              {t.name}: {t.result}
-            </div>
-          ))}
+  <div key={i}>
+    {t.test_name} ({t.result_value})
+  </div>
+))}
         </div>
       ),
     },
@@ -233,12 +163,17 @@ const LaboratoryInvestigationList = () => {
         isLoading={false}
 
         onEdit={(row) => {
-          navigate(`/lab-investigation/${row.id}`);
+          navigate(`/laboratory-investigation/${row.id}`);
         }}
 
-        onDelete={(row) => {
-          console.log("Delete", row);
-        }}
+        onDelete={async (row) => {
+  try {
+    await deleteLab(row.id).unwrap();
+    healthAlerts.success("Deleted Successfully");
+  } catch (err) {
+    healthAlerts.error("Delete Failed");
+  }
+}}
       />
 
     </div>

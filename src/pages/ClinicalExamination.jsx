@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
@@ -7,14 +7,30 @@ import {
   ClipboardDocumentCheckIcon,
   DocumentCheckIcon,
   EyeIcon,
+  IdentificationIcon,
+  UserIcon
 } from "@heroicons/react/24/outline";
 import { Input, Select, Button } from "../components/FormControls";
 import { healthAlerts } from "../utils/healthSwal";
 import { useNavigate } from "react-router-dom";
+import PatientSelector from "../components/common/PatientSelector";
+import {
+  useCreateClinicalExamMutation,
+  useUpdateClinicalExamMutation,
+  useGetClinicalExamByIdQuery
+} from "../redux/apiSlice";
+import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const ClinicalExamination = () => {
   const [activeStep, setActiveStep] = useState(1);
   const navigate = useNavigate();
+ const { id } = useParams();
+const { data: editData, isLoading } = useGetClinicalExamByIdQuery(id, {
+  skip: !id,
+});
+const [createClinicalExam] = useCreateClinicalExamMutation();
+const [updateClinicalExam] = useUpdateClinicalExamMutation();
   const formik = useFormik({
     initialValues: {
       generalAppearance: "",
@@ -29,24 +45,90 @@ const ClinicalExamination = () => {
       nervousSystem: "",
       musculoskeletal: "",
       skin: "",
+      EmployeeId: "",
+      patient_id: "",
+      Name: "",
+      Gender: "",
+      Age: "",
     },
 
     validationSchema: Yup.object({
       generalAppearance: Yup.string().required("Required"),
     }),
 
-    onSubmit: (values) => {
-      healthAlerts.success("Clinical Examination Saved", "Success");
-      navigate("/clinical-exam", {
-        state: { goToList: true }
-      });
-    },
+    onSubmit: async (values) => {
+  try {
+    const payload = {
+      patient_id: values.patient_id,
+      employee_id: values.EmployeeId,
+      name: values.Name,
+      gender: values.Gender,
+      age: Number(values.Age),
+
+      general_appearance: values.generalAppearance,
+      eye_examination: values.vision,
+      ear: values.ear,
+      nose: values.nose,
+      throat: values.throat,
+      cardiovascular_system: values.cardiovascular,
+      respiratory_system: values.respiratory,
+      abdomen: values.abdomen,
+      nervous_system: values.nervousSystem,
+      musculoskeletal_system: values.musculoskeletal,
+      skin_condition: values.skin,
+    };
+
+    if (id) {
+      await updateClinicalExam({
+        id,
+        body: payload,
+      }).unwrap();
+
+      healthAlerts.success("Updated Successfully");
+    } else {
+      await createClinicalExam(payload).unwrap();
+      healthAlerts.success("Saved Successfully");
+    }
+
+    navigate("/clinical-examination", { state: { goToList: true } });
+
+  } catch (err) {
+    healthAlerts.error(err?.data?.message || "Error");
+  }
+}
+
+    
   });
+ useEffect(() => {
+  if (!editData || !editData.length) return;
+
+  const data = editData[0]; // 👈 fix
+
+  formik.setValues({
+    generalAppearance: data.general_appearance || "",
+    vision: data.eye_examination || "",
+    ear: data.ear || "",
+    nose: data.nose || "",
+    throat: data.throat || "",
+    cardiovascular: data.cardiovascular_system || "",
+    respiratory: data.respiratory_system || "",
+    abdomen: data.abdomen || "",
+    nervousSystem: data.nervous_system || "",
+    musculoskeletal: data.musculoskeletal_system || "",
+    skin: data.skin_condition || "",
+
+    EmployeeId: data.employee_id || "",
+    patient_id: data.patient_id || "",
+    Name: data.name || "",
+    Gender: data.gender || "",
+    Age: data.age || "",
+  });
+}, [editData]);
 
   const nextStep = useCallback(async () => {
     const errors = await formik.validateForm();
 
-    if (activeStep === 1 && errors.generalAppearance) {
+    if (activeStep === 2 && errors.generalAppearance) {
       formik.setTouched({ generalAppearance: true });
       healthAlerts.error("Please fill required fields", "Error");
       return;
@@ -84,7 +166,7 @@ const ClinicalExamination = () => {
           </h1>
 
           <div className="flex gap-2">
-            {[1, 2, 3].map((s) => (
+            {[1, 2, 3, 4].map((s) => (
               <div key={s} className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"}`} />
             ))}
           </div>
@@ -95,9 +177,10 @@ const ClinicalExamination = () => {
          
           <div className="flex border-b mb-6">
             {[
-              { id: 1, label: "Basic", icon: ClipboardDocumentCheckIcon },
-              { id: 2, label: "Systems", icon: EyeIcon },
-              { id: 3, label: "Confirm", icon: DocumentCheckIcon },
+              { id: 1, label: "Patient", icon: UserIcon },
+              { id: 2, label: "Basic", icon: ClipboardDocumentCheckIcon },
+              { id: 3, label: "Systems", icon: EyeIcon },
+              { id: 4, label: "Confirm", icon: DocumentCheckIcon },
             ].map((step) => (
               <button
                 key={step.id}
@@ -115,9 +198,14 @@ const ClinicalExamination = () => {
 
           <div className="p-10">
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-
+             {activeStep === 1 && (
+          <section>
+              <PatientSelector formik={formik} />
+                      
+                      </section>
+                    )}
               
-              {activeStep === 1 && (
+              {activeStep === 2 && (
                 <section className="space-y-6">
 
                  
@@ -157,7 +245,7 @@ const ClinicalExamination = () => {
               )}
 
               
-              {activeStep === 2 && (
+              {activeStep === 3 && (
                 <section>
                   <h3 className="text-sky-700 font-semibold mb-4">System Examination</h3>
 
@@ -173,7 +261,7 @@ const ClinicalExamination = () => {
               )}
 
               
-              {activeStep === 3 && (
+              {activeStep === 4 && (
                 <section>
                   <div className="bg-blue-50 p-6 rounded-xl space-y-2">
                     <p><b>General:</b> {formik.values.generalAppearance}</p>
@@ -202,7 +290,7 @@ const ClinicalExamination = () => {
                   </Button>
                 </div>
 
-                {activeStep < 3 ? (
+                {activeStep < 4 ? (
                   <Button type="button" variant="sky" onClick={nextStep}>
                     Continue
                   </Button>

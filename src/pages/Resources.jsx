@@ -12,9 +12,11 @@ import { useCreateResourceMutation } from "../redux/apiSlice";
 
 import { healthAlert } from "../utils/healthSwal";
 import { Input, Button } from "../components/FormControls";
+import { useNavigate } from "react-router-dom";
 
 const Resources = () => {
     const [activeStep, setActiveStep] = useState(1);
+    const navigate = useNavigate();
     const [createResource] = useCreateResourceMutation();
     const formik = useFormik({
         initialValues: {
@@ -37,6 +39,9 @@ const Resources = () => {
 
                 formik.resetForm();
                 setActiveStep(1);
+                navigate("/resource", {
+      state: { goToList: true }
+    });
             } catch (err) {
                 healthAlert({
                     title: "Error",

@@ -915,6 +915,371 @@ export const api = createApi({
     data: body,
   }),
 }),
+
+
+
+getAppointments: build.query({
+  query: () => ({
+    url: "/ohc-appointments",
+    method: "GET",
+  }),
+  providesTags: ["Appointment"],
+}),
+
+getAppointmentById: build.query({
+  query: (id) => ({
+    url: `/ohc-appointments/${id}`,
+    method: "GET",
+  }),
+  providesTags: ["Appointment"],
+}),
+
+
+createAppointment: build.mutation({
+  query: (body) => ({
+    url: "/ohc-appointments",
+    method: "POST",
+    data: body,
+  }),
+  invalidatesTags: ["Appointment"],
+}),
+
+
+updateAppointment: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-appointments/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+  invalidatesTags: ["Appointment"],
+}),
+
+
+deleteAppointment: build.mutation({
+  query: (id) => ({
+    url: `/ohc-appointments/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Appointment"],
+}),
+getPatientByEmployeeId: build.query({
+  query: (employeeId) => ({
+    url: "/patient/by-employee-id",
+    method: "GET",
+    params: { employeeId },
+  }),
+}),
+
+searchEmployee: build.query({
+  query: (query) => ({
+    url: "/patient/search-employee",
+    method: "GET",
+    params: { query },
+  }),
+}),
+getVitals: build.query({
+  query: () => ({
+    url: "/ohc-vitals",
+    method: "GET",
+  }),
+  providesTags: ["Vitals"],
+}),
+
+getVitalsById: build.query({
+  query: (id) => ({
+    url: `/ohc-vitals/${id}`,
+    method: "GET",
+  }),
+  providesTags: ["Vitals"],
+}),
+
+createVitals: build.mutation({
+  query: (body) => ({
+    url: "/ohc-vitals",
+    method: "POST",
+    data: body,
+  }),
+  invalidatesTags: ["Vitals"],
+}),
+
+updateVitals: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-vitals/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+  invalidatesTags: ["Vitals"],
+}),
+
+deleteVitals: build.mutation({
+  query: (id) => ({
+    url: `/ohc-vitals/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Vitals"],
+}),
+getMedicalHistory: build.query({
+  query: () => ({
+    url: "/ohc-medical-history",
+    method: "GET",
+  }),
+}),
+
+getMedicalHistoryById: build.query({
+  query: (id) => ({
+    url: `/ohc-medical-history/edit/${id}`,
+    method: "GET",
+  }),
+}),
+
+createMedicalHistory: build.mutation({
+  query: (body) => ({
+    url: "/ohc-medical-history",
+    method: "POST",
+    data: body,
+  }),
+}),
+
+updateMedicalHistory: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-medical-history/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
+deleteMedicalHistory: build.mutation({
+  query: (id) => ({
+    url: `/ohc-medical-history/${id}`,
+    method: "DELETE",
+  }),
+}),
+searchName: build.query({
+  query: (query) => ({
+    url: "/patient/search-name",
+    method: "GET",
+    params: { query },
+  }),
+}),
+
+searchNameFull: build.query({
+  query: (query) => ({
+    url: "/patient/search-name-full",
+    method: "GET",
+    params: { query },
+  }),
+}),
+
+getClinicalExam: build.query({
+  query: () => ({
+    url: "/ohc-clinical-examination",
+    method: "GET",
+  }),
+}),
+
+getClinicalExamById: build.query({
+  query: (id) => ({
+    url: `/ohc-clinical-examination/${id}`,
+    method: "GET",
+  }),
+}),
+
+createClinicalExam: build.mutation({
+  query: (body) => ({
+    url: "/ohc-clinical-examination",
+    method: "POST",
+    data: body,
+  }),
+}),
+
+updateClinicalExam: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-clinical-examination/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
+deleteClinicalExam: build.mutation({
+  query: (id) => ({
+    url: `/ohc-clinical-examination/${id}`,
+    method: "DELETE",
+  }),
+}),
+
+getLabInvestigations: build.query({
+  query: () => ({
+    url: "/ohc-labs",
+    method: "GET",
+  }),
+}),
+
+getLabById: build.query({
+  query: (id) => ({
+    url: `/ohc-labs/${id}`,
+    method: "GET",
+  }),
+}),
+
+createLab: build.mutation({
+  query: (body) => ({
+    url: "/ohc-labs",
+    method: "POST",
+    data: body,
+  }),
+}),
+
+updateLab: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-labs/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
+deleteLab: build.mutation({
+  query: (id) => ({
+    url: `/ohc-labs/${id}`,
+    method: "DELETE",
+  }),
+}),
+uploadLabFile: build.mutation({
+  query: (formData) => ({
+    url: "/ohc-labs/upload",
+    method: "POST",
+    data: formData,
+      
+  }),
+}),
+
+getRadiology: build.query({
+  query: () => ({
+    url: "/ohc-radiology",
+    method: "GET",
+  }),
+  providesTags: ["Radiology"], 
+}),
+
+getRadiologyById: build.query({
+  query: (id) => ({
+    url: `/ohc-radiology/${id}`,
+    method: "GET",
+  }),
+}),
+
+createRadiology: build.mutation({
+  query: (body) => ({
+    url: "/ohc-radiology",
+    method: "POST",
+    data: body,
+  }),
+}),
+
+updateRadiology: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-radiology/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
+deleteRadiology: build.mutation({
+  query: (id) => ({
+    url: `/ohc-radiology/${id}`,
+    method: "DELETE",
+  }),
+   invalidatesTags: ["Radiology"],
+}),
+
+uploadRadiologyFile: build.mutation({
+  query: (formData) => ({
+    url: "/ohc-radiology/upload",
+    method: "POST",
+    data: formData,
+  }),
+}),
+
+getDoctorAssessment: build.query({
+  query: () => ({
+    url: "/ohc-doctor-assessment",
+    method: "GET",
+  }),
+  providesTags: ["DoctorAssessment"],
+}),
+
+getDoctorAssessmentById: build.query({
+  query: (id) => ({
+    url: `/ohc-doctor-assessment/${id}`,
+    method: "GET",
+  }),
+}),
+
+createDoctorAssessment: build.mutation({
+  query: (body) => ({
+    url: "/ohc-doctor-assessment",
+    method: "POST",
+    data: body,
+  }),
+  invalidatesTags: ["DoctorAssessment"],
+}),
+
+updateDoctorAssessment: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-doctor-assessment/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+  invalidatesTags: ["DoctorAssessment"],
+}),
+
+deleteDoctorAssessment: build.mutation({
+  query: (id) => ({
+    url: `/ohc-doctor-assessment/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["DoctorAssessment"],
+}),
+
+getFitnessCertificates: build.query({
+  query: () => ({
+    url: "/ohc-fitness",
+    method: "GET",
+  }),
+  providesTags: ["Fitness"],
+}),
+
+getFitnessById: build.query({
+  query: (id) => ({
+    url: `/ohc-fitness/${id}`,
+    method: "GET",
+  }),
+}),
+
+createFitness: build.mutation({
+  query: (body) => ({
+    url: "/ohc-fitness",
+    method: "POST",
+    data: body,
+  }),
+  invalidatesTags: ["Fitness"],
+}),
+
+updateFitness: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-fitness/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+  invalidatesTags: ["Fitness"],
+}),
+
+deleteFitness: build.mutation({
+  query: (id) => ({
+    url: `/ohc-fitness/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Fitness"],
+}),
   }),
 });
 
@@ -1011,4 +1376,50 @@ export const {
   useToggleUserStatusMutation,
   useGetAllResourceComboQuery,
   useCreateResourceMutation,
+  useGetAppointmentsQuery,
+  useGetAppointmentByIdQuery,
+  useCreateAppointmentMutation,
+  useUpdateAppointmentMutation,
+  useDeleteAppointmentMutation,
+  useGetPatientByEmployeeIdQuery,
+  useSearchEmployeeQuery,
+  useGetVitalsQuery,
+  useGetVitalsByIdQuery,
+  useCreateVitalsMutation,
+  useUpdateVitalsMutation,
+  useDeleteVitalsMutation,
+  useGetMedicalHistoryQuery,
+useGetMedicalHistoryByIdQuery,
+useCreateMedicalHistoryMutation,
+useUpdateMedicalHistoryMutation,
+useDeleteMedicalHistoryMutation,
+useSearchNameFullQuery,
+useSearchNameQuery,
+useGetClinicalExamQuery,
+useGetClinicalExamByIdQuery,
+useCreateClinicalExamMutation,
+useUpdateClinicalExamMutation,
+useDeleteClinicalExamMutation,
+useGetLabByIdQuery,
+useGetLabInvestigationsQuery,
+useCreateLabMutation,
+useUpdateLabMutation,
+useDeleteLabMutation,
+useUploadLabFileMutation,
+useGetRadiologyQuery,
+useGetRadiologyByIdQuery,
+useCreateRadiologyMutation,
+useUpdateRadiologyMutation,
+useDeleteRadiologyMutation,
+useUploadRadiologyFileMutation,
+useGetDoctorAssessmentQuery,
+useGetDoctorAssessmentByIdQuery,
+useCreateDoctorAssessmentMutation,
+useUpdateDoctorAssessmentMutation,
+useDeleteDoctorAssessmentMutation,
+useGetFitnessCertificatesQuery,
+useGetFitnessByIdQuery,
+useCreateFitnessMutation,
+useUpdateFitnessMutation,
+useDeleteFitnessMutation,
 } = api;

@@ -31,7 +31,7 @@ import { Picaso_Paymode_Options } from "../utils/constants";
 
 const BillingFormCopy = ({ refetchList }) => {
     const [activeStep, setActiveStep] = useState(1);
-
+    const navigate = useNavigate();
     const nextStep = () => {
         setActiveStep((prev) => prev + 1);
     };
@@ -90,6 +90,7 @@ const BillingFormCopy = ({ refetchList }) => {
     }, [suggestions, selectedBill, billSearch]);
 
     useEffect(() => {
+        if (selectedMedicine) return;
         if (!debouncedMedicine) {
             if (medicineSuggestions.length > 0) setMedicineSuggestions([]);
             return;
@@ -105,7 +106,7 @@ const BillingFormCopy = ({ refetchList }) => {
         } else if (medicineList.length === 0 && medicineSuggestions.length > 0) {
             setMedicineSuggestions([]);
         }
-    }, [medicineList, debouncedMedicine]);
+    }, [medicineList, debouncedMedicine, selectedMedicine]);
 
     const formik = useFormik({
         initialValues: {
@@ -238,6 +239,9 @@ const BillingFormCopy = ({ refetchList }) => {
                     });
 
                 }
+                navigate("/billing", {
+                    state: { goToList: true }
+                });
 
             } catch (err) {
 
@@ -256,6 +260,28 @@ const BillingFormCopy = ({ refetchList }) => {
 
         const header = billData.header;
 
+        // const mappedItems = billData.items?.map((item) => ({
+        //     description: item.ItemName || "",
+        //     qty: Number(item.IssueQty || 0),
+        //     batchNo: item.BatchNo || "",
+        //     hsn: item.HSNCode || "",
+        //     expDate: item.ExpiryDate
+        //         ? new Date(item.ExpiryDate).toISOString().split("T")[0]
+        //         : null,
+        //     saleRate: Number(item.Rate ) || 0,
+        //     discAmt: Number(item.DiscountAmt )|| 0,
+        //     discountPercent: Number(item.DiscountPC || 0),
+        //     cgstPercent: Number(item.CGST || 0),
+        //     sgstPercent: Number(item.SGST || 0),
+        //     cgstAmt: Number(item.CGSTAmount ) || 0,
+        //     sgstAmt: Number(item.SGSTAmount ) || 0,
+        //     taxableAmt: Number(item.TaxableAmount ) || 0,
+        //     total: Number(item.NetAmount ) || 0,
+        //     itemId: item.ItemID,
+        //     stockId: item.StockID,
+        //     stockNo: item.StockNo || "",
+        //     basePrice: Number(item.Baseprice || 0),
+        // })) || [];
         const mappedItems = billData.items?.map((item) => ({
             description: item.ItemName || "",
             qty: Number(item.IssueQty || 0),
@@ -264,27 +290,34 @@ const BillingFormCopy = ({ refetchList }) => {
             expDate: item.ExpiryDate
                 ? new Date(item.ExpiryDate).toISOString().split("T")[0]
                 : null,
-            saleRate: Number(item.Rate || 0),
-            discAmt: Number(item.DiscountAmt || 0),
-            discountPercent: Number(item.DiscountPC || 0),
+
+            saleRate: cleanCurrency(item.Rate),
+            discAmt: cleanCurrency(item.DiscountAmt),
+            discountPercent: cleanCurrency(item.DiscountPC),
+
             cgstPercent: Number(item.CGST || 0),
             sgstPercent: Number(item.SGST || 0),
-            cgstAmt: Number(item.CGSTAmount || 0),
-            sgstAmt: Number(item.SGSTAmount || 0),
-            taxableAmt: Number(item.TaxableAmount || 0),
-            total: Number(item.NetAmount || 0),
+
+            cgstAmt: cleanCurrency(item.CGSTAmount),
+            sgstAmt: cleanCurrency(item.SGSTAmount),
+
+            taxableAmt: cleanCurrency(item.TaxableAmount),
+            total: cleanCurrency(item.NetAmount),
+
             itemId: item.ItemID,
             stockId: item.StockID,
             stockNo: item.StockNo || "",
-            basePrice: Number(item.Baseprice || 0),
+
+            basePrice: cleanCurrency(item.Baseprice),
         })) || [];
+
 
         const firstItem = mappedItems[0];
 
         formik.setValues({
             ...formik.values,
 
-            
+
             billNo: header.BillNo,
             opdBillNo: header.OPDBillNo,
             UHID: header.PicasoID,
@@ -295,12 +328,12 @@ const BillingFormCopy = ({ refetchList }) => {
             FinCategory: header.PatientType,
 
 
-            medicine: firstItem?.description || "",
-            quantity: firstItem?.qty || "",
-            cp: firstItem?.basePrice || "",
-            cgst: firstItem?.cgstPercent || 0,
-            sgst: firstItem?.sgstPercent || 0,
-            discountPercent: firstItem?.discountPercent || 0,
+            medicine: "",
+            quantity: "",
+            cp: "",
+            cgst: 0,
+            sgst: 0,
+            discountPercent: 0,
 
 
             totalQuantity: Number(header.TotalQty || 0),
@@ -314,7 +347,7 @@ const BillingFormCopy = ({ refetchList }) => {
             payMode: header.PayMode || "",
 
 
-            items: []
+            items: mappedItems
         });
 
         setMedicineSearch(firstItem?.description || "");
@@ -347,7 +380,7 @@ const BillingFormCopy = ({ refetchList }) => {
     }, [patientData, selectedBill]);
 
     useEffect(() => {
-        
+
         const updates = {
             cgst: stockDetails?.data[0].CGST || 0,
             sgst: stockDetails?.data[0].SGST || 0,
@@ -385,7 +418,7 @@ const BillingFormCopy = ({ refetchList }) => {
     };
 
     const addItemToList = async () => {
-        
+
         const canAdd =
             formik.values.medicine && formik.values.quantity && formik.values.cp;
         if (!canAdd) {
@@ -406,7 +439,7 @@ const BillingFormCopy = ({ refetchList }) => {
             Number(formik.values.quantity),
             Number(cleanCurrency(formik.values.discountPercent)),
         );
-        
+
         const expDate = stockDetails?.data?.[0]?.ExpiryDate
             ? new Date(stockDetails.data[0].ExpiryDate).toISOString().split("T")[0]
             : null;
@@ -442,6 +475,7 @@ const BillingFormCopy = ({ refetchList }) => {
         formik.setFieldValue("sgst", 0);
         setMedicineSearch("");
         setSelectedMedicine(null);
+        setMedicineSuggestions([]);
     };
     useEffect(() => {
         let totals = formik.values.items.reduce(
@@ -478,46 +512,45 @@ const BillingFormCopy = ({ refetchList }) => {
 
     return (
 
-        
+
         <FormikProvider value={formik}>
 
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
 
-    <div className="max-w-[1400px] mx-auto px-8">
-     <div className="flex justify-between items-center mb-10">
+                <div className="max-w-[1400px] mx-auto px-8">
+                    <div className="flex justify-between items-center mb-10">
 
-  <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
-    <span className="bg-blue-100 p-2 rounded-xl">
-      <CreditCardIcon className="w-6 text-blue-600" />
-    </span>
-    Medicine Billing
-  </h1>
+                        <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+                            <span className="bg-blue-100 p-2 rounded-xl">
+                                <CreditCardIcon className="w-6 text-blue-600" />
+                            </span>
+                            Medicine Billing
+                        </h1>
 
- 
-  <div className="flex gap-2">
-    {[1, 2, 3, 4,5].map((s) => (
-      <div
-        key={s}
-        className={`h-2 w-12 rounded-full ${
-          activeStep >= s ? "bg-sky-600" : "bg-sky-100"
-        }`}
-      />
-    ))}
-  </div>
 
-</div>
+                        <div className="flex gap-2">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                                <div
+                                    key={s}
+                                    className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-sky-100"
+                                        }`}
+                                />
+                            ))}
+                        </div>
 
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-          <div className="flex border-b">
+                    </div>
+
+                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                        <div className="flex border-b">
 
 
                             {[
-  { id: 1, label: "Patient", icon: ClipboardDocumentIcon },
-  { id: 2, label: "Medicine", icon: BeakerIcon },
-  { id: 3, label: "Items", icon: CreditCardIcon },
-  { id: 4, label: "Payment", icon: DocumentCheckIcon },
-  { id: 5, label: "Summary", icon: CheckCircleIcon }, 
-].map((step) => (
+                                { id: 1, label: "Patient", icon: ClipboardDocumentIcon },
+                                { id: 2, label: "Medicine", icon: BeakerIcon },
+                                { id: 3, label: "Items", icon: CreditCardIcon },
+                                { id: 4, label: "Payment", icon: DocumentCheckIcon },
+                                { id: 5, label: "Summary", icon: CheckCircleIcon },
+                            ].map((step) => (
 
                                 <button
                                     key={step.id}
@@ -651,7 +684,7 @@ ${activeStep === step.id
                                             />
 
 
-                                            {medicineSuggestions.length > 0 && (
+                                            {medicineSuggestions.length > 0 && !selectedMedicine && (
                                                 <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                                                     {medicineSuggestions.map((item) => (
                                                         <li
@@ -849,7 +882,8 @@ ${activeStep === step.id
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-right font-bold text-sky-700">
-                                                                            ₹{item.total.toFixed(2)}
+                                                                            {/* ₹{item.total.toFixed(2)} */}
+                                                                            ₹{Number(item.total || 0).toFixed(2)}
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-center">
@@ -958,68 +992,68 @@ ${activeStep === step.id
 
                             )}
                             {activeStep === 5 && (
-  <section className="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                                <section className="bg-blue-50 p-6 rounded-xl border border-blue-200">
 
-    <h3 className="text-sky-600 font-semibold mb-4">
-      Final Summary
-    </h3>
+                                    <h3 className="text-sky-600 font-semibold mb-4">
+                                        Final Summary
+                                    </h3>
 
-    <div className="grid md:grid-cols-2 gap-4 text-sm">
+                                    <div className="grid md:grid-cols-2 gap-4 text-sm">
 
-      <p><b>Name:</b> {formik.values.Name}</p>
-      <p><b>UHID:</b> {formik.values.UHID}</p>
-      <p><b>Mobile:</b> {formik.values.Mobile}</p>
-      <p><b>Category:</b> {formik.values.FinCategory}</p>
+                                        <p><b>Name:</b> {formik.values.Name}</p>
+                                        <p><b>UHID:</b> {formik.values.UHID}</p>
+                                        <p><b>Mobile:</b> {formik.values.Mobile}</p>
+                                        <p><b>Category:</b> {formik.values.FinCategory}</p>
 
-      <p><b>Total Items:</b> {formik.values.items.length}</p>
-      <p><b>Total Qty:</b> {formik.values.totalQuantity}</p>
+                                        <p><b>Total Items:</b> {formik.values.items.length}</p>
+                                        <p><b>Total Qty:</b> {formik.values.totalQuantity}</p>
 
-      <p><b>Total Amount:</b> ₹ {formik.values.totalAmount}</p>
-      <p><b>Discount:</b> ₹ {formik.values.totalDiscount}</p>
+                                        <p><b>Total Amount:</b> ₹ {formik.values.totalAmount}</p>
+                                        <p><b>Discount:</b> ₹ {formik.values.totalDiscount}</p>
 
-      <p><b>GST:</b> ₹ {Number(formik.values.cgstAmount) + Number(formik.values.sgstAmount)}</p>
-      <p><b>Paid:</b> ₹ {formik.values.paidAmount}</p>
+                                        <p><b>GST:</b> ₹ {Number(formik.values.cgstAmount) + Number(formik.values.sgstAmount)}</p>
+                                        <p><b>Paid:</b> ₹ {formik.values.paidAmount}</p>
 
-      <p><b>Due:</b> ₹ {formik.values.dueAmount}</p>
-      <p><b>Payment Mode:</b> {formik.values.payMode}</p>
+                                        <p><b>Due:</b> ₹ {formik.values.dueAmount}</p>
+                                        <p><b>Payment Mode:</b> {formik.values.payMode}</p>
 
-    </div>
+                                    </div>
 
-  </section>
-)}
-               <div className="flex justify-between items-center pt-6 border-t">
-
-  
-  <div className="flex gap-3">
-     {activeStep > 1 && (
-      <Button type="button" variant="gray" onClick={prevStep}>
-        Back
-      </Button>
-    )}
+                                </section>
+                            )}
+                            <div className="flex justify-between items-center pt-6 border-t">
 
 
-    <Button type="button" variant="gray" onClick={formik.handleReset}>
-      <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
-    </Button>
-
-   
-  </div>
-
-  
-  <div>
-    {activeStep < 5 ? (
-      <Button type="button" variant="sky" onClick={nextStep}>
-        Continue
-      </Button>
-    ) : (
-      <Button type="button" variant="sky" onClick={formik.handleSubmit}>
-        Save Bill
-      </Button>
-    )}
-  </div>
+                                <div className="flex gap-3">
+                                    {activeStep > 1 && (
+                                        <Button type="button" variant="gray" onClick={prevStep}>
+                                            Back
+                                        </Button>
+                                    )}
 
 
-</div>
+                                    <Button type="button" variant="gray" onClick={formik.handleReset}>
+                                        <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
+                                    </Button>
+
+
+                                </div>
+
+
+                                <div>
+                                    {activeStep < 5 ? (
+                                        <Button type="button" variant="sky" onClick={nextStep}>
+                                            Continue
+                                        </Button>
+                                    ) : (
+                                        <Button type="button" variant="sky" onClick={formik.handleSubmit}>
+                                            Save Bill
+                                        </Button>
+                                    )}
+                                </div>
+
+
+                            </div>
                         </form>
 
                     </div>

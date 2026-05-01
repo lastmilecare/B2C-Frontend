@@ -156,6 +156,7 @@ const PrescriptionFormCopy = () => {
   }, [suggestions, selectedBill, billSearch]);
 
   useEffect(() => {
+    if (selectedMedicine) return;
     if (!debouncedMedicine) {
       if (medicineSuggestions.length > 0) setMedicineSuggestions([]);
       return;
@@ -171,7 +172,7 @@ const PrescriptionFormCopy = () => {
     } else if (medicineList.length === 0 && medicineSuggestions.length > 0) {
       setMedicineSuggestions([]);
     }
-  }, [medicineList, debouncedMedicine]);
+  }, [medicineList, debouncedMedicine, selectedMedicine]);
 
   const buildPrescriptionPayload = (values, prescriptionList) => {
     const addedDate = formatISO(new Date());
@@ -797,7 +798,7 @@ ${activeStep === step.id
                     />
 
                    
-                    {medicineSuggestions.length > 0 && (
+                    {medicineSuggestions.length > 0 && !selectedMedicine && (
                       <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                         {medicineSuggestions.map((item) => (
                           <li

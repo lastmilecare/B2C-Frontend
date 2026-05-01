@@ -17,6 +17,7 @@ import { healthAlerts } from "../utils/healthSwal";
 import { useParams, useNavigate } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { useLazySearchDiseasesQuery } from "../redux/apiSlice";
+
 const PatientRegistrationOhc = () => {
     const [searchDiseases] = useLazySearchDiseasesQuery();
     const { id } = useParams();
@@ -65,8 +66,8 @@ const PatientRegistrationOhc = () => {
             name: "",
             dob: "",
             age: "",
-            // CO: "",
-            // relationship: "",
+            CO: "",
+            relationship: "",
             gender: "",
             contactNumber: "",
             residentialstatus: "",
@@ -74,7 +75,7 @@ const PatientRegistrationOhc = () => {
             country: "",
             localAddressState: "",
             localAddressDistrict: "",
-            // occupation: "",
+            occupation: "",
             healthCardNumber: "",
             localAddress: "",
             pin: "",
@@ -85,11 +86,7 @@ const PatientRegistrationOhc = () => {
             creditamount: "",
             idProof_number: "",
             idProof_name: "",
-            Candidate_id: "",
-            Email: "",
-            department: "",
-            JoiningLocation: "",
-            RecruiterName: "",
+            employeeId: "",
         },
         enableReinitialize: true,
         validationSchema: Yup.object({
@@ -102,11 +99,9 @@ const PatientRegistrationOhc = () => {
             fincat: Yup.string().required("Fin Category is required"),
             country: Yup.string().required("Country is required"),
             localAddressState: Yup.string().required("State is required"),
-            // occupation: Yup.string().required("Occupation is required"),
-            // CO: Yup.string().required("Co is required")
-            Emial: Yup.string().required("Email is required"),
-            department: Yup.string().required("Department is required"),
-            
+            occupation: Yup.string().required("Occupation is required"),
+            CO: Yup.string().required("Co is required"),
+            employeeId: Yup.string().required("EmployeeId is required")
         }),
 
         onSubmit: async (values) => {
@@ -120,12 +115,12 @@ const PatientRegistrationOhc = () => {
                 if (isEdit) {
                     await updatePatient({ id, body: payload }).unwrap();
                     healthAlerts.success("Patient Updated Successfully", "Patient Updated");
-                    navigate("/PatientRegistrationOhc", { state: { goToList: true } });
+                    navigate("/patient-list");
                 } else {
                     await createPatient(payload).unwrap();
                     healthAlerts.success("Patient Data Saved Successfully", "Patient Saved");
                     handleReset();
-                    navigate("/PatientRegistrationOhc", { state: { goToList: true } });
+                    navigate("/patient-list");
                 }
             } catch (err) {
                 error.message("Submit error:", err);
@@ -169,8 +164,8 @@ const PatientRegistrationOhc = () => {
                     name: p.name || "",
                     dob: p.dateOfBirthOrAge?.split("T")[0] || "",
                     age: p.age ? `${p.age}y ${p.imonth || 0}m ${p.idays || 0}d` : "",
-                    // CO: p.co || "",
-                    // relationship: p.relationship || "",
+                    CO: p.co || "",
+                    relationship: p.relationship || "",
                     gender: p.gender || "",
                     contactNumber: p.contactNumber || "",
                     residentialstatus: p.residentialstatus || "",
@@ -178,7 +173,7 @@ const PatientRegistrationOhc = () => {
                     country: String(p.country_id || ""),
                     localAddressState: String(p.state_id || ""),
                     localAddressDistrict: String(p.district_id || ""),
-                    // occupation: p.occupation || "",
+                    occupation: p.occupation || "",
                     healthCardNumber: p.healthCardNumber || "",
                     localAddress: p.localAddress || "",
                     pin: p.pin || "",
@@ -189,16 +184,13 @@ const PatientRegistrationOhc = () => {
                     creditamount: p.creditamount || 0,
                     idProof_number: p.idProof_number || "",
                     idProof_name: p.idProof_name || "",
-                    Email: p.Email || "",
-                    department: p.department || "",
-                    JoiningLocation: p.JoiningLocation || "",
-                    RecruiterName: p.RecruiterName || "",
+                    employeeId: p.employeeId || "",
                 });
             };
 
 
             loadDiseases();
-            // Update local state to trigger address dropdowns
+            
             setCountryId(p.country_id || "");
             setStateId(p.state_id || "");
         }
@@ -236,15 +228,12 @@ const PatientRegistrationOhc = () => {
             state_id: Number(values.localAddressState),
             district_id: Number(values.localAddressDistrict),
             category: values.fincat,
-            // occupation: values.occupation,
+            occupation: values.occupation,
             residentialstatus: values.residentialstatus,
             title: values.title,
-            // co: values.CO,
-            // relationship: values.relationship
-            Email: values.Email,
-            department: values.department,
-            JoiningLocation: values.JoiningLocation,
-            RecruiterName: values.RecruiterName,
+            co: values.CO,
+            relationship: values.relationship,
+            employeeId: values.employeeId
         };
 
         if (!isEdit) {
@@ -292,6 +281,7 @@ const PatientRegistrationOhc = () => {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
             <div className="max-w-6xl mx-auto">
 
+               
                 <div className="flex justify-between items-center mb-10">
                     <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
                         <span className="bg-blue-100 p-2 rounded-xl">
@@ -328,7 +318,7 @@ const PatientRegistrationOhc = () => {
                             <button
                                 key={step.id}
                                 type="button"
-                                // disabled
+                                disabled
                                 onClick={() => setActiveStep(step.id)}
                                 className={`flex-1 py-4 flex items-center justify-center gap-2
 ${activeStep === step.id
@@ -379,12 +369,6 @@ ${activeStep === step.id
                                             required
                                             error={formik.touched.name && formik.errors.name}
                                         />
-                                        <Input
-                                            {...formik.getFieldProps("Candidate_id")}
-                                            label="Employee Id"
-                                            required
-                                            error={formik.touched.name && formik.errors.name}
-                                        />
 
                                         <Input
                                             label="Date of Birth"
@@ -401,18 +385,18 @@ ${activeStep === step.id
                                             className="bg-sky-50 text-gray-600 cursor-not-allowed"
                                         />
 
-                                        {/* <Input
+                                        <Input
                                             {...formik.getFieldProps("CO")}
                                             label="C/O"
                                             required
-                                            error={formik.touched.CO && formik.errors.CO} /> */}
+                                            error={formik.touched.CO && formik.errors.CO} />
 
-                                        {/* <Select {...formik.getFieldProps("relationship")} label="Relationship">
+                                        <Select {...formik.getFieldProps("relationship")} label="Relationship">
                                             <option value="">Select</option>
                                             {RELATIONSHIP_OPTIONS.map((relation) => (
                                                 <option key={relation}>{relation}</option>
                                             ))}
-                                        </Select> */}
+                                        </Select>
 
                                         <Select
                                             {...formik.getFieldProps("gender")}
@@ -426,11 +410,6 @@ ${activeStep === step.id
                                             <option>Other</option>
                                         </Select>
                                         <Input
-                                            {...formik.getFieldProps("Emial")}
-                                            label="Email"
-                                            required
-                                            error={formik.touched.Email && formik.errors.Email} />
-                                        <Input
                                             label="Contact Number"
                                             required
                                             type="tel"
@@ -442,6 +421,12 @@ ${activeStep === step.id
                                                 formik.setFieldValue("contactNumber", onlyNumbers);
                                             }}
                                             error={formik.touched.contactNumber && formik.errors.contactNumber}
+                                        />
+                                        <Input
+                                            {...formik.getFieldProps("employeeId")}
+                                            label="Employee Id"
+                                            required
+                                            error={formik.touched.employeeId && formik.errors.employeeId}
                                         />
 
                                     </div>
@@ -523,18 +508,16 @@ ${activeStep === step.id
                                             ))}
                                         </Select>
 
-                                        {/* <Select {...formik.getFieldProps("occupation")} label="Occupation" error={formik.touched.occupation && formik.errors.occupation}>
+                                        <Select {...formik.getFieldProps("occupation")} label="Occupation" error={formik.touched.occupation && formik.errors.occupation}>
                                             <option value="">Select</option>
                                             {OCCUPATION_OPTIONS.map((e) => (
                                                 <option key={e}>{e}</option>
                                             ))}
-                                        </Select> */}
-                                        
+                                        </Select>
 
                                         <Input {...formik.getFieldProps("healthCardNumber")} label="Health Card Number" />
                                         <Input {...formik.getFieldProps("localAddress")} label="Local Address" />
                                         <Input {...formik.getFieldProps("pin")} label="Pin Code" />
-                                        <Input {...formik.getFieldProps("JoiningLocation")} label="Joining Location" />
                                     </div>
                                 </section>
                             )}
@@ -588,8 +571,6 @@ ${activeStep === step.id
                                                 error={formik.touched.idProof_number && formik.errors.idProof_number}
                                             />
                                         )}
-                                        <Input {...formik.getFieldProps("department")} label="Department / Job Role Applied" />
-                                        <Input {...formik.getFieldProps("RecruiterName")} label="HR / Recruiter Name" />
                                     </div>
                                 </section>
                             )}

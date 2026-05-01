@@ -88,7 +88,7 @@
     const SupplierOptions = Supplier
       ? Supplier.map((t) => ({ value: t.ID, label: t.name }))
       : [];
-
+    const [selectedMedicine, setSelectedMedicine] = useState(null);
 
     const formik = useFormik({
       initialValues: {
@@ -269,22 +269,22 @@
 
     }, [medicineTypeOptions, formik.values.ItemTypeID]);
     useEffect(() => {
-
+      if (selectedMedicine) return;
       if (!debouncedMedicine || debouncedMedicine.length < 2) {
         setMedicineSuggestions([]);
         return;
       }
-      if (debouncedMedicine === formik.values.ItemName && formik.values.ItemID !== 0) {
-        setMedicineSuggestions([]);
-        return;
-      }
+      // if (debouncedMedicine === formik.values.ItemName && formik.values.ItemID !== 0) {
+      //   setMedicineSuggestions([]);
+      //   return;
+      // }
 
       if (medicineList && medicineList.length > 0) {
         setMedicineSuggestions(medicineList);
       } else {
         setMedicineSuggestions([]);
       }
-    }, [medicineList, debouncedMedicine, formik.values.ItemName, formik.values.ItemID]);
+    }, [medicineList, debouncedMedicine, selectedMedicine ]);
 
     
     useEffect(() => {
@@ -380,6 +380,7 @@
         "SGST",
       ].forEach((f) => formik.setFieldValue(f, ""));
       setMedicineSearch("");
+      setSelectedMedicine(null);
     };
 
     const totals = formik.values.items?.reduce(
@@ -490,6 +491,7 @@
                     disabled={isEditMode}
                     error={formik.touched.InvoiceDate && formik.errors.InvoiceDate}
                     {...formik.getFieldProps("InvoiceDate")}
+                    onClick={(e) => e.target.showPicker && e.target.showPicker()}
                   />
                   <Input
                     label="Invoice No"
@@ -540,18 +542,19 @@
                       disabled={isEditMode}
                       onChange={(e) => {
                         setMedicineSearch(e.target.value);
+                        setSelectedMedicine(null);
                         formik.setFieldValue("ItemName", e.target.value);
                       }}
                       autoComplete="off"
                     />
                     
-                    {!isEditMode && medicineSuggestions.length > 0 && (
+                    {!isEditMode && medicineSuggestions.length > 0 && !selectedMedicine && (
                       <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                         {medicineSuggestions.map((item) => (
                           <li
                             key={item.id}
                             onClick={() => {
-
+                              setSelectedMedicine(item);
                               setMedicineSearch(item.descriptions);
                               formik.setFieldValue("ItemName", item.descriptions);
                               formik.setFieldValue("ItemID", item.id);

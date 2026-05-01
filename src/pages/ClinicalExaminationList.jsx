@@ -2,44 +2,33 @@ import React, { useState } from "react";
 import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
 import { useNavigate } from "react-router-dom";
-
+import {
+  useGetClinicalExamQuery,
+  useDeleteClinicalExamMutation
+} from "../redux/apiSlice";
 const ClinicalExaminationList = () => {
   const navigate = useNavigate();
-
-  
-  const [records] = useState([
-    {
-      id: 1,
-      patientName: "Ravi Kumar",
-      generalAppearance: "Normal",
-      vision: "6/6",
-      colorBlindness: "No",
-      ear: "Normal",
-      nose: "Clear",
-      throat: "Normal",
-      cardiovascular: "Normal",
-      respiratory: "Normal",
-      skin: "Healthy",
-    },
-    {
-      id: 2,
-      patientName: "Amit Singh",
-      generalAppearance: "Weak",
-      vision: "6/9",
-      colorBlindness: "Yes",
-      ear: "Infection",
-      nose: "Blocked",
-      throat: "Irritated",
-      cardiovascular: "Mild Issue",
-      respiratory: "Normal",
-      skin: "Dry",
-    },
-  ]);
-
-  
+const { data = [], isLoading } = useGetClinicalExamQuery();
+const [deleteClinicalExam] = useDeleteClinicalExamMutation();
+const records = data?.map((item) => ({
+  id: item.id,
+  patientName: item.name,
+  date: item.created_at,
+  generalAppearance: item.general_appearance,
+  vision: item.eye_examination,
+  colorBlindness: "-", 
+  ear: item.ear,
+  nose: item.nose,
+  throat: item.throat,
+  cardiovascular: item.cardiovascular_system,
+  respiratory: item.respiratory_system,
+  skin: item.skin_condition,
+}));
   const [tempFilters, setTempFilters] = useState({
     patientName: "",
     colorBlindness: "",
+    fromDate: "",
+    toDate: "",
   });
 
   const [filters, setFilters] = useState({});
@@ -61,23 +50,29 @@ const ClinicalExaminationList = () => {
     const reset = {
       patientName: "",
       colorBlindness: "",
+      fromDate: "",
+      toDate: "",
     };
     setTempFilters(reset);
     setFilters({});
   };
 
- 
+
   const filteredData = records.filter((item) => {
-    const { patientName, colorBlindness } = filters;
+    const { patientName, colorBlindness, fromDate, toDate } = filters;
 
     return (
       (!patientName ||
         item.patientName.toLowerCase().includes(patientName.toLowerCase())) &&
-      (!colorBlindness || item.colorBlindness === colorBlindness)
+
+      (!colorBlindness || item.colorBlindness === colorBlindness) &&
+
+      (!fromDate || item.date >= fromDate) &&
+      (!toDate || item.date <= toDate)
     );
   });
 
- 
+  
   const filtersConfig = [
     {
       label: "Patient Name",
@@ -93,13 +88,27 @@ const ClinicalExaminationList = () => {
         { label: "Yes", value: "Yes" },
       ],
     },
+    {
+      label: "Date Form",
+      name: "fromDate",
+      type: "date",
+    },
+    {
+      label: "Date To",
+      name: "toDate",
+      type: "date",
+    },
   ];
 
- 
+  
   const columns = [
     {
       name: "Patient",
       selector: (row) => row.patientName,
+    },
+    {
+      name: "Date",
+      selector: (row) => row.date,
     },
     {
       name: "General",
@@ -138,6 +147,7 @@ const ClinicalExaminationList = () => {
         Clinical Examination List
       </h1>
 
+      
       <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
@@ -159,12 +169,19 @@ const ClinicalExaminationList = () => {
         isLoading={false}
 
         onEdit={(row) => {
-          navigate(`/clinical-exam/${row.id}`);
-        }}
+  navigate(`/clinical-examination/${row.id}`, {
+    state: { editData: row },
+  });
+}}
 
-        onDelete={(row) => {
-          console.log("Delete", row);
-        }}
+        onDelete={async (row) => {
+  try {
+    await deleteClinicalExam(row.id).unwrap();
+    healthAlerts.success("Deleted Successfully");
+  } catch (err) {
+    healthAlerts.error("Delete Failed");
+  }
+}}
       />
 
     </div>

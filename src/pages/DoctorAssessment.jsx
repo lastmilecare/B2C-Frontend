@@ -6,66 +6,35 @@ import {
   ClipboardDocumentIcon,
   DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
-import useDebounce from "../hooks/useDebounce";
+
 import {
-  useSearchOpdBillNoQuery,
-  useGetOpdBillByIdQuery,
+  useCreateDoctorAssessmentMutation,
+  useUpdateDoctorAssessmentMutation,
 } from "../redux/apiSlice";
-import { skipToken } from "@reduxjs/toolkit/query";
+
 import { healthAlerts } from "../utils/healthSwal";
 import { Input, Select, Button } from "../components/FormControls";
 import { useNavigate } from "react-router-dom";
-
+import PatientSelector from "../components/common/PatientSelector";
+import { useParams } from "react-router-dom";
+import { useGetDoctorAssessmentByIdQuery } from "../redux/apiSlice";
 const DoctorAssessment = () => {
   const [activeStep, setActiveStep] = useState(1);
-  const [billSearch, setBillSearch] = useState("");
-  const [selectedBill, setSelectedBill] = useState("");
-  const [suggestionsList, setSuggestionsList] = useState([]);
   const navigate = useNavigate();
-  const debouncedBill = useDebounce(billSearch, 500);
-  const populatedRef = useRef("");
-
-  const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedBill, {
-    skip: debouncedBill.length < 1,
-  });
-
-  const { data: patientData } = useGetOpdBillByIdQuery(
-    selectedBill ? String(selectedBill) : skipToken
-  );
-
- 
-  useEffect(() => {
-    if (!selectedBill && billSearch.length >= 1) {
-      setSuggestionsList(suggestions);
-    }
-  }, [suggestions, selectedBill, billSearch]);
-
-  
-  useEffect(() => {
-    if (!patientData) return;
-    if (populatedRef.current === selectedBill) return;
-
-    populatedRef.current = selectedBill;
-
-    formik.setValues({
-      ...formik.values,
-      billno: selectedBill,
-      Name: patientData.driverDetails?.[0]?.name || "",
-      UHID: patientData.PicasoNo || "",
-      Gender: patientData.driverDetails?.[0]?.gender || "",
-      Mobile: patientData.Mobile || "",
-      Age: patientData.driverDetails?.[0]?.age || "",
-    });
-  }, [patientData]);
+  const [createDoctorAssessment] = useCreateDoctorAssessmentMutation();
+const [updateDoctorAssessment] = useUpdateDoctorAssessmentMutation();
+const { id } = useParams();
+ const { data: editData } = useGetDoctorAssessmentByIdQuery(id, {
+  skip: !id,
+});
 
   const formik = useFormik({
     initialValues: {
-      billno: "",
+       EmployeeId: "",
+      patient_id: "",
       Name: "",
-      UHID: "",
-      Age: "",
       Gender: "",
-      Mobile: "",
+      Age: "",
 
       healthStatus: "",
       fitness: "",
@@ -74,18 +43,70 @@ const DoctorAssessment = () => {
       followUp: "",
       comments: "",
     },
-    onSubmit: (values) => {
-      console.log("FINAL DATA 👉", values);
-      healthAlerts.success("Doctor Assessment Saved", "Success");
-      navigate("/doctor-assessment", {
+   onSubmit: async (values) => {
+  try {
+    const payload = {
+      patient_id: values.patient_id,
+      name: values.Name,
+      gender: values.Gender,
+      age: Number(values.Age) || null,
+      employee_id: values.EmployeeId,
+
+      overall_health_status: values.healthStatus,
+      fitness_category: values.fitness,
+
+      restrictions: values.restrictions,
+      recommendations: values.recommendations,
+
+      follow_up_required: values.followUp === "true",
+
+      comments: values.comments,
+    };
+
+    console.log("FINAL PAYLOAD 👉", payload);
+
+    if (id) {
+      
+      await updateDoctorAssessment({ id, body: payload }).unwrap();
+      healthAlerts.success("Updated Successfully");
+    } else {
+      
+      await createDoctorAssessment(payload).unwrap();
+      healthAlerts.success("Saved Successfully");
+    }
+
+    navigate("/doctor-assessment", {
         state: { goToList: true }
       });
-    },
+
+  } catch (err) {
+    console.error(err);
+    healthAlerts.error("Save Failed");
+  }
+},
   });
+  useEffect(() => {
+  if (editData) {
+    formik.setValues({
+      EmployeeId: editData.employee_id || "",
+      patient_id: editData.patient_id || "",
+      Name: editData.name || "",
+      Gender: editData.gender || "",
+      Age: editData.age || "",
+
+      healthStatus: editData.overall_health_status || "",
+      fitness: editData.fitness_category || "",
+      restrictions: editData.restrictions || "",
+      recommendations: editData.recommendations || "",
+      followUp: editData.follow_up_required ? "true" : "false",
+      comments: editData.comments || "",
+    });
+  }
+}, [editData]);
 
   const nextStep = () => {
-    if (activeStep === 1 && !formik.values.billno) {
-      healthAlerts.warning("Please select Bill No");
+    if (activeStep === 1 && !formik.values.Name) {
+      healthAlerts.warning("Please Fill Name");
       return;
     }
     setActiveStep((p) => p + 1);
@@ -140,58 +161,12 @@ const DoctorAssessment = () => {
           <form className="p-9 space-y-8">
 
             
-            {activeStep === 1 && (
-              <section>
-                <h3 className="text-lg font-semibold text-sky-700 mb-4 flex gap-2">
-                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
-                  Patient Details
-                </h3>
-
-                <div className="grid md:grid-cols-3 gap-6 relative">
-
-                  
-                  <div className="relative w-full">
-                    <Input
-                      label="Bill No"
-                      value={billSearch}
-                      onChange={(e)=>{
-                        const val=e.target.value.replace(/\D/g,"");
-                        setBillSearch(val);
-                        setSelectedBill("");
-                        formik.setFieldValue("billno","");
-                        setSuggestionsList([]);
-                      }}
-                    />
-
-                    {suggestionsList.length > 0 && (
-                      <ul className="absolute z-50 bg-white border rounded-lg shadow-lg w-full mt-1 max-h-48 overflow-auto">
-                        {suggestionsList.map((item)=>(
-                          <li
-                            key={item.ID}
-                            onClick={()=>{
-                              setSelectedBill(item.ID);
-                              setBillSearch(item.ID);
-                              formik.setFieldValue("billno", item.ID);
-                              setSuggestionsList([]);
-                            }}
-                            className="px-4 py-2 hover:bg-sky-100 cursor-pointer text-sm"
-                          >
-                            {item.ID}
-                          </li>
-                        ))}
-                      </ul>
+             {activeStep === 1 && (
+          <section>
+              <PatientSelector formik={formik} />
+                      
+                      </section>
                     )}
-                  </div>
-
-                  <Input label="Name" {...formik.getFieldProps("Name")} readOnly className="bg-sky-50"/>
-                  <Input label="UHID" {...formik.getFieldProps("UHID")} readOnly className="bg-sky-50"/>
-                  <Input label="Age" {...formik.getFieldProps("Age")} readOnly className="bg-sky-50"/>
-                  <Input label="Gender" {...formik.getFieldProps("Gender")} readOnly className="bg-sky-50"/>
-                  <Input label="Mobile" {...formik.getFieldProps("Mobile")} readOnly className="bg-sky-50"/>
-
-                </div>
-              </section>
-            )}
 
            
             {activeStep === 2 && (
@@ -202,15 +177,15 @@ const DoctorAssessment = () => {
 
                 <div className="grid md:grid-cols-3 gap-6">
                   <Select
-                    label="Fitness Category"
-                    value={formik.values.fitness}
-                    onChange={(e)=>formik.setFieldValue("fitness",e.target.value)}
-                  >
-                    <option value="">Select</option>
-                    <option>Fit</option>
-                    <option>Fit with Restrictions</option>
-                    <option>Unfit</option>
-                  </Select>
+  label="Fitness Category"
+  value={formik.values.fitness}
+  onChange={(e)=>formik.setFieldValue("fitness",e.target.value)}
+>
+  <option value="">Select</option>
+  <option value="FIT">Fit</option>
+  <option value="FIT_WITH_RESTRICTIONS">Fit with Restrictions</option>
+  <option value="UNFIT">Unfit</option>
+</Select>
 
                   <Input label="Health Status" {...formik.getFieldProps("healthStatus")} />
                   <Input label="Restrictions" {...formik.getFieldProps("restrictions")} />
@@ -225,14 +200,14 @@ const DoctorAssessment = () => {
                   <Input label="Recommendations" {...formik.getFieldProps("recommendations")} />
 
                   <Select
-                    label="Follow Up Required"
-                    value={formik.values.followUp}
-                    onChange={(e)=>formik.setFieldValue("followUp",e.target.value)}
-                  >
-                    <option value="">Select</option>
-                    <option>Yes</option>
-                    <option>No</option>
-                  </Select>
+  label="Follow Up Required"
+  value={formik.values.followUp}
+  onChange={(e)=>formik.setFieldValue("followUp",e.target.value)}
+>
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</Select>
                 </div>
 
                 <Input label="Comments" {...formik.getFieldProps("comments")} />
@@ -271,8 +246,8 @@ const DoctorAssessment = () => {
                 </Button>
               ) : (
                 <Button type="button" variant="sky" onClick={formik.handleSubmit}>
-                  Save
-                </Button>
+  {id ? "Update" : "Save"}
+</Button>
               )}
 
             </div>
