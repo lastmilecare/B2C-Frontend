@@ -2,49 +2,18 @@ import React, { useState } from "react";
 import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
 import { useNavigate } from "react-router-dom";
-
+import {
+  useGetFitnessCertificatesQuery,
+  useDeleteFitnessMutation,
+} from "../redux/apiSlice";
 const FitnessCertificateList = () => {
   const navigate = useNavigate();
-  const [records] = useState([
-    {
-      id: 1,
-      billno: "4001",
-      patientName: "Ravi Kumar",
-      uhid: "UH123",
-      certNo: "CERT-1001",
-      issueDate: "2026-04-10",
-      validity: "6 Months",
-      fitnessStatus: "Fit",
-      doctor: "Dr. Sharma",
-    },
-    {
-      id: 2,
-      billno: "4002",
-      patientName: "Amit Singh",
-      uhid: "UH124",
-      certNo: "CERT-1002",
-      issueDate: "2026-04-12",
-      validity: "3 Months",
-      fitnessStatus: "Unfit",
-      doctor: "Dr. Gupta",
-    },
-    {
-      id: 3,
-      billno: "4003",
-      patientName: "Neha Verma",
-      uhid: "UH125",
-      certNo: "CERT-1003",
-      issueDate: "2026-04-15",
-      validity: "1 Year",
-      fitnessStatus: "Fit",
-      doctor: "Dr. Khan",
-    },
-  ]);
+  const { data: records = [], isLoading } = useGetFitnessCertificatesQuery();
+const [deleteFitness] = useDeleteFitnessMutation();
 
   const [tempFilters, setTempFilters] = useState({
     patientName: "",
-    billno: "",
-    uhid: "",
+    
     fitnessStatus: "",
     doctor: "",
     fromDate: "",
@@ -69,8 +38,7 @@ const FitnessCertificateList = () => {
   const handleResetFilters = () => {
     const reset = {
       patientName: "",
-      billno: "",
-      uhid: "",
+      
       fitnessStatus: "",
       doctor: "",
       fromDate: "",
@@ -79,36 +47,31 @@ const FitnessCertificateList = () => {
     setTempFilters(reset);
     setFilters({});
   };
+const formattedData = records.map((item) => ({
+  id: item.id,
+  patientName: item.name,
+  certNo: item.certificate_number,
+  issueDate: item.issue_date?.split("T")[0],
+  validity: item.valid_till,
+  fitnessStatus: item.fitness_status,
+  doctor: item.doctor_signature,
+}));
+  const filteredData = formattedData.filter((item) => {
+  const { patientName, fitnessStatus, doctor, fromDate, toDate } = filters;
 
-  const filteredData = records.filter((item) => {
-    const {
-      patientName,
-      billno,
-      uhid,
-      fitnessStatus,
-      doctor,
-      fromDate,
-      toDate,
-    } = filters;
+  return (
+    (!patientName ||
+      item.patientName?.toLowerCase().includes(patientName.toLowerCase())) &&
 
-    return (
-      (!patientName ||
-        item.patientName.toLowerCase().includes(patientName.toLowerCase())) &&
+    (!fitnessStatus || item.fitnessStatus === fitnessStatus) &&
 
-      (!billno || item.billno.includes(billno)) &&
+    (!doctor ||
+      item.doctor?.toLowerCase().includes(doctor.toLowerCase())) &&
 
-      (!uhid ||
-        item.uhid.toLowerCase().includes(uhid.toLowerCase())) &&
-
-      (!fitnessStatus || item.fitnessStatus === fitnessStatus) &&
-
-      (!doctor ||
-        item.doctor.toLowerCase().includes(doctor.toLowerCase())) &&
-
-      (!fromDate || item.issueDate >= fromDate) &&
-      (!toDate || item.issueDate <= toDate)
-    );
-  });
+    (!fromDate || item.issueDate >= fromDate) &&
+    (!toDate || item.issueDate <= toDate)
+  );
+});
 
   
   const filtersConfig = [
@@ -117,24 +80,16 @@ const FitnessCertificateList = () => {
       name: "patientName",
       type: "text",
     },
-    {
-      label: "Bill No",
-      name: "billno",
-      type: "text",
-    },
-    {
-      label: "UHID",
-      name: "uhid",
-      type: "text",
-    },
+    
     {
       label: "Fitness Status",
       name: "fitnessStatus",
       type: "select",
       options: [
-        { label: "Fit", value: "Fit" },
-        { label: "Unfit", value: "Unfit" },
-      ],
+  { label: "Fit", value: "FIT" },
+  { label: "Fit with Restrictions", value: "FIT_WITH_RESTRICTIONS" },
+  { label: "Unfit", value: "UNFIT" },
+]
     },
     {
       label: "Doctor",
@@ -162,14 +117,7 @@ const FitnessCertificateList = () => {
       name: "Patient",
       selector: (row) => row.patientName,
     },
-    {
-      name: "UHID",
-      selector: (row) => row.uhid,
-    },
-    {
-      name: "Bill No",
-      selector: (row) => row.billno,
-    },
+    
     {
       name: "Issue Date",
       selector: (row) => row.issueDate,
@@ -213,15 +161,20 @@ const FitnessCertificateList = () => {
         perPage={10}
         onPageChange={() => {}}
         onPerPageChange={() => {}}
-        isLoading={false}
+        isLoading={isLoading}
 
         onEdit={(row) => {
           navigate(`/fitness-certificate/${row.id}`);
         }}
 
-        onDelete={(row) => {
-          console.log("Delete", row);
-        }}
+        onDelete={async (row) => {
+  try {
+    await deleteFitness(row.id).unwrap();
+    healthAlerts.success("Deleted Successfully");
+  } catch {
+    healthAlerts.error("Delete Failed");
+  }
+}}
       />
 
     </div>

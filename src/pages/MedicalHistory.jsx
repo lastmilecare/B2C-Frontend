@@ -13,8 +13,7 @@ import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { healthAlerts } from "../utils/healthSwal";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  useSearchEmployeeQuery,
-  useGetPatientByEmployeeIdQuery,
+ 
   useCreateMedicalHistoryMutation,
   useUpdateMedicalHistoryMutation,
   useGetMedicalHistoryByIdQuery,
@@ -322,7 +321,7 @@ const MedicalHistory = () => {
                     <p><b>Past Illness:</b> {formik.values.past_illness}</p>
                     <p><b>Medications:</b> {formik.values.current_medications}</p>
                     <p><b>Allergies:</b> {formik.values.allergies}</p>
-                    <p><b>Smoking:</b> {formik.values.smoking_use}</p>
+                   
                   </div>
                 </section>
               )}

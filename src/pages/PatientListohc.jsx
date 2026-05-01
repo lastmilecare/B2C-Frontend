@@ -299,7 +299,7 @@ title="Patient List"
  isLoading={isLoading}
 
  onEdit={(row)=>{
-   navigate(`/patient-registration/${row.id}`)
+   navigate(`/PatientRegistrationOhc/${row.id}`)
  }}
 
  onDelete={(row)=>{

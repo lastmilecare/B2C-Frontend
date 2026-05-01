@@ -115,12 +115,16 @@ const PatientRegistrationOhc = () => {
                 if (isEdit) {
                     await updatePatient({ id, body: payload }).unwrap();
                     healthAlerts.success("Patient Updated Successfully", "Patient Updated");
-                    navigate("/patient-list");
+                         navigate("/PatientRegistrationOhc", {
+        state: { goToList: true }
+      });
                 } else {
                     await createPatient(payload).unwrap();
                     healthAlerts.success("Patient Data Saved Successfully", "Patient Saved");
                     handleReset();
-                    navigate("/patient-list");
+                   navigate("/PatientRegistrationOhc", {
+        state: { goToList: true }
+      });
                 }
             } catch (err) {
                 error.message("Submit error:", err);

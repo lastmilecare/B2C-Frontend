@@ -130,7 +130,7 @@ const AppointmentList = () => {
             (!name || item.name?.toLowerCase().includes(name.toLowerCase())) &&
             (!doctor || item.doctor === doctor) &&
             (!location || item.location === location) &&
-            (!status || item.status === status) &&
+            (!status || item.status?.toLowerCase() === status.toLowerCase()) &&
             (!startDate || item.appointmentDate >= startDate) &&
             (!endDate || item.appointmentDate <= endDate)
         );

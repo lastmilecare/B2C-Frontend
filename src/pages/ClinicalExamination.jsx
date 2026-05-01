@@ -76,6 +76,7 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
       nervous_system: values.nervousSystem,
       musculoskeletal_system: values.musculoskeletal,
       skin_condition: values.skin,
+      color_blindness: values.colorBlindness,
     };
 
     if (id) {
@@ -122,6 +123,7 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
     Name: data.name || "",
     Gender: data.gender || "",
     Age: data.age || "",
+    colorBlindness: data.color_blindness || "",
   });
 }, [editData]);
 
