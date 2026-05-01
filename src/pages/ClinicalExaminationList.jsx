@@ -16,7 +16,7 @@ const records = data?.map((item) => ({
   date: item.created_at,
   generalAppearance: item.general_appearance,
   vision: item.eye_examination,
-  colorBlindness: "-", 
+  colorBlindness: item.color_blindness, 
   ear: item.ear,
   nose: item.nose,
   throat: item.throat,

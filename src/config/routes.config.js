@@ -178,6 +178,12 @@ export const ROUTES = [
     group: "Patient",
     showInSidebar: true,
   },
+   {
+    path: "/PatientRegistrationOhc/:id",
+    component: PatientPage,
+    permission: "create:patient_registration",
+    showInSidebar: false,
+  },
 
   // ── OPD ───────────────────────────────────────────────────────────────────
   {

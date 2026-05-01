@@ -130,6 +130,7 @@ const VitalsForm = () => {
       weight: v.weight || "",
       bmi: v.bmi || "",
       respiratoryRate: v.respiratory_rate || "",
+      patient_id: v.patient_id || "",
     });
 
   }, [editData]);
