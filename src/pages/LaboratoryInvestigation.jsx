@@ -23,25 +23,25 @@ import PatientSelector from "../components/common/PatientSelector";
 const LaboratoryInvestigation = () => {
   const [activeStep, setActiveStep] = useState(1);
   const navigate = useNavigate();
-  
+
   const [bloodTestList, setBloodTestList] = useState([]);
   const { id } = useParams();
-const [uploadLabFile] = useUploadLabFileMutation();
-const [createLab] = useCreateLabMutation();
-const [updateLab] = useUpdateLabMutation();
+  const [uploadLabFile] = useUploadLabFileMutation();
+  const [createLab] = useCreateLabMutation();
+  const [updateLab] = useUpdateLabMutation();
   const { data: editData } = useGetLabByIdQuery(id, {
-  skip: !id,
-});
+    skip: !id,
+  });
 
-  
 
-  
 
- 
+
+
+
 
   const formik = useFormik({
     initialValues: {
-       EmployeeId: "",
+      EmployeeId: "",
       patient_id: "",
       Name: "",
       Gender: "",
@@ -55,88 +55,91 @@ const [updateLab] = useUpdateLabMutation();
       reportFile: null,
     },
     onSubmit: async (values) => {
-  let filePath = "";
+      let filePath = "";
 
-  try {
+      try {
 
-    if (values.reportFile) {
-      console.log("FILE:", values.reportFile);
-      const formData = new FormData();
-      formData.append("file", values.reportFile);
-      console.log("FORM DATA:");
-      const res = await uploadLabFile(formData).unwrap();
-      filePath = res.path; // backend se path
-    }
-
-    
-    const payload = {
-      patient_id: values.patient_id,
-      name: values.Name,
-      gender: values.Gender,
-      age: Number(values.Age),
-      employee_id: values.EmployeeId,
-      investigation_date: new Date(),
-      remarks: values.remarks || "",
-
-      tests: bloodTestList.map((t) => ({
-        test_name: t.name,
-        result_value: t.result,
-        normal_range: `${t.min}-${t.max}`,
-        remarks: t.remarks,
-        report_url: filePath, // ✅ FINAL FIX
-      })),
-    };
-
-    
-    if (id) {
-      await updateLab({ id, body: payload }).unwrap();
-    } else {
-      await createLab(payload).unwrap();
-    }
-
-    healthAlerts.success("Saved successfully");
-    navigate("/laboratory-investigation", {
-        state: { goToList: true }
-      });
-  } catch (err) {
-    healthAlerts.error("Save failed");
-  }
+        if (values.reportFile) {
+         
+          const formData = new FormData();
+          formData.append("file", values.reportFile);
+          
+          const res = await uploadLabFile(formData).unwrap();
+          filePath = res.path; 
+        }
 
 
-     
+        const payload = {
+          patient_id: values.patient_id,
+          name: values.Name,
+          gender: values.Gender,
+          age: Number(values.Age),
+          employee_id: values.EmployeeId,
+          investigation_date: new Date(),
+          remarks: values.remarks || "",
+
+          tests: bloodTestList.map((t) => ({
+            test_name: t.name,
+            result_value: t.result,
+            normal_range: `${t.min}-${t.max}`,
+            remarks: t.remarks,
+            report_url: filePath, 
+          })),
+        };
+
+
+        if (id) {
+          await updateLab({ id, body: payload }).unwrap();
+        } else {
+          await createLab(payload).unwrap();
+        }
+
+        healthAlerts.success("Saved successfully");
+        navigate("/laboratory-investigation", {
+          state: { goToList: true }
+        });
+      } catch (err) {
+        healthAlerts.error("Save failed");
+      }
+
+
+
     },
   });
-useEffect(() => {
-  if (!editData) return;
+  useEffect(() => {
+    if (!editData) return;
 
-  formik.setValues({
-    EmployeeId: editData.employee_id || "",
-    patient_id: editData.patient_id || "",
-    Name: editData.name || "",
-    Gender: editData.gender || "",
-    Age: editData.age || "",
+    formik.setValues({
+      EmployeeId: editData.employee_id || "",
+      patient_id: editData.patient_id || "",
+      Name: editData.name || "",
+      Gender: editData.gender || "",
+      Age: editData.age || "",
 
-    testName: "",
-    result: "",
-    minRange: "",
-    maxRange: "",
-    remarks: "",
-  });
+      testName: "",
+      result: "",
+      minRange: "",
+      maxRange: "",
+      remarks: "",
+    });
 
-  setBloodTestList(
-    (editData.tests || []).map((t) => ({
-      name: t.test_name,
-      result: t.result_value,
-      min: t.normal_range?.split("-")[0],
-      max: t.normal_range?.split("-")[1],
-      remarks: t.remarks,
-    }))
-  );
+    setBloodTestList(
+      (editData.tests || []).map((t) => ({
+        name: t.test_name,
+        result: t.result_value,
+        min: t.normal_range?.split("-")[0],
+        max: t.normal_range?.split("-")[1],
+        remarks: t.remarks,
+      }))
+    );
 
-  setActiveStep(1); 
-}, [editData]);
+    setActiveStep(1);
+  }, [editData]);
   const nextStep = () => {
-    
+    if (activeStep === 1 && !formik.values.Name) {
+    healthAlerts.warning("Name is required");
+    return;
+  }
 
     if (activeStep === 2 && bloodTestList.length === 0) {
       healthAlerts.warning("Add at least one blood test");
@@ -173,14 +176,14 @@ useEffect(() => {
     formik.setFieldValue("remarks", "");
   };
   const handleDeleteTest = (index) => {
-  setBloodTestList((prev) => prev.filter((_, i) => i !== index));
-};
+    setBloodTestList((prev) => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
       <div className="max-w-[1400px] mx-auto px-8">
 
-     
+
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
             <span className="bg-blue-100 p-2 rounded-xl">
@@ -193,22 +196,21 @@ useEffect(() => {
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${
-                  activeStep >= s ? "bg-sky-600" : "bg-blue-100"
-                }`}
+                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-blue-100"
+                  }`}
               />
             ))}
           </div>
         </div>
 
-        
+
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
 
-          
+
           <div className="flex border-b">
             {[
               { id: 1, label: "Patient", icon: UserIcon },
-              
+
               { id: 2, label: "Blood Test", icon: BeakerIcon },
               { id: 3, label: "Report", icon: CreditCardIcon },
               { id: 4, label: "Confirm", icon: DocumentCheckIcon },
@@ -217,11 +219,10 @@ useEffect(() => {
                 key={step.id}
                 disabled
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
-                ${
-                  activeStep === step.id
+                ${activeStep === step.id
                     ? "bg-white text-sky-600 shadow"
                     : "text-gray-400"
-                }`}
+                  }`}
               >
                 <step.icon className="w-4 h-4" />
                 {step.label}
@@ -229,27 +230,27 @@ useEffect(() => {
             ))}
           </div>
 
-         
+
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (activeStep === 4){
-              formik.handleSubmit();
+              if (activeStep === 4) {
+                formik.handleSubmit();
               }
             }}
             className="space-y-8 p-9"
           >
 
-            
-           {activeStep === 1 && (
-          <section>
-              <PatientSelector formik={formik} />
-                      
-                      </section>
-                    )}
+
+            {activeStep === 1 && (
+              <section>
+                <PatientSelector formik={formik} />
+
+              </section>
+            )}
 
 
-            
+
             {activeStep === 2 && (
               <section>
                 <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -282,7 +283,7 @@ useEffect(() => {
                   <Input label="Remarks" {...formik.getFieldProps("remarks")} />
                 </div>
 
-               
+
                 <div className="mt-3">
                   <button
                     type="button"
@@ -294,7 +295,7 @@ useEffect(() => {
                   </button>
                 </div>
 
-            
+
                 {bloodTestList.length > 0 && (
                   <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100">
                     <div className="px-4 py-3 border-b border-sky-100">
@@ -325,15 +326,15 @@ useEffect(() => {
                               </td>
                               <td className="px-4 py-3">{t.remarks}</td>
 
-<td className="px-4 py-3">
-  <button
-    type="button"
-    onClick={() => handleDeleteTest(i)}
-    className="text-red-400 hover:text-red-600 font-semibold"
-  >
-    Delete 
-  </button>
-</td>
+                              <td className="px-4 py-3">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteTest(i)}
+                                  className="text-red-400 hover:text-red-600 font-semibold"
+                                >
+                                  Delete
+                                </button>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -344,7 +345,7 @@ useEffect(() => {
               </section>
             )}
 
-           
+
             {activeStep === 3 && (
               <section>
                 <h3 className="text-lg font-semibold text-sky-700 mb-3">
@@ -360,20 +361,32 @@ useEffect(() => {
               </section>
             )}
 
-       
-            {activeStep === 4 && (
-              <div className="bg-sky-50 p-6 rounded-xl">
-                <h3 className="text-sky-700 font-semibold">
-                  Confirm Details
-                </h3>
 
-                <p><b>Name:</b> {formik.values.Name}</p>
-                
-                <p><b>Total Tests:</b> {bloodTestList.length}</p>
-              </div>
+            {activeStep === 4 && (
+              <section>
+                <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
+                  <h3 className="text-lg font-semibold text-sky-600">
+                   LABORATORY INVESTIGATION PREVIEW
+                  </h3>
+
+                  <div className="grid md:grid-cols-2 gap-3 text-sm">
+                    <p><b>Name:</b> {formik.values.Name}</p>
+                    <p><b>Gender:</b> {formik.values.Gender}</p>
+                    <p><b>Age:</b> {formik.values.Age}</p>
+                    <p><b>patient_id:</b> {formik.values.patient_id}</p>
+                  </div>
+
+                  <div className="border-t pt-3 text-sm">
+                    <p><b>testName:</b> {formik.values.testName}</p>
+                    <p><b>Result:</b> {formik.values.result}</p>
+                  </div>
+
+
+                </div>
+              </section>
             )}
 
-            
+
             <div className="flex justify-between items-center pt-6 border-t">
 
               <div className="flex gap-2">

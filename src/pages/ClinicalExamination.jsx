@@ -52,9 +52,33 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
       Age: "",
     },
 
-    validationSchema: Yup.object({
-      generalAppearance: Yup.string().required("Required"),
-    }),
+   validationSchema: Yup.object({
+  patient_id: Yup.string().required("Patient is required"),
+
+  generalAppearance: Yup.string().required("General Appearance required"),
+
+  vision: Yup.string().required("Vision required"),
+
+  colorBlindness: Yup.string().required("Color blindness required"),
+
+  ear: Yup.string().required("Ear required"),
+
+  nose: Yup.string().required("Nose required"),
+
+  throat: Yup.string().required("Throat required"),
+
+  cardiovascular: Yup.string().required("Cardio required"),
+
+  respiratory: Yup.string().required("Respiratory required"),
+
+  abdomen: Yup.string().required("Abdomen required"),
+
+  nervousSystem: Yup.string().required("Nervous system required"),
+
+  musculoskeletal: Yup.string().required("Musculoskeletal required"),
+
+  skin: Yup.string().required("Skin condition required"),
+}),
 
     onSubmit: async (values) => {
   try {
@@ -128,31 +152,77 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
 }, [editData]);
 
   const nextStep = useCallback(async () => {
-    const errors = await formik.validateForm();
+  const errors = await formik.validateForm();
 
-    if (activeStep === 2 && errors.generalAppearance) {
-      formik.setTouched({ generalAppearance: true });
-      healthAlerts.error("Please fill required fields", "Error");
-      return;
-    }
+  
+  if (activeStep === 1 && !formik.values.Name) {
+    healthAlerts.warning("Name is required");
+    return;
+  }
 
-    setActiveStep((prev) => prev + 1);
-  }, [activeStep, formik]);
+ 
+  if (
+    activeStep === 2 &&
+    (
+      errors.generalAppearance ||
+      errors.vision ||
+      errors.colorBlindness ||
+      errors.ear ||
+      errors.nose ||
+      errors.throat
+    )
+  ) {
+    formik.setTouched({
+      generalAppearance: true,
+      vision: true,
+      colorBlindness: true,
+      ear: true,
+      nose: true,
+      throat: true,
+    });
+
+    const firstError = Object.values(errors)[0];
+    healthAlerts.warning(firstError);
+    return;
+  }
+
+ 
+  if (
+    activeStep === 3 &&
+    (
+      errors.cardiovascular ||
+      errors.respiratory ||
+      errors.abdomen ||
+      errors.nervousSystem ||
+      errors.musculoskeletal ||
+      errors.skin
+    )
+  ) {
+    formik.setTouched({
+      cardiovascular: true,
+      respiratory: true,
+      abdomen: true,
+      nervousSystem: true,
+      musculoskeletal: true,
+      skin: true,
+    });
+
+    const firstError = Object.values(errors)[0];
+    healthAlerts.warning(firstError);
+    return;
+  }
+
+  setActiveStep((prev) => prev + 1);
+}, [activeStep, formik]);
 
   const prevStep = useCallback(() => {
     setActiveStep((prev) => prev - 1);
   }, []);
 
   const handleReset = useCallback(() => {
-    healthAlerts.confirm(
-      "Are you sure?",
-      "This will clear all data",
-      () => {
-        formik.resetForm();
-        setActiveStep(1);
-      }
-    );
-  }, [formik]);
+  formik.resetForm();
+  setActiveStep(1);
+}, [formik]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -214,7 +284,7 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
                   <div>
                     <h3 className="text-sky-700 font-semibold mb-2">General Appearance</h3>
                     <Input
-                      label="General Appearance"
+                      label="General Appearance *"
                       {...formik.getFieldProps("generalAppearance")}
                       error={formik.touched.generalAppearance && formik.errors.generalAppearance}
                     />
@@ -222,10 +292,10 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
 
                   
                   <div>
-                    <h3 className="text-sky-700 font-semibold mb-2">Eye Examination</h3>
+                    <h3 className="text-sky-700 font-semibold mb-2">Eye Examination *</h3>
                     <div className="grid md:grid-cols-2 gap-3">
-                      <Input label="Vision" {...formik.getFieldProps("vision")} />
-                      <Select label="Color Blindness" {...formik.getFieldProps("colorBlindness")}>
+                      <Input label="Vision *" {...formik.getFieldProps("vision")} />
+                      <Select label="Color Blindness *" {...formik.getFieldProps("colorBlindness")}>
                         <option value="">Select</option>
                         <option>No</option>
                         <option>Yes</option>
@@ -235,11 +305,11 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
 
                  
                   <div>
-                    <h3 className="text-sky-700 font-semibold mb-2">ENT</h3>
+                    <h3 className="text-sky-700 font-semibold mb-2">ENT *</h3>
                     <div className="grid md:grid-cols-3 gap-3">
-                      <Input label="Ear" {...formik.getFieldProps("ear")} />
-                      <Input label="Nose" {...formik.getFieldProps("nose")} />
-                      <Input label="Throat" {...formik.getFieldProps("throat")} />
+                      <Input label="Ear *" {...formik.getFieldProps("ear")} />
+                      <Input label="Nose *" {...formik.getFieldProps("nose")} />
+                      <Input label="Throat *" {...formik.getFieldProps("throat")} />
                     </div>
                   </div>
 
@@ -252,29 +322,67 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
                   <h3 className="text-sky-700 font-semibold mb-4">System Examination</h3>
 
                   <div className="grid md:grid-cols-2 gap-4">
-                    <Input label="Cardiovascular System" {...formik.getFieldProps("cardiovascular")} />
-                    <Input label="Respiratory System" {...formik.getFieldProps("respiratory")} />
-                    <Input label="Abdomen" {...formik.getFieldProps("abdomen")} />
-                    <Input label="Nervous System" {...formik.getFieldProps("nervousSystem")} />
-                    <Input label="Musculoskeletal System" {...formik.getFieldProps("musculoskeletal")} />
-                    <Input label="Skin Condition" {...formik.getFieldProps("skin")} />
+                    <Input label="Cardiovascular System *" {...formik.getFieldProps("cardiovascular")} />
+                    <Input label="Respiratory System *" {...formik.getFieldProps("respiratory")} />
+                    <Input label="Abdomen *" {...formik.getFieldProps("abdomen")} />
+                    <Input label="Nervous System *" {...formik.getFieldProps("nervousSystem")} />
+                    <Input label="Musculoskeletal System *" {...formik.getFieldProps("musculoskeletal")} />
+                    <Input label="Skin Condition *" {...formik.getFieldProps("skin")} />
                   </div>
                 </section>
               )}
 
               
-              {activeStep === 4 && (
+                {activeStep === 4 && (
                 <section>
-                  <div className="bg-blue-50 p-6 rounded-xl space-y-2">
-                    <p><b>General:</b> {formik.values.generalAppearance}</p>
-                    <p><b>Vision:</b> {formik.values.vision}</p>
-                    <p><b>ENT:</b> {formik.values.ear}, {formik.values.nose}, {formik.values.throat}</p>
-                    <p><b>Cardio:</b> {formik.values.cardiovascular}</p>
-                    <p><b>Respiratory:</b> {formik.values.respiratory}</p>
-                    <p><b>Skin:</b> {formik.values.skin}</p>
+                  <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
+                    <h3 className="text-lg font-semibold text-sky-600">
+                       CLINICAL EXAMINATION PREVIEW
+                    </h3>
+
+                    <div className="grid md:grid-cols-2 gap-3 text-sm">
+                      <p><b>Name:</b> {formik.values.Name}</p>
+                      <p><b>Gender:</b> {formik.values.Gender}</p>
+                      <p><b>Age:</b> {formik.values.Age}</p>
+                      <p><b>patient_id:</b> {formik.values.patient_id}</p>
+                    </div>
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Vision:</b> {formik.values.vision}</p>
+                      <p><b>Color Blindness:</b> {formik.values.colorBlindness}</p>
+                    </div>
+
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Ear </b> {formik.values.ear}</p>
+                      <p><b>Nose</b> {formik.values.nose}</p>
+                      <p><b>Throat</b> {formik.values.throat}</p>
+                    </div>
+
+
+                    <div className="border-t pt-3 text-sm">
+                      <p>
+                        <b>Cardiovascular System:</b>{formik.values.cardiovascular}
+                        <b>Nervous System:</b>{formik.values.nervousSystem}
+
+                      </p>
+                    </div>
+
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Respiratory System:</b> {formik.values.respiratory}</p>
+                       <p><b>Musculoskeletal System:</b> {formik.values.musculoskeletal}</p>
+                    </div>
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Abdomen:</b> {formik.values.abdomen}</p>
+                      <p><b>Skin Condition:</b> {formik.values.skin}</p>
+                    </div>
+
                   </div>
                 </section>
               )}
+
 
               
               <div className="flex justify-between pt-6 border-t">

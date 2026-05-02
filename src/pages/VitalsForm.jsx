@@ -57,8 +57,48 @@ const VitalsForm = () => {
       respiratoryRate: "",
     },
     validationSchema: Yup.object({
-      respiratoryRate: Yup.number().min(5).max(60),
-    }),
+  patient_id: Yup.string().required("Patient is required"),
+
+  bpsystolic: Yup.number()
+    .required("BP Systolic required")
+    .min(70, "Too low for systolic BP")
+    .max(250, "Too high for systolic BP"),
+
+  bpdiastolic: Yup.number()
+    .required("BP Diastolic required")
+    .min(40, "Too low for diastolic BP")
+    .max(150, "Too high for diastolic BP"),
+
+  pulserate: Yup.number()
+    .required("Pulse required")
+    .min(30, "Pulse too low")
+    .max(220, "Pulse too high"),
+
+  spo2: Yup.number()
+    .required("SPO2 required")
+    .min(70, "Critically low SpO₂")
+    .max(100, "Invalid SpO₂ value"),
+
+  temprature: Yup.number()
+    .required("Temperature required")
+    .min(35, "Hypothermia risk")
+    .max(42, "Dangerously high temperature"),
+
+  height: Yup.number()
+    .required("Height required")
+    .min(30, "Invalid height")
+    .max(250, "Invalid height"),
+
+  weight: Yup.number()
+    .required("Weight required")
+    .min(2, "Invalid weight")
+    .max(300, "Invalid weight"),
+
+  respiratoryRate: Yup.number()
+    .required("Respiratory Rate required")
+    .min(5)
+    .max(60),
+}),
     onSubmit: async (values, { resetForm }) => {
       try {
         const payload = {
@@ -330,14 +370,47 @@ const VitalsForm = () => {
         )}
 
         {activeStep === 3 && (
-          <div className="bg-sky-50 p-6 rounded-xl border space-y-2">
-            <p><b>Name:</b> {formik.values.Name}</p>
-            <p><b>Employee ID:</b> {formik.values.EmployeeId}</p>
-            
-            <p><b>BMI:</b> {formik.values.bmi}</p>
-            <p><b>Resp Rate:</b> {formik.values.respiratoryRate}</p>
-          </div>
-        )}
+  <section>
+    <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
+
+      <h3 className="text-lg font-semibold text-sky-600">
+      VITALS PREVIEW
+      </h3>
+
+      <div className="grid md:grid-cols-2 gap-3 text-sm">
+        <p><b>Name:</b> {formik.values.Name}</p>
+        <p><b>Gender:</b> {formik.values.Gender}</p>
+        <p><b>Age:</b> {formik.values.Age}</p>
+       <p><b> patient_id:</b> {formik.values.patient_id}</p>
+      </div>
+
+      <div className="border-t pt-3 text-sm">
+        <p><b>BP Systolic:</b> {formik.values.bpsystolic}</p>
+        <p><b>BP Diastolic:</b> {formik.values.bpdiastolic}</p>
+      </div>
+
+      
+      <div className="border-t pt-3 text-sm">
+        <p><b>Pulse:</b> {formik.values.pulserate}</p>
+        <p><b>SPO2:</b> {formik.values.spo2}</p>
+      </div>
+
+      
+      <div className="border-t pt-3 text-sm">
+        <p>
+          <b>BMI:</b>{formik.values.bmi}
+         
+        </p>
+      </div>
+
+      
+      <div className="border-t pt-3 text-sm">
+        <p><b>Respiratory Rate:</b> {formik.values.respiratoryRate}</p>
+      </div>
+
+    </div>
+  </section>
+)}
 
        <div className="flex justify-between items-center pt-6 border-t border-gray-100">
   
