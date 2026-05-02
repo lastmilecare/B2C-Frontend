@@ -9,129 +9,143 @@ import {
 } from "@heroicons/react/24/outline";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import {
-  useCreateRadiologyMutation,
-  useUploadRadiologyFileMutation,
-  useGetRadiologyByIdQuery,
-  useUpdateRadiologyMutation
+    useCreateRadiologyMutation,
+    useUploadRadiologyFileMutation,
+    useGetRadiologyByIdQuery,
+    useUpdateRadiologyMutation
 } from "../redux/apiSlice";
 import { healthAlerts } from "../utils/healthSwal";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { useNavigate } from "react-router-dom";
 import PatientSelector from "../components/common/PatientSelector";
 import { useParams } from "react-router-dom";
+import * as Yup from "yup";
 const RadiologyScreen = () => {
     const [activeStep, setActiveStep] = useState(1);
-   
+
     const [testList, setTestList] = useState([]);
     const navigate = useNavigate();
     const [createRadiology] = useCreateRadiologyMutation();
-const [uploadFile] = useUploadRadiologyFileMutation();
-const { id } = useParams();
+    const [uploadFile] = useUploadRadiologyFileMutation();
+    const { id } = useParams();
 
-const { data: editData } = useGetRadiologyByIdQuery(id, {
-  skip: !id,
-});
+    const { data: editData } = useGetRadiologyByIdQuery(id, {
+        skip: !id,
+    });
 
-const [updateRadiology] = useUpdateRadiologyMutation();
+    const [updateRadiology] = useUpdateRadiologyMutation();
 
     const formik = useFormik({
         initialValues: {
-             EmployeeId: "",
-      patient_id: "",
-      Name: "",
-      Gender: "",
-      Age: "",
+            EmployeeId: "",
+            patient_id: "",
+            Name: "",
+            Gender: "",
+            Age: "",
             testType: "",
             resultSummary: "",
             doctorRemarks: "",
             reportFile: null,
         },
-       onSubmit: async (values) => {
-  try {
-    let fileUrl = testList[0]?.report_url || "";
+        validationSchema: Yup.object({
+            patient_id: Yup.string().required("Patient is required"),
 
-    // upload new file if exists
-    if (values.reportFile) {
-      const formData = new FormData();
-      formData.append("file", values.reportFile);
+            
+        }),
+        onSubmit: async (values) => {
+            try {
+                let fileUrl = testList[0]?.report_url || "";
 
-      const res = await uploadFile(formData).unwrap();
-      fileUrl = res.path;
-    }
+                // upload new file if exists
+                if (values.reportFile) {
+                    const formData = new FormData();
+                    formData.append("file", values.reportFile);
 
-    const payload = {
-  patient_id: values.patient_id,
-  name: values.Name,
-  gender: values.Gender,
-  age: Number(values.Age),
-  employee_id: values.EmployeeId,
+                    const res = await uploadFile(formData).unwrap();
+                    fileUrl = res.path;
+                }
 
-  tests: testList.map((t) => ({
-    test_type: t.testType,
-    result_summary: t.resultSummary,
-    doctor_remarks: t.doctorRemarks,
-    report_url: fileUrl,
-  })),
-};
+                const payload = {
+                    patient_id: values.patient_id,
+                    name: values.Name,
+                    gender: values.Gender,
+                    age: Number(values.Age),
+                    employee_id: values.EmployeeId,
 
-    if (id) {
-    
-      await updateRadiology({ id, body: payload }).unwrap();
-      healthAlerts.success("Updated Successfully");
-    } else {
-      
-      await createRadiology(payload).unwrap();
-      healthAlerts.success("Created Successfully");
-    }
+                    tests: testList.map((t) => ({
+                        test_type: t.testType,
+                        result_summary: t.resultSummary,
+                        doctor_remarks: t.doctorRemarks,
+                        report_url: fileUrl,
+                    })),
+                };
 
-      navigate("/radiology-screen", {
-        state: { goToList: true }
-      });
-     } catch (err) {
-    healthAlerts.error("Save Failed");
-  }
- },
-  });
-useEffect(() => {
-  if (editData) {
-    formik.setValues({
-      EmployeeId: editData.employee_id || "",
-      patient_id: editData.patient_id || "",
-      Name: editData.name || "",
-      Gender: editData.gender || "",
-      Age: editData.age || "",
-      reportFile: null,
+                if (id) {
+
+                    await updateRadiology({ id, body: payload }).unwrap();
+                    healthAlerts.success("Updated Successfully");
+                } else {
+
+                    await createRadiology(payload).unwrap();
+                    healthAlerts.success("Created Successfully");
+                }
+
+               setTimeout(() => {
+  navigate("/radiology-screen", { state: { goToList: true } });
+}, 800);
+            } catch (err) {
+                healthAlerts.error("Save Failed");
+            }
+        },
     });
+    useEffect(() => {
+        if (editData) {
+            formik.setValues({
+                EmployeeId: editData.employee_id || "",
+                patient_id: editData.patient_id || "",
+                Name: editData.name || "",
+                Gender: editData.gender || "",
+                Age: editData.age || "",
+                reportFile: null,
+            });
 
-    const mappedTests =
-      editData.tests?.map((t) => ({
-        testType: t.test_type || "",
-        resultSummary: t.result_summary || "",
-        doctorRemarks: t.doctor_remarks || "",
-        report_url: t.report_url || "",
-      })) || [];
+            const mappedTests =
+                editData.tests?.map((t) => ({
+                    testType: t.test_type || "",
+                    resultSummary: t.result_summary || "",
+                    doctorRemarks: t.doctor_remarks || "",
+                    report_url: t.report_url || "",
+                })) || [];
 
-    setTestList(mappedTests);
+            setTestList(mappedTests);
 
-    
-    if (mappedTests.length > 0) {
-      formik.setFieldValue("testType", mappedTests[0].testType);
-      formik.setFieldValue("resultSummary", mappedTests[0].resultSummary);
-      formik.setFieldValue("doctorRemarks", mappedTests[0].doctorRemarks);
-    }
-  }
-}, [editData]);
 
-    
-    const nextStep = () => {
-        
-        if (activeStep === 1 && !formik.values.patient_id) {
-  healthAlerts.warning("Select patient");
-  return;
-}
-        if (activeStep === 2 && testList.length === 0) {
-            healthAlerts.warning("Add at least one test");
+            if (mappedTests.length > 0) {
+                formik.setFieldValue("testType", mappedTests[0].testType);
+                formik.setFieldValue("resultSummary", mappedTests[0].resultSummary);
+                formik.setFieldValue("doctorRemarks", mappedTests[0].doctorRemarks);
+            }
+        }
+    }, [editData]);
+
+
+    const nextStep = async () => {
+
+
+        if (activeStep === 1 && !formik.values.Name) {
+            healthAlerts.warning("Name is required");
             return;
+        }
+
+
+        if (activeStep === 2) {
+
+
+            if (testList.length === 0) {
+                healthAlerts.warning("Add at least one test");
+                return;
+            }
+
         }
 
         setActiveStep((p) => p + 1);
@@ -139,7 +153,7 @@ useEffect(() => {
 
     const prevStep = () => setActiveStep((p) => p - 1);
 
-    
+
     const handleAddTest = () => {
         const { testType, resultSummary, doctorRemarks } = formik.values;
 
@@ -162,7 +176,7 @@ useEffect(() => {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
             <div className="max-w-[1400px] mx-auto px-8">
 
-               
+
                 <div className="flex justify-between items-center mb-10">
                     <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
                         <span className="bg-blue-100 p-2 rounded-xl">
@@ -182,10 +196,10 @@ useEffect(() => {
                     </div>
                 </div>
 
-               
+
                 <div className="bg-white rounded-3xl shadow-xl border overflow-hidden">
 
-                    
+
                     <div className="flex border-b">
                         {[
                             { id: 1, label: "Patient", icon: UserIcon },
@@ -197,8 +211,8 @@ useEffect(() => {
                                 key={step.id}
                                 disabled
                                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold ${activeStep === step.id
-                                        ? "bg-white text-sky-600 shadow"
-                                        : "text-gray-400"
+                                    ? "bg-white text-sky-600 shadow"
+                                    : "text-gray-400"
                                     }`}
                             >
                                 <step.icon className="w-4 h-4" />
@@ -207,17 +221,17 @@ useEffect(() => {
                         ))}
                     </div>
 
-                    <form className="p-9 space-y-8">
+                    <form onSubmit={formik.handleSubmit} className="p-9 space-y-8">
 
-                       
-                       {activeStep === 1 && (
-          <section>
-              <PatientSelector formik={formik} />
-                      
-                      </section>
-                    )}
 
-                        
+                        {activeStep === 1 && (
+                            <section>
+                                <PatientSelector formik={formik} />
+
+                            </section>
+                        )}
+
+
                         {activeStep === 2 && (
                             <section>
                                 <h3 className="text-lg font-semibold text-sky-700 mb-4 flex gap-2">
@@ -245,7 +259,7 @@ useEffect(() => {
                                     <Input label="Doctor Remarks" {...formik.getFieldProps("doctorRemarks")} />
                                 </div>
 
-                                
+
                                 <div className="mt-4">
                                     <button
                                         type="button"
@@ -256,7 +270,7 @@ useEffect(() => {
                                     </button>
                                 </div>
 
-                                
+
                                 {testList.length > 0 && (
                                     <div className="mt-6 border rounded-xl overflow-hidden">
                                         <table className="w-full text-sm">
@@ -295,7 +309,7 @@ useEffect(() => {
                             </section>
                         )}
 
-                      
+
                         {activeStep === 3 && (
                             <section>
                                 <h3 className="text-sky-700 font-semibold mb-3">
@@ -311,19 +325,33 @@ useEffect(() => {
                             </section>
                         )}
 
-                        
-                        {activeStep === 4 && (
-                            <div className="bg-sky-50 p-6 rounded-xl">
-                                <h3 className="text-sky-700 font-semibold">
-                                    Confirm Details
-                                </h3>
 
-                                <p><b>Name:</b> {formik.values.Name}</p>
-                                <p><b>Total Tests:</b> {testList.length}</p>
-                            </div>
+                        {activeStep === 4 && (
+                            <section>
+                                <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
+                                    <h3 className="text-lg font-semibold text-sky-600">
+                                        RADIOLOGY PREVIEW
+                                    </h3>
+
+                                    <div className="grid md:grid-cols-2 gap-3 text-sm">
+                                        <p><b>Name:</b> {formik.values.Name}</p>
+                                        <p><b>Gender:</b> {formik.values.Gender}</p>
+                                        <p><b>Age:</b> {formik.values.Age}</p>
+                                        <p><b>patient_id:</b> {formik.values.patient_id}</p>
+                                    </div>
+
+                                    {testList.map((t, i) => (
+                                        <div key={i} className="border-t pt-3 text-sm">
+                                            <p><b>Test Type:</b> {t.testType}</p>
+                                            <p><b>Result Summary:</b> {t.resultSummary}</p>
+                                            <p><b>Doctor Remarks:</b> {t.doctorRemarks}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
                         )}
 
-                        
+
                         <div className="flex justify-end gap-3 pt-6 border-t">
 
                             {activeStep > 1 && (
@@ -342,9 +370,15 @@ useEffect(() => {
                                     Continue
                                 </Button>
                             ) : (
-                                <Button type="button" variant="sky" onClick={formik.handleSubmit}>
-                                    Save
-                                </Button>
+                                <Button
+  type="button"
+  onClick={() => {
+    
+    formik.handleSubmit();
+  }}
+>
+  Save
+</Button>
                             )}
 
                         </div>

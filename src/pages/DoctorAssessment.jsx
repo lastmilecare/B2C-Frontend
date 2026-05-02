@@ -216,15 +216,36 @@ const { id } = useParams();
 
             
             {activeStep === 4 && (
-              <div className="bg-sky-50 p-6 rounded-xl">
-                <h3 className="text-sky-700 font-semibold">
-                  Confirm Details
-                </h3>
+  <section>
+    <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
+      <h3 className="text-lg font-semibold text-sky-600">
+        DOCTOR ASSESSMENT PREVIEW
+      </h3>
 
-                <p><b>Name:</b> {formik.values.Name}</p>
-                <p><b>Fitness:</b> {formik.values.fitness}</p>
-              </div>
-            )}
+      
+      <div className="grid md:grid-cols-2 gap-3 text-sm">
+        <p><b>Name:</b> {formik.values.Name}</p>
+        <p><b>Gender:</b> {formik.values.Gender}</p>
+        <p><b>Age:</b> {formik.values.Age}</p>
+        <p><b>Patient ID:</b> {formik.values.patient_id}</p>
+      </div>
+
+      
+      <div className="border-t pt-3 text-sm space-y-1">
+        <p><b>Fitness Category:</b> {formik.values.fitness}</p>
+        <p><b>Health Status:</b> {formik.values.healthStatus}</p>
+        <p><b>Restrictions:</b> {formik.values.restrictions}</p>
+      </div>
+
+    
+      <div className="border-t pt-3 text-sm space-y-1">
+        <p><b>Recommendations:</b> {formik.values.recommendations}</p>
+        <p><b>Follow Up Required:</b> {formik.values.followUp === "true" ? "Yes" : "No"}</p>
+        <p><b>Comments:</b> {formik.values.comments}</p>
+      </div>
+    </div>
+  </section>
+)}
 
            
             <div className="flex justify-end gap-3 pt-6 border-t">

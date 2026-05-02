@@ -101,12 +101,13 @@ const AppointmentVisit = () => {
       patient_id: Yup.string().required("patient ID Required"),
       appointmentTime: Yup.string().required("Time Required"),
       doctorId: Yup.string().required("Doctor Required"),
+      location: Yup.string().required("Location Required"),
+      visitType: Yup.string().required("Visit Type Required"),
     }),
 
 
     onSubmit: async (values) => {
-      console.log("DATE:", values.appointmentDate);
-      console.log("TIME:", values.appointmentTime);
+
       if (isPastTime(values.appointmentDate, values.appointmentTime)) {
         healthAlerts.error("Past date/time not allowed");
         return;
@@ -167,11 +168,11 @@ const AppointmentVisit = () => {
     if (!editData) return;
 
     formik.setValues({
-       EmployeeId: editData.employeeId || "",
-    patient_id: editData.patientId || "",
-    Name: editData.name || "",
-    Gender: editData.gender || "",
-    Age: editData.age || "",
+      EmployeeId: editData.employeeId || "",
+      patient_id: editData.patientId || "",
+      Name: editData.name || "",
+      Gender: editData.gender || "",
+      Age: editData.age || "",
       appointmentDate: editData.appointmentDate || formatDate(editData.appointment_datetime),
       appointmentTime: editData.appointmentTime || formatTime(editData.appointment_datetime),
       location: editData.location || "",
@@ -187,11 +188,7 @@ const AppointmentVisit = () => {
     });
   }, [editData]);
 
-  // ✅ auto token generate
-  //   useEffect(() => {
-  //     const token = Math.floor(100 + Math.random() * 900);
-  //     formik.setFieldValue("tokenNumber", token);
-  //   }, []);
+ 
 
 
   const openPicker = useCallback((ref) => {
@@ -206,16 +203,31 @@ const AppointmentVisit = () => {
   const nextStep = useCallback(async () => {
     const errors = await formik.validateForm();
 
+    if (activeStep === 1 && !formik.values.patient_id) {
+      healthAlerts.warning("Patient is required");
+      return;
+    }
+
     if (
       activeStep === 2 &&
-      (errors.appointmentDate || errors.doctorId || errors.employeeId)
+      (
+        errors.appointmentDate ||
+        errors.appointmentTime ||
+        errors.doctorId ||
+        errors.location ||
+        errors.visitType
+      )
     ) {
       formik.setTouched({
         appointmentDate: true,
+        appointmentTime: true,
         doctorId: true,
-        
+        location: true,
+        visitType: true,
       });
-      healthAlerts.error("Please fill required fields", "Error");
+
+      const firstError = Object.values(errors)[0];
+      healthAlerts.warning(firstError);
       return;
     }
 
@@ -290,11 +302,11 @@ const AppointmentVisit = () => {
           <div className="p-10">
             <form onSubmit={formik.handleSubmit} className="space-y-5">
               {activeStep === 1 && (
-          <section>
-              <PatientSelector formik={formik} />
-                      
-                      </section>
-                    )}
+                <section>
+                  <PatientSelector formik={formik} />
+
+                </section>
+              )}
 
 
               {activeStep === 2 && (
@@ -306,18 +318,20 @@ const AppointmentVisit = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
-                    
+
                     <div>
-                      <label className="block text-sm mb-1">Appointment Date</label>
+                      <label>
+                        Appointment Date <span className="text-red-500">*</span>
+                      </label>
                       <input
                         ref={dateRef}
                         type="date"
                         {...formik.getFieldProps("appointmentDate")}
                         className={`w-full border rounded-lg px-3 py-2 outline-none ${formik.touched.appointmentDate && formik.errors.appointmentDate
-                            ? "border-red-500 ring-1 ring-red-500" 
-                            : "focus:ring-2 focus:ring-sky-500 border-gray-300"
+                          ? "border-red-500 ring-1 ring-red-500"
+                          : "focus:ring-2 focus:ring-sky-500 border-gray-300"
                           }`}
-                        min={new Date().toISOString().split("T")[0]} 
+                        min={new Date().toISOString().split("T")[0]}
                       />
                       {formik.touched.appointmentDate && formik.errors.appointmentDate && (
                         <p className="text-red-500 text-xs mt-1">{formik.errors.appointmentDate}</p>
@@ -325,7 +339,7 @@ const AppointmentVisit = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm mb-1">Appointment Time</label>
+                      <label className="block text-sm mb-1">Appointment Time <span className="text-red-500">*</span> </label>
                       <input
                         ref={timeRef}
                         type="time"
@@ -341,7 +355,8 @@ const AppointmentVisit = () => {
                       {locations.map((l) => <option key={l}>{l}</option>)}
                     </Select>
 
-                    <Select label="Doctor Assigned" {...formik.getFieldProps("doctorId")}>
+                    <Select label="Doctor Assigned" {...formik.getFieldProps("doctorId")} >
+                      
                       <option value="">Select</option>
                       {doctors.map((d) => (
                         <option key={d.id} value={d.id}>
@@ -412,12 +427,42 @@ const AppointmentVisit = () => {
 
               {activeStep === 4 && (
                 <section>
-                  <div className="bg-blue-50 p-6 rounded-xl space-y-2">
-                    <p><b>Employee:</b> {formik.values.employeeId}</p>
-                    <p><b>Date:</b> {formik.values.appointmentDate}</p>
-                    <p><b>Time:</b> {formik.values.appointmentTime}</p>
-                    <p><b>Doctor:</b> {formik.values.doctorId}</p>
-                    <p><b>Status:</b> {formik.values.status}</p>
+                  <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
+                    <h3 className="text-lg font-semibold text-sky-600">
+                      APPOINTMENT PREVIEW
+                    </h3>
+
+                    <div className="grid md:grid-cols-2 gap-3 text-sm">
+                      <p><b>Name:</b> {formik.values.Name}</p>
+                      <p><b>Gender:</b> {formik.values.Gender}</p>
+                      <p><b>Age:</b> {formik.values.Age}</p>
+                      <p><b> patient_id:</b> {formik.values.patient_id}</p>
+                    </div>
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Appointment Date:</b> {formik.values.appointmentDate}</p>
+                      <p><b>Appointment Time:</b> {formik.values.appointmentTime}</p>
+                    </div>
+
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Check-in Time: </b> {formik.values.checkIn}</p>
+                      <p><b>Check-out Time</b> {formik.values.checkOut}</p>
+                    </div>
+
+
+                    <div className="border-t pt-3 text-sm">
+                      <p>
+                        <b>OHC Location:</b>{formik.values.location}
+
+                      </p>
+                    </div>
+
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Visit Type:</b> {formik.values.visitType}</p>
+                    </div>
+
                   </div>
                 </section>
               )}

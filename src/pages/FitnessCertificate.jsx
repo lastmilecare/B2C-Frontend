@@ -49,6 +49,7 @@ const FitnessCertificate = () => {
     },
 
     onSubmit: async (values) => {
+       
       try {
         const payload = {
           patient_id: values.patient_id,
@@ -97,13 +98,39 @@ const FitnessCertificate = () => {
     }
   }, [editData]);
 
-  const nextStep = () => {
-    if (activeStep === 1 && !formik.values.Name) {
-      healthAlerts.warning("Select Name Please");
+ const nextStep = () => {
+
+
+  if (activeStep === 1 && !formik.values.Name) {
+    healthAlerts.warning("Name is required");
+    return;
+  }
+
+ 
+  if (activeStep === 2) {
+    if (!formik.values.issueDate) {
+      healthAlerts.warning("Issue Date required");
       return;
     }
-    setActiveStep((p) => p + 1);
-  };
+
+    if (!formik.values.validity) {
+      healthAlerts.warning("Validity required");
+      return;
+    }
+
+    if (!formik.values.fitnessStatus) {
+      healthAlerts.warning("Fitness Status required");
+      return;
+    }
+
+    if (!formik.values.doctor) {
+      healthAlerts.warning("Doctor name required");
+      return;
+    }
+  }
+
+  setActiveStep((p) => p + 1);
+};
 
   const prevStep = () => setActiveStep((p) => p - 1);
 
@@ -164,7 +191,7 @@ const FitnessCertificate = () => {
                 </h3>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Input label="Certificate No" value={formik.values.certNo} readOnly />
+                 
                   <Input type="date" label="Issue Date" {...formik.getFieldProps("issueDate")} />
                   {/* <Input label="Validity" {...formik.getFieldProps("validity")} /> */}
                   <Input type="date" label="Validity" {...formik.getFieldProps("validity")} />
@@ -188,18 +215,39 @@ const FitnessCertificate = () => {
 
 
             {activeStep === 3 && (
-              <div ref={printRef} className="p-6 border rounded-xl bg-white">
-                <h2 className="text-xl font-bold text-center mb-4">
-                  FITNESS CERTIFICATE
-                </h2>
+  <div ref={printRef} className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
+    <h2 className="text-xl font-bold text-center mb-4">
+      FITNESS CERTIFICATE PREVIEW
+    </h2>
 
-                <p><b>Certificate No:</b> {formik.values.certNo}</p>
-                <p><b>Name:</b> {formik.values.Name}</p>
+   
+    <div className="border-b pb-2">
+      <p><b>Name:</b> {formik.values.Name}</p>
+      <p><b>Gender:</b> {formik.values.Gender}</p>
+      <p><b>Age:</b> {formik.values.Age}</p>
+      <p><b>Patient ID:</b> {formik.values.patient_id}</p>
+    </div>
 
-                <p><b>Status:</b> {formik.values.fitnessStatus}</p>
-                <p><b>Doctor:</b> {formik.values.doctor}</p>
-              </div>
-            )}
+    
+    <div className="border-b pb-2">
+      
+      <p><b>Issue Date:</b> {formik.values.issueDate}</p>
+      <p><b>Validity:</b> {formik.values.validity}</p>
+    </div>
+
+  
+    <div className="border-b pb-2">
+      <p><b>Fitness Status:</b> {formik.values.fitnessStatus}</p>
+      <p><b>Doctor:</b> {formik.values.doctor}</p>
+    </div>
+
+  
+    <div>
+      <p><b>Restrictions:</b> {formik.values.restrictions}</p>
+      <p><b>Recommendations:</b> {formik.values.recommendations}</p>
+    </div>
+  </div>
+)}
 
 
             {activeStep === 4 && (

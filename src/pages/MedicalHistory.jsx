@@ -52,8 +52,24 @@ const MedicalHistory = () => {
     },
 
     validationSchema: Yup.object({
-      past_illness: Yup.string().required("Required"),
-    }),
+  patient_id: Yup.string().required("Patient is required"),
+
+  past_illness: Yup.string().required("Past illness is required"),
+
+  surgical_history: Yup.string().required("Surgical history is required"),
+
+  family_medical_history: Yup.string().required("Family history is required"),
+
+  current_medications: Yup.string().required("Current medications required"),
+
+  allergies: Yup.string().required("Allergies required"),
+
+  smoking: Yup.string().required("Smoking status required"),
+
+  alcohol: Yup.string().required("Alcohol status required"),
+
+  tobacco_use: Yup.string().required("Tobacco use required"),
+}),
 
     onSubmit: async (values, { resetForm }) => {
       try {
@@ -103,10 +119,10 @@ const MedicalHistory = () => {
     },
   });
   useEffect(() => {
-    console.log("EDIT ID:", id);
+    
   if (!editData || editData.length === 0) return;
 
-  const v = editData[0];   // ✅ FIX
+  const v = editData[0];   
 
   formik.setValues({
     patient_id: v.patient_id || "",
@@ -126,57 +142,70 @@ const MedicalHistory = () => {
     
   });
 }, [editData]);
-  //  useEffect(() => {
-  //   if (!empSearch || selectedEmp) return;
-  //   setSuggestionsList(suggestions);
-  // }, [suggestions, empSearch, selectedEmp]);
-
-  // ✅ auto fill
-  // useEffect(() => {
-  //    if (!patientData) return;
-  //    if (populatedUhidRef.current === selectedEmp) return;
-
-  //    populatedUhidRef.current = selectedEmp;
-
-  //    formik.setValues({
-  //      ...formik.values,
-  //      EmployeeId: patientData.employeeId || "",
-  //      Name: patientData.name || "",
-  //      Gender: patientData.gender || "",
-  //      Age: patientData.age || "",
-  //    });
-
-  //  }, [patientData, selectedEmp]);
+ 
   const nextStep = useCallback(async () => {
-    const errors = await formik.validateForm();
+  const errors = await formik.validateForm();
 
-    // if (activeStep === 1 && !formik.values.EmployeeId) {
-    //   healthAlerts.warning("Employee ID required");
-    //   return;
-    // }
+  
+  if (activeStep === 1 && !formik.values.Name) {
+    healthAlerts.warning("Name is required");
+    return;
+  }
 
-    if (activeStep === 2 && Object.keys(errors).length > 0) {
-      healthAlerts.warning("Fill required fields");
-      return;
-    }
+  if (
+    activeStep === 2 &&
+    (
+      errors.past_illness ||
+      errors.surgical_history ||
+      errors.family_medical_history ||
+      errors.current_medications ||
+      errors.allergies
+    )
+  ) {
+    formik.setTouched({
+      past_illness: true,
+      surgical_history: true,
+      family_medical_history: true,
+      current_medications: true,
+      allergies: true,
+    });
 
-    setActiveStep((prev) => prev + 1);
-  }, [activeStep, formik]);
+    const firstError = Object.values(errors)[0];
+    healthAlerts.warning(firstError);
+    return;
+  }
+
+  
+  if (
+    activeStep === 3 &&
+    (
+      errors.smoking ||
+      errors.alcohol ||
+      errors.tobacco_use
+    )
+  ) {
+    formik.setTouched({
+      smoking: true,
+      alcohol: true,
+      tobacco_use: true,
+    });
+
+    const firstError = Object.values(errors)[0];
+    healthAlerts.warning(firstError);
+    return;
+  }
+
+  setActiveStep((prev) => prev + 1);
+}, [activeStep, formik]);
 
   const prevStep = useCallback(() => {
     setActiveStep((prev) => prev - 1);
   }, []);
 
   const handleReset = useCallback(() => {
-    healthAlerts.confirm(
-      "Are you sure?",
-      "This will clear all data",
-      () => {
-        formik.resetForm();
-        setActiveStep(1);
-      }
-    );
-  }, [formik]);
+  formik.resetForm();
+  setActiveStep(1);
+}, [formik]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -315,13 +344,48 @@ const MedicalHistory = () => {
               )}
 
 
-              {activeStep === 4 && (
+               {activeStep === 4 && (
                 <section>
-                  <div className="bg-blue-50 p-6 rounded-xl space-y-2">
-                    <p><b>Past Illness:</b> {formik.values.past_illness}</p>
-                    <p><b>Medications:</b> {formik.values.current_medications}</p>
-                    <p><b>Allergies:</b> {formik.values.allergies}</p>
-                   
+                  <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
+                    <h3 className="text-lg font-semibold text-sky-600">
+                      MEDICAL HISTORYPREVIEW
+                    </h3>
+
+                    <div className="grid md:grid-cols-2 gap-3 text-sm">
+                      <p><b>Name:</b> {formik.values.Name}</p>
+                      <p><b>Gender:</b> {formik.values.Gender}</p>
+                      <p><b>Age:</b> {formik.values.Age}</p>
+                      <p><b>patient_id:</b> {formik.values.patient_id}</p>
+                    </div>
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Past Illness:</b> {formik.values.past_illness}</p>
+                      <p><b>Surgical History:</b> {formik.values.surgical_history}</p>
+                    </div>
+
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Family Medical History </b> {formik.values.family_medical_history}</p>
+                      <p><b>Allergies</b> {formik.values.allergies}</p>
+                    </div>
+
+
+                    <div className="border-t pt-3 text-sm">
+                      <p>
+                        <b>Smoking:</b>{formik.values.smoking}
+
+                      </p>
+                    </div>
+
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Alcohol:</b> {formik.values.alcohol}</p>
+                    </div>
+
+                    <div className="border-t pt-3 text-sm">
+                      <p><b>Tobacco Use:</b> {formik.values.tobacco_use}</p>
+                    </div>
+
                   </div>
                 </section>
               )}

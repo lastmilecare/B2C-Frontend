@@ -583,7 +583,7 @@ ${activeStep === step.id
     <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
 
       <h3 className="text-lg font-semibold text-sky-600">
-        Confirm Patient Registration
+        PATIENT REGISTRATION PREVIEW
       </h3>
 
       <div className="grid md:grid-cols-2 gap-3 text-sm">
