@@ -133,7 +133,7 @@ const OpdFormCopy = () => {
                 Age: editData.age || "",
                 Department: deptObj ? deptObj.id : 0,
                 Doctor: docObj ? docObj.id : 0,
-                ReferBy: editData.ReferBy || "",
+                ReferBy: editData.ReferTo || "",
                 FinCategory: editData.patient_type || "",
                 TotalAmount: editData.TotalServiceAmount || 0,
                 PaidAmount: editData.PaidAmount || 0,
@@ -284,6 +284,7 @@ const OpdFormCopy = () => {
         }),
 
         onSubmit: async (values) => {
+            
             if (!values.PayMode || values.PayMode === "") {
                 healthAlert({
                     title: "Payment Mode Required",
@@ -605,7 +606,7 @@ const OpdFormCopy = () => {
                                         >
                                         </Input>
 
-                                        <Input
+                                        {/* <Input
                                             label="Date of Birth"
                                             type="date"
                                             {...formik.getFieldProps("DOB")}
@@ -613,7 +614,7 @@ const OpdFormCopy = () => {
                                             className="bg-sky-50 cursor-not-allowed"
                                             onChange={handleDOBChange}
                                             max={new Date().toISOString().split("T")[0]}
-                                        />
+                                        /> */}
                                         <Input
                                             label="Age"
                                             {...formik.getFieldProps("Age")}
@@ -680,14 +681,14 @@ const OpdFormCopy = () => {
             >
             </Input> */}
 
-                                        <Input
+                                        {/* <Input
                                             label="Last Visit Date"
                                             type="date"
                                             {...formik.getFieldProps("LastVisitDate")}
                                             max={new Date().toISOString().split("T")[0]}
                                             className="bg-sky-50 cursor-not-allowed"
                                             readOnly
-                                        />
+                                        /> */}
                                     </div>
                                 </section>
                             )}
