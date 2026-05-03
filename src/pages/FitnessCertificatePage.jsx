@@ -52,7 +52,7 @@ const FitnessCertificatePage = () => {
             <CreditCardIcon className="w-4 h-4" />
             Certificate List
           </button>
-        </div>
+        
         <button
           onClick={() => setActiveTab("template")}
           className={`px-8 py-2.5 text-sm font-semibold flex items-center gap-2 transition-all
@@ -65,6 +65,7 @@ const FitnessCertificatePage = () => {
           <DocumentPlusIcon className="w-4 h-4" />
           Template Upload
         </button>
+      </div>
       </div>
 
       {activeTab === "form" ? (

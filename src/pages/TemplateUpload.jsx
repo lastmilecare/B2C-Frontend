@@ -58,17 +58,25 @@ const TemplateUpload = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-100 py-10 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
+      <div className="max-w-[1400px] mx-auto px-8">
 
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+        <div className="flex justify-between items-center mb-10">
+          <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-2">
+            <DocumentPlusIcon className="w-7 h-7 text-sky-600" />
+            Template Upload
+          </h1>
+        </div>
 
-          <h2 className="text-xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-            <DocumentPlusIcon className="w-6 h-6" />
-            Upload Certificate Template
-          </h2>
+        <div className="bg-white rounded-3xl shadow-xl border overflow-hidden">
 
-          <form onSubmit={formik.handleSubmit} className="space-y-6">
+          <div className="border-b px-8 py-4">
+            <h2 className="text-sky-700 font-semibold">
+              Upload Certificate Template
+            </h2>
+          </div>
+
+          <form onSubmit={formik.handleSubmit} className="p-9 space-y-8">
 
             <div className="grid md:grid-cols-2 gap-6">
 
@@ -96,6 +104,7 @@ const TemplateUpload = () => {
 
             </div>
 
+         
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Template HTML <span className="text-red-500">*</span>
@@ -104,11 +113,11 @@ const TemplateUpload = () => {
               <textarea
                 {...formik.getFieldProps("template_html")}
                 placeholder="Use placeholders like {{patient_id}}, {{fitness_status}}"
-                className={`w-full h-64 p-3 border-2 rounded-2xl bg-slate-50 focus:ring-4 focus:ring-emerald-100 outline-none text-sm
+                className={`w-full h-30 p-2 border-2 rounded-xl bg-blue-50 focus:ring-3 focus:ring-blue-100 outline-none text-sm
                   ${
                     formik.touched.template_html && formik.errors.template_html
                       ? "border-red-300"
-                      : "border-slate-100 focus:border-emerald-400"
+                      : "border-blue-100 focus:border-blue-400"
                   }`}
               />
 
@@ -119,15 +128,21 @@ const TemplateUpload = () => {
               )}
             </div>
 
-            <div className="flex justify-end pt-6 border-t">
-              <Button type="submit" variant="emerald" disabled={isLoading}>
-                <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+        
+            <div className="flex justify-end gap-3 pt-6 border-t">
+
+              <Button type="button" variant="gray" onClick={formik.handleReset}>
+                Reset
+              </Button>
+
+              <Button type="submit" variant="sky" disabled={isLoading}>
+                <CheckCircleIcon className="w-4 mr-1 inline" />
                 {isLoading ? "Saving..." : "Save Template"}
               </Button>
+
             </div>
 
           </form>
-
         </div>
       </div>
     </div>
