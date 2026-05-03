@@ -115,20 +115,22 @@ const ServiceSection = ({
         </div>
       </div>
 
-      <div className="mt-4">
-        <label className="text-sm text-gray-600 mb-1 block">Selected Services</label>
+      <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100">
+        <div className="px-4 py-3 border-b border-sky-100">
+    <h2 className="text-sky-700 font-semibold text-sm">Selected Services</h2>
+  </div>
 
         {selectedServices.length > 0 ? (
-          <div className="overflow-x-auto border border-gray-300 rounded-lg bg-white">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-gray-100 border-b">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-sky-50 text-sky-700">
                 <tr>
-                  <th className="p-2 text-center">SL No</th>
-                  <th className="p-2 text-center">Service ID</th>
-                  <th className="p-2 text-center">Type</th>
-                  <th className="p-2 text-left">Name</th>
-                  <th className="p-2 text-center">Qty</th>
-                  <th className="p-2 text-center">Charge</th>
+                  <th className="px-4 py-3 text-center">SL No</th>
+                  <th className="px-4 py-3 text-center">Service ID</th>
+                  <th className="px-4 py-3 text-center">Type</th>
+                  <th className="px-4 py-3 text-left">Name</th>
+                  <th className="px-4 py-3 text-center">Qty</th>
+                  <th className="px-4 py-3 text-center">Charge</th>
                   <th className="p-2 text-center">Net</th>
                   <th className="p-2 text-center">Delete</th>
                 </tr>

@@ -17,7 +17,7 @@ import { healthAlerts } from "../utils/healthSwal";
 import { useParams, useNavigate } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { useLazySearchDiseasesQuery } from "../redux/apiSlice";
-
+import GlobalLoader from "../components/common/GlobalLoader";
 const PatientRegistrationCopy = () => {
     const [searchDiseases] = useLazySearchDiseasesQuery();
     const { id } = useParams();
@@ -42,6 +42,8 @@ const PatientRegistrationCopy = () => {
 
     const { countries, states, districts } = useLocationData(countryId, stateId);
     const [activeStep, setActiveStep] = useState(1);
+    const isPageLoading = isLoading || isFetching;
+    const isSubmitting = isCreating || isUpdating;
 
     const nextStep = async () => {
         const errors = await formik.validateForm();
@@ -280,17 +282,12 @@ const PatientRegistrationCopy = () => {
         formik.setFieldValue("age", `${years}y ${months}m ${days}d`);
     };
 
- if (isEdit && (isLoading || isFetching)) {
-  return (
-    <div className="text-center mt-10 font-bold text-sky-700">
-      Loading Patient Data...
-    </div>
-  );
-}
+
 
     return (
 
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
+             {(isEdit && isPageLoading) || isSubmitting ? <GlobalLoader /> : null}
             <div className="max-w-6xl mx-auto">
 
                

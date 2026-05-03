@@ -8,10 +8,12 @@ import { ROUTES } from "./config/routes.config";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PrintOpdForm from "./pages/PrintOpdForm";
+import AppLoader from "./AppLoader";
 
 function App() {
   return (
     <BrowserRouter>
+    <AppLoader />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/print-opd-form" element={<PrintOpdForm />} />

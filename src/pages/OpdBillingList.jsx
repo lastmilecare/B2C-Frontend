@@ -69,24 +69,14 @@ const OpdBillingListCopy = () => {
       });
       return;
     }
-    healthAlert({
-      title: "Edit Bill?",
-      text: `Do you want to edit OPD Bill No: ${row.bill_no}?`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#aaa",
-      confirmButtonText: "Yes, Edit it",
-      cancelButtonText: "No, stay here"
-    }).then((result) => {
-      if (result.isConfirmed) {
+   
         navigate(`/opd-form/${row.bill_no}`, {
           state: {
             editData: row,
           },
         });
-      }
-    });
+      
+    
   };
 
   const [uhidSearch, setUhidSearch] = useState("");
@@ -438,7 +428,7 @@ const OpdBillingListCopy = () => {
     {
       name: "Ref",
       title: "Referred By",
-      selector: (row) => safeString(row?.Disease, "-"),
+      selector: (row) => safeString(row?.ReferTo, "-"),
     },
     {
       name: "Coll By",
