@@ -1304,7 +1304,7 @@ getLowStockItems: build.query({
     url: "/medicine-inventory/stock/view/low-stock",
     method: "GET",
   }),
-})
+}),
   }),
 });
 
