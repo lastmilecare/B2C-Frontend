@@ -990,7 +990,7 @@ ${activeStep === step.id
     <p><b>Follow-up:</b> {formik.values.followup}</p>
   </div>
 
- s
+ 
   <div className="border-t pt-3 text-sm">
     <p><b>Total Medicines:</b> {prescriptionList.length}</p>
   </div>

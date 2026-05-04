@@ -1,5 +1,5 @@
 import React,{useState} from "react";
-import { useGetPatientsQuery, useSearchUHIDQuery } from "../redux/apiSlice";
+import { useGetPatientsQuery, useSearchUHIDQuery, useDeletePatientMutation } from "../redux/apiSlice";
 import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
 import useDebounce from "../hooks/useDebounce";
@@ -18,6 +18,7 @@ const debouncedUhid=useDebounce(uhidSearch,500)
 const {data:suggestions=[]}=useSearchUHIDQuery(debouncedUhid,{
  skip:debouncedUhid.length<2
 })
+const [deletePatient] = useDeletePatientMutation();
 
 const [tempFilters,setTempFilters]=useState({
  name:"",
@@ -147,6 +148,24 @@ const filtersConfig=[
  {label:"Unique Id",name:"idProof_number",type:"text"}
 
 ]
+const handleDelete = async (row) => {
+  try {
+    await deletePatient(row.id).unwrap();
+
+    healthAlert({
+      title: "Success",
+      text: "Patient deleted successfully",
+      icon: "success",
+    });
+
+  } catch (err) {
+    healthAlert({
+      title: "Error",
+      text: err?.data?.message || "Delete failed",
+      icon: "error",
+    });
+  }
+};
 
 const columns=[
 
@@ -302,9 +321,7 @@ title="Patient List"
    navigate(`/patient-registration/${row.id}`)
  }}
 
- onDelete={(row)=>{
-   
- }}
+onDelete={handleDelete}
 />
 
 </div>

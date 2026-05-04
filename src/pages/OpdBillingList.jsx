@@ -32,16 +32,7 @@ const OpdBillingListCopy = () => {
     }
 
     
-    healthAlert({
-      title: "Are you sure?",
-      text: `You are about to delete OPD Bill No: ${row.bill_no}. This action cannot be undone!`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
+    
         try {
           await deleteOpdBill(Number(row.bill_no)).unwrap();
           
@@ -58,8 +49,7 @@ const OpdBillingListCopy = () => {
           });
         }
       }
-    });
-  };
+  
  const handleEdit = (row) => {
     if (!row || !row.bill_no) {
       healthAlert({
