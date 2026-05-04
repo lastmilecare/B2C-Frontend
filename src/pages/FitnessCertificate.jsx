@@ -10,7 +10,9 @@ import {
 import {
   useCreateFitnessMutation,
   useUpdateFitnessMutation,
-  useGetFitnessByIdQuery
+  useGetFitnessByIdQuery,
+  useGetTemplatesByTenantQuery,
+  useGetAllTemplatesQuery,
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlerts } from "../utils/healthSwal";
@@ -18,6 +20,8 @@ import { Input, Select, Button } from "../components/FormControls";
 import { useNavigate } from "react-router-dom";
 import PatientSelector from "../components/common/PatientSelector";
 import { useParams } from "react-router-dom";
+import { cookie } from "../utils/cookie";
+
 const FitnessCertificate = () => {
   const [activeStep, setActiveStep] = useState(1);
 
@@ -30,8 +34,23 @@ const FitnessCertificate = () => {
   const { data: editData } = useGetFitnessByIdQuery(id, {
     skip: !id,
   });
+  const role = cookie.get("role");
+  const tenantId = cookie.get("tenant_id");
 
- 
+  const { data: allTemplates } = useGetAllTemplatesQuery(undefined, {
+    skip: role !== "LMC_Admin",
+  });
+
+  const { data: tenantTemplates } = useGetTemplatesByTenantQuery(tenantId, {
+    skip: role === "LMC_Admin",
+  });
+  const [previewHtml, setPreviewHtml] = useState("");
+
+  const templates =
+    role === "LMC_Admin"
+      ? allTemplates?.data || []
+      : tenantTemplates?.data || [];
+
   const formik = useFormik({
     initialValues: {
       EmployeeId: "",
@@ -46,10 +65,10 @@ const FitnessCertificate = () => {
       doctor: "",
       restrictions: "",
       recommendations: "",
+      template_id: "",
     },
 
     onSubmit: async (values) => {
-       
       try {
         const payload = {
           patient_id: values.patient_id,
@@ -61,8 +80,9 @@ const FitnessCertificate = () => {
           restrictions: values.restrictions,
           recommendations: values.recommendations,
           doctor_signature: values.doctor,
-          valid_till: values.validity ? new Date(values.validity) : null ,
+          valid_till: values.validity ? new Date(values.validity) : null,
           issue_date: values.issueDate,
+          template_id: Number(values.template_id),
         };
 
         if (id) {
@@ -77,8 +97,37 @@ const FitnessCertificate = () => {
       } catch {
         healthAlerts.error("Save Failed");
       }
-    }
+    },
   });
+  const generatePreview = async () => {
+    if (!formik.values.template_id) return;
+
+    try {
+      const res = await fetch("/preview-template", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          template_id: formik.values.template_id,
+          data: {
+            ...formik.values,
+          },
+        }),
+      });
+
+      const html = await res.text();
+      setPreviewHtml(html);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  useEffect(() => {
+    if (activeStep === 3) {
+      generatePreview();
+    }
+  }, [activeStep]);
+
   useEffect(() => {
     if (editData) {
       formik.setValues({
@@ -94,43 +143,46 @@ const FitnessCertificate = () => {
         doctor: editData.doctor_signature || "",
         restrictions: editData.restrictions || "",
         recommendations: editData.recommendations || "",
+        template_id: editData.template_id || "",
       });
     }
   }, [editData]);
 
- const nextStep = () => {
-
-
-  if (activeStep === 1 && !formik.values.Name) {
-    healthAlerts.warning("Name is required");
-    return;
-  }
-
- 
-  if (activeStep === 2) {
-    if (!formik.values.issueDate) {
-      healthAlerts.warning("Issue Date required");
+  const nextStep = () => {
+    if (activeStep === 1 && !formik.values.Name) {
+      healthAlerts.warning("Name is required");
       return;
     }
 
-    if (!formik.values.validity) {
-      healthAlerts.warning("Validity required");
-      return;
+    if (activeStep === 2) {
+      if (!formik.values.template_id) {
+        healthAlerts.warning("Template is required");
+        return;
+      }
+
+      if (!formik.values.issueDate) {
+        healthAlerts.warning("Issue Date required");
+        return;
+      }
+
+      if (!formik.values.validity) {
+        healthAlerts.warning("Validity required");
+        return;
+      }
+
+      if (!formik.values.fitnessStatus) {
+        healthAlerts.warning("Fitness Status required");
+        return;
+      }
+
+      if (!formik.values.doctor) {
+        healthAlerts.warning("Doctor name required");
+        return;
+      }
     }
 
-    if (!formik.values.fitnessStatus) {
-      healthAlerts.warning("Fitness Status required");
-      return;
-    }
-
-    if (!formik.values.doctor) {
-      healthAlerts.warning("Doctor name required");
-      return;
-    }
-  }
-
-  setActiveStep((p) => p + 1);
-};
+    setActiveStep((p) => p + 1);
+  };
 
   const prevStep = () => setActiveStep((p) => p - 1);
 
@@ -145,8 +197,6 @@ const FitnessCertificate = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
       <div className="max-w-[1400px] mx-auto px-8">
-
-
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-slate-800">
             Fitness Certificate
@@ -154,35 +204,36 @@ const FitnessCertificate = () => {
 
           <div className="flex gap-2">
             {[1, 2, 3, 4].map((s) => (
-              <div key={s} className={`h-2 w-12 rounded ${activeStep >= s ? "bg-sky-600" : "bg-blue-100"
-                }`} />
+              <div
+                key={s}
+                className={`h-2 w-12 rounded ${
+                  activeStep >= s ? "bg-sky-600" : "bg-blue-100"
+                }`}
+              />
             ))}
           </div>
         </div>
 
-
         <div className="bg-white rounded-3xl shadow-xl border overflow-hidden">
-
-
           <div className="flex border-b">
             {["Patient", "Details", "Preview", "Download"].map((l, i) => (
-              <div key={i} className={`flex-1 py-4 text-center font-semibold ${activeStep === i + 1 ? "text-sky-600" : "text-gray-400"
-                }`}>
+              <div
+                key={i}
+                className={`flex-1 py-4 text-center font-semibold ${
+                  activeStep === i + 1 ? "text-sky-600" : "text-gray-400"
+                }`}
+              >
                 {l}
               </div>
             ))}
           </div>
 
           <form className="p-9 space-y-8">
-
-
             {activeStep === 1 && (
               <section>
                 <PatientSelector formik={formik} />
-
               </section>
             )}
-
 
             {activeStep === 2 && (
               <section>
@@ -191,64 +242,120 @@ const FitnessCertificate = () => {
                 </h3>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                 
-                  <Input type="date" label="Issue Date" {...formik.getFieldProps("issueDate")} />
+                  <Input
+                    type="date"
+                    label="Issue Date"
+                    {...formik.getFieldProps("issueDate")}
+                  />
                   {/* <Input label="Validity" {...formik.getFieldProps("validity")} /> */}
-                  <Input type="date" label="Validity" {...formik.getFieldProps("validity")} />
+                  <Input
+                    type="date"
+                    label="Validity"
+                    {...formik.getFieldProps("validity")}
+                  />
                   <Select
                     label="Fitness Status"
                     value={formik.values.fitnessStatus}
-                    onChange={(e) => formik.setFieldValue("fitnessStatus", e.target.value)}
+                    onChange={(e) =>
+                      formik.setFieldValue("fitnessStatus", e.target.value)
+                    }
                   >
                     <option value="">Select</option>
                     <option value="FIT">Fit</option>
-                    <option value="FIT_WITH_RESTRICTIONS">Fit with Restrictions</option>
+                    <option value="FIT_WITH_RESTRICTIONS">
+                      Fit with Restrictions
+                    </option>
                     <option value="UNFIT">Unfit</option>
                   </Select>
-
-                  <Input label="Doctor Name" {...formik.getFieldProps("doctor")} />
-                  <Input label="Restrictions" {...formik.getFieldProps("restrictions")} />
-                  <Input label="Recommendations" {...formik.getFieldProps("recommendations")} />
+                  <Select
+                    label="Select Template"
+                    value={formik.values.template_id}
+                    onChange={(e) =>
+                      formik.setFieldValue("template_id", e.target.value)
+                    }
+                  >
+                    <option value="">Select Template</option>
+                    {templates.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </Select>
+                  <Input
+                    label="Doctor Name"
+                    {...formik.getFieldProps("doctor")}
+                  />
+                  <Input
+                    label="Restrictions"
+                    {...formik.getFieldProps("restrictions")}
+                  />
+                  <Input
+                    label="Recommendations"
+                    {...formik.getFieldProps("recommendations")}
+                  />
                 </div>
               </section>
             )}
 
+            {/* {activeStep === 3 && (
+              <div
+                ref={printRef}
+                className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4"
+              >
+                <h2 className="text-xl font-bold text-center mb-4">
+                  FITNESS CERTIFICATE PREVIEW
+                </h2>
+
+                <div className="border-b pb-2">
+                  <p>
+                    <b>Name:</b> {formik.values.Name}
+                  </p>
+                  <p>
+                    <b>Gender:</b> {formik.values.Gender}
+                  </p>
+                  <p>
+                    <b>Age:</b> {formik.values.Age}
+                  </p>
+                  <p>
+                    <b>Patient ID:</b> {formik.values.patient_id}
+                  </p>
+                </div>
+
+                <div className="border-b pb-2">
+                  <p>
+                    <b>Issue Date:</b> {formik.values.issueDate}
+                  </p>
+                  <p>
+                    <b>Validity:</b> {formik.values.validity}
+                  </p>
+                </div>
+
+                <div className="border-b pb-2">
+                  <p>
+                    <b>Fitness Status:</b> {formik.values.fitnessStatus}
+                  </p>
+                  <p>
+                    <b>Doctor:</b> {formik.values.doctor}
+                  </p>
+                </div>
+
+                <div>
+                  <p>
+                    <b>Restrictions:</b> {formik.values.restrictions}
+                  </p>
+                  <p>
+                    <b>Recommendations:</b> {formik.values.recommendations}
+                  </p>
+                </div>
+              </div>
+            )} */}
 
             {activeStep === 3 && (
-  <div ref={printRef} className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
-    <h2 className="text-xl font-bold text-center mb-4">
-      FITNESS CERTIFICATE PREVIEW
-    </h2>
-
-   
-    <div className="border-b pb-2">
-      <p><b>Name:</b> {formik.values.Name}</p>
-      <p><b>Gender:</b> {formik.values.Gender}</p>
-      <p><b>Age:</b> {formik.values.Age}</p>
-      <p><b>Patient ID:</b> {formik.values.patient_id}</p>
-    </div>
-
-    
-    <div className="border-b pb-2">
-      
-      <p><b>Issue Date:</b> {formik.values.issueDate}</p>
-      <p><b>Validity:</b> {formik.values.validity}</p>
-    </div>
-
-  
-    <div className="border-b pb-2">
-      <p><b>Fitness Status:</b> {formik.values.fitnessStatus}</p>
-      <p><b>Doctor:</b> {formik.values.doctor}</p>
-    </div>
-
-  
-    <div>
-      <p><b>Restrictions:</b> {formik.values.restrictions}</p>
-      <p><b>Recommendations:</b> {formik.values.recommendations}</p>
-    </div>
-  </div>
-)}
-
+              <div
+                className="bg-white border p-4 rounded"
+                dangerouslySetInnerHTML={{ __html: previewHtml }}
+              />
+            )}
 
             {activeStep === 4 && (
               <div className="flex gap-4">
@@ -259,9 +366,7 @@ const FitnessCertificate = () => {
               </div>
             )}
 
-
             <div className="flex justify-end gap-3 pt-6 border-t">
-
               {activeStep > 1 && (
                 <Button type="button" variant="gray" onClick={prevStep}>
                   Back
@@ -278,13 +383,15 @@ const FitnessCertificate = () => {
                   Continue
                 </Button>
               ) : (
-                <Button type="button" variant="sky" onClick={formik.handleSubmit}>
+                <Button
+                  type="button"
+                  variant="sky"
+                  onClick={formik.handleSubmit}
+                >
                   Save
                 </Button>
               )}
-
             </div>
-
           </form>
         </div>
       </div>
