@@ -13,6 +13,7 @@ import {
   useGetFitnessByIdQuery,
   useGetTemplatesByTenantQuery,
   useGetAllTemplatesQuery,
+  usePreviewTemplateMutation,
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlerts } from "../utils/healthSwal";
@@ -24,7 +25,7 @@ import { cookie } from "../utils/cookie";
 
 const FitnessCertificate = () => {
   const [activeStep, setActiveStep] = useState(1);
-
+  const [previewTemplate] = usePreviewTemplateMutation();
   const navigate = useNavigate();
   const printRef = useRef();
   const { id } = useParams();
@@ -34,23 +35,23 @@ const FitnessCertificate = () => {
   const { data: editData } = useGetFitnessByIdQuery(id, {
     skip: !id,
   });
-  const role = cookie.get("role");
   const tenantId = cookie.get("tenant_id");
+  const ROLE_ADMIN = "LMC_ADMIN";
+  const role = cookie.get("role");
 
+  const isAdmin = role === ROLE_ADMIN;
   const { data: allTemplates } = useGetAllTemplatesQuery(undefined, {
-    skip: role !== "LMC_Admin",
+    skip: !isAdmin,
+    refetchOnMountOrArgChange: true,
   });
 
   const { data: tenantTemplates } = useGetTemplatesByTenantQuery(tenantId, {
-    skip: role === "LMC_Admin",
+    skip: isAdmin,
+    refetchOnMountOrArgChange: true,
   });
   const [previewHtml, setPreviewHtml] = useState("");
 
-  const templates =
-    role === "LMC_Admin"
-      ? allTemplates?.data || []
-      : tenantTemplates?.data || [];
-
+  const templates = isAdmin ? allTemplates || [] : tenantTemplates || [];
   const formik = useFormik({
     initialValues: {
       EmployeeId: "",
@@ -59,10 +60,10 @@ const FitnessCertificate = () => {
       Gender: "",
       Age: "",
       certNo: "",
-      issueDate: "",
-      validity: "",
-      fitnessStatus: "",
-      doctor: "",
+      issue_date: "",
+      valid_till: "",
+      fitness_status: "",
+      doctor_signature: "",
       restrictions: "",
       recommendations: "",
       template_id: "",
@@ -76,12 +77,12 @@ const FitnessCertificate = () => {
           gender: values.Gender,
           age: Number(values.Age),
           employee_id: values.EmployeeId,
-          fitness_status: values.fitnessStatus,
+          fitness_status: values.fitness_status,
           restrictions: values.restrictions,
           recommendations: values.recommendations,
-          doctor_signature: values.doctor,
-          valid_till: values.validity ? new Date(values.validity) : null,
-          issue_date: values.issueDate,
+          doctor_signature: values.doctor_signature,
+          valid_till: values.valid_till ? new Date(values.valid_till) : null,
+          issue_date: values.issue_date ? new Date(values.issue_date) : null,
           template_id: Number(values.template_id),
         };
 
@@ -103,20 +104,11 @@ const FitnessCertificate = () => {
     if (!formik.values.template_id) return;
 
     try {
-      const res = await fetch("/preview-template", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          template_id: formik.values.template_id,
-          data: {
-            ...formik.values,
-          },
-        }),
-      });
+      const html = await previewTemplate({
+        template_id: formik.values.template_id,
+        data: { ...formik.values },
+      }).unwrap();
 
-      const html = await res.text();
       setPreviewHtml(html);
     } catch (err) {
       console.error(err);
@@ -126,7 +118,7 @@ const FitnessCertificate = () => {
     if (activeStep === 3) {
       generatePreview();
     }
-  }, [activeStep]);
+  }, [activeStep, formik.values.template_id]);
 
   useEffect(() => {
     if (editData) {
@@ -137,10 +129,10 @@ const FitnessCertificate = () => {
         Gender: editData.gender || "",
         Age: editData.age || "",
         certNo: editData.certificate_number || "",
-        issueDate: editData.issue_date?.split("T")[0] || "",
-        validity: editData.valid_till?.split("T")[0] || "",
-        fitnessStatus: editData.fitness_status || "",
-        doctor: editData.doctor_signature || "",
+        issue_date: editData.issue_date?.split("T")[0] || "",
+        valid_till: editData.valid_till?.split("T")[0] || "",
+        fitness_status: editData.fitness_status || "",
+        doctor_signature: editData.doctor_signature || "",
         restrictions: editData.restrictions || "",
         recommendations: editData.recommendations || "",
         template_id: editData.template_id || "",
@@ -160,22 +152,22 @@ const FitnessCertificate = () => {
         return;
       }
 
-      if (!formik.values.issueDate) {
+      if (!formik.values.issue_date) {
         healthAlerts.warning("Issue Date required");
         return;
       }
 
-      if (!formik.values.validity) {
+      if (!formik.values.valid_till) {
         healthAlerts.warning("Validity required");
         return;
       }
 
-      if (!formik.values.fitnessStatus) {
+      if (!formik.values.fitness_status) {
         healthAlerts.warning("Fitness Status required");
         return;
       }
 
-      if (!formik.values.doctor) {
+      if (!formik.values.doctor_signature) {
         healthAlerts.warning("Doctor name required");
         return;
       }
@@ -245,19 +237,19 @@ const FitnessCertificate = () => {
                   <Input
                     type="date"
                     label="Issue Date"
-                    {...formik.getFieldProps("issueDate")}
+                    {...formik.getFieldProps("issue_date")}
                   />
-                  {/* <Input label="Validity" {...formik.getFieldProps("validity")} /> */}
+                  {/* <Input label="Validity" {...formik.getFieldProps("valid_till")} /> */}
                   <Input
                     type="date"
                     label="Validity"
-                    {...formik.getFieldProps("validity")}
+                    {...formik.getFieldProps("valid_till")}
                   />
                   <Select
                     label="Fitness Status"
-                    value={formik.values.fitnessStatus}
+                    value={formik.values.fitness_status}
                     onChange={(e) =>
-                      formik.setFieldValue("fitnessStatus", e.target.value)
+                      formik.setFieldValue("fitness_status", e.target.value)
                     }
                   >
                     <option value="">Select</option>
@@ -268,7 +260,7 @@ const FitnessCertificate = () => {
                     <option value="UNFIT">Unfit</option>
                   </Select>
                   <Select
-                    label="Select Template"
+                    label="Select Template *"
                     value={formik.values.template_id}
                     onChange={(e) =>
                       formik.setFieldValue("template_id", e.target.value)
@@ -283,7 +275,7 @@ const FitnessCertificate = () => {
                   </Select>
                   <Input
                     label="Doctor Name"
-                    {...formik.getFieldProps("doctor")}
+                    {...formik.getFieldProps("doctor_signature")}
                   />
                   <Input
                     label="Restrictions"
@@ -297,72 +289,22 @@ const FitnessCertificate = () => {
               </section>
             )}
 
-            {/* {activeStep === 3 && (
-              <div
-                ref={printRef}
-                className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4"
-              >
-                <h2 className="text-xl font-bold text-center mb-4">
-                  FITNESS CERTIFICATE PREVIEW
-                </h2>
-
-                <div className="border-b pb-2">
-                  <p>
-                    <b>Name:</b> {formik.values.Name}
-                  </p>
-                  <p>
-                    <b>Gender:</b> {formik.values.Gender}
-                  </p>
-                  <p>
-                    <b>Age:</b> {formik.values.Age}
-                  </p>
-                  <p>
-                    <b>Patient ID:</b> {formik.values.patient_id}
-                  </p>
-                </div>
-
-                <div className="border-b pb-2">
-                  <p>
-                    <b>Issue Date:</b> {formik.values.issueDate}
-                  </p>
-                  <p>
-                    <b>Validity:</b> {formik.values.validity}
-                  </p>
-                </div>
-
-                <div className="border-b pb-2">
-                  <p>
-                    <b>Fitness Status:</b> {formik.values.fitnessStatus}
-                  </p>
-                  <p>
-                    <b>Doctor:</b> {formik.values.doctor}
-                  </p>
-                </div>
-
-                <div>
-                  <p>
-                    <b>Restrictions:</b> {formik.values.restrictions}
-                  </p>
-                  <p>
-                    <b>Recommendations:</b> {formik.values.recommendations}
-                  </p>
-                </div>
-              </div>
-            )} */}
-
             {activeStep === 3 && (
-              <div
-                className="bg-white border p-4 rounded"
-                dangerouslySetInnerHTML={{ __html: previewHtml }}
-              />
+              <div className="bg-white border p-4 rounded">
+                <iframe
+                  title="preview"
+                  className="w-full h-[800px] rounded border bg-white"
+                  srcDoc={previewHtml}
+                />
+              </div>
             )}
 
             {activeStep === 4 && (
               <div className="flex gap-4">
-                <Button onClick={handlePrint}>
+                {/* <Button onClick={handlePrint}>
                   <PrinterIcon className="w-4 mr-1 inline" />
                   Print / Download
-                </Button>
+                </Button> */}
               </div>
             )}
 

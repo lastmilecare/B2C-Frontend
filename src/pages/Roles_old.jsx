@@ -35,7 +35,7 @@ const Rolesold = () => {
   const { data: permissionsData } = useGetAllPermissionsComboQuery();
   const permissions = permissionsData?.data?.data || [];
   const permissionFilters =
-    role === "LMC_Admin"
+    role === "LMC_ADMIN"
       ? permissions
       : permissions.filter(
           (p) => p.resource !== "tenant" && p.resource !== "role",
