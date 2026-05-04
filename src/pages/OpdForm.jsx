@@ -14,7 +14,7 @@ import ServiceSection from "../components/ServiceSection";
 import DiseaseSelect from "../components/DiseaseSelect";
 import useDebounce from "../hooks/useDebounce";
 import { PAYMENT_TYPES } from "../utils/constants";
-import { useGetPatientsByUhidQuery, useSearchUHIDQuery, useGetComboQuery, useCreateBillMutation, useUpdateBillMutation } from "../redux/apiSlice";
+import { useGetPatientsByUhidQuery, useSearchUHIDQuery, useGetComboQuery, useCreateBillMutation, useUpdateBillMutation, useGetServiceMastersQuery} from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert } from "../utils/healthSwal";
 import PrintOpdForm from "./PrintOpdForm";
@@ -111,7 +111,7 @@ const OpdFormCopy = () => {
         }
 
     }, [suggestions, selectedUhid, uhidSearch]);
-
+    const { data: allServices = [] } = useGetServiceMastersQuery("");
     useEffect(() => {
         if (editData && department && doctors && paymode) {
             setUhidSearch(editData.uhid || "");
@@ -145,18 +145,25 @@ const OpdFormCopy = () => {
                     : [],
             });
             if (editData.opd_billing_data) {
-                const mapped = editData.opd_billing_data.map(s => ({
-                    id: s.ServiceID,
+                const mapped = editData.opd_billing_data.map(s => {
+                const found = allServices.find(
+                    x => x.ServiceName === s.ServiceName
+                );
+
+                return {
+                    id: found?.ID || 0,
+                    type: found?.ServiceType || "General",
                     name: s.ServiceName,
                     price: s.ServiceAmount,
                     quantity: s.Qty || 1,
-                    HospitalID: s.HospitalID,
-                    ServiceTypeID: s.ServiceTypeID
-                }));
+                    HospitalID: found?.HospitalID || 1,
+                    ServiceTypeID: found?.ServiceTypeID || 1
+                };
+            });
                 setSelectedServices(mapped);
             }
         }
-    }, [editData, department, doctors, paymode]);
+    }, [editData, department, doctors, paymode, allServices]);
 
     const parseDOB = (raw) => {
         if (!raw) return "";
