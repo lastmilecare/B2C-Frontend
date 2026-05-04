@@ -1272,15 +1272,32 @@ export const api = createApi({
     }),
 
     getTemplatesByTenant: build.query({
-      query: (tenantId) => `/ohc-fitness/templates/${tenantId}`,
+      query: (tenantId) => ({
+        url: `/ohc-fitness/templates/${tenantId}`,
+        method: "GET",
+      }),
+    }),
+    getAllTemplates: build.query({
+      query: () => ({
+        url: `/ohc-fitness/templates`,
+        method: "GET",
+      }),
     }),
     deletePatient: build.mutation({
-  query: (id) => ({
-    url: `/patient/${id}`,
-    method: "DELETE",
-  }),
-  invalidatesTags: ["Patient"],
-}),
+      query: (id) => ({
+        url: `/patient/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Patient"],
+    }),
+    previewTemplate: build.mutation({
+      query: (body) => ({
+        url: "/ohc-fitness/preview-template",
+        method: "POST",
+        data:body,
+      }),
+      responseHandler: async (response) => response.text(), 
+    }),
   }),
 });
 
@@ -1426,4 +1443,6 @@ export const {
   useCreateTemplateMutation,
   useGetTemplatesByTenantQuery,
   useDeletePatientMutation,
+  useGetAllTemplatesQuery,
+  usePreviewTemplateMutation,
 } = api;

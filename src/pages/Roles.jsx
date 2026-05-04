@@ -32,7 +32,7 @@ const Roles = () => {
   const dropdownRef = useRef();
 
   const filteredPermissions =
-    userRole === "LMC_Admin"
+    userRole === "LMC_ADMIN"
       ? permissions
       : permissions.filter(
           (p) => p.resource !== "tenant" && p.resource !== "role",
