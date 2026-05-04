@@ -111,7 +111,7 @@ const PatientRegistrationCopy = () => {
             localAddressState: Yup.string().required("State is required"),
             occupation: Yup.string().required("Occupation is required"),
             CO: Yup.string().required("Co is required"),
-            employeeId: Yup.string().required("EmployeeId is required")
+            // employeeId: Yup.string().required("EmployeeId is required")
         }),
 
         onSubmit: async (values) => {
@@ -435,8 +435,8 @@ ${activeStep === step.id
                                         <Input
                                             {...formik.getFieldProps("employeeId")}
                                             label="Employee Id"
-                                            required
-                                            error={formik.touched.employeeId && formik.errors.employeeId}
+                                            // required
+                                            // error={formik.touched.employeeId && formik.errors.employeeId}
                                         />
 
                                     </div>

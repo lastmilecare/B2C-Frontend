@@ -1274,6 +1274,13 @@ export const api = createApi({
     getTemplatesByTenant: build.query({
       query: (tenantId) => `/ohc-fitness/templates/${tenantId}`,
     }),
+    deletePatient: build.mutation({
+  query: (id) => ({
+    url: `/patient/${id}`,
+    method: "DELETE",
+  }),
+  invalidatesTags: ["Patient"],
+}),
   }),
 });
 
@@ -1418,4 +1425,5 @@ export const {
   useDeleteFitnessMutation,
   useCreateTemplateMutation,
   useGetTemplatesByTenantQuery,
+  useDeletePatientMutation,
 } = api;

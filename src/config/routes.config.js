@@ -41,6 +41,7 @@ import PatientPage from "../pages/PatientPage";
 
 import VitalsPage from "../pages/VitalsPage";
 import ResourcePage from "../pages/ResourcePage";
+import ItemMaster from "../pages/ItemMaster";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -420,6 +421,16 @@ export const ROUTES = [
   component: VitalsPage,
   permission: null,
   showInSidebar: false,
-}
+},
+{
+    path: "/items-master",
+    component: ItemMaster,
+    permission: null,
+    label: "ItemMaster",
+    icon: "ShieldCheckIcon",
+    group: "Administration",
+    showInSidebar: false,
+  }
+
  
 ];
