@@ -249,7 +249,7 @@ const PrescriptionListCopy = () => {
  name:"Status",
  cell:(row)=>{
 
-  const active=row.status
+  const active=row.isActive
 
   return(
 
