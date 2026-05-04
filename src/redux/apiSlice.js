@@ -1298,6 +1298,13 @@ export const api = createApi({
       }),
       responseHandler: async (response) => response.text(), 
     }),
+  
+getLowStockItems: build.query({
+  query: () => ({
+    url: "/medicine-inventory/stock/view/low-stock",
+    method: "GET",
+  }),
+})
   }),
 });
 
@@ -1445,4 +1452,5 @@ export const {
   useDeletePatientMutation,
   useGetAllTemplatesQuery,
   usePreviewTemplateMutation,
+  useGetLowStockItemsQuery
 } = api;
