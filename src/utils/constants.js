@@ -92,5 +92,13 @@ export const Tenant_Type_Options = [
   { label: "Ohc", value: "ohc" },
   { label: "Company", value: "company" },
   { label: "Hospital", value: "hospital" },
-  { label: "Corporate", value: "corporate" }
-];  
+  { label: "Corporate", value: "corporate" },
+];
+
+export const Referral_Options = [
+  { label: "family & friends", value: "Family & Friends" },
+  { label: "Health Camp", value: "Health Camp" },
+  { label: "Mobilization", value: "Mobilization" },
+  { label: "Digital Marketing", value: "Digital Marketing" },
+  { label: "Amp Family", value: "Amp Family" },
+];

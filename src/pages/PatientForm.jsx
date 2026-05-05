@@ -30,6 +30,7 @@ import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { useLazySearchDiseasesQuery } from "../redux/apiSlice";
 import GlobalLoader from "../components/common/GlobalLoader";
 import { cookie } from "../utils/cookie";
+import { Referral_Options } from "../utils/constants";
 
 const PatientRegistrationCopy = () => {
   const [searchDiseases] = useLazySearchDiseasesQuery();
@@ -113,7 +114,8 @@ const PatientRegistrationCopy = () => {
       creditamount: "",
       idProof_number: "",
       idProof_name: "",
-      employeeId: "",
+      employeeId: 0,
+      ReferredBy: "",
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
@@ -150,13 +152,20 @@ const PatientRegistrationCopy = () => {
           );
           navigate("/patient-list");
         } else {
-          await createPatient(payload).unwrap();
-          healthAlerts.success(
-            "Patient Data Saved Successfully",
-            "Patient Saved",
-          );
-          handleReset();
-          navigate("/patient-list");
+          const value = await createPatient(payload).unwrap();
+          if (value?.status) {
+            healthAlerts.success(
+              "Patient Data Saved Successfully",
+              "Patient Saved",
+            );
+            handleReset();
+            navigate("/patient-list");
+          } else {
+            healthAlerts.error(
+              value?.message || "Failed to save patient data",
+              "Patient",
+            );
+          }
         }
       } catch (err) {
         error.message("Submit error:", err);
@@ -220,6 +229,7 @@ const PatientRegistrationCopy = () => {
           idProof_number: p.idProof_number || "",
           idProof_name: p.idProof_name || "",
           employeeId: p.employeeId || "",
+          ReferredBy: p.ReferredBy || "",
         });
       };
 
@@ -229,7 +239,7 @@ const PatientRegistrationCopy = () => {
       setStateId(p.state_id || "");
     }
   }, [patientApiResponse, isEdit]);
-
+  const referralOptions = Referral_Options.map((option) => option.value);
   const buildPayload = (values) => {
     if (!values) return null;
     const ageValue = values?.age?.split(" ") ?? [];
@@ -268,6 +278,7 @@ const PatientRegistrationCopy = () => {
       co: values.CO,
       relationship: values.relationship,
       employeeId: values.employeeId,
+      ReferredBy: values.ReferredBy || "",
     };
 
     if (!isEdit) {
@@ -577,6 +588,21 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       label="Local Address"
                     />
                     <Input {...formik.getFieldProps("pin")} label="Pin Code" />
+                    <Select
+                      {...formik.getFieldProps("ReferredBy")}
+                      label="Referred By"
+                      required
+                      error={
+                        formik.touched.ReferredBy && formik.errors.ReferredBy
+                      }
+                    >
+                      <option value="">Select</option>
+                      {referralOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </Select>
                   </div>
                 </section>
               )}

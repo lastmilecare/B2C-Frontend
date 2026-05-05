@@ -228,7 +228,7 @@ const PatientListCopy = () => {
       name: "Age",
       cell: (row) => (
         <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-          {`${row.age ? `${row.age} yrs` : 'N/A'}`}
+          {`${row.age ? `${row.age} yrs` : "N/A"}`}
         </span>
       ),
     },
@@ -255,7 +255,10 @@ const PatientListCopy = () => {
         );
       },
     },
-
+    {
+      name: "Referred By",
+      selector: (row) => row.ReferredBy || "N/A",
+    },
     {
       name: "Added On",
       selector: (row) => new Date(row.createdAt).toISOString().split("T")[0],
