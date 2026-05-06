@@ -245,7 +245,6 @@ const AttendancePage = () => {
 
       downloadBlob(blob, fileName);
     } catch (error) {
-      debugger
       healthAlert({
         title: "Export Error",
         text: error?.data?.message || "Something went wrong",

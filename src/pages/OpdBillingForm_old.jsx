@@ -653,7 +653,7 @@ const OpdBilling = () => {
               }}
             />
             <Input
-              label="Credit Balance"
+              label="Credit Balance1"
               inputMode="numeric"
               type="text"
               value={formik.values.CreditBalance}

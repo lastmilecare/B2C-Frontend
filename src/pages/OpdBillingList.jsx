@@ -31,26 +31,24 @@ const OpdBillingListCopy = () => {
       return;
     }
 
-    
-    
-        try {
-          await deleteOpdBill(Number(row.bill_no)).unwrap();
-          
-          healthAlert({
-            title: "Deleted!",
-            text: "OPD Bill has been deleted successfully.",
-            icon: "success",
-          });
-        } catch (error) {
-          healthAlert({
-            title: "Delete Error",
-            text: error?.data?.message || "Something went wrong while deleting.",
-            icon: "error",
-          });
-        }
-      }
-  
- const handleEdit = (row) => {
+    try {
+      await deleteOpdBill(Number(row.bill_no)).unwrap();
+
+      healthAlert({
+        title: "Deleted!",
+        text: "OPD Bill has been deleted successfully.",
+        icon: "success",
+      });
+    } catch (error) {
+      healthAlert({
+        title: "Delete Error",
+        text: error?.data?.message || "Something went wrong while deleting.",
+        icon: "error",
+      });
+    }
+  };
+
+  const handleEdit = (row) => {
     if (!row || !row.bill_no) {
       healthAlert({
         title: "Error",
@@ -59,14 +57,12 @@ const OpdBillingListCopy = () => {
       });
       return;
     }
-   
-        navigate(`/opd-form/${row.bill_no}`, {
-          state: {
-            editData: row,
-          },
-        });
-      
-    
+
+    navigate(`/opd-form/${row.bill_no}`, {
+      state: {
+        editData: row,
+      },
+    });
   };
 
   const [uhidSearch, setUhidSearch] = useState("");
@@ -96,7 +92,7 @@ const OpdBillingListCopy = () => {
   const [printRow1, setPrintRow1] = useState(null);
   const printRef = useRef();
   const printRef1 = useRef();
-  
+
   const { data, isLoading, isError, error } = useGetOpdBillingQuery(
     {
       page,
@@ -210,11 +206,20 @@ const OpdBillingListCopy = () => {
     }
     const n = Number(v);
     if (!Number.isFinite(n)) return `₹0.00`;
-    return `₹${n.toFixed(0)}`; 
+    return `₹${n.toFixed(0)}`;
   };
   const safeString = (v, fallback = "-") =>
     v === null || v === undefined || v === "" ? fallback : String(v);
+  const calculateDue = (rows, uhid) => {
+    return rows
+      .filter((r) => r.uhid === uhid) // ✅ correct field
+      .reduce((acc, curr) => {
+        const total = Number(curr.TotalServiceAmount) || 0;
+        const paid = Number(curr.PaidAmount) || 0;
 
+        return acc + (total - paid);
+      }, 0);
+  };
   const filtersConfig = [
     {
       label: "UHID",
@@ -360,9 +365,9 @@ const OpdBillingListCopy = () => {
       width: "100px",
     },
     {
-      name: "P.Due",
-      title: "Previous Due Amount",
-      selector: (row) => formatCurrency(row?.DueAmount),
+      name: "T.Due",
+      title: "Total Previous Due Amount",
+      selector: (row) => formatCurrency(calculateDue(patients, row.uhid)),
       sortable: true,
       width: "70px",
     },
@@ -477,11 +482,8 @@ const OpdBillingListCopy = () => {
   };
 
   return (
-    
     <div className="p-0">
-      <h1 className="text-2xl font-semibold text-gray-700 mb-6">
-Opd List
-</h1>
+      <h1 className="text-2xl font-semibold text-gray-700 mb-6">Opd List</h1>
       <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}

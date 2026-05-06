@@ -1298,6 +1298,12 @@ export const api = createApi({
       }),
       responseHandler: async (response) => response.text(), 
     }),
+    getPatientDue: build.query({
+      query: (uhid) => ({
+        url: `/patient/due/${uhid}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -1445,4 +1451,5 @@ export const {
   useDeletePatientMutation,
   useGetAllTemplatesQuery,
   usePreviewTemplateMutation,
+  useGetPatientDueQuery,
 } = api;
