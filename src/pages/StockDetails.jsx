@@ -59,7 +59,7 @@ const StockDetailsCopy = () => {
   const [ItemSearch, ItemNameSearch] = useState("");
   const debouncedItemSearch = useDebounce(ItemSearch, 500);
   const { data: suggestions = [] } = useGetMediceneListQuery(
-    { searchTerm: debouncedItemSearch || skipToken },
+    { searchTerm: debouncedItemSearch},
     {
       skip: debouncedItemSearch.length < 2,
     },
