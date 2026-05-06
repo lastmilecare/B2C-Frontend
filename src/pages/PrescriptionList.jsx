@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import PatientTable from "../components/Updates/PatientTable";
+import CommonList from "../components/CommonList";
 import CopyFilterBar from "../components/Updates/Filter";
 import {
   useTogglePrescriptionStatusMutation,
@@ -159,126 +159,102 @@ const PrescriptionListCopy = () => {
       sortable: true,
       width: "110px",
     },
-   {
- name:"Patient",
- minWidth:"250px",
-
- cell:(row)=>(
-
-  <div className="flex items-center gap-3">
-
-   <div className="relative">
-
-    <Avatar
-     name={row.patientName}
-     gender={row.gender}
-     age={row.age}
-    />
-
-    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
-
-   </div>
-
-   <div className="leading-tight">
-
-    <p className="font-semibold text-gray-800">
-     {row.patientName || "-"}
-    </p>
-
-    <p className="text-xs text-gray-500">
-     UHID : {row.picasoId || "-"}
-    </p>
-
-   </div>
-
-  </div>
-
- )
-},
     {
- name:"Age",
- cell:(row)=>(
+      name: "Patient",
+      minWidth: "250px",
 
-  <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+      cell: (row) => (
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Avatar name={row.patientName} gender={row.gender} age={row.age} />
 
-   {`${row.age ? `${row.age} yrs` : "N/A"}`}
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+          </div>
 
-  </span>
+          <div className="leading-tight">
+            <p className="font-semibold text-gray-800">
+              {row.patientName || "-"}
+            </p>
 
- )
-},
+            <p className="text-xs text-gray-500">
+              UHID : {row.picasoId || "-"}
+            </p>
+          </div>
+        </div>
+      ),
+    },
     {
- name:"Gender",
- cell:(row)=>{
+      name: "Age",
+      cell: (row) => (
+        <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+          {`${row.age ? `${row.age} yrs` : "N/A"}`}
+        </span>
+      ),
+    },
+    {
+      name: "Gender",
+      cell: (row) => {
+        const gender = row.gender?.toLowerCase();
 
-  const gender=row.gender?.toLowerCase()
+        return (
+          <span
+            className={`px-2 py-1 text-xs rounded-full font-medium
 
-  return(
+   ${
+     gender === "male"
+       ? "bg-blue-100 text-blue-700"
+       : "bg-pink-100 text-pink-700"
+   }
 
-   <span className={`px-2 py-1 text-xs rounded-full font-medium
-
-   ${gender==="male"
-    ?"bg-blue-100 text-blue-700"
-    :"bg-pink-100 text-pink-700"}
-
-   `}>
-
-   {gender==="male"?"👨 Male":"👩 Female"}
-
-   </span>
-
-  )
-
- }
-},
+   `}
+          >
+            {gender === "male" ? "👨 Male" : "👩 Female"}
+          </span>
+        );
+      },
+    },
     {
       name: "Phone",
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNo, "-"),
-      
+
       grow: 1,
     },
-   {
- name:"Added Date",
- selector:(row)=>
- row?.addedDate
- ?new Date(row.addedDate).toISOString().split("T")[0]
- :"-"
-},
     {
- name:"Status",
- cell:(row)=>{
+      name: "Added Date",
+      selector: (row) =>
+        row?.addedDate
+          ? new Date(row.addedDate).toISOString().split("T")[0]
+          : "-",
+    },
+    {
+      name: "Status",
+      cell: (row) => {
+        const active = row.isActive;
 
-  const active=row.isActive
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold
 
-  return(
+   ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}
 
-   <span className={`px-2 py-1 rounded-full text-xs font-semibold
-
-   ${active
-    ?"bg-green-100 text-green-700"
-    :"bg-red-100 text-red-700"}
-
-   `}>
-
-   {active?"Active":"Inactive"}
-
-   </span>
-
-  )
-
- }
-},
+   `}
+          >
+            {active ? "Active" : "Inactive"}
+          </span>
+        );
+      },
+    },
   ];
 
   const navigate = useNavigate();
- const handleEdit = (row) => {
-  if (!row?.ID) return;
+  const handleEdit = (row) => {
+    if (!row?.ID) return;
 
-  navigate(`/prescription-form/${row.ID}`, {
-    state: { row },
-  });
-};
+    navigate(`/prescription-form/${row.ID}`, {
+      state: { row },
+    });
+  };
 
   const handleDelete = async (row) => {
     try {
@@ -314,10 +290,9 @@ const PrescriptionListCopy = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-
-<h1 className="text-2xl font-semibold text-gray-700 mb-6">
-Prescription List
-</h1>
+      <h1 className="text-2xl font-semibold text-gray-700 mb-6">
+        Prescription List
+      </h1>
       <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
@@ -334,29 +309,25 @@ Prescription List
         suggestions={billSuggestions}
         onSelectSuggestion={handleSelectBillSuggestion}
       />
-      <PatientTable
-       title="Prescription List"
- data={patients}
- columns={columns}
-
- totalRows={pagination.totalRecords || 0}
-
- currentPage={pagination.currentPage || page}
- perPage={limit}
-
- onPageChange={(p)=>setPage(p)}
-
- onPerPageChange={(l)=>{
-  setLimit(l)
-  setPage(1)
- }}
-
- isLoading={isLoading}
-
- onEdit={handleEdit}
- onDelete={handleDelete}
- onPrint={onPrint}
-/>
+      <CommonList
+        title="Prescription List"
+        data={patients}
+        columns={columns}
+        totalRows={pagination.totalRecords || 0}
+        currentPage={pagination.currentPage || page}
+        perPage={limit}
+        onPageChange={(p) => setPage(p)}
+        onPerPageChange={(l) => {
+          setLimit(l);
+          setPage(1);
+        }}
+        enableActions
+        actionButtons={["edit", "delete", "print"]}
+        isLoading={isLoading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onPrint={onPrint}
+      />
       {printRow && (
         <div style={{ display: "none" }}>
           <PrescriptionPrint ref={printRef} data={printRow} />
