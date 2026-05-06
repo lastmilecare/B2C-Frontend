@@ -42,6 +42,7 @@ import PatientPage from "../pages/PatientPage";
 import VitalsPage from "../pages/VitalsPage";
 import ResourcePage from "../pages/ResourcePage";
 import ItemMaster from "../pages/ItemMaster";
+
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -398,6 +399,18 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
+  {
+  path: "/fitness-certificate/:id",
+  component: FitnessCertificatePage,
+  permission: "update:fitness_certificate",
+  showInSidebar: false,
+},
+{
+  path: "/fitness-certificate/template/:id",
+  component: FitnessCertificatePage,
+  permission: "update:fitness_certificate",
+  showInSidebar: false,
+},
   {
     path: "/resource",
     component: ResourcePage,

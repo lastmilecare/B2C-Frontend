@@ -1305,12 +1305,22 @@ getLowStockItems: build.query({
     method: "GET",
   }),
 }),
+
     getPatientDue: build.query({
       query: (uhid) => ({
         url: `/patient/due/${uhid}`,
         method: "GET",
       }),
     }),
+
+updateTemplate: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/ohc-fitness/templates/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
   }),
 });
 
@@ -1458,6 +1468,8 @@ export const {
   useDeletePatientMutation,
   useGetAllTemplatesQuery,
   usePreviewTemplateMutation,
-  useGetLowStockItemsQuery
+  useGetLowStockItemsQuery,
   useGetPatientDueQuery,
+  useUpdateTemplateMutation
+
 } = api;
