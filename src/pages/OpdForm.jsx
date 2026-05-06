@@ -129,7 +129,7 @@ const OpdFormCopy = () => {
       setSuggestionsList(suggestions);
     }
   }, [suggestions, selectedUhid, uhidSearch]);
-
+    const { data: allServices = [] } = useGetServiceMastersQuery("");
   useEffect(() => {
     if (editData && department && doctors && paymode) {
       setUhidSearch(editData.uhid || "");
@@ -168,20 +168,27 @@ const OpdFormCopy = () => {
         PreviousDue: previousFetchDue?.data?.PreviousDue || 0,
       });
       if (editData.opd_billing_data) {
-        const mapped = editData.opd_billing_data.map((s) => ({
-          id: s.ServiceID,
-          name: s.ServiceName,
-          price: s.ServiceAmount,
-          quantity: s.Qty || 1,
-          HospitalID: s.HospitalID,
-          ServiceTypeID: s.ServiceTypeID,
-        }));
-        setSelectedServices(mapped);
-      }
-    }
-  }, [editData, department, doctors, paymode]);
+                const mapped = editData.opd_billing_data.map(s => {
+                const found = allServices.find(
+                    x => x.ServiceName === s.ServiceName
+                );
 
-  const parseDOB = (raw) => {
+                return {
+                    id: found?.ID || 0,
+                    type: found?.ServiceType || "General",
+                    name: s.ServiceName,
+                    price: s.ServiceAmount,
+                    quantity: s.Qty || 1,
+                    HospitalID: found?.HospitalID || 1,
+                    ServiceTypeID: found?.ServiceTypeID || 1
+                };
+            });
+                setSelectedServices(mapped);
+            }
+        }
+    }, [editData, department, doctors, paymode, allServices]);
+
+    const parseDOB = (raw) => {
     if (!raw) return "";
 
     if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {

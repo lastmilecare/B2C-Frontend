@@ -1298,6 +1298,13 @@ export const api = createApi({
       }),
       responseHandler: async (response) => response.text(), 
     }),
+  
+getLowStockItems: build.query({
+  query: () => ({
+    url: "/medicine-inventory/stock/view/low-stock",
+    method: "GET",
+  }),
+}),
     getPatientDue: build.query({
       query: (uhid) => ({
         url: `/patient/due/${uhid}`,
@@ -1451,5 +1458,6 @@ export const {
   useDeletePatientMutation,
   useGetAllTemplatesQuery,
   usePreviewTemplateMutation,
+  useGetLowStockItemsQuery
   useGetPatientDueQuery,
 } = api;

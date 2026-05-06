@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,7 +13,7 @@ import {
   useGetPatientsQuery,
   useGetOpdBillingQuery,
   useGetPrescriptionsListQuery,
-  useGetStockDetailsQuery
+  useGetLowStockItemsQuery
 } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 
@@ -25,11 +26,8 @@ const AppDashboard = () => {
     page: 1,
     limit: 100,
   });
-  const { data: stockData, isLoading: stockLoading } =
-  useGetStockDetailsQuery({
-    page: 1,
-    limit: 100,
-  });
+ const { data: lowStockData, isLoading: stockLoading } =
+  useGetLowStockItemsQuery();
 
   const patients = patientData?.data || [];
   const opd = opdData?.data || [];
@@ -51,10 +49,14 @@ const AppDashboard = () => {
 
   const recentPatients = patients.slice(0, 5);
   const username = cookie.get("username") || "User";
-  const stockItems = stockData?.data || [];
+ const lowStockItems = lowStockData?.data || [];
+ const [page, setPage] = useState(1);
+const itemsPerPage = 5;
+const startIndex = (page - 1) * itemsPerPage;
 
-const lowStockItems = stockItems.filter(
-  (item) => Number(item.BalQty) <= 10
+const paginatedItems = lowStockItems.slice(
+  startIndex,
+  startIndex + itemsPerPage
 );
   /* ---------------- MODULES ---------------- */
 
@@ -270,7 +272,7 @@ const lowStockItems = stockItems.filter(
   ) : lowStockItems.length === 0 ? (
     <p>No low stock items</p>
   ) : (
-    lowStockItems.map((item) => (
+    paginatedItems.map((item) => (
       <div key={item.ID} className="flex justify-between">
         <span>{item.ItemName}</span>
         <span className="text-red-500 font-semibold">
@@ -279,6 +281,23 @@ const lowStockItems = stockItems.filter(
       </div>
     ))
   )}
+</div>
+<div className="flex justify-between mt-4">
+  <button
+    disabled={page === 1}
+    onClick={() => setPage(page - 1)}
+    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+  >
+    Prev
+  </button>
+
+  <button
+    disabled={startIndex + itemsPerPage >= lowStockItems.length}
+    onClick={() => setPage(page + 1)}
+    className="px-3 py-1 bg-emerald-500 text-white rounded disabled:opacity-50"
+  >
+    Next
+  </button>
 </div>
           
           
