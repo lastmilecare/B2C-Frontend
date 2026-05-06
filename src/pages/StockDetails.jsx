@@ -49,8 +49,7 @@ const StockDetailsCopy = () => {
           healthAlert({
             title: "Delete Error",
             text:
-              error?.data?.message ||
-              "Something went wrong while deleting.",
+              error?.data?.message || "Something went wrong while deleting.",
             icon: "error",
           });
         }
@@ -60,7 +59,7 @@ const StockDetailsCopy = () => {
   const [ItemSearch, ItemNameSearch] = useState("");
   const debouncedItemSearch = useDebounce(ItemSearch, 500);
   const { data: suggestions = [] } = useGetMediceneListQuery(
-    debouncedItemSearch,
+    { searchTerm: debouncedItemSearch || skipToken },
     {
       skip: debouncedItemSearch.length < 2,
     },
@@ -210,17 +209,15 @@ const StockDetailsCopy = () => {
         <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold">
           #{row.RecieptNo}
         </span>
-      )
+      ),
     },
     {
       name: "Rack",
       width: "90px",
       center: true,
       cell: (row) => (
-        <span className="font-semibold text-indigo-600">
-          {row.RagNo}
-        </span>
-      )
+        <span className="font-semibold text-indigo-600">{row.RagNo}</span>
+      ),
     },
     { name: "HSNCode", selector: (row) => row.HSNCode, width: "120px" },
     { name: "CGST", selector: (row) => row.CGST, width: "120px" },
@@ -230,20 +227,16 @@ const StockDetailsCopy = () => {
       width: "110px",
       right: true,
       cell: (row) => (
-        <span className="font-semibold text-green-600">
-          ₹{row.CP}
-        </span>
-      )
+        <span className="font-semibold text-green-600">₹{row.CP}</span>
+      ),
     },
     {
       name: "MRP",
       width: "110px",
       right: true,
       cell: (row) => (
-        <span className="font-semibold text-blue-600">
-          ₹{row.MRP}
-        </span>
-      )
+        <span className="font-semibold text-blue-600">₹{row.MRP}</span>
+      ),
     },
     { name: "CPU", selector: (row) => row.CPU, width: "120px" },
     { name: "MRPU", selector: (row) => row.MRPU, width: "120px" },
@@ -256,7 +249,7 @@ const StockDetailsCopy = () => {
         <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
           {row.RecvQty}
         </span>
-      )
+      ),
     },
     {
       name: "Sales Qty",
@@ -268,45 +261,36 @@ const StockDetailsCopy = () => {
       width: "110px",
       center: true,
       cell: (row) => {
-
-        const qty = row.BalQty
+        const qty = row.BalQty;
 
         return (
-          <span className={`px-2 py-1 rounded text-xs font-semibold
-    ${qty < 5
-              ? "bg-red-100 text-red-700"
-              : "bg-green-100 text-green-700"
-            }`}>
+          <span
+            className={`px-2 py-1 rounded text-xs font-semibold
+    ${qty < 5 ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}
+          >
             {qty}
           </span>
-        )
-
-      }
-    }, {
+        );
+      },
+    },
+    {
       name: "Expiry",
       width: "120px",
       cell: (row) => {
-
-        const expiry = new Date(row.ExpiryDate)
-        const today = new Date()
-        const diff = (expiry - today) / (1000 * 60 * 60 * 24)
+        const expiry = new Date(row.ExpiryDate);
+        const today = new Date();
+        const diff = (expiry - today) / (1000 * 60 * 60 * 24);
 
         return (
+          <span
+            className={`px-2 py-1 rounded text-xs font-semibold
 
-          <span className={`px-2 py-1 rounded text-xs font-semibold
-
-   ${diff < 30
-              ? "bg-red-100 text-red-700"
-              : "bg-gray-100 text-gray-700"
-            }`}>
-
+   ${diff < 30 ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"}`}
+          >
             {expiry.toISOString().split("T")[0]}
-
           </span>
-
-        )
-
-      }
+        );
+      },
     },
     {
       name: "Date",
@@ -317,10 +301,8 @@ const StockDetailsCopy = () => {
       name: "Supplier",
       width: "160px",
       cell: (row) => (
-        <span className="text-gray-700 font-medium">
-          {row.SupplierName}
-        </span>
-      )
+        <span className="text-gray-700 font-medium">{row.SupplierName}</span>
+      ),
     },
     {
       name: "ID",
@@ -460,7 +442,6 @@ const StockDetailsCopy = () => {
     );
   };
   return (
-
     <div className="p-0">
       <CopyFilterBar
         filtersConfig={filtersConfig}
@@ -495,53 +476,47 @@ const StockDetailsCopy = () => {
 
           navigate(`/purchased-entry/${row.ID}`, {
             state: { editData: row },
-
-
           });
         }}
       />
-     <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-3 shadow-sm">
+      <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-3 shadow-sm">
+        <div className="flex flex-wrap justify-between items-center w-full text-sm text-emerald-900">
+          <span>
+            Total Stock : <span className="font-semibold">{Stock.length}</span>
+          </span>
 
-  <div className="flex flex-wrap justify-between items-center w-full text-sm text-emerald-900">
+          <span>
+            Received Qty :{" "}
+            <span className="font-semibold">
+              {Stock.reduce((a, b) => a + (b.RecvQty || 0), 0)}
+            </span>
+          </span>
 
-    <span>
-      Total Stock : <span className="font-semibold">{Stock.length}</span>
-    </span>
+          <span>
+            Balance Qty :{" "}
+            <span className="font-semibold">
+              {Stock.reduce((a, b) => a + (b.BalQty || 0), 0)}
+            </span>
+          </span>
 
-    <span>
-      Received Qty :{" "}
-      <span className="font-semibold">
-        {Stock.reduce((a, b) => a + (b.RecvQty || 0), 0)}
-      </span>
-    </span>
+          <span>
+            Sales Qty :{" "}
+            <span className="font-semibold">
+              {Stock.reduce(
+                (a, b) => a + ((b.RecvQty || 0) - (b.BalQty || 0)),
+                0,
+              )}
+            </span>
+          </span>
 
-    <span>
-      Balance Qty :{" "}
-      <span className="font-semibold">
-        {Stock.reduce((a, b) => a + (b.BalQty || 0), 0)}
-      </span>
-    </span>
-
-    <span>
-      Sales Qty :{" "}
-      <span className="font-semibold">
-        {Stock.reduce(
-          (a, b) => a + ((b.RecvQty || 0) - (b.BalQty || 0)),
-          0
-        )}
-      </span>
-    </span>
-
-    <span>
-      Low Stock :{" "}
-      <span className="font-semibold">
-        {Stock.filter((i) => i.BalQty < 5).length}
-      </span>
-    </span>
-
-  </div>
-
-</section>
+          <span>
+            Low Stock :{" "}
+            <span className="font-semibold">
+              {Stock.filter((i) => i.BalQty < 5).length}
+            </span>
+          </span>
+        </div>
+      </section>
     </div>
   );
 };

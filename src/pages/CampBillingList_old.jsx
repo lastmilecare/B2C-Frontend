@@ -23,7 +23,7 @@ const CampBillingList = () => {
   const debouncedMedicine = useDebounce(searchTerms.descriptions, 500);
   const debouncedPatient = useDebounce(searchTerms.CustommerName, 500);
   const { data: medicineSuggestions = [] } = useGetMediceneListQuery(
-    debouncedMedicine,
+     { searchTerm: debouncedMedicine || skipToken },
     { skip: debouncedMedicine.length < 2 },
   );
   const [printRow, setPrintRow] = useState(null);

@@ -13,53 +13,52 @@ import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
 const username = cookie.get("username");
 const StockDetails = () => {
-const [deleteitemid] = useDeleteitemMutation();
- const handleDelete = async (row) => {
-  const id = row?.ID;  
+  const [deleteitemid] = useDeleteitemMutation();
+  const handleDelete = async (row) => {
+    const id = row?.ID;
 
-  if (!id) {
-    healthAlert({
-      title: "Error",
-      text: "ID number not found for this record.",
-      icon: "error",
-    });
-    return;
-  }
-
-  healthAlert({
-    title: "Are you sure?",
-    text: `You are about to delete item id: ${id}. This action cannot be undone!`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Yes, delete it!",
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      try {
-        await deleteitemid(id).unwrap();
-
-        healthAlert({
-          title: "Deleted!",
-          text: "Stock record deleted successfully.",
-          icon: "success",
-        });
-      } catch (error) {
-        healthAlert({
-          title: "Delete Error",
-          text:
-            error?.data?.message ||
-            "Something went wrong while deleting.",
-          icon: "error",
-        });
-      }
+    if (!id) {
+      healthAlert({
+        title: "Error",
+        text: "ID number not found for this record.",
+        icon: "error",
+      });
+      return;
     }
-  });
-};
+
+    healthAlert({
+      title: "Are you sure?",
+      text: `You are about to delete item id: ${id}. This action cannot be undone!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteitemid(id).unwrap();
+
+          healthAlert({
+            title: "Deleted!",
+            text: "Stock record deleted successfully.",
+            icon: "success",
+          });
+        } catch (error) {
+          healthAlert({
+            title: "Delete Error",
+            text:
+              error?.data?.message || "Something went wrong while deleting.",
+            icon: "error",
+          });
+        }
+      }
+    });
+  };
   const [ItemSearch, ItemNameSearch] = useState("");
   const debouncedItemSearch = useDebounce(ItemSearch, 500);
   const { data: suggestions = [] } = useGetMediceneListQuery(
-    debouncedItemSearch,
+    { searchTerm: debouncedItemSearch || skipToken },
     {
       skip: debouncedItemSearch.length < 2,
     },
@@ -402,7 +401,6 @@ const [deleteitemid] = useDeleteitemMutation();
 
           navigate(`/purchased-entry/edit/${row.ID}`, {
             state: { editData: row },
-
           });
         }}
       />
