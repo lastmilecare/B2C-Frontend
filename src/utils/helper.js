@@ -132,3 +132,12 @@ export const getPharmaSellingFromCP = (item, qty, discountPercent) => {
     total: to2(finalPrice),
   };
 };
+
+export const parseCurrency = (value) => {
+  if (!value) return 0;
+
+  const cleaned = value.replace(/[^0-9.-]+/g, "");
+  const parsed = Number(cleaned);
+
+  return isNaN(parsed) ? 0 : parsed;
+};

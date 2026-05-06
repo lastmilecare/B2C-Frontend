@@ -13,6 +13,7 @@ import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
 import PharmaBillPrint from "./PharmaBillPrint";
 import { useReactToPrint } from "react-to-print";
+import { parseCurrency } from "../utils/helper";
 const username = cookie.get("username");
 
 const BillingList = () => {
@@ -58,15 +59,7 @@ const BillingList = () => {
 
   const rawStock = data?.data || [];
 
-  const parseCurrency = (value) => {
-    if (!value) return 0;
-
-    
-    const cleaned = value.replace(/[^0-9.-]+/g, "");
-    const parsed = Number(cleaned);
-
-    return isNaN(parsed) ? 0 : parsed;
-  };
+ 
 
   const formatCurrency = (num) => {
     return `$${num.toFixed(2)}`;
@@ -217,31 +210,31 @@ const BillingList = () => {
     },
     {
       name: "Taxable Amount",
-      selector: (row) => row.TaxableAmount || 0,
+      selector: (row) => parseCurrency(row.TaxableAmount) || 0,
 
       width: "80px",
     },
     {
       name: "Gross Amount",
-      selector: (row) => row.GrossAmount || "N/A",
+      selector: (row) => parseCurrency(row.GrossAmount) || "N/A",
 
       width: "80px",
     },
     {
       name: "Discount Amount",
-      selector: (row) => row.DiscountAmount || "N/A",
+      selector: (row) => parseCurrency(row.DiscountAmount) || "N/A",
       width: "80px",
     },
     {
       name: "Paid Amount",
-      selector: (row) => row.PaidAmount || "N/A",
+      selector: (row) => parseCurrency(row.PaidAmount) || "N/A",
       width: "80px",
     },
     {
       name: "Due Amount",
       selector: (row) =>
         // (row.GrossAmount || 0) - (row.PaidAmount || 0) || "N/A", // need to check picasoid logic
-        row.DueAmount || "N/A",
+        parseCurrency(row.DueAmount) || "N/A",
       width: "80px",
     },
     {

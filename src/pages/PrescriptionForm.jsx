@@ -8,7 +8,6 @@ import {
   CreditCardIcon,
   DocumentCheckIcon,
   BeakerIcon,
-
 } from "@heroicons/react/24/outline";
 import DiseaseSelect from "../components/DiseaseSelect";
 import useDebounce from "../hooks/useDebounce";
@@ -47,40 +46,38 @@ const PrescriptionFormCopy = () => {
   const [activeStep, setActiveStep] = useState(1);
 
   const nextStep = async () => {
-  const errors = await formik.validateForm();
+    const errors = await formik.validateForm();
 
-  
-  if (activeStep === 1) {
-   if (!formik.values.billno) {
-  healthAlerts.warning("Bill No is required");
-  return;
-}
-  }
-
-  
-  if (activeStep === 2) {
-    if (
-      errors.bpsystolic ||
-      errors.bpdiastolic ||
-      errors.pulserate ||
-      errors.spo2 ||
-      errors.temprature ||
-      errors.height ||
-      errors.weight
-    ) {
-      const firstError = Object.values(errors)[0];
-      healthAlerts.warning(firstError);
-      return;
+    if (activeStep === 1) {
+      if (!formik.values.billno) {
+        healthAlerts.warning("Bill No is required");
+        return;
+      }
     }
-  }
-  if (activeStep === 4) {
-  if (prescriptionList.length === 0) {
-    healthAlerts.warning("Please add at least one medicine");
-    return;
-  }
-}
-  setActiveStep((prev) => prev + 1);
-};
+
+    if (activeStep === 2) {
+      if (
+        errors.bpsystolic ||
+        errors.bpdiastolic ||
+        errors.pulserate ||
+        errors.spo2 ||
+        errors.temprature ||
+        errors.height ||
+        errors.weight
+      ) {
+        const firstError = Object.values(errors)[0];
+        healthAlerts.warning(firstError);
+        return;
+      }
+    }
+    if (activeStep === 4) {
+      if (prescriptionList.length === 0) {
+        healthAlerts.warning("Please add at least one medicine");
+        return;
+      }
+    }
+    setActiveStep((prev) => prev + 1);
+  };
 
   const prevStep = () => {
     setActiveStep((prev) => prev - 1);
@@ -119,7 +116,7 @@ const PrescriptionFormCopy = () => {
     }
   }, [printRow]);
 
- const onPrintCS = (row) => {
+  const onPrintCS = (row) => {
     setPrintRow(row);
   };
   const handlePrint = useReactToPrint({
@@ -196,7 +193,7 @@ const PrescriptionFormCopy = () => {
       chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
       history: values.history || "",
       physicalFindings: "",
-      treatmentPlan: "", 
+      treatmentPlan: "",
       labs: values.labs || "",
       otherLabs: values.otherlabs || "",
       preventiveAdvice: values.advice || "",
@@ -209,9 +206,9 @@ const PrescriptionFormCopy = () => {
       addedBy: values.AddedBy,
       addedDate,
       isActive: true,
-     doctor_id: patientData?.ConsultantDoctorID || null,
-centerID: patientData?.CenterID || null,
-driver_id: patientData?.PatientID || null,
+      doctor_id: patientData?.ConsultantDoctorID || null,
+      centerID: patientData?.CenterID || null,
+      driver_id: patientData?.PatientID || null,
       modifiedDate: addedDate,
       modifiedBy: user_id,
       AdviceList: prescriptionList.map((item) => ({
@@ -226,7 +223,7 @@ driver_id: patientData?.PatientID || null,
         typeOfMedicine: item.type,
         addedBy: values.AddedBy,
         addedDate,
-        companyId: 10, 
+        companyId: 10,
         isActive: true,
       })),
     };
@@ -304,16 +301,16 @@ driver_id: patientData?.PatientID || null,
       weight: Yup.number().min(2, "Invalid weight").max(300, "Invalid weight"),
     }),
     onSubmit: async (values) => {
-  const errors = await formik.validateForm();
+      const errors = await formik.validateForm();
 
-  if (Object.keys(errors).length > 0) {
-    formik.setTouched(errors);
+      if (Object.keys(errors).length > 0) {
+        formik.setTouched(errors);
 
-    const firstError = Object.values(errors)[0];
-    healthAlerts.warning(firstError);
+        const firstError = Object.values(errors)[0];
+        healthAlerts.warning(firstError);
 
-    return;
-  }
+        return;
+      }
       if (prescriptionList.length === 0) {
         healthAlerts.warning("Please add at least one medicine");
         return;
@@ -368,29 +365,26 @@ driver_id: patientData?.PatientID || null,
 
   useEffect(() => {
     if (!id || !row) return;
-    if (!diseaseOptions.length) return; 
+    if (!diseaseOptions.length) return;
 
-   
     const mappedAdviceList = Array.isArray(row.adviceList)
       ? row.adviceList.map((item) => ({
-        itemId: item.itemId,
-        medicine: item.item,
-        type: item.typeOfMedicine,
-        dosage: item.dosage,
-        instructions: "",
-        preferredTime: item.pillsConsumption,
-        duration: item.duration,
-      }))
+          itemId: item.itemId,
+          medicine: item.item,
+          type: item.typeOfMedicine,
+          dosage: item.dosage,
+          instructions: "",
+          preferredTime: item.pillsConsumption,
+          duration: item.duration,
+        }))
       : [];
 
     if (prescriptionList.length === 0) {
       setPrescriptionList(mappedAdviceList);
     }
 
-    
     const complaintNames = parseChiefComplaintNames(row.chiefComplaints);
 
-  
     const diseaseMap = new Map(
       diseaseOptions.map((d) => [d.name?.toLowerCase().trim(), d]),
     );
@@ -490,79 +484,64 @@ driver_id: patientData?.PatientID || null,
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
       <div className="max-w-[1400px] mx-auto px-8">
         <div className="flex justify-between items-center mb-10">
-
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
             <span className="bg-blue-100 p-2 rounded-xl">
               <ClipboardDocumentIcon className="w-6 text-blue-600" />
             </span>
-
             Prescription
-
           </h1>
 
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map((s) => (
-  <div
-    key={s}
-    className={`h-2 w-12 rounded-full transition-all duration-300 ${
-      activeStep >= s
-        ? "bg-sky-600 shadow-sm"
-        : "bg-blue-100"
-    }`}
-  />
-))}
+              <div
+                key={s}
+                className={`h-2 w-12 rounded-full transition-all duration-300 ${
+                  activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
+                }`}
+              />
+            ))}
           </div>
-
         </div>
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
           <div className="flex border-b">
-
             {[
               { id: 1, label: "Patient", icon: UserIcon },
               { id: 2, label: "Vitals", icon: ClipboardDocumentIcon },
               { id: 3, label: "Prescription", icon: CreditCardIcon },
               { id: 4, label: "Medicine", icon: BeakerIcon },
-              { id: 5, label: "Confirm", icon: DocumentCheckIcon }
+              { id: 5, label: "Confirm", icon: DocumentCheckIcon },
             ].map((step) => (
-
               <button
                 key={step.id}
                 type="button"
                 disabled
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
-${activeStep === step.id
-                    ? "bg-white text-sky-600 shadow"
-                    : "text-gray-400"}
+${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 `}
               >
-
                 <step.icon className="w-4 h-4" />
 
                 {step.label}
-
               </button>
-
             ))}
-
-
           </div>
 
-         <form
-  onSubmit={(e) => {
-    e.preventDefault();
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
 
-    if (activeStep !== 5) return; 
+              if (activeStep !== 5) return;
 
-    formik.handleSubmit(e); 
-  }}
-
-           className="space-y-8 p-9">
+              formik.handleSubmit(e);
+            }}
+            className="space-y-8 p-9"
+          >
             {activeStep === 1 && (
               <section>
                 <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Patient
-                  Details
+                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                  Patient Details
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -651,7 +630,6 @@ ${activeStep === step.id
                     readOnly
                   ></Input>
                 </div>
-
               </section>
             )}
             {activeStep === 2 && (
@@ -691,13 +669,13 @@ ${activeStep === step.id
                   />
 
                   <Input
-                    {...formik.getFieldProps("temprature")}
-                    label="Temperature (°C)"
+                    {...formik.getFieldProps("temperature")}
+                    label="Temperature (°F)"
                     type="number"
                     inputProps={{
                       step: "0.1",
-                      min: 35,
-                      max: 42,
+                      min: 95,
+                      max: 108,
                     }}
                   />
 
@@ -716,8 +694,7 @@ ${activeStep === step.id
                   />
                 </div>
               </section>
-            )}
-           {" "}
+            )}{" "}
             {activeStep === 3 && (
               <section>
                 <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -767,13 +744,11 @@ ${activeStep === step.id
                 </div>
               </section>
             )}
-           
             {activeStep === 4 && (
-
               <section>
                 <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Medical
-                  Prescription
+                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                  Medical Prescription
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -797,7 +772,6 @@ ${activeStep === step.id
                       autoComplete="off"
                     />
 
-                   
                     {medicineSuggestions.length > 0 && !selectedMedicine && (
                       <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                         {medicineSuggestions.map((item) => (
@@ -806,7 +780,10 @@ ${activeStep === step.id
                             onClick={() => {
                               setSelectedMedicine(item);
                               setMedicineSearch(item.descriptions);
-                              formik.setFieldValue("medicine", item.descriptions);
+                              formik.setFieldValue(
+                                "medicine",
+                                item.descriptions,
+                              );
                               formik.setFieldValue("medicineId", item.id);
                               formik.setFieldValue(
                                 "typemedicine",
@@ -852,7 +829,8 @@ ${activeStep === step.id
                       formik.setFieldValue("preferredtime", e.target.value)
                     }
                     error={
-                      formik.touched.preferredtime && formik.errors.preferredtime
+                      formik.touched.preferredtime &&
+                      formik.errors.preferredtime
                     }
                   >
                     <option value="">Select Time</option>
@@ -877,7 +855,9 @@ ${activeStep === step.id
                     label="Duration (in days) *"
                     required
                     value={formik.values.duration}
-                    onChange={(e) => formik.setFieldValue("duration", e.target.value)}
+                    onChange={(e) =>
+                      formik.setFieldValue("duration", e.target.value)
+                    }
                     error={formik.touched.duration && formik.errors.duration}
                   >
                     <option value="">Select Time</option>
@@ -925,7 +905,10 @@ ${activeStep === step.id
 
                         <tbody>
                           {prescriptionList.map((item, index) => (
-                            <tr key={index} className="border-t hover:bg-gray-50">
+                            <tr
+                              key={index}
+                              className="border-t hover:bg-gray-50"
+                            >
                               <td className="px-4 py-3">{index + 1}</td>
                               <td className="px-4 py-3 font-medium">
                                 {item.medicine}
@@ -939,7 +922,9 @@ ${activeStep === step.id
                               <td className="px-4 py-3 text-center">
                                 <button
                                   type="button"
-                                  onClick={() => handleDeletePrescription(index)}
+                                  onClick={() =>
+                                    handleDeletePrescription(index)
+                                  }
                                   className="text-red-500 hover:text-red-700"
                                   title="Delete"
                                 >
@@ -956,119 +941,133 @@ ${activeStep === step.id
               </section>
             )}
             {activeStep === 5 && (
-
               <div className="bg-sky-50 p-6 rounded-xl space-y-4 border border-sky-200">
+                <h3 className="text-lg font-semibold text-sky-700">
+                  Confirm Prescription
+                </h3>
 
-  <h3 className="text-lg font-semibold text-sky-700">
-    Confirm Prescription
-  </h3>
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <p>
+                    <b>Name:</b> {formik.values.Name}
+                  </p>
+                  <p>
+                    <b>Mobile:</b> {formik.values.Mobile}
+                  </p>
+                  <p>
+                    <b>UHID:</b> {formik.values.UHID}
+                  </p>
+                  <p>
+                    <b>Age:</b> {formik.values.Age}
+                  </p>
+                  <p>
+                    <b>Gender:</b> {formik.values.Gender}
+                  </p>
+                  <p>
+                    <b>Category:</b> {formik.values.FinCategory}
+                  </p>
+                </div>
 
-  
-  <div className="grid md:grid-cols-2 gap-4 text-sm">
-    <p><b>Name:</b> {formik.values.Name}</p>
-    <p><b>Mobile:</b> {formik.values.Mobile}</p>
-    <p><b>UHID:</b> {formik.values.UHID}</p>
-    <p><b>Age:</b> {formik.values.Age}</p>
-    <p><b>Gender:</b> {formik.values.Gender}</p>
-    <p><b>Category:</b> {formik.values.FinCategory}</p>
-  </div>
+                <div className="border-t pt-3 text-sm grid md:grid-cols-3 gap-3">
+                  <p>
+                    <b>BP:</b> {formik.values.bpsystolic}/
+                    {formik.values.bpdiastolic}
+                  </p>
+                  <p>
+                    <b>Pulse:</b> {formik.values.pulserate}
+                  </p>
+                  <p>
+                    <b>SPO2:</b> {formik.values.spo2}
+                  </p>
+                  <p>
+                    <b>Temp:</b> {formik.values.temprature}
+                  </p>
+                  <p>
+                    <b>Height:</b> {formik.values.height}
+                  </p>
+                  <p>
+                    <b>Weight:</b> {formik.values.weight}
+                  </p>
+                </div>
 
- 
-  <div className="border-t pt-3 text-sm grid md:grid-cols-3 gap-3">
-    <p><b>BP:</b> {formik.values.bpsystolic}/{formik.values.bpdiastolic}</p>
-    <p><b>Pulse:</b> {formik.values.pulserate}</p>
-    <p><b>SPO2:</b> {formik.values.spo2}</p>
-    <p><b>Temp:</b> {formik.values.temprature}</p>
-    <p><b>Height:</b> {formik.values.height}</p>
-    <p><b>Weight:</b> {formik.values.weight}</p>
-  </div>
+                <div className="border-t pt-3 text-sm">
+                  <p>
+                    <b>Chief Complaint:</b>{" "}
+                    {formik.values.ChiefComplaint?.map((c) => c.name).join(
+                      ", ",
+                    )}
+                  </p>
+                  <p>
+                    <b>Advice:</b> {formik.values.advice}
+                  </p>
+                  <p>
+                    <b>Follow-up:</b> {formik.values.followup}
+                  </p>
+                </div>
 
-  
-  <div className="border-t pt-3 text-sm">
-    <p><b>Chief Complaint:</b> {formik.values.ChiefComplaint?.map(c => c.name).join(", ")}</p>
-    <p><b>Advice:</b> {formik.values.advice}</p>
-    <p><b>Follow-up:</b> {formik.values.followup}</p>
-  </div>
-
- 
-  <div className="border-t pt-3 text-sm">
-    <p><b>Total Medicines:</b> {prescriptionList.length}</p>
-  </div>
-
-</div>
-
+                <div className="border-t pt-3 text-sm">
+                  <p>
+                    <b>Total Medicines:</b> {prescriptionList.length}
+                  </p>
+                </div>
+              </div>
             )}
             <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
+              <div className="flex gap-2">
+                {activeStep > 1 && (
+                  <Button type="button" variant="gray" onClick={prevStep}>
+                    Back
+                  </Button>
+                )}
 
- 
-  <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="gray"
+                  onClick={formik.handleReset}
+                >
+                  <ArrowPathIcon className="w-5 h-5 inline mr-1" />
+                  Reset
+                </Button>
 
-    {activeStep > 1 && (
-      <Button type="button" variant="gray" onClick={prevStep}>
-        Back
-      </Button>
-    )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const dataToPrint =
+                      id && row
+                        ? row
+                        : buildPrescriptionPayload(
+                            formik.values,
+                            prescriptionList,
+                          );
 
-    <Button type="button" variant="gray" onClick={formik.handleReset}>
-      <ArrowPathIcon className="w-5 h-5 inline mr-1" />
-      Reset
-    </Button>
-     
-    <Button
-  type="button"
-  variant="outline"
-  onClick={() => {
-    const dataToPrint = id && row
-      ? row
-      : buildPrescriptionPayload(formik.values, prescriptionList);
+                    onPrintCS(dataToPrint);
+                  }}
+                >
+                  Print CS
+                </Button>
+                {printRow && (
+                  <div style={{ position: "absolute", top: "-9999px" }}>
+                    <PrescriptionPrint ref={printRef} data={printRow} />
+                  </div>
+                )}
+              </div>
 
-    onPrintCS(dataToPrint);
-  }}
->
-  Print CS
-</Button>
-{printRow && (
-      <div style={{ position: "absolute", top: "-9999px" }}>
-  <PrescriptionPrint ref={printRef} data={printRow} />
-</div>
-      )}
-  
-
-
-  </div>
-
-  
-  {activeStep < 5 ? (
-
-    <Button type="button" variant="sky" onClick={nextStep}>
-      Continue
-    </Button>
-
-  ) : (
-
-    <div className="flex gap-2">
-
-     
-      
-
-    
-      <Button type="submit" variant="sky" disabled={isLoading}>
-        {isLoading ? "Saving..." : id ? "Update" : "Save"}
-      </Button>
-
-    </div>
-
-  )}
-
-
+              {activeStep < 5 ? (
+                <Button type="button" variant="sky" onClick={nextStep}>
+                  Continue
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button type="submit" variant="sky" disabled={isLoading}>
+                    {isLoading ? "Saving..." : id ? "Update" : "Save"}
+                  </Button>
+                </div>
+              )}
             </div>
-
           </form>
         </div>
       </div>
-      
     </div>
-
   );
 };
 

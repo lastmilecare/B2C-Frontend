@@ -21,6 +21,7 @@ import {
   useCreateBillMutation,
   useUpdateBillMutation,
   useGetPatientDueQuery,
+  useGetServiceMastersQuery 
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert } from "../utils/healthSwal";
@@ -115,7 +116,16 @@ const OpdFormCopy = () => {
   const previousFetchDue = useGetPatientDueQuery(selectedUhid, {
     skip: !selectedUhid || selectedUhid.trim() === "",
   });
-  console.log("Due data:", previousFetchDue.data?.PreviousDue);
+
+  useEffect(() => {
+    if (!previousFetchDue?.data) return;
+
+    formik.setFieldValue(
+      "PreviousDue",
+      Number(previousFetchDue.data.PreviousDue || 0),
+    );
+  }, [previousFetchDue.data]);
+
   useEffect(() => {
     if (selectedUhid) return;
     if (uhidSearch.length < 2) return;
@@ -129,7 +139,7 @@ const OpdFormCopy = () => {
       setSuggestionsList(suggestions);
     }
   }, [suggestions, selectedUhid, uhidSearch]);
-    const { data: allServices = [] } = useGetServiceMastersQuery("");
+  const { data: allServices = [] } = useGetServiceMastersQuery("");
   useEffect(() => {
     if (editData && department && doctors && paymode) {
       setUhidSearch(editData.uhid || "");
@@ -164,31 +174,30 @@ const OpdFormCopy = () => {
         // VisitType: editData.VisitType || "N/A",
         ChiefComplaint: editData.complaint
           ? editData.complaint.split(",").map((c) => ({ name: c.trim() }))
-          : [],
-        PreviousDue: previousFetchDue?.data?.PreviousDue || 0,
+          : []
       });
       if (editData.opd_billing_data) {
-                const mapped = editData.opd_billing_data.map(s => {
-                const found = allServices.find(
-                    x => x.ServiceName === s.ServiceName
-                );
+        const mapped = editData.opd_billing_data.map((s) => {
+          const found = allServices.find(
+            (x) => x.ServiceName === s.ServiceName,
+          );
 
-                return {
-                    id: found?.ID || 0,
-                    type: found?.ServiceType || "General",
-                    name: s.ServiceName,
-                    price: s.ServiceAmount,
-                    quantity: s.Qty || 1,
-                    HospitalID: found?.HospitalID || 1,
-                    ServiceTypeID: found?.ServiceTypeID || 1
-                };
-            });
-                setSelectedServices(mapped);
-            }
-        }
-    }, [editData, department, doctors, paymode, allServices]);
+          return {
+            id: found?.ID || 0,
+            type: found?.ServiceType || "General",
+            name: s.ServiceName,
+            price: s.ServiceAmount,
+            quantity: s.Qty || 1,
+            HospitalID: found?.HospitalID || 1,
+            ServiceTypeID: found?.ServiceTypeID || 1,
+          };
+        });
+        setSelectedServices(mapped);
+      }
+    }
+  }, [editData, department, doctors, paymode, allServices]);
 
-    const parseDOB = (raw) => {
+  const parseDOB = (raw) => {
     if (!raw) return "";
 
     if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
@@ -376,10 +385,6 @@ const OpdFormCopy = () => {
     if (patientData.external_id !== selectedUhid) return;
     if (populatedUhidRef.current === selectedUhid) return;
     populatedUhidRef.current = selectedUhid;
-    formik.setFieldValue(
-      "PreviousDue",
-      Number(patientData.previousDue || patientData.DueAmount || 0),
-    );
     const updates = {
       UHID: patientData.external_id,
       Name: patientData.name || "",

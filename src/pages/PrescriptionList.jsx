@@ -201,7 +201,7 @@ const PrescriptionListCopy = () => {
 
   <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
 
-   {row.age} yrs
+   {`${row.age ? `${row.age} yrs` : "N/A"}`}
 
   </span>
 

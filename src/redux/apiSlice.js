@@ -1458,6 +1458,6 @@ export const {
   useDeletePatientMutation,
   useGetAllTemplatesQuery,
   usePreviewTemplateMutation,
-  useGetLowStockItemsQuery
+  useGetLowStockItemsQuery,
   useGetPatientDueQuery,
 } = api;
