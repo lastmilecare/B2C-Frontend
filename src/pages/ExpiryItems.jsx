@@ -9,6 +9,7 @@ import {
   ClockIcon,
   ArchiveBoxXMarkIcon,
 } from "@heroicons/react/24/outline";
+import {parseCurrency} from "../utils/helper";
 
 const username = cookie.get("username");
 
@@ -53,8 +54,8 @@ const ExpiryItemsCopy = () => {
     { name: "Supplier", selector: (row) => row.SupplierName, width: "300px" },
     { name: "Receipt No", selector: (row) => row.RecieptNo, width: "150px" },
     { name: "Item Name", selector: (row) => row.ItemName, width: "200px" },
-    { name: "CPU", selector: (row) => row.CPU, width: "120px" },
-    { name: "MRPU", selector: (row) => row.MRPU, width: "120px" },
+    { name: "CPU (₹)", selector: (row) => parseCurrency(row.CPU), width: "120px" },
+    { name: "MRPU (₹)", selector: (row) => parseCurrency(row.MRPU), width: "120px" },
 
     {
       name: "Expiry",
@@ -101,8 +102,8 @@ const ExpiryItemsCopy = () => {
         <td>${row.SupplierName || "N/A"}</td>
         <td>${row.RecieptNo || "N/A"}</td>
         <td>${row.ItemName || "N/A"}</td>
-        <td>${row.CPU || "N/A"}</td>
-        <td>${row.MRPU || "N/A"}</td>
+        <td>${parseCurrency(row.CPU).toFixed(2)}</td>
+        <td>${parseCurrency(row.MRPU).toFixed(2)}</td>
         <td>${new Date(row.ExpiryDate).toLocaleDateString()}</td>
       </tr>
     `
@@ -160,9 +161,9 @@ const ExpiryItemsCopy = () => {
     <th>Batch</th>
     <th>Supplier</th>
     <th>Receipt</th>
-    <th>Item</th>
-    <th>CPU</th>
-    <th>MRPU</th>
+    <th>Item Name</th>
+    <th>CPU (₹)</th>
+    <th>MRPU (₹)</th>
     <th>Expiry</th>
     </tr>
     </thead>
