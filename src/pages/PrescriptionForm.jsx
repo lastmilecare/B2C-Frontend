@@ -61,7 +61,7 @@ const PrescriptionFormCopy = () => {
         errors.bpdiastolic ||
         errors.pulserate ||
         errors.spo2 ||
-        errors.temprature ||
+        errors.temperature ||
         errors.height ||
         errors.weight
       ) {
@@ -129,7 +129,7 @@ const PrescriptionFormCopy = () => {
   );
 
   const { data: medicineResponse } = useGetMediceneListQuery(
-    debouncedMedicine || skipToken,
+    { searchTerm: debouncedMedicine || skipToken },
     { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
   );
   const medicineList = React.useMemo(
@@ -187,7 +187,7 @@ const PrescriptionFormCopy = () => {
       bpDiastolic: values.bpdiastolic ? Number(values.bpdiastolic) : null,
       pulseRate: values.pulserate ? Number(values.pulserate) : null,
       spo2: values.spo2 ? Number(values.spo2) : null,
-      temperature: values.temprature ? Number(values.temprature) : null,
+      temperature: values.temperature ? Number(values.temperature) : null,
       height: values.height ? Number(values.height) : null,
       weight: values.weight ? Number(values.weight) : null,
       chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
@@ -257,7 +257,7 @@ const PrescriptionFormCopy = () => {
       bpdiastolic: "",
       pulserate: "",
       spo2: "",
-      temprature: "",
+      temperature: "",
       height: "",
       weight: "",
       dosageinstructions: "",
@@ -292,9 +292,9 @@ const PrescriptionFormCopy = () => {
         .min(70, "Critically low SpO₂")
         .max(100, "Invalid SpO₂ value"),
 
-      temprature: Yup.number()
-        .min(35, "Hypothermia risk")
-        .max(42, "Dangerously high temperature"),
+      temperature: Yup.number()
+        .min(95, "Hypothermia risk")
+        .max(108, "Dangerously high temperature"),
 
       height: Yup.number().min(30, "Invalid height").max(250, "Invalid height"),
 
@@ -420,7 +420,7 @@ const PrescriptionFormCopy = () => {
       bpdiastolic: row.bpDiastolic ?? "",
       pulserate: row.pulseRate ?? "",
       spo2: row.spo2 ?? "",
-      temprature: row.temperature ?? "",
+      temperature: row.temperature ?? "",
       height: row.height ?? "",
       weight: row.weight ?? "",
     };
@@ -969,23 +969,23 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
                 <div className="border-t pt-3 text-sm grid md:grid-cols-3 gap-3">
                   <p>
-                    <b>BP:</b> {formik.values.bpsystolic}/
+                    <b>BP (mmHg):</b> {formik.values.bpsystolic}/
                     {formik.values.bpdiastolic}
                   </p>
                   <p>
-                    <b>Pulse:</b> {formik.values.pulserate}
+                    <b>Pulse (bpm):</b> {formik.values.pulserate}
                   </p>
                   <p>
-                    <b>SPO2:</b> {formik.values.spo2}
+                    <b>SPO2 (%):</b> {formik.values.spo2}
                   </p>
                   <p>
-                    <b>Temp:</b> {formik.values.temprature}
+                    <b>Temperature (°F) :</b> {formik.values.temperature}
                   </p>
                   <p>
-                    <b>Height:</b> {formik.values.height}
+                    <b>Height (cm):</b> {formik.values.height}
                   </p>
                   <p>
-                    <b>Weight:</b> {formik.values.weight}
+                    <b>Weight (kg):</b> {formik.values.weight}
                   </p>
                 </div>
 

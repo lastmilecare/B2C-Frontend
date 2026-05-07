@@ -52,7 +52,7 @@ const CampBillingFormCopy = ({ refetchList }) => {
   );
 
   const { data: medicineResponse } = useGetMediceneListQuery(
-    debouncedMedicine || skipToken,
+    { searchTerm: debouncedMedicine || skipToken },
     { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
   );
   const medicineList = React.useMemo(

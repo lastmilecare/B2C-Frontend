@@ -55,7 +55,7 @@ const GRNForm = () => {
   const debouncedMedicine = useDebounce(medicineSearch, 500);
 
   const { data: medicineResponse } = useGetMediceneListQuery(
-    debouncedMedicine || skipToken,
+    { searchTerm: debouncedMedicine || skipToken },
     { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
   );
   const medicineList = React.useMemo(
