@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CampBillingFormCopy from "./CampBillingForm";
-import BillingList from "./BillingList_old";
+import CampBillingList from "./CampBillingList"
 import { useParams } from "react-router-dom";
 
 import {
@@ -60,7 +60,7 @@ const CampBillingCopy = () => {
 
         {activeTab === "billing"
           ? <CampBillingFormCopy />
-          : <BillingList />}
+          : <CampBillingList />}
 
       {/* </div> */}
 

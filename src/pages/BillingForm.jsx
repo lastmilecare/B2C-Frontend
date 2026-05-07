@@ -28,14 +28,52 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { cleanCurrency, getPharmaSellingFromCP } from "../utils/helper";
 import { Picaso_Paymode_Options } from "../utils/constants";
-
+import * as Yup from "yup";
 const BillingFormCopy = ({ refetchList }) => {
     const [activeStep, setActiveStep] = useState(1);
     const navigate = useNavigate();
-    const nextStep = () => {
+    const nextStep = async () => {
+
+        const errors = await formik.validateForm();
+        if (
+            activeStep === 1 &&
+            errors.opdBillNo
+        ) {
+            formik.setTouched({
+                opdBillNo: true,
+            });
+            return;
+        }
+        if (activeStep === 2) {
+            if (formik.values.items.length === 0) {
+                formik.setTouched({
+            medicine: true,
+            quantity: true,
+        });
+
+                healthAlert({
+                    title: "Warning",
+                    text: "Please add at least one medicine",
+                    icon: "warning",
+                });
+
+                return;
+            }
+        }
+        if (
+            activeStep === 4 &&
+            errors.payMode
+        ) {
+
+            formik.setTouched({
+                payMode: true,
+            });
+
+            return;
+        }
+
         setActiveStep((prev) => prev + 1);
     };
-
     const prevStep = () => {
         setActiveStep((prev) => prev - 1);
     };
@@ -107,7 +145,10 @@ const BillingFormCopy = ({ refetchList }) => {
             setMedicineSuggestions([]);
         }
     }, [medicineList, debouncedMedicine, selectedMedicine]);
-
+    const validationSchema = Yup.object({
+        opdBillNo: Yup.string().required("Bill No is required"),
+        payMode: Yup.string().required("Payment mode is required"),
+    });
     const formik = useFormik({
         initialValues: {
             opdBillNo: "",
@@ -140,6 +181,7 @@ const BillingFormCopy = ({ refetchList }) => {
             cardAmount: 0,
             chequeAmount: 0,
         },
+        validationSchema,
         onSubmit: async (values) => {
 
             if (values.items.length === 0) {
@@ -473,6 +515,8 @@ const BillingFormCopy = ({ refetchList }) => {
         formik.setFieldValue("discountPercent", 0);
         formik.setFieldValue("cgst", 0);
         formik.setFieldValue("sgst", 0);
+        formik.setFieldTouched("medicine", false);
+formik.setFieldTouched("quantity", false);
         setMedicineSearch("");
         setSelectedMedicine(null);
         setMedicineSuggestions([]);
@@ -595,7 +639,11 @@ ${activeStep === step.id
                                                 type="text"
                                                 inputMode="numeric"
                                                 pattern="[0-9]*"
-                                                className={baseInput}
+                                                className={`${baseInput} ${formik.touched.opdBillNo &&
+                                                    formik.errors.opdBillNo
+                                                    ? "border-red-500"
+                                                    : ""
+                                                    }`}
                                                 placeholder="Search Bill no (e.g., 123)"
                                                 value={billSearch || formik.values.opdBillNo}
                                                 onChange={(e) => {
@@ -728,6 +776,11 @@ ${activeStep === step.id
                                     <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                                         <Input
                                             label="Quantity"
+                                            required
+                                            error={
+                                                formik.touched.quantity &&
+                                                formik.errors.quantity
+                                            }
                                             {...formik.getFieldProps("quantity")}
                                             placeholder="Qty"
                                         />
@@ -945,7 +998,11 @@ ${activeStep === step.id
                                                 value={formik.values.totalAmount}
                                                 readOnly
                                             />
-                                            <Select label="Pay Mode *" {...formik.getFieldProps("payMode")}>
+                                            <Select label="Pay Mode *" required
+                                                error={
+                                                    formik.touched.payMode &&
+                                                    formik.errors.payMode
+                                                }{...formik.getFieldProps("payMode")}>
                                                 <option value="">-- Select --</option>
                                                 {Picaso_Paymode_Options.map((m) => (
                                                     <option key={m.id} value={m.id}>
