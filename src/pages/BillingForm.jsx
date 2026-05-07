@@ -536,7 +536,7 @@ const BillingFormCopy = ({ refetchList }) => {
               {[
                 { id: 1, label: "Patient", icon: ClipboardDocumentIcon },
                 { id: 2, label: "Medicine", icon: BeakerIcon },
-                { id: 3, label: "Items", icon: CreditCardIcon },
+                // { id: 3, label: "Items", icon: CreditCardIcon },
                 { id: 4, label: "Payment", icon: DocumentCheckIcon },
                 { id: 5, label: "Summary", icon: CheckCircleIcon },
               ].map((step) => (
@@ -757,7 +757,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 </section>
               )}
 
-              {activeStep === 3 && (
+              {activeStep === 2 && (
                 <section className="space-y-4">
                   <h3 className="text-sky-700 font-semibold mb-3">
                     Items List
@@ -772,10 +772,10 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       </h4>
 
                       <p className="text-slate-400 text-sm mt-1">
-                        Please go back and add medicines to continue billing
+                        Please  add medicines to continue billing
                       </p>
 
-                      <Button
+                      {/* <Button
                         type="button"
                         variant="sky"
                         className="mt-4"
@@ -783,7 +783,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       >
                         <PlusIcon className="w-4 h-4 mr-1" />
                         Add Medicine
-                      </Button>
+                      </Button> */}
                     </div>
                   ) : (
                     <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100 overflow-hidden">

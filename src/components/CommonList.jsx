@@ -1,7 +1,10 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import DataTable from "react-data-table-component";
-import { EllipsisVerticalIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import {
+  EllipsisVerticalIcon,
+  ArrowDownTrayIcon,
+} from "@heroicons/react/24/outline";
 import { healthAlert } from "../utils/healthSwal";
 import GlobalLoader from "./common/GlobalLoader";
 const CommonList = ({
@@ -11,21 +14,23 @@ const CommonList = ({
   totalRows = 0,
   currentPage = 1,
   perPage = 10,
-  onPageChange = () => { },
-  onPerPageChange = () => { },
+  onPageChange = () => {},
+  onPerPageChange = () => {},
   enableActions = false,
   enableExport = false,
-  onEdit = () => { },
-  onView = () => { },
-  onDelete = () => { },
+  onEdit = () => {},
+  onView = () => {},
+  onDelete = () => {},
   onStatus = () => {},
-  onExport = () => { },
-  onPrint = () => { },
-  onPrintCS = () => { },
+  onExport = () => {},
+  onPrint = () => {},
+  onPrintCS = () => {},
   isLoading = false,
   filtersConfig = [],
-  onFilterApply = () => { },
+  onFilterApply = () => {},
   actionButtons = [],
+  expandableRows = false,
+  expandableRowsComponent = null,
 }) => {
   const [tempFilters, setTempFilters] = useState({});
   const [openMenuRow, setOpenMenuRow] = useState(null);
@@ -39,7 +44,6 @@ const CommonList = ({
   const handleApply = () => {
     const { startDate, endDate } = tempFilters;
     if (endDate && endDate > today) {
-
       healthAlert({
         title: "Invalid Date",
         text: "End date cannot be greater than today.",
@@ -49,8 +53,7 @@ const CommonList = ({
       return;
     }
     if (startDate && endDate && startDate > endDate) {
-      
-       healthAlert({
+      healthAlert({
         title: "Date Range Error",
         text: "Start date cannot be after end date.",
         icon: "info",
@@ -58,7 +61,7 @@ const CommonList = ({
       return;
     }
     onFilterApply(tempFilters);
-    setOpenMenuRow(null); 
+    setOpenMenuRow(null);
   };
 
   const handleReset = () => {
@@ -109,7 +112,7 @@ const CommonList = ({
           minWidth: col.minWidth || "100px",
           wrap: col.wrap ?? true,
         })),
-    [columns]
+    [columns],
   );
 
   const enhancedColumns = useMemo(() => {
@@ -120,7 +123,11 @@ const CommonList = ({
       edit: { label: "Edit", color: "text-yellow-600", handler: onEdit },
       delete: { label: "Delete", color: "text-red-600", handler: onDelete },
       print: { label: "Print", color: "text-green-700", handler: onPrint },
-      printCS: { label: "Print CS", color: "text-purple-700", handler: onPrintCS },
+      printCS: {
+        label: "Print CS",
+        color: "text-purple-700",
+        handler: onPrintCS,
+      },
       status: { label: "Status", color: "", handler: onStatus },
     };
 
@@ -147,8 +154,12 @@ const CommonList = ({
     visibleColumns,
     enableActions,
     actionButtons,
-    onEdit, onDelete, onView, onPrint, onPrintCS,
-    openMenuRow
+    onEdit,
+    onDelete,
+    onView,
+    onPrint,
+    onPrintCS,
+    openMenuRow,
   ]);
 
   return (
@@ -206,7 +217,11 @@ const CommonList = ({
                     value={tempFilters[filter.name] || ""}
                     onChange={handleFilterChange}
                     className="w-full border px-2 py-1 rounded text-xs focus:ring-1 focus:ring-sky-400"
-                    max={filter.name === "endDate" ? today : tempFilters.endDate || today}
+                    max={
+                      filter.name === "endDate"
+                        ? today
+                        : tempFilters.endDate || today
+                    }
                   />
                 )}
               </div>
@@ -243,14 +258,16 @@ const CommonList = ({
         columns={enhancedColumns}
         data={data}
         progressPending={isLoading}
-        progressComponent={<GlobalLoader />} 
+        progressComponent={<GlobalLoader />}
         pagination
         paginationServer
         paginationTotalRows={totalRows}
-        paginationDefaultPage={currentPage}
+        paginationCurrentPage={currentPage}
         paginationPerPage={perPage}
         onChangeRowsPerPage={onPerPageChange}
         onChangePage={onPageChange}
+        expandableRows={expandableRows}
+        expandableRowsComponent={expandableRowsComponent}
         highlightOnHover
         pointerOnHover
         customStyles={customStyles}
@@ -263,7 +280,13 @@ const CommonList = ({
 
 export default CommonList;
 
-const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenuRow }) => {
+const ActionMenu = ({
+  row,
+  actionButtons,
+  buttonConfig,
+  openMenuRow,
+  setOpenMenuRow,
+}) => {
   const isOpen = openMenuRow === row;
   const [menuStyle, setMenuStyle] = useState({});
   const buttonRef = useRef(null);
@@ -286,7 +309,8 @@ const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenu
 
     let left = rect.right - MENU_WIDTH;
     if (left < 5) left = rect.left;
-    if (left + MENU_WIDTH > viewportWidth) left = viewportWidth - MENU_WIDTH - 10;
+    if (left + MENU_WIDTH > viewportWidth)
+      left = viewportWidth - MENU_WIDTH - 10;
 
     setMenuStyle({
       position: "fixed",
@@ -299,14 +323,15 @@ const ActionMenu = ({ row, actionButtons, buttonConfig, openMenuRow, setOpenMenu
     setOpenMenuRow(row);
   };
 
-
   useEffect(() => {
     if (!isOpen) return;
     const closeMenu = () => setOpenMenuRow(null);
     const handleOutsideClick = (event) => {
       if (
-        menuRef.current && !menuRef.current.contains(event.target) &&
-        buttonRef.current && !buttonRef.current.contains(event.target)
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target)
       ) {
         closeMenu();
       }
