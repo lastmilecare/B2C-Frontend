@@ -9,23 +9,46 @@ import {
 import {
   useCreateTemplateMutation,
   useGetAllTenantsQuery,
+  useUpdateTemplateMutation,
+  useGetTemplatesByTenantQuery
 } from "../redux/apiSlice";
 
 import { Input, Select, Button } from "../components/FormControls";
 import { healthAlert } from "../utils/healthSwal";
-
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 const TemplateUpload = () => {
   const [createTemplate, { isLoading }] = useCreateTemplateMutation();
   const { data: tenantData } = useGetAllTenantsQuery();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+const templateId = Number(id);
+const tenantId = location.state?.tenant_id;
+const { data: tenantTemplates = [] } =
+  useGetTemplatesByTenantQuery(tenantId, {
+    skip: !tenantId,
+  });
+
+const editData = tenantTemplates.find(
+  (item) => item.id === templateId
+);
+
+const isEditMode = Boolean(templateId);
+
+const [updateTemplate] = useUpdateTemplateMutation();
 
   const tenants = tenantData?.data?.data || [];
 
   const formik = useFormik({
+    enableReinitialize: true,
     initialValues: {
-      name: "",
-      tenant_id: "",
-      template_html: "",
-    },
+  name: editData?.name || "",
+  tenant_id: editData?.tenant_id || "",
+  template_html: editData?.template_html || "",
+},
 
     validationSchema: Yup.object({
       name: Yup.string().required("Template name is required"),
@@ -33,28 +56,49 @@ const TemplateUpload = () => {
       template_html: Yup.string().required("Template HTML is required"),
     }),
 
-    onSubmit: async (values, { resetForm }) => {
-      try {
-        await createTemplate({
-          ...values,
-          tenant_id: Number(values.tenant_id),
-        }).unwrap();
+  onSubmit: async (values, { resetForm }) => {
+  try {
+    const payload = {
+      ...values,
+      tenant_id: Number(values.tenant_id),
+    };
 
-        healthAlert({
-          title: "Success",
-          text: "Template created successfully",
-          icon: "success",
-        });
+    if (isEditMode) {
+      await updateTemplate({
+        id: editData.id,
+        body: payload,
+      }).unwrap();
 
-        resetForm();
-      } catch (error) {
-        healthAlert({
-          title: "Error",
-          text: error?.data?.message || "Failed to create template",
-          icon: "error",
-        });
-      }
-    },
+      healthAlert({
+        title: "Updated",
+        text: "Template updated successfully",
+        icon: "success",
+      });
+      navigate("/fitness-certificate", {
+  state: { goToTemplateList: true },
+});
+    } else {
+      await createTemplate(payload).unwrap();
+
+      healthAlert({
+        title: "Success",
+        text: "Template created successfully",
+        icon: "success",
+      });
+      navigate("/fitness-certificate", {
+  state: { goToTemplateList: true },
+});
+    }
+
+    resetForm();
+  } catch (error) {
+    healthAlert({
+      title: "Error",
+      text: error?.data?.message || "Failed",
+      icon: "error",
+    });
+  }
+},
   });
 
   return (
@@ -136,9 +180,13 @@ const TemplateUpload = () => {
               </Button>
 
               <Button type="submit" variant="sky" disabled={isLoading}>
-                <CheckCircleIcon className="w-4 mr-1 inline" />
-                {isLoading ? "Saving..." : "Save Template"}
-              </Button>
+  <CheckCircleIcon className="w-4 mr-1 inline" />
+  {isLoading
+    ? "Saving..."
+    : isEditMode
+    ? "Update Template"
+    : "Save Template"}
+</Button>
 
             </div>
 

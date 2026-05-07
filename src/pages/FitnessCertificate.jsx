@@ -22,19 +22,23 @@ import { useNavigate } from "react-router-dom";
 import PatientSelector from "../components/common/PatientSelector";
 import { useParams } from "react-router-dom";
 import { cookie } from "../utils/cookie";
-
+import { useLocation } from "react-router-dom";
 const FitnessCertificate = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [previewTemplate] = usePreviewTemplateMutation();
   const navigate = useNavigate();
   const printRef = useRef();
   const { id } = useParams();
+  const location = useLocation();
+
+const isTemplateRoute =
+  location.pathname.includes("/template/");
   const [createFitness] = useCreateFitnessMutation();
   const [updateFitness] = useUpdateFitnessMutation();
 
   const { data: editData } = useGetFitnessByIdQuery(id, {
-    skip: !id,
-  });
+  skip: !id || isTemplateRoute,
+});
   const tenantId = cookie.get("tenant_id");
   const ROLE_ADMIN = "LMC_ADMIN";
   const role = cookie.get("role");

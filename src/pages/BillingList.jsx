@@ -6,7 +6,9 @@ import {
   useGetComboQuery,
   useGetMediceneListQuery,
   useGetPatientNameFromSalesQuery,
+
 } from "../redux/apiSlice";
+import { skipToken } from "@reduxjs/toolkit/query";
 import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { cookie } from "../utils/cookie";

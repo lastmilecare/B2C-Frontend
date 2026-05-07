@@ -244,6 +244,7 @@ const MedicalHistory = () => {
               <button
                 key={step.id}
                 type="button"
+                disabled
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 ${activeStep === step.id
                     ? "bg-white text-sky-600 shadow"
@@ -280,27 +281,36 @@ const MedicalHistory = () => {
 
                     <Input
                       label="Past Illness (Diabetes, etc.)"
+                      required
                       {...formik.getFieldProps("past_illness")}
                       error={formik.touched.past_illness && formik.errors.past_illness}
                     />
 
                     <Input
                       label="Surgical History"
+                      required
+                      error={formik.touched.surgical_history && formik.errors.surgical_history}
                       {...formik.getFieldProps("surgical_history")}
                     />
 
                     <Input
                       label="Family Medical History"
+                      required
+                      error={formik.touched.family_medical_history && formik.errors.family_medical_history}
                       {...formik.getFieldProps("family_medical_history")}
                     />
 
                     <Input
                       label="Current Medications"
+                      required
+                      error={formik.touched.current_medications && formik.errors.current_medications}
                       {...formik.getFieldProps("current_medications")}
                     />
 
                     <Input
                       label="Allergies"
+                      required
+                      error={formik.touched.allergies && formik.errors.allergies}
                       {...formik.getFieldProps("allergies")}
                     />
 
@@ -318,21 +328,30 @@ const MedicalHistory = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
-                    <Select label="Smoking" {...formik.getFieldProps("smoking")}>
+                    <Select label="Smoking"
+                    required
+                    error={formik.touched.smoking && formik.errors.smoking}
+                    {...formik.getFieldProps("smoking")}>
                       <option value="">Select</option>
                       <option>No</option>
                       <option>Occasionally</option>
                       <option>Regular</option>
                     </Select>
 
-                    <Select label="Alcohol" {...formik.getFieldProps("alcohol")}>
+                    <Select label="Alcohol" 
+                    required
+                    error={formik.touched.alcohol && formik.errors.alcohol}
+                    {...formik.getFieldProps("alcohol")}>
                       <option value="">Select</option>
                       <option>No</option>
                       <option>Occasionally</option>
                       <option>Regular</option>
                     </Select>
 
-                    <Select label="Tobacco Use" {...formik.getFieldProps("tobacco_use")}>
+                    <Select label="Tobacco Use" 
+                    required
+                    error={formik.touched.tobacco_use && formik.errors.tobacco_use}
+                    {...formik.getFieldProps("tobacco_use")}>
                       <option value="">Select</option>
                       <option>No</option>
                       <option>Occasionally</option>
@@ -348,7 +367,7 @@ const MedicalHistory = () => {
                 <section>
                   <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
                     <h3 className="text-lg font-semibold text-sky-600">
-                      MEDICAL HISTORYPREVIEW
+                      MEDICAL HISTORY PREVIEW
                     </h3>
 
                     <div className="grid md:grid-cols-2 gap-3 text-sm">

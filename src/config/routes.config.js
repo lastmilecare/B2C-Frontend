@@ -19,17 +19,8 @@ import Permission from "../pages/Permission";
 import Roles from "../pages/Roles";
 import TenantForm from "../pages/TenantForm";
 import TenantList from "../pages/TenantList";
-// import PatientRegistrationOhc from "../pages/PatientFormOhc";
-// import AppointmentVisit from "../pages/AppointmentVisit";
-// import MedicalHistory from "../pages/MedicalHistory";
-// import ClinicalExamination from "../pages/ClinicalExamination";
-// import LaboratoryInvestigation from "../pages/LaboratoryInvestigation";
-// import RadiologyScreen from "../pages/RadiologyScreen";
-// import DoctorAssessment from "../pages/DoctorAssessment";
-// import FitnessCertificate from "../pages/FitnessCertificate";
 import RoleList from "../pages/RoleList";
 import PermissionList from "../pages/Permission_list";
-// import Resources from "../pages/Resources";
 import Appointment from "../pages/Appointment";
 import MedicalHistoryPage from "../pages/MedicalHistoryPage";
 import ClinicalExaminationPage from "../pages/ClinicalExaminationPage";
@@ -38,10 +29,10 @@ import RadiologyPage from "../pages/RadiologyPage";
 import DoctorAssessmentPage from "../pages/DoctorAssessmentPage";
 import FitnessCertificatePage from "../pages/FitnessCertificatePage";
 import PatientPage from "../pages/PatientPage";
-
 import VitalsPage from "../pages/VitalsPage";
 import ResourcePage from "../pages/ResourcePage";
 import ItemMaster from "../pages/ItemMaster";
+
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -257,6 +248,12 @@ export const ROUTES = [
     group: "Billing",
     showInSidebar: true,
   },
+  {
+    path: "/camp-billing/:id",
+    component: CampBillingCopy,
+    permission: "create:camp_billing",
+    showInSidebar: false,
+  },
 
   // ── Pharmacy ──────────────────────────────────────────────────────────────
   {
@@ -398,6 +395,18 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
+  {
+  path: "/fitness-certificate/:id",
+  component: FitnessCertificatePage,
+  permission: "update:fitness_certificate",
+  showInSidebar: false,
+},
+{
+  path: "/fitness-certificate/template/:id",
+  component: FitnessCertificatePage,
+  permission: "update:fitness_certificate",
+  showInSidebar: false,
+},
   {
     path: "/resource",
     component: ResourcePage,
