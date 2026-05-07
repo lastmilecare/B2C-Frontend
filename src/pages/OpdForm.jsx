@@ -35,29 +35,69 @@ const OpdFormCopy = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(1);
 
-  const nextStep = async () => {
-    const errors = await formik.validateForm();
+ const nextStep = async () => {
 
-    if (
-      activeStep === 1 &&
-      (errors.UHID ||
-        errors.Name ||
-        errors.Mobile ||
-        errors.Department ||
-        errors.Doctor)
-    ) {
-      formik.setTouched({
-        UHID: true,
-        Name: true,
-        Mobile: true,
-        Department: true,
-        Doctor: true,
-      });
-      return;
-    }
+  const errors = await formik.validateForm();
 
-    setActiveStep((prev) => prev + 1);
-  };
+  // STEP 1
+  if (
+    activeStep === 1 &&
+    (
+      errors.UHID ||
+      errors.Name ||
+      errors.Mobile ||
+      errors.Department ||
+      errors.Doctor
+    )
+  ) {
+
+    formik.setTouched({
+      UHID: true,
+      Name: true,
+      Mobile: true,
+      Department: true,
+      Doctor: true,
+    });
+
+    return;
+  }
+
+  // STEP 2 → SERVICES REQUIRED
+  if (
+    activeStep === 2 &&
+    selectedServices.length === 0
+  ) {
+
+    healthAlert({
+      title: "Service Required",
+      text: "Please add at least one service",
+      icon: "warning",
+    });
+
+    return;
+  }
+
+  // STEP 3 → PAYMENT MODE REQUIRED
+  if (
+    activeStep === 3 &&
+    !formik.values.PayMode
+  ) {
+
+    formik.setTouched({
+      PayMode: true,
+    });
+
+    healthAlert({
+      title: "Payment Mode Required",
+      text: "Please select payment mode",
+      icon: "warning",
+    });
+
+    return;
+  }
+
+  setActiveStep((prev) => prev + 1);
+};
 
   const prevStep = () => setActiveStep((prev) => prev - 1);
   const [isPaidManuallyEdited, setIsPaidManuallyEdited] = useState(false);
@@ -318,7 +358,7 @@ const OpdFormCopy = () => {
       Doctor: Yup.number()
         .min(1, "Consulting doctor is required")
         .required("Consulting doctor is required"),
-      // PayMode: Yup.string().required("Payment Mode is required"),
+      PayMode: Yup.string().required("Payment Mode is required"),
     }),
 
     onSubmit: async (values) => {
@@ -827,7 +867,7 @@ const OpdFormCopy = () => {
                       {...formik.getFieldProps("PayMode")}
                       label="Payment Mode"
                       required
-                      // error={formik.touched.PayMode && formik.errors.PayMode}
+                      error={formik.touched.PayMode && formik.errors.PayMode}
                       onChange={(e) => {
                         const mode = e.target.value;
                         formik.setFieldValue("PayMode", mode);

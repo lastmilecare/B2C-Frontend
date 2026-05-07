@@ -70,7 +70,7 @@ const Resources = () => {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10 px-4">
             <div className="max-w-6xl mx-auto">
 
-                {/* Header */}
+                
                 <div className="flex justify-between items-center mb-10">
                     <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
                         <span className="bg-blue-100 p-2 rounded-xl">
@@ -79,7 +79,7 @@ const Resources = () => {
                         Resource
                     </h1>
 
-                    {/* Step Indicator */}
+                    
                     <div className="flex gap-2">
                         {[1, 2].map((s) => (
                             <div
@@ -91,10 +91,10 @@ const Resources = () => {
                     </div>
                 </div>
 
-                {/* Card */}
+               
                 <div className="bg-white rounded-3xl shadow-xl shadow-blue-100 border border-gray-100 overflow-hidden">
 
-                    {/* Tabs */}
+                    
                     <div className="flex border-b">
                         <div
                             className={`flex-1 py-4 flex items-center justify-center gap-2 ${activeStep === 1 ? "text-sky-600 font-bold" : "text-gray-400"
@@ -113,11 +113,10 @@ const Resources = () => {
                         </div>
                     </div>
 
-                    {/* Form */}
                     <div className="p-10">
                         <form onSubmit={(e) => e.preventDefault()}>
 
-                            {/* Step 1 */}
+                           
                             {activeStep === 1 && (
                                 <section>
                                     <h3 className="text-lg font-semibold text-sky-700 mb-6 flex items-center gap-2">
@@ -128,12 +127,14 @@ const Resources = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <Input
                                             label="Name"
+                                            required
                                             {...formik.getFieldProps("name")}
                                             error={formik.touched.name && formik.errors.name}
                                         />
 
                                         <Input
                                             label="Description"
+                                            required
                                             {...formik.getFieldProps("description")}
                                             error={
                                                 formik.touched.description &&
@@ -144,7 +145,7 @@ const Resources = () => {
                                 </section>
                             )}
 
-                            {/* Step 2 */}
+                           
                             {activeStep === 2 && (
                                 <section>
                                     <div className="bg-sky-50 p-8 rounded-3xl border border-sky-100 space-y-6">
@@ -173,7 +174,7 @@ const Resources = () => {
                                 </section>
                             )}
 
-                            {/* Buttons */}
+                           
                             <div className="flex justify-between pt-8 border-t border-slate-50">
                                 <div className="flex gap-3">
                                     {activeStep > 1 && (

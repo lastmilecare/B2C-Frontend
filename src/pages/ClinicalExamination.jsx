@@ -284,18 +284,19 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
                   <div>
                     <h3 className="text-sky-700 font-semibold mb-2">General Appearance</h3>
                     <Input
-                      label="General Appearance *"
+                      label="General Appearance "
+                      required
                       {...formik.getFieldProps("generalAppearance")}
                       error={formik.touched.generalAppearance && formik.errors.generalAppearance}
                     />
                   </div>
-
                   
                   <div>
-                    <h3 className="text-sky-700 font-semibold mb-2">Eye Examination *</h3>
+                    <h3 className="text-sky-700 font-semibold mb-2">Eye Examination</h3>
+
                     <div className="grid md:grid-cols-2 gap-3">
-                      <Input label="Vision *" {...formik.getFieldProps("vision")} />
-                      <Select label="Color Blindness *" {...formik.getFieldProps("colorBlindness")}>
+                      <Input label="Vision " required error={formik.touched.vision && formik.errors.vision}{...formik.getFieldProps("vision")} />
+                      <Select label="Color Blindness" required error={formik.touched.colorBlindness && formik.errors.colorBlindness} {...formik.getFieldProps("colorBlindness")}>
                         <option value="">Select</option>
                         <option>No</option>
                         <option>Yes</option>
@@ -305,11 +306,11 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
 
                  
                   <div>
-                    <h3 className="text-sky-700 font-semibold mb-2">ENT *</h3>
+                    <h3 className="text-sky-700 font-semibold mb-2">ENT</h3>
                     <div className="grid md:grid-cols-3 gap-3">
-                      <Input label="Ear *" {...formik.getFieldProps("ear")} />
-                      <Input label="Nose *" {...formik.getFieldProps("nose")} />
-                      <Input label="Throat *" {...formik.getFieldProps("throat")} />
+                      <Input label="Ear" required error={formik.touched.ear && formik.errors.ear} {...formik.getFieldProps("ear")} />
+                      <Input label="Nose" required error={formik.touched.nose && formik.errors.nose} {...formik.getFieldProps("nose")} />
+                      <Input label="Throat" required error={formik.touched.throat && formik.errors.throat} {...formik.getFieldProps("throat")} />
                     </div>
                   </div>
 
@@ -322,12 +323,12 @@ const [updateClinicalExam] = useUpdateClinicalExamMutation();
                   <h3 className="text-sky-700 font-semibold mb-4">System Examination</h3>
 
                   <div className="grid md:grid-cols-2 gap-4">
-                    <Input label="Cardiovascular System *" {...formik.getFieldProps("cardiovascular")} />
-                    <Input label="Respiratory System *" {...formik.getFieldProps("respiratory")} />
-                    <Input label="Abdomen *" {...formik.getFieldProps("abdomen")} />
-                    <Input label="Nervous System *" {...formik.getFieldProps("nervousSystem")} />
-                    <Input label="Musculoskeletal System *" {...formik.getFieldProps("musculoskeletal")} />
-                    <Input label="Skin Condition *" {...formik.getFieldProps("skin")} />
+                    <Input label="Cardiovascular System " required error={formik.touched.cardiovascular && formik.errors.cardiovascular} {...formik.getFieldProps("cardiovascular")} />
+                    <Input label="Respiratory System " required error={formik.touched.respiratory && formik.errors.respiratory} {...formik.getFieldProps("respiratory")} />
+                    <Input label="Abdomen " required error={formik.touched.abdomen && formik.errors.abdomen} {...formik.getFieldProps("abdomen")} />
+                    <Input label="Nervous System " required  error={formik.touched.nervousSystem && formik.errors.nervousSystem} {...formik.getFieldProps("nervousSystem")} />
+                    <Input label="Musculoskeletal System " required error={formik.touched.musculoskeletal && formik.errors.musculoskeletal} {...formik.getFieldProps("musculoskeletal")} />
+                    <Input label="Skin Condition " required error={formik.touched.skin && formik.errors.skin} {...formik.getFieldProps("skin")} />
                   </div>
                 </section>
               )}

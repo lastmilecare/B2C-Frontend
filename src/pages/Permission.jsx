@@ -108,6 +108,7 @@ const Permission = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Select
                       label="Action"
+                      required
                       {...formik.getFieldProps("action")}
                       error={formik.touched.action && formik.errors.action}
                     >
@@ -120,7 +121,8 @@ const Permission = () => {
                     </Select>
 
                     <Select
-                      label="Resource"
+                      label="Resource "
+                      required
                       {...formik.getFieldProps("resource")}
                       error={formik.touched.resource && formik.errors.resource}
                     >
