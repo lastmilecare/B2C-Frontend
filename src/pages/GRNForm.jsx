@@ -36,9 +36,46 @@
   const GRNFormCopy = () => {
     const [activeStep, setActiveStep] = useState(1)
 
-    const nextStep = () => {
-      setActiveStep((prev) => prev + 1)
-    }
+    const nextStep = async () => {
+  const errors = await formik.validateForm();
+
+  if (
+    activeStep === 1 &&
+    (
+      errors.InvoiceDate ||
+      errors.RecieptNo ||
+      errors.SupplierName
+    )
+  ) {
+    formik.setTouched({
+      InvoiceDate: true,
+      RecieptNo: true,
+      SupplierName: true,
+    });
+
+    return;
+  }
+
+  if (
+  activeStep === 2 &&
+  formik.values.items.length === 0
+
+  ) {
+    formik.setTouched({
+      ItemName: true,
+      BatchNo: true,
+      CP: true,
+      MRP: true,
+      HSNCode: true,
+    });
+
+    healthAlerts.warning("Please fill required item fields");
+
+    return;
+  }
+
+  setActiveStep((prev) => prev + 1);
+};
 
     const prevStep = () => {
       setActiveStep((prev) => prev - 1)
@@ -502,6 +539,10 @@
                   <Select
                     label="Select Supplier"
                     required
+                     error={
+    formik.touched.SupplierName &&
+    formik.errors.SupplierName
+  }
                     value={formik.values.SupplierID}
                     disabled={isEditMode}
                     onChange={(e) => {
@@ -587,28 +628,33 @@
                   <Input
                     label="Batch No"
                     required
+                     error={formik.touched.BatchNo && formik.errors.BatchNo}
                     {...formik.getFieldProps("BatchNo")}
                   />
                   <Input
                     type="date"
                     label="Mfg Date"
                     required
+                     error={formik.touched.MenufacturingDate && formik.errors.MenufacturingDate}
                     {...formik.getFieldProps("MenufacturingDate")}
                   />
                   <Input
                     type="date"
                     label="Expiry Date"
                     required
+                     error={formik.touched.ExpiryDate && formik.errors.ExpiryDate}
                     {...formik.getFieldProps("ExpiryDate")}
                   />
                   <NumericInput
                     label="Unit / Strip"
                     required
+                     error={formik.touched.NoStrip && formik.errors.NoStrip}
                     {...formik.getFieldProps("NoStrip")}
                   />
                   <NumericInput
                     label="Qty / Unit"
                     required
+                    error={formik.touched.NoQtyperStrip && formik.errors.NoQtyperStrip}
                     {...formik.getFieldProps("NoQtyperStrip")}
                   />
                   <Input
@@ -623,21 +669,25 @@
                   <NumericInput
                     label="CP / Strip"
                     required
+                    error={formik.touched.CP && formik.errors.CP}
                     {...formik.getFieldProps("CP")}
                   />
                   <NumericInput
                     label="MRP / Strip"
                     required
+                    error={formik.touched.MRP && formik.errors.MRP}
                     {...formik.getFieldProps("MRP")}
                   />
                   <NumericInput
                     label="Discount %"
                     required
+                    error={formik.touched.DiscountPCperitem && formik.errors.DiscountPCperitem}
                     {...formik.getFieldProps("DiscountPCperitem")}
                   />
                   <Select
                     label="HSN Code"
                     required
+                    
                     value={formik.values.HSNCode}
                     error={formik.touched.HSNCode && formik.errors.HSNCode}
                     onBlur={formik.handleBlur}
@@ -667,11 +717,13 @@
                   <NumericInput
                     label="CGST %"
                     required
+                    error={formik.touched.CGST && formik.errors.CGST}
                     {...formik.getFieldProps("CGST")}
                   />
                   <NumericInput
                     label="SGST %"
                     required
+                    error={formik.touched.SGST && formik.errors.SGST}
                     {...formik.getFieldProps("SGST")}
                   />
                   {/* <Input label="C.P / Qty" value={formik.values.cpQty} readOnly />
