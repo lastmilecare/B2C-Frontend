@@ -241,13 +241,13 @@ const CampBillingList = () => {
       width: "180px",
     },
     {
-      name: "Taxable Amount",
+      name: "Taxable Amount (₹)",
       selector: (row) => parseCurrency(row.TaxableAmount || 0),
 
       width: "80px",
     },
     {
-      name: "Gross Amount",
+      name: "Gross Amount (₹)",
       cell: (row) => (
         <span className="font-semibold text-blue-600">
           {parseCurrency(row.GrossAmount).toFixed(2)}
@@ -255,17 +255,17 @@ const CampBillingList = () => {
       ),
     },
     {
-      name: "Discount Amount",
+      name: "Discount Amount (₹)",
       selector: (row) => parseCurrency(row.DiscountAmount || 0),
       width: "80px",
     },
     {
-      name: "Paid Amount",
+      name: "Paid Amount (₹)",
       selector: (row) => parseCurrency(row.PaidAmount || 0),
       width: "80px",
     },
     {
-      name: "Due Amount",
+      name: "Due Amount (₹)",
       selector: (row) =>
         // (row.GrossAmount || 0) - (row.PaidAmount || 0) || "N/A", // need to check picasoid logic
         parseCurrency(row.DueAmount || 0),
@@ -350,22 +350,22 @@ const CampBillingList = () => {
       <section className="border rounded-xl bg-emerald-50 px-4 py-2 shadow-sm">
         <div className="flex flex-wrap justify-between items-center w-full">
           <span>
-            Total Sales :{" "}
+            Total Sales (₹) :{" "}
             <span className="font-semibold">{data?.totalSales || 0}</span>
           </span>
 
           <span>
-            Total Paid :{" "}
+            Total Paid (₹) :{" "}
             <span className="font-semibold">{data?.totalPaid || 0}</span>
           </span>
 
           <span>
-            Total Due :{" "}
+            Total Due (₹) :{" "}
             <span className="font-semibold">{data?.totalDue || 0}</span>
           </span>
 
           <span>
-            Total Discount :{" "}
+            Total Discount (₹) :{" "}
             <span className="font-semibold">{data?.totalDiscount || 0}</span>
           </span>
         </div>

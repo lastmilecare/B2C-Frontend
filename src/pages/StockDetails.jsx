@@ -12,6 +12,7 @@ import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
+import { parseCurrency } from "../utils/helper";
 const username = cookie.get("username");
 const StockDetailsCopy = () => {
   const [deleteitemid] = useDeleteitemMutation();
@@ -59,7 +60,7 @@ const StockDetailsCopy = () => {
   const [ItemSearch, ItemNameSearch] = useState("");
   const debouncedItemSearch = useDebounce(ItemSearch, 500);
   const { data: suggestions = [] } = useGetMediceneListQuery(
-    { searchTerm: debouncedItemSearch},
+    { searchTerm: debouncedItemSearch },
     {
       skip: debouncedItemSearch.length < 2,
     },
@@ -196,6 +197,13 @@ const StockDetailsCopy = () => {
       width: "80px",
     },
     {
+      name: "Supplier",
+      width: "160px",
+      cell: (row) => (
+        <span className="text-gray-700 font-medium">{row.SupplierName}</span>
+      ),
+    },
+    {
       name: "Invoice Date",
       selector: (row) => new Date(row.InvoiceDate).toISOString().split("T")[0],
       sortable: true,
@@ -220,27 +228,43 @@ const StockDetailsCopy = () => {
       ),
     },
     { name: "HSNCode", selector: (row) => row.HSNCode, width: "120px" },
-    { name: "CGST", selector: (row) => row.CGST, width: "120px" },
-    { name: "SGST", selector: (row) => row.SGST, width: "120px" },
+    { name: "CGST (%)", selector: (row) => row.CGST, width: "120px" },
+    { name: "SGST (%)", selector: (row) => row.SGST, width: "120px" },
     {
-      name: "CP",
+      name: "CP (₹)",
       width: "110px",
       right: true,
       cell: (row) => (
-        <span className="font-semibold text-green-600">₹{row.CP}</span>
+        <span className="font-semibold text-green-600">
+          ₹{parseCurrency(row.CP)}
+        </span>
       ),
     },
     {
-      name: "MRP",
+      name: "MRP (₹)",
       width: "110px",
       right: true,
       cell: (row) => (
-        <span className="font-semibold text-blue-600">₹{row.MRP}</span>
+        <span className="font-semibold text-blue-600">
+          {parseCurrency(row.MRP)}
+        </span>
       ),
     },
-    { name: "CPU", selector: (row) => row.CPU, width: "120px" },
-    { name: "MRPU", selector: (row) => row.MRPU, width: "120px" },
-    { name: "Cnd.Qty", selector: (row) => row.CondmQty, width: "120px" },
+    {
+      name: "CPU (₹)",
+      selector: (row) => ` ${parseCurrency(row.CPU)}`,
+      width: "120px",
+    },
+    {
+      name: "MRPU (₹)",
+      selector: (row) => `${parseCurrency(row.MRPU)}`,
+      width: "120px",
+    },
+    {
+      name: "Cnd.Qty",
+      selector: (row) => parseCurrency(row.CondmQty),
+      width: "120px",
+    },
     {
       name: "Recv Qty",
       width: "110px",
@@ -297,13 +321,7 @@ const StockDetailsCopy = () => {
       selector: (row) => new Date(row.AddedDate).toISOString().split("T")[0],
       width: "120px",
     },
-    {
-      name: "Supplier",
-      width: "160px",
-      cell: (row) => (
-        <span className="text-gray-700 font-medium">{row.SupplierName}</span>
-      ),
-    },
+
     {
       name: "ID",
       selector: (row) => row.ID,
@@ -318,6 +336,7 @@ const StockDetailsCopy = () => {
       (row, index) => `
       <tr>
         <td>${index + 1}</td>
+         <td>${row.SupplierName || "N/A"}</td>
        <td>${new Date(row.InvoiceDate).toLocaleDateString()}</td>
         <td>${row.RecieptNo || ""}</td>
         <td>${row.BatchNo || ""}</td>
@@ -325,17 +344,17 @@ const StockDetailsCopy = () => {
         <td>${row.HSNCode || ""}</td>
         <td>${row.CGST || "N/A"}</td>
         <td>${row.SGST || "N/A"}</td>
-        <td>${row.CP || "N/A"}</td>
-        <td>${row.MRP || "N/A"}</td>
-        <td>${row.CPU || "N/A"}</td>
-        <td>${row.MRPU || "N/A"}</td>
+        <td>${parseCurrency(row.CP || "N/A")}</td>
+        <td>${parseCurrency(row.MRP || "N/A")}</td>
+        <td>${parseCurrency(row.CPU || "N/A")}</td>
+        <td>${parseCurrency(row.MRPU || "N/A")}</td>
         <td>${row.CondmQty || "N/A"}</td>
         <td>${row.RecvQty || "N/A"}</td>
         <td>${row.RecvQty - row.BalQty || "N/A"}</td>
         <td>${row.BalQty || "N/A"}</td>
         <td>${new Date(row.ExpiryDate).toLocaleDateString()}</td>
         <td>${new Date(row.AddedDate).toLocaleDateString()}</td>
-        <td>${row.SupplierName || "N/A"}</td>
+       
       </tr>
     `,
     ).join("");
@@ -392,24 +411,25 @@ const StockDetailsCopy = () => {
           <thead>
             <tr>
               <th>S.No</th>
+              <th>Supplier Name</th>
               <th>Invoice Date</th>
               <th>RecieptNo</th>
               <th>Batch No</th>
               <th>Rag No</th>
               <th>HSN Code</th>
-              <th>CGST</th>
-              <th>SGST</th>
-              <th>CP</th>
-              <th>MRP</th>
-              <th>CPU</th>
-              <th>MRPU</th>
+              <th>CGST (%)</th>
+              <th>SGST (%)</th>
+              <th>CP (₹)</th>
+              <th>MRP (₹)</th>
+              <th>CPU (₹)</th>
+              <th>MRPU (₹)</th>
               <th>Cond. Qty</th>
               <th>Recv. Qty</th>
               <th>Sales Qty</th>
               <th>Bal Qty</th>
               <th>Expiry Date</th>
               <th>Date</th>
-              <th>Supplier Name</th>
+              
             </tr>
           </thead>
           <tbody>

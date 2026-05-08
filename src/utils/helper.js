@@ -134,9 +134,16 @@ export const getPharmaSellingFromCP = (item, qty, discountPercent) => {
 };
 
 export const parseCurrency = (value) => {
-  if (!value) return 0;
+  if (value === null || value === undefined || value === "") {
+    return 0;
+  }
 
-  const cleaned = value.replace(/[^0-9.-]+/g, "");
+  if (typeof value === "number") {
+    return value;
+  }
+
+  const cleaned = String(value).replace(/[^0-9.-]+/g, "");
+
   const parsed = Number(cleaned);
 
   return isNaN(parsed) ? 0 : parsed;

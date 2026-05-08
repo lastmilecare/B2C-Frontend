@@ -224,7 +224,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                Billing
+                Medicine Billing
               </NavLink>
             )}
             {can("read:expiry_items") && (
