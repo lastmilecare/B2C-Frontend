@@ -546,7 +546,7 @@ export const api = createApi({
     }),
     createMedicineBill: build.mutation({
       query: (data) => ({
-        url: "/medicine-inventory/lastbill",
+        url: "/medicine-inventory/bill",
         method: "POST",
         data,
       }),
@@ -554,13 +554,13 @@ export const api = createApi({
     }),
     getMedicineBillById: build.query({
       query: (id) => ({
-        url: `/medicine-inventory/lastbill/${id}`,
+        url: `/medicine-inventory/bill/${id}`,
         method: "GET",
       }),
     }),
     updateMedicineBill: build.mutation({
       query: ({ id, data }) => ({
-        url: `/medicine-inventory/lastbill/${id}`,
+        url: `/medicine-inventory/bill/${id}`,
         method: "PUT",
         data,
       }),

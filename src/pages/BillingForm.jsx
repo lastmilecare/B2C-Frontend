@@ -242,6 +242,7 @@ const BillingFormCopy = ({ refetchList }) => {
           taxableAmt: Number(i.taxableAmt || 0),
 
           total: Number(i.total || 0),
+          stockDetailId: Number(i.stockDetailId || 0),
         })),
       };
 
@@ -358,7 +359,7 @@ const BillingFormCopy = ({ refetchList }) => {
     const updates = {
       UHID: patientData.PicasoNo || "",
       Name: patientData.driverDetails[0]?.name || "",
-      Gender: patientData.driverDetails[0].gender || "",
+      Gender: patientData.driverDetails[0]?.gender || "",
       Mobile: patientData.Mobile || "",
       FinCategory: patientData.driverDetails[0]?.category || "",
       Age: patientData.driverDetails[0]?.age || "",
@@ -376,13 +377,13 @@ const BillingFormCopy = ({ refetchList }) => {
 
   useEffect(() => {
     const updates = {
-      cgst: stockDetails?.data[0].CGST || 0,
-      sgst: stockDetails?.data[0].SGST || 0,
+      cgst: stockDetails?.data[0]?.CGST || 0,
+      sgst: stockDetails?.data[0]?.SGST || 0,
       discountPercent: cleanCurrency(
-        stockDetails?.data[0].DiscountPCperitem || 0,
+        stockDetails?.data[0]?.DiscountPCperitem || 0,
       ),
-      mrp: cleanCurrency(stockDetails?.data[0].MRP || 0),
-      cp: cleanCurrency(stockDetails?.data[0].CP || 0),
+      mrp: cleanCurrency(stockDetails?.data[0]?.MRP || 0),
+      cp: cleanCurrency(stockDetails?.data[0]?.CP || 0),
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [stockDetails]);
@@ -444,7 +445,7 @@ const BillingFormCopy = ({ refetchList }) => {
       batchNo: stockDetails?.data[0]?.BatchNo || "N/A",
       hsn: stockDetails?.data[0]?.HSNCode || "N/A",
       expDate: expDate || null,
-      saleRate: sellingItemCost.total,
+      saleRate: sellingItemCost.salePrice,
       discAmt: sellingItemCost.discountAmount,
       discountPercent: formik.values.discountPercent,
       cgstPercent: formik.values.cgst,
@@ -459,6 +460,7 @@ const BillingFormCopy = ({ refetchList }) => {
       stockId: stockDetails?.data[0]?.StockID,
       stockNo: stockDetails?.data[0]?.StockNo,
       basePrice: cleanCurrency(stockDetails?.data[0]?.CP),
+      stockDetailId: stockDetails?.data[0]?.ID || 0,
     };
     formik.setFieldValue("items", [...formik.values.items, newItem]);
     formik.setFieldValue("medicine", "");
@@ -520,7 +522,7 @@ const BillingFormCopy = ({ refetchList }) => {
             </h1>
 
             <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((s) => (
+              {[1, 2, 3, 4].map((s) => (
                 <div
                   key={s}
                   className={`h-2 w-12 rounded-full ${
@@ -537,8 +539,8 @@ const BillingFormCopy = ({ refetchList }) => {
                 { id: 1, label: "Patient", icon: ClipboardDocumentIcon },
                 { id: 2, label: "Medicine", icon: BeakerIcon },
                 // { id: 3, label: "Items", icon: CreditCardIcon },
-                { id: 4, label: "Payment", icon: DocumentCheckIcon },
-                { id: 5, label: "Summary", icon: CheckCircleIcon },
+                { id: 3, label: "Payment", icon: DocumentCheckIcon },
+                { id: 4, label: "Summary", icon: CheckCircleIcon },
               ].map((step) => (
                 <button
                   key={step.id}
@@ -772,7 +774,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       </h4>
 
                       <p className="text-slate-400 text-sm mt-1">
-                        Please  add medicines to continue billing
+                        Please add medicines to continue billing
                       </p>
 
                       {/* <Button
@@ -907,7 +909,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 </section>
               )}
 
-              {activeStep === 4 && (
+              {activeStep === 3 && (
                 <section className="bg-gray-50 p-6 rounded-xl border">
                   <h3 className="text-sky-700 font-semibold mb-4">
                     Payment Summary
@@ -980,7 +982,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   </div>
                 </section>
               )}
-              {activeStep === 5 && (
+              {activeStep === 4 && (
                 <section className="bg-blue-50 p-6 rounded-xl border border-blue-200">
                   <h3 className="text-sky-600 font-semibold mb-4">
                     Final Summary
@@ -1026,9 +1028,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     <p>
                       <b>Due:</b> ₹ {formik.values.dueAmount}
                     </p>
-                    <p>
-                      <b>Payment Mode:</b> {formik.values.payMode}
-                    </p>
                   </div>
                 </section>
               )}
@@ -1050,7 +1049,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 </div>
 
                 <div>
-                  {activeStep < 5 ? (
+                  {activeStep < 4 ? (
                     <Button type="button" variant="sky" onClick={nextStep}>
                       Continue
                     </Button>
