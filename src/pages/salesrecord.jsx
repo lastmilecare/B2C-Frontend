@@ -59,12 +59,12 @@ const SalesRecordCopy = () => {
 
   const rawStock = data?.data || [];
 
-  // const Stock = rawStock.flatMap((header) =>
-  //   (header.footerItems || []).map((footer) => ({
-  //     ...header,
-  //     footer,
-  //   })),
-  // );
+  const Stock = rawStock.flatMap((header) =>
+    (header.footerItems || []).map((footer) => ({
+      ...header,
+      footer,
+    })),
+  );
 
   const pagination = data?.pagination || {};
 
