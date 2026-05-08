@@ -461,6 +461,48 @@ const StockDetailsCopy = () => {
       </span>
     );
   };
+  const inventorySummary = React.useMemo(() => {
+    return Stock.reduce(
+      (acc, item) => {
+        const recvQty = Number(item.RecvQty || 0);
+        const balQty = Number(item.BalQty || 0);
+        const issueQty = Number(item.IssueQty || 0);
+        const freeQty = Number(item.FreeRecvQty || 0);
+        const condQty = Number(item.CondmQty || 0);
+
+        const cp = Number(item.CP || 0);
+        const mrp = Number(item.MRP || 0);
+
+        acc.totalRecvQty += recvQty;
+        acc.totalBalQty += balQty;
+        acc.totalSalesQty += issueQty;
+        acc.totalFreeQty += freeQty;
+        acc.totalCondQty += condQty;
+        acc.totalCostPrice += cp * recvQty;
+        acc.totalMRP += mrp * recvQty;
+        acc.totalRemainingCost += cp * balQty;
+        acc.totalSalesAmount += mrp * issueQty;
+        if (balQty < 5) {
+          acc.lowStockCount += 1;
+        }
+
+        return acc;
+      },
+      {
+        totalCostPrice: 0,
+        totalMRP: 0,
+        totalRemainingCost: 0,
+        totalSalesAmount: 0,
+        totalRecvQty: 0,
+        totalBalQty: 0,
+        totalSalesQty: 0,
+        totalFreeQty: 0,
+        totalCondQty: 0,
+
+        lowStockCount: 0,
+      },
+    );
+  }, [Stock]);
   return (
     <div className="p-0">
       <CopyFilterBar
@@ -499,7 +541,7 @@ const StockDetailsCopy = () => {
           });
         }}
       />
-      <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-3 shadow-sm">
+      {/* <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-3 shadow-sm">
         <div className="flex flex-wrap justify-between items-center w-full text-sm text-emerald-900">
           <span>
             Total Stock : <span className="font-semibold">{Stock.length}</span>
@@ -522,10 +564,7 @@ const StockDetailsCopy = () => {
           <span>
             Sales Qty :{" "}
             <span className="font-semibold">
-              {Stock.reduce(
-                (a, b) => a + ((b.RecvQty || 0) - (b.BalQty || 0)),
-                0,
-              )}
+              {Stock.reduce((a, b) => a + (b.IssueQty || 0), 0)}
             </span>
           </span>
 
@@ -533,6 +572,101 @@ const StockDetailsCopy = () => {
             Low Stock :{" "}
             <span className="font-semibold">
               {Stock.filter((i) => i.BalQty < 5).length}
+            </span>
+          </span>
+        </div>
+      </section> */}
+
+      /// Need to check this
+      <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-4 shadow-sm">
+        <div className="flex flex-wrap gap-x-8 gap-y-3 items-center w-full text-sm text-emerald-900">
+          <span>
+            Total Cost Price : ₹{" "}
+            <span className="font-semibold">
+              {parseCurrency(
+                Stock.reduce(
+                  (a, b) => a + Number(b.CP || 0) * Number(b.RecvQty || 0),
+                  0,
+                ),
+              )}
+            </span>
+          </span>
+
+          <span>
+            Total MRP : ₹{" "}
+            <span className="font-semibold">
+              {parseCurrency(
+                Stock.reduce(
+                  (a, b) => a + Number(b.MRP || 0) * Number(b.RecvQty || 0),
+                  0,
+                ),
+              )}
+            </span>
+          </span>
+
+          <span>
+            Total Remaining Cost Price : ₹{" "}
+            <span className="font-semibold">
+              {parseCurrency(
+                Stock.reduce(
+                  (a, b) => a + Number(b.CP || 0) * Number(b.BalQty || 0),
+                  0,
+                ),
+              )}
+            </span>
+          </span>
+
+          <span>
+            Total Sales Amount : ₹{" "}
+            <span className="font-semibold">
+              {parseCurrency(
+                Stock.reduce(
+                  (a, b) => a + Number(b.MRP || 0) * Number(b.IssueQty || 0),
+                  0,
+                ),
+              )}
+            </span>
+          </span>
+
+          <span>
+            Total Recv. Quantity :{" "}
+            <span className="font-semibold">
+              {Stock.reduce((a, b) => a + Number(b.RecvQty || 0), 0)}
+            </span>
+          </span>
+
+          <span>
+            Total Recv. Free Quantity :{" "}
+            <span className="font-semibold">
+              {Stock.reduce((a, b) => a + Number(b.FreeRecvQty || 0), 0)}
+            </span>
+          </span>
+
+          <span>
+            Total Bal. Quantity :{" "}
+            <span className="font-semibold">
+              {Stock.reduce((a, b) => a + Number(b.BalQty || 0), 0)}
+            </span>
+          </span>
+
+          <span>
+            Total Sales Quantity :{" "}
+            <span className="font-semibold">
+              {Stock.reduce((a, b) => a + Number(b.IssueQty || 0), 0)}
+            </span>
+          </span>
+
+          <span>
+            Total Cond. Quantity :{" "}
+            <span className="font-semibold">
+              {Stock.reduce((a, b) => a + Number(b.CondmQty || 0), 0)}
+            </span>
+          </span>
+
+          <span>
+            Low Stock :{" "}
+            <span className="font-semibold">
+              {Stock.filter((i) => Number(i.BalQty || 0) < 5).length}
             </span>
           </span>
         </div>
