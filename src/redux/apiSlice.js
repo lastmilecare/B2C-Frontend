@@ -28,7 +28,7 @@ const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
-  tagTypes: ["Bill", "Inventory"],
+  tagTypes: ["Bill", "Inventory", "Patient"],
   endpoints: (build) => ({
     login: build.mutation({
       query: (body) => ({
@@ -68,6 +68,7 @@ export const api = createApi({
           idProof_number,
         },
       }),
+      providesTags: ["Patient"],
     }),
 
     searchDiseases: build.query({
@@ -315,22 +316,26 @@ export const api = createApi({
     }),
 
     getPatientById: build.query({
-      query: (id) => ({
-        url: "/patient/by-id",
-        method: "GET",
-        params: {
-          patientId: id,
-        },
-      }),
-    }),
+  query: (id) => ({
+    url: "/patient/by-id",
+    method: "GET",
+    params: {
+      patientId: id,
+    },
+  }),
+
+  providesTags: ["Patient"],
+}),
 
     updatePatient: build.mutation({
-      query: ({ id, body }) => ({
-        url: `/patient/update-patient/${id}`,
-        method: "PUT",
-        data: body,
-      }),
-    }),
+  query: ({ id, body }) => ({
+    url: `/patient/update-patient/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+
+  invalidatesTags: ["Patient"],
+}),
     // getMediceneList: build.query({
     //   query: (id) => ({
     //     url: "/medicine-inventory",
@@ -1470,6 +1475,6 @@ export const {
   usePreviewTemplateMutation,
   useGetLowStockItemsQuery,
   useGetPatientDueQuery,
-  useUpdateTemplateMutation
+  useUpdateTemplateMutation,
 
 } = api;

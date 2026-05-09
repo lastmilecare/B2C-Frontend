@@ -21,7 +21,8 @@ import {
   useCreateBillMutation,
   useUpdateBillMutation,
   useGetPatientDueQuery,
-  useGetServiceMastersQuery 
+  useGetServiceMastersQuery ,
+  useGetOpdBillByIdQuery
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert } from "../utils/healthSwal";
@@ -39,7 +40,6 @@ const OpdFormCopy = () => {
 
   const errors = await formik.validateForm();
 
-  // STEP 1
   if (
     activeStep === 1 &&
     (
@@ -62,7 +62,6 @@ const OpdFormCopy = () => {
     return;
   }
 
-  // STEP 2 → SERVICES REQUIRED
   if (
     activeStep === 2 &&
     selectedServices.length === 0
@@ -77,7 +76,7 @@ const OpdFormCopy = () => {
     return;
   }
 
-  // STEP 3 → PAYMENT MODE REQUIRED
+  
   if (
     activeStep === 3 &&
     !formik.values.PayMode
@@ -117,7 +116,11 @@ const OpdFormCopy = () => {
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
-
+  const {
+  refetch,
+} = useGetOpdBillByIdQuery(billNo, {
+  skip: !billNo,
+});
   const populatedUhidRef = useRef("");
 
   const [printRow, setPrintRow] = useState(null);
@@ -131,6 +134,12 @@ const OpdFormCopy = () => {
       }, 300);
     }
   }, [printRow]);
+  useEffect(() => {
+  if (billNo) {
+    refetch();
+    
+  }
+}, [billNo]);
 
   const onPrintCS = (row) => {
     setPrintRow(row);
@@ -193,9 +202,20 @@ const OpdFormCopy = () => {
         (d) => (d.name || d.doctor_name) === editData.doctor_name,
       );
 
-      const payObj = Picaso_Paymode_Options.find(
-        (p) => p.name === editData.payment_mode,
-      );
+      const payObj = Picaso_Paymode_Options.find((p) => {
+
+  const mode = editData.payment_mode
+    ?.toLowerCase()
+    .trim();
+
+  return (
+    (mode === "cash" && p.id === "1") ||
+    (mode === "credit card" && p.id === "2") ||
+    (mode === "cash/online payment" && p.id === "3") ||
+    (mode === "upi" && p.id === "4") ||
+    (mode === "cost free" && p.id === "5")
+  );
+});
       formik.setValues({
         ...formik.initialValues,
         UHID: editData.uhid || "",
@@ -534,7 +554,7 @@ const OpdFormCopy = () => {
               <CreditCardIcon className="w-6 text-blue-600" />
             </span>
 
-            {editData ? "Edit OPD Bill" : "OPD Billing"}
+            { "OPD Billing"}
           </h1>
 
           <div className="flex gap-2">

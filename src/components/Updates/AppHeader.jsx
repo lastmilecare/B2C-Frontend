@@ -13,7 +13,7 @@ const AppHeader = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const username = cookie.get("username") || "User";
-  const today = new Date().toLocaleDateString();
+  const today = new Date().toLocaleDateString("en-GB");
 
   const handleLogout = () => {
     dispatch(logout());
