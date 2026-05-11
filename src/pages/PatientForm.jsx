@@ -131,6 +131,8 @@ const PatientRegistrationCopy = () => {
       occupation: Yup.string().required("Occupation is required"),
       CO: Yup.string().required("Co is required"),
       // employeeId: Yup.string().required("EmployeeId is required")
+      pin: Yup.string()
+        .matches(/^[0-9]{6}$/, "Pin Code must be 6 digits"),
     }),
 
     onSubmit: async (values) => {
@@ -189,18 +191,24 @@ const PatientRegistrationCopy = () => {
 
         if (p.disease_ids?.length) {
           try {
-            const res = await searchDiseases({ q: "" }).unwrap();
+            const res = await searchDiseases({
+  q: "",
+  page: 1,
+  limit: 1000,
+}).unwrap();
 
             const diseaseList = res?.data || [];
 
             formattedDiseases =
               diseaseList
-                .filter((d) => p.disease_ids?.includes(d.id))
+                .filter((d) =>
+  p.disease_ids?.map(Number).includes(Number(d.id))
+)
                 .map((d) => ({
                   id: d.id,
                   name: d.name,
                 })) || [];
-          } catch (error) {}
+          } catch (error) { }
         }
 
         formik.setValues({
@@ -289,9 +297,58 @@ const PatientRegistrationCopy = () => {
   };
 
   const handleReset = () => {
-    formik.resetForm();
-    setCountryId("");
-    setStateId("");
+    if (activeStep === 1) {
+      formik.setValues({
+        ...formik.values,
+        title: "",
+        name: "",
+        dob: "",
+        age: "",
+        CO: "",
+        relationship: "",
+        gender: "",
+        contactNumber: "",
+        employeeId: "",
+      });
+    }
+
+    if (activeStep === 2) {
+      formik.setValues({
+        ...formik.values,
+        residentialstatus: "",
+        fincat: "",
+        country: "",
+        localAddressState: "",
+        localAddressDistrict: "",
+        occupation: "",
+        healthCardNumber: "",
+        localAddress: "",
+        pin: "",
+        ReferredBy: "",
+      });
+
+      setCountryId("");
+      setStateId("");
+    }
+
+    if (activeStep === 3) {
+      formik.setValues({
+        ...formik.values,
+        emergencyContactName: "",
+        emergencyContactNumber: "",
+        blood_group: "",
+        diseases: [],
+        idProof_name: "",
+        idProof_number: "",
+      });
+    }
+
+    if (activeStep === 4) {
+      formik.setValues(formik.initialValues);
+      setCountryId("");
+      setStateId("");
+      setActiveStep(1);
+    }
   };
 
   const handleDOBChange = (e) => {
@@ -334,15 +391,14 @@ const PatientRegistrationCopy = () => {
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${
-                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                }`}
+                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                  }`}
               />
             ))}
           </div>
         </div>
         <div className="bg-white rounded-3xl shadow-xl shadow-blue-100 border border-gray-100 overflow-hidden">
-          <div className="flex border-b mb-6">
+          <div className="flex border-b ">
             {[
               { id: 1, label: "Basic", icon: UserIcon },
               { id: 2, label: "Address", icon: MapPinIcon },
@@ -364,7 +420,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
             ))}
           </div>
 
-          <div className="p-10">
+          <div className="p-10 ">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -466,8 +522,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     <Input
                       {...formik.getFieldProps("employeeId")}
                       label="Employee Id"
-                      // required
-                      // error={formik.touched.employeeId && formik.errors.employeeId}
+                    // required
+                    // error={formik.touched.employeeId && formik.errors.employeeId}
                     />
                   </div>
                 </section>
@@ -580,14 +636,29 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     </Select>
 
                     <Input
-                      {...formik.getFieldProps("healthCardNumber")}
                       label="Health Card Number"
+                      value={formik.values.healthCardNumber}
+                      onChange={(e) => {
+                        const cleaned = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
+                        formik.setFieldValue("healthCardNumber", cleaned);
+                      }}
                     />
                     <Input
                       {...formik.getFieldProps("localAddress")}
                       label="Local Address"
                     />
-                    <Input {...formik.getFieldProps("pin")} label="Pin Code" />
+                    <Input
+                      label="Pin Code"
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={formik.values.pin}
+                      onChange={(e) => {
+                        const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                        formik.setFieldValue("pin", onlyNumbers);
+                      }}
+                      error={formik.touched.pin && formik.errors.pin}
+                    />
                     <Select
                       {...formik.getFieldProps("ReferredBy")}
                       label="Referred By"
@@ -670,9 +741,13 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
 
                     {formik.values.idProof_name && (
                       <Input
-                        {...formik.getFieldProps("idProof_number")}
                         label="Identification Number"
                         required
+                        value={formik.values.idProof_number}
+                        onChange={(e) => {
+                          const cleaned = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
+                          formik.setFieldValue("idProof_number", cleaned);
+                        }}
                         error={
                           formik.touched.idProof_number &&
                           formik.errors.idProof_number
@@ -691,44 +766,134 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
 
                     <div className="grid md:grid-cols-2 gap-3 text-sm">
                       <p>
-                        <b>Name:</b> {formik.values.name}
+                        <b>Title:</b> {formik.values.title || "-"}
                       </p>
+
                       <p>
-                        <b>Contact:</b> {formik.values.contactNumber}
+                        <b>Full Name:</b> {formik.values.name || "-"}
                       </p>
+
                       <p>
-                        <b>Gender:</b> {formik.values.gender}
+                        <b>Date of Birth:</b> {formik.values.dob || "-"}
                       </p>
+
                       <p>
-                        <b>Age:</b> {formik.values.age}
+                        <b>Age:</b> {formik.values.age || "-"}
                       </p>
+
                       <p>
-                        <b>Category:</b> {formik.values.fincat}
+                        <b>Gender:</b> {formik.values.gender || "-"}
                       </p>
+
                       <p>
-                        <b>Blood Group:</b> {formik.values.blood_group}
+                        <b>Contact:</b> {formik.values.contactNumber || "-"}
+                      </p>
+
+                      <p>
+<b>C/O:</b> {formik.values.CO || "-"}
+                        <b>Address:</b> {formik.values.localAddress}
+<b>Local Address:</b> {formik.values.localAddress}
+                      </p>
+
+                      <p>
+                        <b>Relationship:</b> {formik.values.relationship || "-"}
+                      </p>
+
+                      <p>
+                        <b>Employee ID:</b> {formik.values.employeeId || "-"}
+                      </p>
+
+                      <p>
+                        <b>Category:</b> {formik.values.fincat || "-"}
                       </p>
                     </div>
 
                     <div className="border-t pt-3 text-sm">
-                      <p>
-                        <b>Local Address:</b> {formik.values.localAddress}
-                      </p>
-                      <p>
-                        <b>Pin:</b> {formik.values.pin}
-                      </p>
+                      <div className="grid md:grid-cols-2 gap-3">
+                        <p>
+                          <b>Residential Status:</b>{" "}
+                          {formik.values.residentialstatus || "-"}
+                        </p>
+
+                        <p>
+                          <b>Occupation:</b> {formik.values.occupation || "-"}
+                        </p>
+
+                        <p>
+                          <b>Country:</b>{" "}
+                          {countries.find(
+                            (c) => String(c.id) === String(formik.values.country)
+                          )?.name || "-"}
+                        </p>
+
+                        <p>
+                          <b>State:</b>{" "}
+                          {states.find(
+                            (s) =>
+                              String(s.id) ===
+                              String(formik.values.localAddressState)
+                          )?.name || "-"}
+                        </p>
+
+                        <p>
+                          <b>District:</b>{" "}
+                          {districts.find(
+                            (d) =>
+                              String(d.id) ===
+                              String(formik.values.localAddressDistrict)
+                          )?.name || "-"}
+                        </p>
+
+                        <p>
+                          <b>Pin:</b> {formik.values.pin || "-"}
+                        </p>
+
+                        <p>
+                          <b>Health Card Number:</b>{" "}
+                          {formik.values.healthCardNumber || "-"}
+                        </p>
+
+                        <p>
+                          <b>Referred By:</b> {formik.values.ReferredBy || "-"}
+                        </p>
+                      </div>
+
+                      <div className="mt-3">
+                        <p>
+                          <b>Address:</b> {formik.values.localAddress || "-"}
+                        </p>
+                      </div>
                     </div>
 
                     <div className="border-t pt-3 text-sm">
-                      <p>
-                        <b>Emergency Contact:</b>{" "}
-                        {formik.values.emergencyContactName}
-                      </p>
-                      <p>
-                        <b>Emergency Number:</b>{" "}
-                        {formik.values.emergencyContactNumber}
-                      </p>
+                      <div className="grid md:grid-cols-2 gap-3">
+                        <p>
+                          <b>Emergency Contact:</b>{" "}
+                          {formik.values.emergencyContactName || "-"}
+                        </p>
+
+                        <p>
+                          <b>Emergency Number:</b>{" "}
+                          {formik.values.emergencyContactNumber || "-"}
+                        </p>
+
+                        <p>
+                          <b>Blood Group:</b>{" "}
+                          {formik.values.blood_group || "-"}
+                        </p>
+
+                        <p>
+                          <b>Identification Type:</b>{" "}
+                          {formik.values.idProof_name || "-"}
+                        </p>
+
+                        <p>
+                          <b>Identification Number:</b>{" "}
+                          {formik.values.idProof_number || "-"}
+                        </p>
+                      </div>
                     </div>
+
 
                     <div className="border-t pt-3 text-sm">
                       <p>
@@ -739,16 +904,20 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </p>
                     </div>
 
+
                     <div className="border-t pt-3 text-sm">
                       <p>
-                        <b>Credit Amount:</b> {formik.values.creditamount || 0}
+                        
+                        <b>Credit Amount:</b>{" "}
+                        {formik.values.creditamount || 0}
                       </p>
                     </div>
                   </div>
                 </section>
               )}
 
-              <div className="flex justify-between pt-6 border-t border-gray-100">
+              
+              <div className="flex justify-between pt-6 border-t border-black flex-wrap gap-3">
                 <div className="flex gap-2">
                   {activeStep > 1 && (
                     <Button type="button" variant="gray" onClick={prevStep}>

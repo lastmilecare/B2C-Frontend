@@ -242,6 +242,8 @@ const RadiologyScreen = () => {
                                 <div className="grid md:grid-cols-3 gap-6">
                                     <Select
                                         label="Test Type"
+                                        required
+                                        error={formik.touched.testType && formik.errors.testType}
                                         value={formik.values.testType}
                                         onChange={(e) =>
                                             formik.setFieldValue("testType", e.target.value)
@@ -255,7 +257,7 @@ const RadiologyScreen = () => {
                                         <option>Vision Test</option>
                                     </Select>
 
-                                    <Input label="Result Summary" {...formik.getFieldProps("resultSummary")} />
+                                    <Input label="Result Summary" required error={formik.touched.resultSummary && formik.errors.resultSummary} {...formik.getFieldProps("resultSummary")} />
                                     <Input label="Doctor Remarks" {...formik.getFieldProps("doctorRemarks")} />
                                 </div>
 

@@ -22,6 +22,7 @@ import {
   useUpdateBillMutation,
   useGetPatientDueQuery,
   useGetServiceMastersQuery,
+useGetOpdBillByIdQuery
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert } from "../utils/healthSwal";
@@ -38,29 +39,67 @@ const OpdFormCopy = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(1);
 
-  const nextStep = async () => {
-    const errors = await formik.validateForm();
+ const nextStep = async () => {
 
-    if (
-      activeStep === 1 &&
-      (errors.UHID ||
-        errors.Name ||
-        errors.Mobile ||
-        errors.Department ||
-        errors.Doctor)
-    ) {
-      formik.setTouched({
-        UHID: true,
-        Name: true,
-        Mobile: true,
-        Department: true,
-        Doctor: true,
-      });
-      return;
-    }
+  const errors = await formik.validateForm();
 
-    setActiveStep((prev) => prev + 1);
-  };
+  if (
+    activeStep === 1 &&
+    (
+      errors.UHID ||
+      errors.Name ||
+      errors.Mobile ||
+      errors.Department ||
+      errors.Doctor
+    )
+  ) {
+
+    formik.setTouched({
+      UHID: true,
+      Name: true,
+      Mobile: true,
+      Department: true,
+      Doctor: true,
+    });
+
+    return;
+  }
+
+  if (
+    activeStep === 2 &&
+    selectedServices.length === 0
+  ) {
+
+    healthAlert({
+      title: "Service Required",
+      text: "Please add at least one service",
+      icon: "warning",
+    });
+
+    return;
+  }
+
+  
+  if (
+    activeStep === 3 &&
+    !formik.values.PayMode
+  ) {
+
+    formik.setTouched({
+      PayMode: true,
+    });
+
+    healthAlert({
+      title: "Payment Mode Required",
+      text: "Please select payment mode",
+      icon: "warning",
+    });
+
+    return;
+  }
+
+  setActiveStep((prev) => prev + 1);
+};
 
   const prevStep = () => setActiveStep((prev) => prev - 1);
   const [isPaidManuallyEdited, setIsPaidManuallyEdited] = useState(false);
@@ -80,7 +119,11 @@ const OpdFormCopy = () => {
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
-
+  const {
+  refetch,
+} = useGetOpdBillByIdQuery(billNo, {
+  skip: !billNo,
+});
   const populatedUhidRef = useRef("");
 
   const [printRow, setPrintRow] = useState(null);
@@ -94,6 +137,12 @@ const OpdFormCopy = () => {
       }, 300);
     }
   }, [printRow]);
+  useEffect(() => {
+  if (billNo) {
+    refetch();
+    
+  }
+}, [billNo]);
 
   const onPrintCS = (row) => {
     setPrintRow(row);
@@ -155,10 +204,21 @@ const OpdFormCopy = () => {
       const docObj = doctors.find(
         (d) => (d.name || d.doctor_name) === editData.doctor_name,
       );
+       const payObj = Picaso_Paymode_Options.find((p) => {
 
-      const payObj = Picaso_Paymode_Options.find(
-        (p) => p.name === editData.payment_mode,
-      );
+  const mode = editData.payment_mode
+    ?.toLowerCase()
+    .trim();
+
+  return (
+    (mode === "cash" && p.id === "1") ||
+    (mode === "credit card" && p.id === "2") ||
+    (mode === "cash/online payment" && p.id === "3") ||
+    (mode === "upi" && p.id === "4") ||
+    (mode === "cost free" && p.id === "5")
+  );
+});
+    
       formik.setValues({
         ...formik.initialValues,
         UHID: editData.uhid || "",
@@ -177,6 +237,7 @@ const OpdFormCopy = () => {
         // VisitType: editData.VisitType || "N/A",
         ChiefComplaint: editData.complaint
           ? editData.complaint.split(",").map((c) => ({ name: c.trim() }))
+          
           : [],
       });
       if (editData.opd_billing_data) {
@@ -240,6 +301,7 @@ const OpdFormCopy = () => {
       CardAmount: Number(values.CardAmount || 0),
       PayMode: Number(values.PayMode),
       DueAmount: Number(values.DueAmount || 0),
+      
       AddedBy: userId,
       DepartmentID: values.Department,
       ConsultantDoctorID: Number(values.Doctor),
@@ -247,6 +309,7 @@ const OpdFormCopy = () => {
       TotalServiceAmount: finalAmount,
       HospitalID: selectedServices[0]?.HospitalID || 1,
       FinancialYearID: currentYear,
+    
       CenterID: userId,
       ReferTo: Number(values.ReferBy || 0),
       IsActive: true,
@@ -270,6 +333,7 @@ const OpdFormCopy = () => {
       Isdiscount: false,
       DiscountBy: 0,
       DoctorID: Number(values.Doctor),
+   
       AddedBy: userId,
       MonthID: currentMonth,
       IsActive: true,
@@ -321,7 +385,7 @@ const OpdFormCopy = () => {
       Doctor: Yup.number()
         .min(1, "Consulting doctor is required")
         .required("Consulting doctor is required"),
-      // PayMode: Yup.string().required("Payment Mode is required"),
+      PayMode: Yup.string().required("Payment Mode is required"),
     }),
 
     onSubmit: async (values) => {
@@ -497,7 +561,8 @@ const OpdFormCopy = () => {
               <CreditCardIcon className="w-6 text-blue-600" />
             </span>
 
-            {editData ? "Edit OPD Bill" : "OPD Billing"}
+            
+            { "OPD Billing"}
           </h1>
 
           <div className="flex gap-2">
@@ -830,7 +895,7 @@ const OpdFormCopy = () => {
                       {...formik.getFieldProps("PayMode")}
                       label="Payment Mode"
                       required
-                      // error={formik.touched.PayMode && formik.errors.PayMode}
+                      error={formik.touched.PayMode && formik.errors.PayMode}
                       onChange={(e) => {
                         const mode = e.target.value;
                         formik.setFieldValue("PayMode", mode);

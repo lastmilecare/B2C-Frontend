@@ -161,19 +161,21 @@ const AttendancePage = () => {
       if (!record) return null;
 
       const colorMap = {
-        PRESENT: "bg-green-500",
-        ABSENT: "bg-red-500",
-        HOLIDAY: "bg-blue-500",
-        WEEK_OFF: "bg-yellow-500",
-      };
+  PRESENT: "bg-green-500",
+  ABSENT: "bg-red-500",
+  HALF_DAY: "bg-orange-500",
+  HOLIDAY: "bg-blue-500",
+  WEEK_OFF: "bg-yellow-500",
+};
 
       return (
         <div className="flex justify-center mt-1">
           <div
-            className={`w-1.5 h-1.5 rounded-full ${
-              colorMap[record.status] || "bg-gray-300"
-            }`}
-          />
+  title={record.status}
+  className={`w-2 h-2 rounded-full ${
+    colorMap[String(record.status).toUpperCase()] || "bg-gray-300"
+  }`}
+/>
         </div>
       );
     },

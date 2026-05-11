@@ -69,7 +69,7 @@ const PatientSelector = ({ formik }) => {
 
      
       <div>
-        <label className={labelStyle}>Employee ID *</label>
+        <label className={labelStyle}>Employee ID </label>
         <input
           value={formik.values.EmployeeId || ""}
           readOnly
