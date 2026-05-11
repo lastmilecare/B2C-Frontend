@@ -712,7 +712,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
 
                     <div className="border-t pt-3 text-sm">
                       <p>
-                        <b>Address:</b> {formik.values.localAddress}
+                        <b>Local Address:</b> {formik.values.localAddress}
                       </p>
                       <p>
                         <b>Pin:</b> {formik.values.pin}

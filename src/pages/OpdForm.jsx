@@ -21,7 +21,7 @@ import {
   useCreateBillMutation,
   useUpdateBillMutation,
   useGetPatientDueQuery,
-  useGetServiceMastersQuery 
+  useGetServiceMastersQuery,
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert } from "../utils/healthSwal";
@@ -31,7 +31,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { Picaso_Paymode_Options } from "../utils/constants";
+import { cookie } from "../utils/cookie";
+
 const OpdFormCopy = () => {
+  const userId = cookie.get("user_id");
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(1);
 
@@ -174,7 +177,7 @@ const OpdFormCopy = () => {
         // VisitType: editData.VisitType || "N/A",
         ChiefComplaint: editData.complaint
           ? editData.complaint.split(",").map((c) => ({ name: c.trim() }))
-          : []
+          : [],
       });
       if (editData.opd_billing_data) {
         const mapped = editData.opd_billing_data.map((s) => {
@@ -237,14 +240,14 @@ const OpdFormCopy = () => {
       CardAmount: Number(values.CardAmount || 0),
       PayMode: Number(values.PayMode),
       DueAmount: Number(values.DueAmount || 0),
-      AddedBy: 178,
+      AddedBy: userId,
       DepartmentID: values.Department,
       ConsultantDoctorID: Number(values.Doctor),
       DoctorId: Number(values.Doctor),
       TotalServiceAmount: finalAmount,
       HospitalID: selectedServices[0]?.HospitalID || 1,
       FinancialYearID: currentYear,
-      CenterID: 49,
+      CenterID: userId,
       ReferTo: Number(values.ReferBy || 0),
       IsActive: true,
       complaint: chiefComplaintStr,
@@ -267,7 +270,7 @@ const OpdFormCopy = () => {
       Isdiscount: false,
       DiscountBy: 0,
       DoctorID: Number(values.Doctor),
-      AddedBy: 1,
+      AddedBy: userId,
       MonthID: currentMonth,
       IsActive: true,
     }));
