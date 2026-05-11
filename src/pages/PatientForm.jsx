@@ -790,7 +790,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </p>
 
                       <p>
-                        <b>C/O:</b> {formik.values.CO || "-"}
+<b>C/O:</b> {formik.values.CO || "-"}
+                        <b>Address:</b> {formik.values.localAddress}
+<b>Local Address:</b> {formik.values.localAddress}
                       </p>
 
                       <p>
@@ -905,6 +907,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
 
                     <div className="border-t pt-3 text-sm">
                       <p>
+                        
                         <b>Credit Amount:</b>{" "}
                         {formik.values.creditamount || 0}
                       </p>
@@ -913,6 +916,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                 </section>
               )}
 
+              
               <div className="flex justify-between pt-6 border-t border-black flex-wrap gap-3">
                 <div className="flex gap-2">
                   {activeStep > 1 && (

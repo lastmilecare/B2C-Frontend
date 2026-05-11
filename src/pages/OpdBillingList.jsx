@@ -313,7 +313,7 @@ const OpdBillingListCopy = () => {
       width: "70px",
     },
     {
-      name: "Cntr",
+      name: "Center",
       title: "Centre Name",
       selector: (row) => safeString(row?.center_name, "-"),
       width: "70px",
@@ -340,19 +340,19 @@ const OpdBillingListCopy = () => {
       width: "50px",
     },
     {
-      name: "Gen",
+      name: "Gender",
       title: "Gender",
       selector: (row) => safeString(row?.gender, "-"),
       width: "60px",
     },
     {
-      name: "Addr",
+      name: "Address",
       title: "Address / District",
       selector: (row) => safeString(row?.localAddressDistrict, "-"),
       width: "110px",
     },
     {
-      name: "Cat",
+      name: "Category",
       title: "Category",
       selector: (row) => safeString(row?.patient_type, "-"),
       sortable: true,
@@ -365,21 +365,21 @@ const OpdBillingListCopy = () => {
       width: "100px",
     },
     {
-      name: "T.Due",
+      name: "Total.Due",
       title: "Total Previous Due Amount",
       selector: (row) => formatCurrency(calculateDue(patients, row.uhid)),
       sortable: true,
       width: "70px",
     },
     {
-      name: "B.Amt",
+      name: "Bill.Amt",
       title: "Bill Amount",
       selector: (row) => formatCurrency(row?.BillAmount ?? row?.PaidAmount),
       sortable: true,
       width: "70px",
     },
     {
-      name: "T.Bill",
+      name: "T.Amt",
       title: "Total Bill Amount",
       selector: (row) => formatCurrency(row?.TotalServiceAmount),
       sortable: true,
@@ -393,14 +393,14 @@ const OpdBillingListCopy = () => {
       width: "70px",
     },
     {
-      name: "D.Amt",
+      name: "Due.Amt",
       title: "Due Amount",
       selector: (row) => formatCurrency(row?.DueAmount),
       sortable: true,
       width: "70px",
     },
     {
-      name: "P.Mode",
+      name: "Pay.Mode",
       title: "Payment Mode",
       selector: (row) => safeString(row?.payment_mode, "-"),
       width: "80px",
@@ -432,7 +432,7 @@ const OpdBillingListCopy = () => {
       width: "120px",
     },
     {
-      name: "B.Date",
+      name: "Bill.Date",
       title: "Bill Date",
       selector: (row) =>
         row?.AddedDate
