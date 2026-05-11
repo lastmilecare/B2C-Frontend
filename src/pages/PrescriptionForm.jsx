@@ -805,23 +805,35 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   <Input
                     {...formik.getFieldProps("typemedicine")}
                     placeholder="Type of Medicine"
-                    label="Type of Medicine *"
-                    disabled={!formik.values.billno}
+                    label="Type of Medicine"
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
                   />
                   <Input
-                    {...formik.getFieldProps("dosage")}
-                    placeholder="Dosage pills "
-                    label="Dosage pills*"
+                    label="Quantity"
+                    inputMode="numeric"
+                    type="text"
+                    value={formik.values.dosage}
                     disabled={!formik.values.billno}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, "");
+
+                      if (value === "" || Number(value) <= 0) {
+                        formik.setFieldValue("dosage", "");
+                        return;
+                      }
+
+                      formik.setFieldValue("dosage", value);
+                    }}
                   />
                   <Input
                     {...formik.getFieldProps("dosageinstructions")}
                     placeholder="Instructions "
-                    label="Instructions *"
+                    label="Instructions "
                     disabled={!formik.values.billno}
                   />
                   <Select
-                    label="Preferred Time *"
+                    label="Preferred Time "
                     required
                     value={formik.values.preferredtime}
                     onChange={(e) =>
@@ -851,7 +863,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
               }}
             /> */}
                   <Select
-                    label="Duration (in days) *"
+                    label="Duration (in days)"
                     required
                     value={formik.values.duration}
                     onChange={(e) =>
@@ -873,7 +885,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     onClick={handleAddPrescription}
                     className="bg-emerald-600 text-white hover:bg-emerald-700 h-10  w-30 "
                   >
-                      Add Medicine
+                    Add Medicine
                   </Button>
                 </div>
 
@@ -1000,10 +1012,101 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   </p>
                 </div>
 
-                <div className="border-t pt-3 text-sm">
-                  <p>
-                    <b>Total Medicines:</b> {prescriptionList.length}
-                  </p>
+                <div className="border-t pt-4 space-y-4 text-sm">
+
+                  <div>
+                    <h4 className="font-semibold text-slate-700 mb-2">
+                      Prescription Details
+                    </h4>
+
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <p>
+                        <b>History:</b> {formik.values.history || "-"}
+                      </p>
+
+                      <p>
+                        <b>Labs:</b> {formik.values.labs || "-"}
+                      </p>
+
+                      <p>
+                        <b>Other Labs:</b> {formik.values.otherlabs || "-"}
+                      </p>
+
+                      <p>
+                        <b>Advice:</b> {formik.values.advice || "-"}
+                      </p>
+
+                      <p>
+                        <b>Follow-up:</b> {formik.values.followup || "-"}
+                      </p>
+
+                      <p>
+                        <b>Other Instructions:</b>{" "}
+                        {formik.values.otherinstrution || "-"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h4 className="font-semibold text-slate-700 mb-2">
+                      Medicines ({prescriptionList.length})
+                    </h4>
+
+                    {prescriptionList.length > 0 ? (
+                      <div className="overflow-x-auto rounded-xl border border-sky-100">
+                        <table className="min-w-full text-sm">
+                          <thead className="bg-sky-100 text-slate-700">
+                            <tr>
+                              <th className="px-3 py-2 text-left">Medicine</th>
+                              <th className="px-3 py-2 text-left">Type</th>
+                              <th className="px-3 py-2 text-center">
+                                Quantity
+                              </th>
+                              <th className="px-3 py-2 text-left">
+                                Preferred Time
+                              </th>
+                              <th className="px-3 py-2 text-center">
+                                Duration
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {prescriptionList.map((item, idx) => (
+                              <tr
+                                key={idx}
+                                className="border-t border-sky-50"
+                              >
+                                <td className="px-3 py-2 font-medium">
+                                  {item.medicine}
+                                </td>
+
+                                <td className="px-3 py-2">
+                                  {item.type}
+                                </td>
+
+                                <td className="px-3 py-2 text-center">
+                                  {item.dosage}
+                                </td>
+
+                                <td className="px-3 py-2">
+                                  {item.preferredTime}
+                                </td>
+
+                                <td className="px-3 py-2 text-center">
+                                  {item.duration}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">
+                        No medicines added
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -1018,7 +1121,82 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 <Button
                   type="button"
                   variant="gray"
-                  onClick={formik.handleReset}
+                  onClick={() => {
+                    if (activeStep === 1) {
+                      formik.setValues({
+                        ...formik.values,
+                        billno: "",
+                        UHID: "",
+                        Name: "",
+                        Gender: "",
+                        Mobile: "",
+                        Age: "",
+                        FinCategory: "",
+                      });
+
+                      setBillSearch("");
+                      setSelectedBill("");
+                    }
+
+                    if (activeStep === 2) {
+                      formik.setValues({
+                        ...formik.values,
+                        bpsystolic: "",
+                        bpdiastolic: "",
+                        pulserate: "",
+                        spo2: "",
+                        temperature: "",
+                        height: "",
+                        weight: "",
+                      });
+                    }
+
+                    if (activeStep === 3) {
+                      formik.setValues({
+                        ...formik.values,
+                        ChiefComplaint: [],
+                        otherinstrution: "",
+                        labs: "",
+                        otherlabs: "",
+                        followup: "",
+                        advice: "",
+                        history: "",
+                      });
+                    }
+
+                    if (activeStep === 4) {
+                      formik.setValues({
+                        ...formik.values,
+                        medicine: "",
+                        medicineId: "",
+                        typemedicine: "",
+                        dosage: "",
+                        dosageinstructions: "",
+                        preferredtime: "",
+                        duration: "",
+                      });
+
+                      setMedicineSearch("");
+                      setSelectedMedicine("");
+                      setMedicineSuggestions([]);
+                      setPrescriptionList([]);
+                    }
+                    if (activeStep === 5) {
+                      formik.resetForm();
+
+                      setBillSearch("");
+                      setSelectedBill("");
+                      setSuggestionsList([]);
+
+                      setMedicineSearch("");
+                      setSelectedMedicine("");
+                      setMedicineSuggestions([]);
+
+                      setPrescriptionList([]);
+
+                      populatedUhidRef.current = "";
+                    }
+                  }}
                 >
                   <ArrowPathIcon className="w-5 h-5 inline mr-1" />
                   Reset
