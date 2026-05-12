@@ -744,6 +744,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     <Input
                       label="Discount (%)"
                       {...formik.getFieldProps("discountPercent")}
+                      readOnly
                     />
                     <Input
                       label="Bill No"
