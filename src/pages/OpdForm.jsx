@@ -22,7 +22,7 @@ import {
   useUpdateBillMutation,
   useGetPatientDueQuery,
   useGetServiceMastersQuery,
-useGetOpdBillByIdQuery
+  useGetOpdBillByIdQuery,
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert } from "../utils/healthSwal";
@@ -39,67 +39,67 @@ const OpdFormCopy = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(1);
 
- const nextStep = async () => {
+  const nextStep = async () => {
 
-  const errors = await formik.validateForm();
+    const errors = await formik.validateForm();
 
-  if (
-    activeStep === 1 &&
-    (
-      errors.UHID ||
-      errors.Name ||
-      errors.Mobile ||
-      errors.Department ||
-      errors.Doctor
-    )
-  ) {
+    if (
+      activeStep === 1 &&
+      (
+        errors.UHID ||
+        errors.Name ||
+        errors.Mobile ||
+        errors.Department ||
+        errors.Doctor
+      )
+    ) {
 
-    formik.setTouched({
-      UHID: true,
-      Name: true,
-      Mobile: true,
-      Department: true,
-      Doctor: true,
-    });
+      formik.setTouched({
+        UHID: true,
+        Name: true,
+        Mobile: true,
+        Department: true,
+        Doctor: true,
+      });
 
-    return;
-  }
+      return;
+    }
 
-  if (
-    activeStep === 2 &&
-    selectedServices.length === 0
-  ) {
+    if (
+      activeStep === 2 &&
+      selectedServices.length === 0
+    ) {
 
-    healthAlert({
-      title: "Service Required",
-      text: "Please add at least one service",
-      icon: "warning",
-    });
+      healthAlert({
+        title: "Service Required",
+        text: "Please add at least one service",
+        icon: "warning",
+      });
 
-    return;
-  }
+      return;
+    }
 
-  
-  if (
-    activeStep === 3 &&
-    !formik.values.PayMode
-  ) {
 
-    formik.setTouched({
-      PayMode: true,
-    });
+    if (
+      activeStep === 3 &&
+      !formik.values.PayMode
+    ) {
 
-    healthAlert({
-      title: "Payment Mode Required",
-      text: "Please select payment mode",
-      icon: "warning",
-    });
+      formik.setTouched({
+        PayMode: true,
+      });
 
-    return;
-  }
+      healthAlert({
+        title: "Payment Mode Required",
+        text: "Please select payment mode",
+        icon: "warning",
+      });
 
-  setActiveStep((prev) => prev + 1);
-};
+      return;
+    }
+
+    setActiveStep((prev) => prev + 1);
+  };
 
   const prevStep = () => setActiveStep((prev) => prev - 1);
   const [isPaidManuallyEdited, setIsPaidManuallyEdited] = useState(false);
@@ -120,10 +120,10 @@ const OpdFormCopy = () => {
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
   const {
-  refetch,
-} = useGetOpdBillByIdQuery(billNo, {
-  skip: !billNo,
-});
+    refetch,
+  } = useGetOpdBillByIdQuery(billNo, {
+    skip: !billNo,
+  });
   const populatedUhidRef = useRef("");
 
   const [printRow, setPrintRow] = useState(null);
@@ -138,11 +138,11 @@ const OpdFormCopy = () => {
     }
   }, [printRow]);
   useEffect(() => {
-  if (billNo) {
-    refetch();
-    
-  }
-}, [billNo]);
+    if (billNo) {
+      refetch();
+
+    }
+  }, [billNo]);
 
   const onPrintCS = (row) => {
     setPrintRow(row);
@@ -204,21 +204,21 @@ const OpdFormCopy = () => {
       const docObj = doctors.find(
         (d) => (d.name || d.doctor_name) === editData.doctor_name,
       );
-       const payObj = Picaso_Paymode_Options.find((p) => {
+      const payObj = Picaso_Paymode_Options.find((p) => {
 
-  const mode = editData.payment_mode
-    ?.toLowerCase()
-    .trim();
+        const mode = editData.payment_mode
+          ?.toLowerCase()
+          .trim();
 
-  return (
-    (mode === "cash" && p.id === "1") ||
-    (mode === "credit card" && p.id === "2") ||
-    (mode === "cash/online payment" && p.id === "3") ||
-    (mode === "upi" && p.id === "4") ||
-    (mode === "cost free" && p.id === "5")
-  );
-});
-    
+        return (
+          (mode === "cash" && p.id === "1") ||
+          (mode === "credit card" && p.id === "2") ||
+          (mode === "cash/online payment" && p.id === "3") ||
+          (mode === "upi" && p.id === "4") ||
+          (mode === "cost free" && p.id === "5")
+        );
+      });
+
       formik.setValues({
         ...formik.initialValues,
         UHID: editData.uhid || "",
@@ -237,7 +237,7 @@ const OpdFormCopy = () => {
         // VisitType: editData.VisitType || "N/A",
         ChiefComplaint: editData.complaint
           ? editData.complaint.split(",").map((c) => ({ name: c.trim() }))
-          
+
           : [],
       });
       if (editData.opd_billing_data) {
@@ -301,7 +301,7 @@ const OpdFormCopy = () => {
       CardAmount: Number(values.CardAmount || 0),
       PayMode: Number(values.PayMode),
       DueAmount: Number(values.DueAmount || 0),
-      
+
       AddedBy: userId,
       DepartmentID: values.Department,
       ConsultantDoctorID: Number(values.Doctor),
@@ -309,7 +309,7 @@ const OpdFormCopy = () => {
       TotalServiceAmount: finalAmount,
       HospitalID: selectedServices[0]?.HospitalID || 1,
       FinancialYearID: currentYear,
-    
+
       CenterID: userId,
       ReferTo: Number(values.ReferBy || 0),
       IsActive: true,
@@ -333,7 +333,7 @@ const OpdFormCopy = () => {
       Isdiscount: false,
       DiscountBy: 0,
       DoctorID: Number(values.Doctor),
-   
+
       AddedBy: userId,
       MonthID: currentMonth,
       IsActive: true,
@@ -561,17 +561,16 @@ const OpdFormCopy = () => {
               <CreditCardIcon className="w-6 text-blue-600" />
             </span>
 
-            
-            { "OPD Billing"}
+
+            {"OPD Billing"}
           </h1>
 
           <div className="flex gap-2">
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${
-                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                }`}
+                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                  }`}
               />
             ))}
           </div>
@@ -590,11 +589,10 @@ const OpdFormCopy = () => {
                 disabled
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold 
-                                    ${
-                                      activeStep === step.id
-                                        ? "bg-white text-sky-600 shadow"
-                                        : "text-gray-400"
-                                    }`}
+                                    ${activeStep === step.id
+                    ? "bg-white text-sky-600 shadow"
+                    : "text-gray-400"
+                  }`}
               >
                 <step.icon className="w-4 h-4" />
 
@@ -624,6 +622,7 @@ const OpdFormCopy = () => {
 
                       <input
                         type="text"
+                        required
                         className={`${baseInput} ${editData ? "bg-sky-50 cursor-not-allowed" : ""}`}
                         placeholder="Search UHID (e.g., LMC-123)"
                         value={uhidSearch || formik.values.UHID}
@@ -638,6 +637,11 @@ const OpdFormCopy = () => {
                         }}
                         autoComplete="off"
                       />
+                      {formik.touched.UHID && formik.errors.UHID && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formik.errors.UHID}
+                        </p>
+                      )}
 
                       {suggestionsList.length > 0 && uhidSearch.length >= 2 && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
@@ -939,67 +943,211 @@ const OpdFormCopy = () => {
               )}
               {activeStep === 4 && (
                 <>
-                  <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
+                  <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-5">
                     <h3 className="text-lg font-semibold text-sky-600">
                       Confirm OPD Billing
                     </h3>
 
-                    <div className="grid md:grid-cols-2 gap-3 text-sm">
-                      <p>
-                        <b>Name:</b> {formik.values.Name}
-                      </p>
-                      <p>
-                        <b>Mobile:</b> {formik.values.Mobile}
-                      </p>
-                      <p>
-                        <b>UHID:</b> {formik.values.UHID}
-                      </p>
-                      <p>
-                        <b>Department:</b>{" "}
-                        {
-                          department?.find(
-                            (d) => d.id == formik.values.Department,
-                          )?.name
-                        }
-                      </p>
-                      <p>
-                        <b>Doctor:</b>{" "}
-                        {
-                          doctors?.find((d) => d.id == formik.values.Doctor)
-                            ?.name
-                        }
-                      </p>
+
+                    <div>
+                      <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
+                        Patient Details
+                      </h4>
+
+                      <div className="grid md:grid-cols-2 gap-3 text-sm">
+                        <p>
+                          <b>UHID:</b> {formik.values.UHID}
+                        </p>
+
+                        <p>
+                          <b>Name:</b> {formik.values.Name}
+                        </p>
+
+                        <p>
+                          <b>Mobile:</b> {formik.values.Mobile}
+                        </p>
+
+                        <p>
+                          <b>Gender:</b> {formik.values.Gender}
+                        </p>
+
+                        <p>
+                          <b>Age:</b> {formik.values.Age}
+                        </p>
+
+                        <p>
+                          <b>Category:</b> {formik.values.FinCategory}
+                        </p>
+
+                        <p>
+                          <b>Department:</b>{" "}
+                          {
+                            department?.find(
+                              (d) => d.id == formik.values.Department
+                            )?.name
+                          }
+                        </p>
+
+                        <p>
+                          <b>Doctor:</b>{" "}
+                          {
+                            doctors?.find(
+                              (d) => d.id == formik.values.Doctor
+                            )?.name ||
+                            doctors?.find(
+                              (d) => d.id == formik.values.Doctor
+                            )?.doctor_name
+                          }
+                        </p>
+
+                        <p>
+                          <b>Refer By:</b>{" "}
+                          {
+                            collectedBy?.find(
+                              (u) => u.id == formik.values.ReferBy
+                            )?.name || "-"
+                          }
+                        </p>
+
+                        <p>
+                          <b>Previous Due:</b>{" "}
+                          ₹{formik.values.PreviousDue}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="border-t pt-3 text-sm">
-                      <p>
-                        <b>Total Services:</b> {selectedServices.length}
-                      </p>
+                    <div>
+                      <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
+                        Complaints
+                      </h4>
+
+                      {formik.values.ChiefComplaint?.length > 0 ? (
+                        <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                          {formik.values.ChiefComplaint.map((c, idx) => (
+                            <li key={idx}>{c.name}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          No complaints added
+                        </p>
+                      )}
                     </div>
 
-                    <div className="border-t pt-3 text-sm grid md:grid-cols-2 gap-3">
-                      <p>
-                        <b>Previous Due:</b> {formik.values.PreviousDue}
-                      </p>
-                      <p>
-                        <b>Total Amount:</b> {formik.values.TotalAmount}
-                      </p>
-                      <p>
-                        <b>Paid Amount:</b> {formik.values.PaidAmount}
-                      </p>
-                      <p>
-                        <b>Due Amount:</b> {formik.values.DueAmount}
-                      </p>
-                      <p>
-                        <b>Payment Mode:</b>{" "}
-                        {
-                          Picaso_Paymode_Options.find(
-                            (p) => p.id == formik.values.PayMode,
-                          )?.name
-                        }
-                      </p>
+
+                    <div>
+                      <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
+                        Services Availed ({selectedServices.length})
+                      </h4>
+
+                      {selectedServices.length > 0 ? (
+                        <div className="overflow-x-auto rounded-xl border border-blue-100">
+                          <table className="min-w-full text-sm">
+                            <thead className="bg-blue-100 text-slate-700">
+                              <tr>
+                                <th className="px-3 py-2 text-left">
+                                  Service
+                                </th>
+
+                                <th className="px-3 py-2 text-center">
+                                  Qty
+                                </th>
+
+                                <th className="px-3 py-2 text-right">
+                                  Price
+                                </th>
+
+                                <th className="px-3 py-2 text-right">
+                                  Total
+                                </th>
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                              {selectedServices.map((service, idx) => (
+                                <tr
+                                  key={idx}
+                                  className="border-t border-blue-50"
+                                >
+                                  <td className="px-3 py-2">
+                                    {service.name}
+                                  </td>
+
+                                  <td className="px-3 py-2 text-center">
+                                    {service.quantity || 1}
+                                  </td>
+
+                                  <td className="px-3 py-2 text-right">
+                                    ₹{service.price}
+                                  </td>
+
+                                  <td className="px-3 py-2 text-right font-medium">
+                                    ₹
+                                    {(service.price || 0) *
+                                      (service.quantity || 1)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          No services selected
+                        </p>
+                      )}
                     </div>
-                  </div>{" "}
+
+
+                    <div>
+                      <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
+                        Billing Details
+                      </h4>
+
+                      <div className="grid md:grid-cols-2 gap-3 text-sm">
+                        <p>
+                          <b>Total Amount:</b> ₹
+                          {formik.values.TotalAmount}
+                        </p>
+
+                        <p>
+                          <b>Paid Amount:</b> ₹
+                          {formik.values.PaidAmount}
+                        </p>
+
+                        <p>
+                          <b>Due Amount:</b> ₹
+                          {formik.values.DueAmount}
+                        </p>
+
+                        <p>
+                          <b>Cash Amount:</b> ₹
+                          {formik.values.CashAmount}
+                        </p>
+
+                        <p>
+                          <b>Card / Online Amount:</b> ₹
+                          {formik.values.CardAmount}
+                        </p>
+
+                        <p>
+                          <b>Payment Mode:</b>{" "}
+                          {
+                            Picaso_Paymode_Options.find(
+                              (p) => p.id == formik.values.PayMode
+                            )?.name
+                          }
+                        </p>
+
+                        <p>
+                          <b>Adjust With Balance:</b>{" "}
+                          {formik.values.AdjustWithBalance
+                            ? "Yes"
+                            : "No"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
               <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
@@ -1010,14 +1158,84 @@ const OpdFormCopy = () => {
                     </Button>
                   )}
 
+
                   <Button
                     type="button"
                     variant="gray"
-                    onClick={handleFormReset}
+                    onClick={() => {
+
+
+                      if (activeStep === 1) {
+                        formik.setValues({
+                          ...formik.values,
+                          UHID: "",
+                          Name: "",
+                          Mobile: "",
+                          Gender: "",
+                          Age: "",
+                          Department: "",
+                          Doctor: "",
+                          FinCategory: "",
+                          ReferBy: "",
+                          ChiefComplaint: [],
+                        });
+
+                        setUhidSearch("");
+                        setSelectedUhid("");
+                        setSuggestionsList([]);
+
+                        populatedUhidRef.current = "";
+                      }
+
+
+                      if (activeStep === 2) {
+                        setSelectedServices([]);
+
+                        formik.setValues({
+                          ...formik.values,
+                          TotalAmount: 0,
+                          PaidAmount: 0,
+                          DueAmount: 0,
+                          CashAmount: 0,
+                          CardAmount: 0,
+                        });
+                      }
+
+
+                      if (activeStep === 3) {
+                        formik.setValues({
+                          ...formik.values,
+                          PreviousDue: 0,
+                          PaidAmount: 0,
+                          CreditBalance: 0,
+                          AdjustWithBalance: false,
+                          DueAmount: 0,
+                          PayMode: "",
+                          CashAmount: 0,
+                          CardAmount: 0,
+                        });
+
+                        setIsPaidManuallyEdited(false);
+                      }
+
+                      if (activeStep === 4) {
+                        formik.resetForm();
+
+                        setSelectedServices([]);
+                        setUhidSearch("");
+                        setSelectedUhid("");
+                        setSuggestionsList([]);
+
+                        populatedUhidRef.current = "";
+
+                        setIsPaidManuallyEdited(false);
+                      }
+                    }}
                   >
                     <ArrowPathIcon className="w-5 h-5 inline mr-1" />
                     Reset
                   </Button>
+
                   <Button
                     type="button"
                     variant="outline"

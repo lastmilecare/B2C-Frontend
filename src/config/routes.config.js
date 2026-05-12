@@ -15,12 +15,11 @@ import SalesRecordCopy from "../pages/salesrecord";
 import AttendancePage from "../pages/AttendancePage";
 import StaffForm from "../pages/StaffForm";
 import StaffList from "../pages/StaffList";
-import Permission from "../pages/Permission";
-import Roles from "../pages/Roles";
+
 import TenantForm from "../pages/TenantForm";
 import TenantList from "../pages/TenantList";
-import RoleList from "../pages/RoleList";
-import PermissionList from "../pages/Permission_list";
+
+
 import Appointment from "../pages/Appointment";
 import MedicalHistoryPage from "../pages/MedicalHistoryPage";
 import ClinicalExaminationPage from "../pages/ClinicalExaminationPage";
@@ -32,6 +31,8 @@ import PatientPage from "../pages/PatientPage";
 import VitalsPage from "../pages/VitalsPage";
 import ResourcePage from "../pages/ResourcePage";
 import ItemMaster from "../pages/ItemMaster";
+import RolesPage from "../pages/RolesPage";
+import PermissionPage from "../pages/PermissionPage";
 
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -77,40 +78,24 @@ export const ROUTES = [
   },
   {
     path: "/roles",
-    component: Roles,
+    component: RolesPage,
     permission: "create:role",
     label: "Roles",
     icon: "ShieldCheckIcon",
     group: "Administration",
     showInSidebar: true,
   },
-  {
-    path: "/roles-list",
-    component: RoleList,
-    permission: "read:role",
-    label: "Roles",
-    icon: "ShieldCheckIcon",
-    group: "Administration",
-    showInSidebar: true,
-  },
+  
   {
     path: "/permissions",
-    component: Permission,
+    component: PermissionPage,
     permission: "create:permission",
     label: "Permissions",
     icon: "KeyIcon",
     group: "Administration",
     showInSidebar: true,
   },
-  {
-    path: "/permission-list",
-    component: PermissionList,
-    permission: "read:permission",
-    label: "Permission List",
-    icon: "KeyIcon",
-    group: "Administration",
-    showInSidebar: true,
-  },
+ 
   
 
   // ── Staff ─────────────────────────────────────────────────────────────────
