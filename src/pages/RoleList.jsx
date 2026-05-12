@@ -165,11 +165,7 @@ const columns = [
   },
 
   {
-    name: (
-      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-        Added On
-      </span>
-    ),
+    name: "Added On",
     cell: (row) => (
       <div className="flex flex-col text-xs">
         <span className="font-medium text-slate-800">

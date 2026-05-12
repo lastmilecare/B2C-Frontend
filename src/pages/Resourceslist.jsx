@@ -96,6 +96,7 @@ const ResourceList = () => {
     {
       name: "SL No",
       width: "70px",
+      height: "100px",
       cell: (_, index) => (
         <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-xs font-semibold">
           {index + 1}
@@ -112,24 +113,29 @@ const ResourceList = () => {
     },
     {
       name: "Status",
-      cell: (row) => (
-        <span
-          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
-            row.status
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
+      center: true,
+      cell: (row) => {
+        const isActive = Boolean(row.status);
+
+        return (
+          <span
+            className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase border shadow-sm
+          ${
+            isActive
+              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+              : "bg-red-50 text-red-700 border-red-200"
           }`}
-        >
-          {row.status ? "Active" : "Inactive"}
-        </span>
-      ),
+          >
+            {isActive ? "Active" : "Inactive"}
+          </span>
+        );
+      },
     },
     {
       name: "Added On",
-
       cell: (row) => (
         <div className="flex flex-col text-xs">
-          <span className="font-medium text-slate-700">
+          <span className="font-medium text-slate-800">
             {formatDate(row.createdAt)}
           </span>
 
