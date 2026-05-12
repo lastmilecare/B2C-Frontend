@@ -109,7 +109,7 @@ const Roles = () => {
   const filteredPermissionList = filteredPermissions.filter((p) =>
     `${p.action} ${p.resource}`
       .toLowerCase()
-      .includes(permissionSearch.toLowerCase())
+      .includes(permissionSearch.toLowerCase()),
   );
 
   const nextStep = async () => {
@@ -192,13 +192,6 @@ const Roles = () => {
                     Role Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Input
-                      label="Role Name"
-                      {...formik.getFieldProps("name")}
-                      error={formik.touched.name && formik.errors.name}
-                      placeholder="Enter role title"
-                      required
-                    />
                     <Select
                       label="Assign Tenant"
                       {...formik.getFieldProps("tenantId")}
@@ -212,33 +205,39 @@ const Roles = () => {
                         </option>
                       ))}
                     </Select>
+                    <Input
+                      label="Role Name"
+                      {...formik.getFieldProps("name")}
+                      error={formik.touched.name && formik.errors.name}
+                      placeholder="e.g. editor_tenantName"
+                      required
+                    />
                     <div className="md:col-span-2">
                       <Input
                         label="Description"
                         {...formik.getFieldProps("description")}
+                        error={formik.touched.description && formik.errors.description}
                         placeholder="What can this role do?"
+                        required
                       />
                     </div>
                   </div>
                 </section>
               )}
 
-             {activeStep === 2 && (
+              {activeStep === 2 && (
                 <section className="animate-in fade-in duration-500">
-
                   <h3 className="text-lg font-semibold text-sky-700 mb-6 flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span> Access Control
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                    Access Control
                   </h3>
 
                   <div className="space-y-4">
-
                     <label className="block text-sm font-medium text-slate-700">
                       Select Permissions <span className="text-red-500">*</span>
                     </label>
 
-                    
                     <div className="relative" ref={dropdownRef}>
-
                       <input
                         type="text"
                         placeholder="Search permissions..."
@@ -250,16 +249,15 @@ const Roles = () => {
                         onFocus={() => setShowDropdown(true)}
                         className={`w-full p-3 border-2 rounded-2xl bg-slate-50 transition-all 
           focus:ring-4 focus:ring-sky-100 outline-none text-sm
-          ${formik.touched.permissionIds && formik.errors.permissionIds
-                            ? "border-red-300"
-                            : "border-slate-100 focus:border-sky-400"
-                          }`}
+          ${
+            formik.touched.permissionIds && formik.errors.permissionIds
+              ? "border-red-300"
+              : "border-slate-100 focus:border-sky-400"
+          }`}
                       />
 
-                      
                       {showDropdown && (
                         <div className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-auto z-50 shadow-lg">
-
                           {filteredPermissionList.length > 0 ? (
                             filteredPermissionList.map((p) => {
                               const id = Number(p.id);
@@ -268,19 +266,23 @@ const Roles = () => {
                                 <div
                                   key={p.id}
                                   onMouseDown={() => {
-                                    if (!formik.values.permissionIds.includes(id)) {
+                                    if (
+                                      !formik.values.permissionIds.includes(id)
+                                    ) {
                                       formik.setFieldValue("permissionIds", [
                                         ...formik.values.permissionIds,
                                         id,
                                       ]);
                                     }
 
-                                    setShowDropdown(false); 
-                                    setPermissionSearch(""); 
+                                    setShowDropdown(false);
+                                    setPermissionSearch("");
                                   }}
                                   className="px-3 py-2 text-sm hover:bg-sky-50 cursor-pointer"
                                 >
-                                  {p.action.toUpperCase()} : {p.resource.replace("_", " ")}
+                                  {p.action.toUpperCase()} :{" "}
+                                  {p.resource.replace("_", " ")}
+                                  {p.description ? ` (${p.description})` : ""}{" "}
                                 </div>
                               );
                             })
@@ -289,16 +291,14 @@ const Roles = () => {
                               No permissions found
                             </div>
                           )}
-
                         </div>
                       )}
                     </div>
 
-                    
                     <div className="flex flex-wrap gap-2 mt-3">
                       {formik.values.permissionIds.map((id) => {
                         const perm = filteredPermissions.find(
-                          (p) => Number(p.id) === Number(id)
+                          (p) => Number(p.id) === Number(id),
                         );
 
                         if (!perm) return null;
@@ -308,15 +308,14 @@ const Roles = () => {
                             key={id}
                             className="flex items-center gap-2 bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs border border-sky-200"
                           >
-                            {perm.action}:{perm.resource}
-
+                            {perm.action}:{perm.resource}{perm.description ? ` (${perm.description})` : ""}{" "}
                             <span
                               onClick={() => {
                                 formik.setFieldValue(
                                   "permissionIds",
                                   formik.values.permissionIds.filter(
-                                    (pid) => Number(pid) !== Number(id)
-                                  )
+                                    (pid) => Number(pid) !== Number(id),
+                                  ),
                                 );
                               }}
                               className="cursor-pointer text-red-500 font-bold"
@@ -328,22 +327,19 @@ const Roles = () => {
                       })}
                     </div>
 
-                  
-                    {formik.touched.permissionIds && formik.errors.permissionIds && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {formik.errors.permissionIds}
-                      </p>
-                    )}
+                    {formik.touched.permissionIds &&
+                      formik.errors.permissionIds && (
+                        <p className="text-xs text-red-500 mt-1">
+                          {formik.errors.permissionIds}
+                        </p>
+                      )}
 
-                    
                     <p className="text-xs text-slate-400 italic">
                       Tip: Search and click to select permissions one by one.
                     </p>
-
                   </div>
                 </section>
               )}
-
 
               {activeStep === 3 && (
                 <section className="animate-in fade-in duration-500">
