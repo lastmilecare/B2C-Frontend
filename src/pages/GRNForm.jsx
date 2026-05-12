@@ -507,7 +507,11 @@ const GRNFormCopy = () => {
 
   const totals = formik.values.items?.reduce(
     (acc, i) => {
-      acc.qty += i?.RecvQty;
+      const recvQty = Number(i?.RecvQty || 0);
+      const freeQty = Number(i?.FreeRecvQty || 0);
+
+      acc.qty += freeQty > 0 ? recvQty + freeQty : recvQty;
+
       acc.totalCp += i?.totalCp;
       acc.discount += i.DiscountAmt || 0;
       acc.gst += i?.totalGst;
@@ -1010,7 +1014,7 @@ const GRNFormCopy = () => {
                             </th>
 
                             <th className="px-4 py-3 text-right whitespace-nowrap">
-                              Total
+                              Total 
                             </th>
 
                             <th className="px-4 py-3 text-center whitespace-nowrap">
@@ -1113,7 +1117,7 @@ const GRNFormCopy = () => {
                         <tfoot className="bg-slate-100 font-semibold text-slate-700">
                           <tr>
                             <td colSpan={6} className="px-4 py-4 text-right">
-                              Totals
+                              Totals (Recv.Qty + Free.Qty)
                             </td>
 
                             <td className="px-4 py-4 text-right">
@@ -1189,7 +1193,8 @@ const GRNFormCopy = () => {
 
                             <th className="px-3 py-2 text-center">HSN</th>
 
-                            <th className="px-3 py-2 text-right">Qty</th>
+                            <th className="px-3 py-2 text-right">Recv Qty</th>
+                            <th className="px-3 py-2 text-right">Free Qty</th>
 
                             <th className="px-3 py-2 text-right">GST</th>
 
@@ -1213,6 +1218,9 @@ const GRNFormCopy = () => {
                               <td className="px-3 py-2 text-right">
                                 {item.RecvQty}
                               </td>
+                              <td className="px-3 py-2 text-right">
+                                {item.FreeRecvQty}
+                              </td>
 
                               <td className="px-3 py-2 text-right">
                                 ₹ {Number(item.totalGst || 0).toFixed(2)}
@@ -1235,7 +1243,7 @@ const GRNFormCopy = () => {
                     </p>
 
                     <p>
-                      <b>Total Qty:</b> {totals.qty}
+                      <b>Total Qty (Recv + Free) :</b> {totals.qty}
                     </p>
 
                     <p>
