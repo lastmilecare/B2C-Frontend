@@ -95,7 +95,12 @@ const ResourceList = () => {
   const columns = [
     {
       name: "SL No",
-      selector: (row, index) => index + 1,
+      width: "70px",
+      cell: (_, index) => (
+        <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-xs font-semibold">
+          {index + 1}
+        </div>
+      ),
     },
     {
       name: "Resource Name",
