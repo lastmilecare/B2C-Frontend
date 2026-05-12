@@ -40,7 +40,7 @@ const StaffForm = () => {
 
   const roles = rolesData?.data || [];
 
-  
+
   useEffect(() => {
     if (location.state?.editData) {
       setEditUser(location.state.editData);
@@ -125,7 +125,7 @@ const StaffForm = () => {
     },
   });
 
-  
+
   const nextStep = async () => {
     const errors = await formik.validateForm();
 
@@ -157,7 +157,7 @@ const StaffForm = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
       <div className="max-w-[1400px] mx-auto px-8">
 
-        
+
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <span className="bg-blue-100 p-2 rounded-xl">
@@ -170,28 +170,26 @@ const StaffForm = () => {
             {STEPS.map((s) => (
               <div
                 key={s.id}
-                className={`h-2 w-12 rounded-full ${
-                  activeStep >= s.id ? "bg-sky-600" : "bg-blue-100"
-                }`}
+                className={`h-2 w-12 rounded-full ${activeStep >= s.id ? "bg-sky-600" : "bg-blue-100"
+                  }`}
               />
             ))}
           </div>
         </div>
 
-        
+
         <div className="bg-white rounded-3xl shadow-xl border overflow-hidden">
 
-          
+
           <div className="flex border-b">
             {STEPS.map((step) => (
               <button
                 key={step.id}
                 disabled
-                className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold ${
-                  activeStep === step.id
+                className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold ${activeStep === step.id
                     ? "text-sky-600 border-b-2 border-sky-600"
                     : "text-gray-400"
-                }`}
+                  }`}
               >
                 <step.icon className="w-4 h-4" />
                 {step.label}
@@ -201,25 +199,56 @@ const StaffForm = () => {
 
           <form onSubmit={(e) => e.preventDefault()} className="p-9 space-y-8">
 
-           
+
             {activeStep === 1 && (
               <div className="grid md:grid-cols-3 gap-6">
-                <Input label="Name *" {...formik.getFieldProps("name")} />
+                <Input
+                  label="Name"
+                  required
+                  error={formik.touched.name && formik.errors.name}
+                  {...formik.getFieldProps("name")}
+                />
                 <Input label="Username" {...formik.getFieldProps("username")} />
                 <Input label="Employee No" {...formik.getFieldProps("employeeNo")} />
-                <Input label="Mobile *" {...formik.getFieldProps("phone")} />
-                <Input label="Email *" {...formik.getFieldProps("email")} disabled={!!editUser} />
+                <Input
+                  label="Mobile"
+                  required
+                  error={formik.touched.phone && formik.errors.phone}
+                  {...formik.getFieldProps("phone")}
+                />
+                <Input
+                  label="Email"
+                  required
+                  error={formik.touched.email && formik.errors.email}
+                  {...formik.getFieldProps("email")}
+                  disabled={!!editUser}
+                />
 
                 {!editUser && (
                   <>
-                    <Input type="password" label="Password" {...formik.getFieldProps("password")} />
-                    <Input type="password" label="Confirm Password" {...formik.getFieldProps("confirmPassword")} />
+                    <Input
+                      type="password"
+                      label="Password"
+                      required
+                      error={formik.touched.password && formik.errors.password}
+                      {...formik.getFieldProps("password")}
+                    />
+                    <Input
+                      type="password"
+                      label="Confirm Password"
+                      required
+                      error={
+                        formik.touched.confirmPassword &&
+                        formik.errors.confirmPassword
+                      }
+                      {...formik.getFieldProps("confirmPassword")}
+                    />
                   </>
                 )}
               </div>
             )}
 
-           
+
             {activeStep === 2 && (
               <section className="bg-sky-50/40 p-6 rounded-xl border border-sky-100 space-y-4">
                 <h3 className="text-sky-700 font-semibold text-lg">
@@ -230,7 +259,9 @@ const StaffForm = () => {
 
                   <div>
                     <Select
-                      label="Role *"
+                      label="Role"
+                      required
+                     
                       {...formik.getFieldProps("b2cRoleId")}
                     >
                       <option value="">Select Role</option>
@@ -248,7 +279,7 @@ const StaffForm = () => {
                     )}
                   </div>
 
-                  
+
                   {formik.values.b2cRoleId && (
                     <div className="bg-white border border-sky-200 rounded-xl p-4 flex items-center gap-3">
                       <div className="bg-sky-100 p-2 rounded-lg">
@@ -273,7 +304,7 @@ const StaffForm = () => {
               </section>
             )}
 
-            
+
             {activeStep === 3 && (
               <div className="bg-sky-50 p-6 rounded-xl border space-y-3">
                 <h3 className="font-semibold text-sky-700">
@@ -293,47 +324,47 @@ const StaffForm = () => {
               </div>
             )}
 
-           
-         <div className="flex justify-between items-center pt-6 border-t border-gray-100">
 
- 
-  <div className="flex gap-3">
-    {activeStep > 1 && (
-      <Button type="button" variant="gray" onClick={prevStep}>
-        Back
-      </Button>
-    )}
+            <div className="flex justify-between items-center pt-6 border-t border-gray-100">
 
-    <Button
-      type="button"
-      variant="gray"
-      onClick={formik.handleReset}
-    >
-      <ArrowPathIcon className="w-5 h-5 inline mr-1" />
-      Reset
-    </Button>
-  </div>
 
-  
-  <div>
-    {activeStep < STEPS.length ? (
-      <Button type="button" variant="sky" onClick={nextStep}>
-        Continue
-      </Button>
-    ) : (
-      <Button
-        type="button"
-        variant="sky"
-        onClick={formik.handleSubmit}
-        disabled={isCreating || isUpdating}
-      >
-        <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-        {isCreating || isUpdating ? "Saving..." : "Save Staff"}
-      </Button>
-    )}
-  </div>
+              <div className="flex gap-3">
+                {activeStep > 1 && (
+                  <Button type="button" variant="gray" onClick={prevStep}>
+                    Back
+                  </Button>
+                )}
 
-</div>
+                <Button
+                  type="button"
+                  variant="gray"
+                  onClick={formik.handleReset}
+                >
+                  <ArrowPathIcon className="w-5 h-5 inline mr-1" />
+                  Reset
+                </Button>
+              </div>
+
+
+              <div>
+                {activeStep < STEPS.length ? (
+                  <Button type="button" variant="sky" onClick={nextStep}>
+                    Continue
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="sky"
+                    onClick={formik.handleSubmit}
+                    disabled={isCreating || isUpdating}
+                  >
+                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+                    {isCreating || isUpdating ? "Saving..." : "Save Staff"}
+                  </Button>
+                )}
+              </div>
+
+            </div>
           </form>
         </div>
       </div>

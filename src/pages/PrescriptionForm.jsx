@@ -369,14 +369,14 @@ const PrescriptionFormCopy = () => {
 
     const mappedAdviceList = Array.isArray(row.adviceList)
       ? row.adviceList.map((item) => ({
-          itemId: item.itemId,
-          medicine: item.item,
-          type: item.typeOfMedicine,
-          dosage: item.dosage,
-          instructions: "",
-          preferredTime: item.pillsConsumption,
-          duration: item.duration,
-        }))
+        itemId: item.itemId,
+        medicine: item.item,
+        type: item.typeOfMedicine,
+        dosage: item.dosage,
+        instructions: "",
+        preferredTime: item.pillsConsumption,
+        duration: item.duration,
+      }))
       : [];
 
     if (prescriptionList.length === 0) {
@@ -495,9 +495,8 @@ const PrescriptionFormCopy = () => {
             {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full transition-all duration-300 ${
-                  activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
-                }`}
+                className={`h-2 w-12 rounded-full transition-all duration-300 ${activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
+                  }`}
               />
             ))}
           </div>
@@ -869,16 +868,13 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   </Select>
                 </div>
                 <div className="mt-3">
-                  <button
+                  <Button
                     type="button"
                     onClick={handleAddPrescription}
-                    title="Add medicine"
-                    className="h-9 w-9 flex items-center justify-center rounded-full
-             bg-emerald-600 text-white hover:bg-emerald-700
-             focus:ring-2 focus:ring-emerald-500"
+                    className="bg-emerald-600 text-white hover:bg-emerald-700 h-10  w-30 "
                   >
-                    <PlusIcon className="h-5 w-5" />
-                  </button>
+                      Add Medicine
+                  </Button>
                 </div>
 
                 {prescriptionList.length > 0 && (
@@ -1036,9 +1032,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       id && row
                         ? row
                         : buildPrescriptionPayload(
-                            formik.values,
-                            prescriptionList,
-                          );
+                          formik.values,
+                          prescriptionList,
+                        );
 
                     onPrintCS(dataToPrint);
                   }}

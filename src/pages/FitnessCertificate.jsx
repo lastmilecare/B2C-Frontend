@@ -241,16 +241,20 @@ const isTemplateRoute =
                   <Input
                     type="date"
                     label="Issue Date"
+                    required error={formik.touched.issue_date && formik.errors.issue_date}
+                    
                     {...formik.getFieldProps("issue_date")}
                   />
                   {/* <Input label="Validity" {...formik.getFieldProps("valid_till")} /> */}
                   <Input
                     type="date"
                     label="Validity"
+                    required error={formik.touched.valid_till && formik.errors.valid_till}
                     {...formik.getFieldProps("valid_till")}
                   />
                   <Select
                     label="Fitness Status"
+                    required error={formik.touched.fitness_status && formik.errors.fitness_status}
                     value={formik.values.fitness_status}
                     onChange={(e) =>
                       formik.setFieldValue("fitness_status", e.target.value)
@@ -264,7 +268,8 @@ const isTemplateRoute =
                     <option value="UNFIT">Unfit</option>
                   </Select>
                   <Select
-                    label="Select Template *"
+                    label="Select Template"
+                    required error={formik.touched.template_id && formik.errors.template_id}
                     value={formik.values.template_id}
                     onChange={(e) =>
                       formik.setFieldValue("template_id", e.target.value)
@@ -279,6 +284,7 @@ const isTemplateRoute =
                   </Select>
                   <Input
                     label="Doctor Name"
+                    required error={formik.touched.doctor_signature && formik.errors.doctor_signature}
                     {...formik.getFieldProps("doctor_signature")}
                   />
                   <Input

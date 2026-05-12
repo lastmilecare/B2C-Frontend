@@ -74,8 +74,8 @@ const paginatedItems = lowStockItems.slice(
       title: "OPD",
       icon: <ClipboardDocumentIcon className="w-6" />,
       items: [
-        { name: "OPD Form", path: "/opd-form" },
-        { name: "OPD Billing", path: "/opd-list" },
+        { name: "OPD Billing", path: "/opd-form" },
+        { name: "OPD List", path: "/opd-list" },
       ],
     },
 
@@ -88,23 +88,27 @@ const paginatedItems = lowStockItems.slice(
       ],
     },
 
-    {
-      title: "Inventory",
-      icon: <ArchiveBoxIcon className="w-6" />,
-      items: [
-        { name: "Purchased Entry", path: "/purchased-entry" },
-        { name: "Medicine Billing", path: "/billing" },
-        { name: "Sales Record", path: "/sales-record" },
-      ],
-    },
-    {
-      title: "Staff",
-      icon: <UserGroupIcon className="w-6" />,
-      items: [
-        { name: "Staff Form", path: "/staff-form" },
-        { name: "Staff List", path: "/staff-list" },
-      ],
-    },
+   {
+  title: "Inventory",
+  icon: <ArchiveBoxIcon className="w-6" />,
+  items: [
+    { name: "Purchase Entry", path: "/purchased-entry" },
+    { name: "Medicine Billing", path: "/billing" },
+    { name: "Expiry Items", path: "/expiry-items" },
+    { name: "Camp Billing", path: "/camp-billing" },
+    { name: "Sales Record", path: "/sales-record" },
+  ],
+},
+
+{
+  title: "Staff",
+  icon: <UserGroupIcon className="w-6" />,
+  items: [
+    { name: "Staff", path: "/staff-form" },
+    { name: "Staff List", path: "/staff-list" },
+    
+  ],
+},
   ];
 
   return (
@@ -257,7 +261,7 @@ const paginatedItems = lowStockItems.slice(
                 <span>{p.name}</span>
 
                 <span className="text-gray-400">
-                  {new Date(p.createdAt).toLocaleDateString()}
+                  {new Date(p.createdAt).toLocaleDateString("en-GB")}
                 </span>
               </div>
             ))}

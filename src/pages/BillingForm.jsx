@@ -105,7 +105,7 @@ const BillingFormCopy = ({ refetchList }) => {
     selectedMedicine ? { ItemID: String(selectedMedicine.id) } : skipToken,
     { skip: !selectedMedicine },
   );
-
+  // const [isEditMedicineLoaded, setIsEditMedicineLoaded] = useState(false);
   const billingItemValues = [];
   useEffect(() => {
     if (selectedBill) return;
@@ -347,8 +347,9 @@ const BillingFormCopy = ({ refetchList }) => {
       items: mappedItems,
     });
 
-    setMedicineSearch(firstItem?.description || "");
+    // setMedicineSearch(firstItem?.description || "");
     setBillSearch(header.OPDBillNo || "");
+    // setIsEditMedicineLoaded(true);
   }, [billData, id]);
   useEffect(() => {
     if (!patientData) return;
@@ -671,6 +672,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         value={medicineSearch || formik.values.medicine}
                         disabled={!formik.values.opdBillNo}
                         onChange={(e) => {
+                          // setIsEditMedicineLoaded(false);
                           setMedicineSearch(e.target.value);
                           setSelectedMedicine(null);
                           formik.setFieldValue("medicine", e.target.value);
@@ -678,7 +680,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         autoComplete="off"
                       />
 
-                      {medicineSuggestions.length > 0 && !selectedMedicine && (
+                     {medicineSuggestions.length > 0 && !selectedMedicine && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                           {medicineSuggestions.map((item) => (
                             <li
@@ -1040,13 +1042,72 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     </Button>
                   )}
 
-                  <Button
-                    type="button"
-                    variant="gray"
-                    onClick={formik.handleReset}
-                  >
-                    <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
-                  </Button>
+                <Button
+  type="button"
+  variant="gray"
+  onClick={() => {
+    // STEP 1 RESET
+    if (activeStep === 1) {
+      formik.setValues({
+        ...formik.values,
+        opdBillNo: "",
+        Name: "",
+        UHID: "",
+        Age: "",
+        Gender: "",
+        Mobile: "",
+        FinCategory: "",
+      });
+
+      setBillSearch("");
+      setSelectedBill("");
+      setSuggestionsList([]);
+      populatedUhidRef.current = "";
+    }
+if (activeStep === 2) {
+  formik.setValues({
+    ...formik.values,
+    medicine: "",
+    quantity: "",
+    cp: "",
+    mrp: "",
+    discountPercent: 0,
+    cgst: 0,
+    sgst: 0,
+    billNo: "",
+
+    items: [],
+
+    totalQuantity: 0,
+    totalDiscount: 0,
+    grossAmount: 0,
+    cgstAmount: 0,
+    sgstAmount: 0,
+    taxableAmount: 0,
+    totalAmount: 0,
+    paidAmount: 0,
+    dueAmount: 0,
+  });
+
+  setMedicineSearch("");
+  setSelectedMedicine(null);
+  setMedicineSuggestions([]);
+}
+
+    // STEP 4 RESET
+    if (activeStep === 3) {
+      formik.setValues({
+        ...formik.values,
+        payMode: "",
+        paidAmount: 0,
+        dueAmount: 0,
+      });
+    }
+  }}
+>
+  <ArrowPathIcon className="w-5 h-5 mr-1" />
+  Reset
+</Button>
                 </div>
 
                 <div>

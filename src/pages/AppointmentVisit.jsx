@@ -239,15 +239,9 @@ const AppointmentVisit = () => {
   }, []);
 
   const handleReset = useCallback(() => {
-    healthAlerts.confirm(
-      "Are you sure?",
-      "This will clear all data",
-      () => {
-        formik.resetForm();
-        setActiveStep(1);
-      }
-    );
-  }, [formik]);
+  formik.resetForm();
+  setActiveStep(1);
+}, [formik]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -287,6 +281,7 @@ const AppointmentVisit = () => {
               <button
                 key={step.id}
                 type="button"
+                disabled
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 ${activeStep === step.id
                   ? "bg-white text-sky-600 shadow"

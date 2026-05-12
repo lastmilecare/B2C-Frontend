@@ -60,12 +60,12 @@ const LaboratoryInvestigation = () => {
       try {
 
         if (values.reportFile) {
-         
+
           const formData = new FormData();
           formData.append("file", values.reportFile);
-          
+
           const res = await uploadLabFile(formData).unwrap();
-          filePath = res.path; 
+          filePath = res.path;
         }
 
 
@@ -83,7 +83,7 @@ const LaboratoryInvestigation = () => {
             result_value: t.result,
             normal_range: `${t.min}-${t.max}`,
             remarks: t.remarks,
-            report_url: filePath, 
+            report_url: filePath,
           })),
         };
 
@@ -137,9 +137,9 @@ const LaboratoryInvestigation = () => {
   }, [editData]);
   const nextStep = () => {
     if (activeStep === 1 && !formik.values.Name) {
-    healthAlerts.warning("Name is required");
-    return;
-  }
+      healthAlerts.warning("Name is required");
+      return;
+    }
 
     if (activeStep === 2 && bloodTestList.length === 0) {
       healthAlerts.warning("Add at least one blood test");
@@ -234,9 +234,7 @@ const LaboratoryInvestigation = () => {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (activeStep === 4) {
-                formik.handleSubmit();
-              }
+
             }}
             className="space-y-8 p-9"
           >
@@ -262,6 +260,8 @@ const LaboratoryInvestigation = () => {
 
                   <Select
                     label="Select Test"
+                    required
+                    error={formik.touched.testName && formik.errors.testName}
                     value={formik.values.testName}
                     onChange={(e) =>
                       formik.setFieldValue("testName", e.target.value)
@@ -277,7 +277,7 @@ const LaboratoryInvestigation = () => {
                     <option>KFT</option>
                   </Select>
 
-                  <Input label="Result" {...formik.getFieldProps("result")} />
+                  <Input label="Result" required error={formik.touched.result && formik.errors.result} {...formik.getFieldProps("result")} />
                   <Input label="Min Range" {...formik.getFieldProps("minRange")} />
                   <Input label="Max Range" {...formik.getFieldProps("maxRange")} />
                   <Input label="Remarks" {...formik.getFieldProps("remarks")} />
@@ -366,7 +366,7 @@ const LaboratoryInvestigation = () => {
               <section>
                 <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
                   <h3 className="text-lg font-semibold text-sky-600">
-                   LABORATORY INVESTIGATION PREVIEW
+                    LABORATORY INVESTIGATION PREVIEW
                   </h3>
 
                   <div className="grid md:grid-cols-2 gap-3 text-sm">
@@ -407,7 +407,11 @@ const LaboratoryInvestigation = () => {
                   Continue
                 </Button>
               ) : (
-                <Button type="submit" variant="sky">
+                <Button
+                  type="button"
+                  variant="sky"
+                  onClick={formik.handleSubmit}
+                >
                   Save
                 </Button>
               )}
