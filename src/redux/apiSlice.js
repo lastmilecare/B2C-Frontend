@@ -316,26 +316,26 @@ export const api = createApi({
     }),
 
     getPatientById: build.query({
-  query: (id) => ({
-    url: "/patient/by-id",
-    method: "GET",
-    params: {
-      patientId: id,
-    },
-  }),
+      query: (id) => ({
+        url: "/patient/by-id",
+        method: "GET",
+        params: {
+          patientId: id,
+        },
+      }),
 
-  providesTags: ["Patient"],
-}),
+      providesTags: ["Patient"],
+    }),
 
     updatePatient: build.mutation({
-  query: ({ id, body }) => ({
-    url: `/patient/update-patient/${id}`,
-    method: "PUT",
-    data: body,
-  }),
+      query: ({ id, body }) => ({
+        url: `/patient/update-patient/${id}`,
+        method: "PUT",
+        data: body,
+      }),
 
-  invalidatesTags: ["Patient"],
-}),
+      invalidatesTags: ["Patient"],
+    }),
     // getMediceneList: build.query({
     //   query: (id) => ({
     //     url: "/medicine-inventory",
@@ -1299,17 +1299,17 @@ export const api = createApi({
       query: (body) => ({
         url: "/ohc-fitness/preview-template",
         method: "POST",
-        data:body,
+        data: body,
       }),
-      responseHandler: async (response) => response.text(), 
+      responseHandler: async (response) => response.text(),
     }),
-  
-getLowStockItems: build.query({
-  query: () => ({
-    url: "/medicine-inventory/stock/view/low-stock",
-    method: "GET",
-  }),
-}),
+
+    getLowStockItems: build.query({
+      query: () => ({
+        url: "/medicine-inventory/stock/view/low-stock",
+        method: "GET",
+      }),
+    }),
 
     getPatientDue: build.query({
       query: (uhid) => ({
@@ -1318,14 +1318,27 @@ getLowStockItems: build.query({
       }),
     }),
 
-updateTemplate: build.mutation({
-  query: ({ id, body }) => ({
-    url: `/ohc-fitness/templates/${id}`,
-    method: "PUT",
-    data: body,
-  }),
-}),
-
+    updateTemplate: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/ohc-fitness/templates/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+    }),
+    fetchResource: build.mutation({
+      query: (body) => ({
+        url: `${VITE_AUTH_URL}permissions/resource/view`,
+        method: "POST",
+        data: body,
+      }),
+    }),
+    deleteResource: build.mutation({
+      query: (id) => ({
+        url: `${VITE_AUTH_URL}permissions/resource/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Resource"],
+    }),
   }),
 });
 
@@ -1476,5 +1489,6 @@ export const {
   useGetLowStockItemsQuery,
   useGetPatientDueQuery,
   useUpdateTemplateMutation,
-
+  useFetchResourceMutation,
+  useDeleteResourceMutation,
 } = api;

@@ -130,6 +130,7 @@ const Resources = () => {
                                             required
                                             {...formik.getFieldProps("name")}
                                             error={formik.touched.name && formik.errors.name}
+                                            placeholder="eg. patient_list"
                                         />
 
                                         <Input
