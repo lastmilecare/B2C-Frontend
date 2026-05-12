@@ -12,7 +12,8 @@ import { healthAlert } from "../utils/healthSwal";
 const RoleList = () => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
-    const [tempFilters, setTempFilters] = useState({ name: "", tenantId: "" });
+    const [tempFilters, setTempFilters] = useState({ name: "", tenantId: "" ,  dateFrom: "",
+  dateTo: "",});
     const [filters, setFilters] = useState({});
 
     
@@ -37,7 +38,8 @@ const RoleList = () => {
     };
 
     const handleResetFilters = () => {
-        setTempFilters({ name: "", tenantId: "" });
+        setTempFilters({ name: "", tenantId: "",  dateFrom: "",
+  dateTo: "", });
         setFilters({});
         setPage(1);
     };
@@ -78,6 +80,16 @@ const RoleList = () => {
                 value: t.id,
             })),
         },
+        {
+  label: "Date From",
+  name: "dateFrom",
+  type: "date",
+},
+{
+  label: "Date To",
+  name: "dateTo",
+  type: "date",
+},
     ];
 
     

@@ -65,23 +65,56 @@ const PatientRegistrationCopy = () => {
 
     if (
       activeStep === 1 &&
-      (errors.title || errors.name || errors.contactNumber)
+      (errors.title || errors.name || errors.contactNumber || errors.CO || errors.gender)
     ) {
       formik.setTouched({
         title: true,
         name: true,
         contactNumber: true,
+        CO: true,
+        gender: true
       });
       return;
     }
 
-    if (activeStep === 2 && (errors.country || errors.localAddressState)) {
+    if (
+      activeStep === 2 &&
+      (
+        errors.country ||
+        errors.localAddressState ||
+        errors.fincat ||
+        errors.ReferredBy ||
+        errors.occupation ||
+        errors.pin
+      )
+    ) {
       formik.setTouched({
         country: true,
         localAddressState: true,
+        fincat: true,
+        ReferredBy: true,
+        occupation: true,
+        pin: true,
       });
+
       return;
     }
+    if (
+  activeStep === 3 &&
+  (
+   
+    errors.idProof_name ||
+    errors.idProof_number
+  )
+) {
+  formik.setTouched({
+    
+    idProof_name: true,
+    idProof_number: true,
+  });
+
+  return;
+}
 
     setActiveStep((prev) => prev + 1);
   };
@@ -132,7 +165,18 @@ const PatientRegistrationCopy = () => {
       CO: Yup.string().required("Co is required"),
       // employeeId: Yup.string().required("EmployeeId is required")
       pin: Yup.string()
+        .required("Pin Code is required")
         .matches(/^[0-9]{6}$/, "Pin Code must be 6 digits"),
+      ReferredBy: Yup.string().required("Referred By is required"),
+      idProof_name: Yup.string().required(
+        "Identification Type is required"
+      ),
+
+      idProof_number: Yup.string().when("idProof_name", {
+        is: (val) => !!val,
+        then: (schema) =>
+          schema.required("Identification Number is required"),
+      }),
     }),
 
     onSubmit: async (values) => {
@@ -192,18 +236,18 @@ const PatientRegistrationCopy = () => {
         if (p.disease_ids?.length) {
           try {
             const res = await searchDiseases({
-  q: "",
-  page: 1,
-  limit: 1000,
-}).unwrap();
+              q: "",
+              page: 1,
+              limit: 1000,
+            }).unwrap();
 
             const diseaseList = res?.data || [];
 
             formattedDiseases =
               diseaseList
                 .filter((d) =>
-  p.disease_ids?.map(Number).includes(Number(d.id))
-)
+                  p.disease_ids?.map(Number).includes(Number(d.id))
+                )
                 .map((d) => ({
                   id: d.id,
                   name: d.name,
@@ -625,6 +669,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     <Select
                       {...formik.getFieldProps("occupation")}
                       label="Occupation"
+                      required
                       error={
                         formik.touched.occupation && formik.errors.occupation
                       }
@@ -651,6 +696,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       label="Pin Code"
                       type="tel"
                       inputMode="numeric"
+                      required
                       maxLength={6}
                       value={formik.values.pin}
                       onChange={(e) => {
@@ -730,6 +776,10 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       {...formik.getFieldProps("idProof_name")}
                       label="Identification Type"
                       required
+                      error={
+    formik.touched.idProof_name &&
+    formik.errors.idProof_name
+  }
                     >
                       <option value="">Select</option>
                       {IDENTIFICATION_TYPES.map((b) => (
@@ -790,9 +840,10 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </p>
 
                       <p>
-<b>C/O:</b> {formik.values.CO || "-"}
-                        <b>Address:</b> {formik.values.localAddress}
-<b>Local Address:</b> {formik.values.localAddress}
+                        <b>C/O:</b> {formik.values.CO || "-"}
+                      </p>
+                      <p>
+                        <b>Local Address:</b> {formik.values.localAddress}
                       </p>
 
                       <p>
@@ -907,7 +958,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
 
                     <div className="border-t pt-3 text-sm">
                       <p>
-                        
+
                         <b>Credit Amount:</b>{" "}
                         {formik.values.creditamount || 0}
                       </p>
@@ -916,7 +967,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                 </section>
               )}
 
-              
+
               <div className="flex justify-between pt-6 border-t border-black flex-wrap gap-3">
                 <div className="flex gap-2">
                   {activeStep > 1 && (

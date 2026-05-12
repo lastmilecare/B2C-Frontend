@@ -13,7 +13,12 @@ import { healthAlert } from "../utils/healthSwal";
 const PermissionList = () => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
-    const [tempFilters, setTempFilters] = useState({ action: "", resource: "" });
+    const [tempFilters, setTempFilters] = useState({
+  action: "",
+  resource: "",
+  dateFrom: "",
+  dateTo: "",
+});
     const [filters, setFilters] = useState({});
 
     const { data, isLoading, isFetching } = useGetPermissionsQuery({ page, limit, ...filters });
@@ -32,10 +37,16 @@ const PermissionList = () => {
     };
 
     const handleResetFilters = () => {
-        setTempFilters({ action: "", resource: "" });
-        setFilters({});
-        setPage(1);
-    };
+  setTempFilters({
+    action: "",
+    resource: "",
+    dateFrom: "",
+    dateTo: "",
+  });
+
+  setFilters({});
+  setPage(1);
+};
 
     const handleDelete = async (row) => {
    const result = await healthAlert({
@@ -70,6 +81,16 @@ const PermissionList = () => {
             label: "Resource", name: "resource", type: "select",
             options: RESOURCES.map(r => ({ label: r.toUpperCase(), value: r }))
         },
+        {
+  label: "Date From",
+  name: "dateFrom",
+  type: "date",
+},
+{
+  label: "Date To",
+  name: "dateTo",
+  type: "date",
+},
     ];
 
     const columns = [

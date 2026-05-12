@@ -622,6 +622,7 @@ const OpdFormCopy = () => {
 
                       <input
                         type="text"
+                        required
                         className={`${baseInput} ${editData ? "bg-sky-50 cursor-not-allowed" : ""}`}
                         placeholder="Search UHID (e.g., LMC-123)"
                         value={uhidSearch || formik.values.UHID}
@@ -636,6 +637,11 @@ const OpdFormCopy = () => {
                         }}
                         autoComplete="off"
                       />
+                      {formik.touched.UHID && formik.errors.UHID && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {formik.errors.UHID}
+                        </p>
+                      )}
 
                       {suggestionsList.length > 0 && uhidSearch.length >= 2 && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
