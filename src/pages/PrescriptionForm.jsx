@@ -48,11 +48,24 @@ const PrescriptionFormCopy = () => {
   const nextStep = async () => {
     const errors = await formik.validateForm();
 
-    if (activeStep === 1) {
-      if (!formik.values.billno) {
-        healthAlerts.warning("Bill No is required");
-        return;
-      }
+    if (
+      activeStep === 1 &&
+      (
+        errors.billno ||
+        errors.UHID ||
+        errors.Name ||
+        errors.Mobile
+      )
+    ) {
+
+      formik.setTouched({
+        billno: true,
+        UHID: true,
+        Name: true,
+        Mobile: true,
+      });
+
+      return;
     }
 
     if (activeStep === 2) {
@@ -271,6 +284,7 @@ const PrescriptionFormCopy = () => {
       PatientID: "",
     },
     validationSchema: Yup.object({
+      billno: Yup.string().required("Bill No is required"),
       UHID: Yup.string().required("UHID is required"),
       Name: Yup.string().required("Name is required"),
       Mobile: Yup.string()
@@ -373,7 +387,7 @@ const PrescriptionFormCopy = () => {
         medicine: item.item,
         type: item.typeOfMedicine,
         dosage: item.dosage,
-        instructions: "",
+         instructions: item.remarks || "",
         preferredTime: item.pillsConsumption,
         duration: item.duration,
       }))
@@ -545,26 +559,30 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div className="relative">
-                    <label className="text-sm text-gray-600 block mb-1">
-                      Bill no <span className="text-red-500">*</span>
-                    </label>
-
-                    <input
+                   
+                    <Input
+                      label="Bill No"
+                      required
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      className={baseInput}
                       placeholder="Search Bill no (e.g., 123)"
                       value={billSearch}
+                      onBlur={() => formik.setFieldTouched("billno", true)}
                       onChange={(e) => {
                         if (id) return;
+
                         const val = e.target.value.replace(/\D/g, "");
+
                         setBillSearch(val);
                         setSelectedBill("");
+
                         formik.setFieldValue("billno", "");
                         setSuggestionsList([]);
+
                         populatedUhidRef.current = "";
                       }}
+                      error={formik.touched.billno && formik.errors.billno}
                       autoComplete="off"
                     />
 
@@ -726,9 +744,15 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     label="Other Labs"
                   />
                   <Input
-                    {...formik.getFieldProps("followup")}
-                    placeholder="Next Follow-up days"
                     label="Next Follow-up days"
+                    placeholder="Next Follow-up days"
+                    inputMode="numeric"
+                    type="text"
+                    value={formik.values.followup}
+                    onChange={(e) => {
+                      const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                      formik.setFieldValue("followup", onlyNumbers);
+                    }}
                   />
                   <Input
                     {...formik.getFieldProps("advice")}
@@ -881,12 +905,13 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 </div>
                 <div className="mt-3">
                   <Button
-                    type="button"
-                    onClick={handleAddPrescription}
-                    className="bg-emerald-600 text-white hover:bg-emerald-700 h-10  w-30 "
-                  >
-                    Add Medicine
-                  </Button>
+  type="button"
+  onClick={handleAddPrescription}
+  className="mt-4 flex items-center gap-1"
+>
+  <PlusIcon className="w-4 h-4" />
+  Add Medicine
+</Button>
                 </div>
 
                 {prescriptionList.length > 0 && (
@@ -905,6 +930,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                             <th className="px-4 py-3 text-left">Medicine</th>
                             <th className="px-4 py-3 text-left">Type</th>
                             <th className="px-4 py-3 text-left">Dosage</th>
+                            <th className="px-4 py-3 text-left">Instructions</th>
                             <th className="px-4 py-3 text-left">Time</th>
                             <th className="px-4 py-3 text-left">Days</th>
                             <th className="px-4 py-3 text-center">Delete</th>
@@ -923,6 +949,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                               </td>
                               <td className="px-4 py-3">{item.type}</td>
                               <td className="px-4 py-3">{item.dosage}</td>
+                              <td className="px-4 py-3">
+  {item.instructions || "-"}
+</td>
                               <td className="px-4 py-3">
                                 {item.preferredTime || "-"}
                               </td>

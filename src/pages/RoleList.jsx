@@ -223,3 +223,4 @@ const columns = [
 };
 
 export default RoleList;
+

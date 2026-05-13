@@ -15,7 +15,10 @@ import { healthAlert } from "../utils/healthSwal";
 import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { generateFileName, downloadBlob } from "../utils/helper";
-
+import {
+  formatDate,
+  formatTime,
+} from "../utils/helper";
 const OpdBillingListCopy = () => {
   const [exportExcel] = useLazyExportOpdExcelQuery();
 
@@ -445,16 +448,22 @@ const OpdBillingListCopy = () => {
       selector: (row) => safeString(row?.added_by, "-"),
       width: "120px",
     },
-    {
-      name: "Bill.Date",
-      title: "Bill Date",
-      selector: (row) =>
-        row?.AddedDate
-          ? new Date(row.AddedDate).toISOString().split("T")[0]
-          : "-",
-      sortable: true,
-      width: "100px",
-    },
+   
+      {
+              name: "Bill.Date",
+        width: "140px",
+              cell: (row) => (
+                <div className="flex flex-col text-xs">
+                  <span className="font-medium text-slate-700">
+                   {formatDate(row.AddedDate)}
+                  </span>
+        
+                  <span className="text-slate-400">
+                   {formatTime(row.AddedDate)}
+                  </span>
+                </div>
+              ),
+            },
   ];
 
   const handlePrint = useReactToPrint({

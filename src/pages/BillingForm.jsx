@@ -416,6 +416,13 @@ const BillingFormCopy = ({ refetchList }) => {
   };
 
   const addItemToList = async () => {
+    formik.setTouched({
+  medicine: true,
+  quantity: true,
+});
+if (!formik.values.medicine || !formik.values.quantity) {
+  return;
+}
     const canAdd =
       formik.values.medicine && formik.values.quantity && formik.values.cp;
     if (!canAdd) {
@@ -567,11 +574,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="relative">
-                      <label className="text-sm text-gray-600 block mb-1">
-                        Bill no <span className="text-red-500">*</span>
-                      </label>
+                     
 
-                      <input
+                      {/* <input
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
@@ -593,6 +598,44 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         }}
                         autoComplete="off"
                       />
+                      {formik.touched.opdBillNo && formik.errors.opdBillNo && (
+  <p className="text-red-500 text-sm mt-1">
+    {formik.errors.opdBillNo}
+  </p>
+)} */}
+<Input
+  label="Bill No"
+  required
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  placeholder="Search Bill no (e.g., 123)"
+  value={formik.values.opdBillNo}
+  onBlur={() =>
+    formik.setFieldTouched("opdBillNo", true)
+  }
+  onChange={(e) => {
+    if (id) return;
+
+    const val = e.target.value.replace(/\D/g, "");
+
+    setBillSearch(val);
+
+    setSelectedBill("");
+
+    formik.setFieldValue("opdBillNo", val);
+
+    setSuggestionsList([]);
+
+    populatedUhidRef.current = "";
+  }}
+  error={
+    formik.touched.opdBillNo &&
+    formik.errors.opdBillNo
+  }
+  autoComplete="off"
+/>
+
 
                       {suggestionsList.length > 0 && billSearch.length >= 1 && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
@@ -664,21 +707,31 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         Medicine <span className="text-red-500">*</span>
                       </label>
 
-                      <input
-                        type="text"
-                        className={`${baseInput} 
-                             ${!formik.values.opdBillNo ? "bg-sky-50 cursor-not-allowed" : ""}`}
-                        placeholder={"Search Medicine"}
-                        value={medicineSearch || formik.values.medicine}
-                        disabled={!formik.values.opdBillNo}
-                        onChange={(e) => {
-                          // setIsEditMedicineLoaded(false);
-                          setMedicineSearch(e.target.value);
-                          setSelectedMedicine(null);
-                          formik.setFieldValue("medicine", e.target.value);
-                        }}
-                        autoComplete="off"
-                      />
+                     <input
+  type="text"
+  className={`${baseInput}
+  ${formik.touched.medicine &&
+    !formik.values.medicine
+      ? "border-red-500"
+      : ""}
+  ${!formik.values.opdBillNo
+      ? "bg-sky-50 cursor-not-allowed"
+      : ""}`}
+  placeholder="Search Medicine"
+  value={medicineSearch || formik.values.medicine}
+  disabled={!formik.values.opdBillNo}
+  onChange={(e) => {
+    setMedicineSearch(e.target.value);
+    setSelectedMedicine(null);
+    formik.setFieldValue("medicine", e.target.value);
+  }}
+  autoComplete="off"
+/>
+                      {formik.touched.medicine && !formik.values.medicine && (
+  <p className="text-red-500 text-sm mt-1">
+    Medicine is required
+  </p>
+)}
 
                      {medicineSuggestions.length > 0 && !selectedMedicine && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
@@ -729,13 +782,28 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
-                    <Input
-                      label="Quantity"
-                      required
-                      error={formik.touched.quantity && formik.errors.quantity}
-                      {...formik.getFieldProps("quantity")}
-                      placeholder="Qty"
-                    />
+                   <Input
+  label="Quantity"
+  required
+  error={
+    formik.touched.quantity &&
+    (
+      !formik.values.quantity ||
+      isNaN(formik.values.quantity)
+    )
+      ? "Quantity is required"
+      : ""
+  }
+  {...formik.getFieldProps("quantity")}
+  placeholder="Qty"
+  onChange={(e) => {
+    const value = e.target.value;
+
+    if (/^\d*$/.test(value)) {
+      formik.setFieldValue("quantity", value);
+    }
+  }}
+/>
                     <Input
                       label="CP"
                       {...formik.getFieldProps("cp")}
@@ -986,54 +1054,189 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 </section>
               )}
               {activeStep === 4 && (
-                <section className="bg-blue-50 p-6 rounded-xl border border-blue-200">
-                  <h3 className="text-sky-600 font-semibold mb-4">
-                    Final Summary
-                  </h3>
+  <div className="bg-sky-50 p-6 rounded-xl space-y-4 border border-sky-200">
 
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
-                    <p>
-                      <b>Name:</b> {formik.values.Name}
-                    </p>
-                    <p>
-                      <b>UHID:</b> {formik.values.UHID}
-                    </p>
-                    <p>
-                      <b>Mobile:</b> {formik.values.Mobile}
-                    </p>
-                    <p>
-                      <b>Category:</b> {formik.values.FinCategory}
-                    </p>
+    <h3 className="text-lg font-semibold text-sky-700">
+      Confirm Bill
+    </h3>
 
-                    <p>
-                      <b>Total Items:</b> {formik.values.items.length}
-                    </p>
-                    <p>
-                      <b>Total Qty:</b> {formik.values.totalQuantity}
-                    </p>
+    {/* Patient Details */}
+    <div className="grid md:grid-cols-2 gap-4 text-sm">
 
-                    <p>
-                      <b>Total Amount:</b> ₹ {formik.values.totalAmount}
-                    </p>
-                    <p>
-                      <b>Discount:</b> ₹ {formik.values.totalDiscount}
-                    </p>
+      <p>
+        <b>Bill No:</b> {formik.values.opdBillNo}
+      </p>
 
-                    <p>
-                      <b>GST:</b> ₹{" "}
-                      {Number(formik.values.cgstAmount) +
-                        Number(formik.values.sgstAmount)}
-                    </p>
-                    <p>
-                      <b>Paid:</b> ₹ {formik.values.paidAmount}
-                    </p>
+      <p>
+        <b>UHID:</b> {formik.values.UHID}
+      </p>
 
-                    <p>
-                      <b>Due:</b> ₹ {formik.values.dueAmount}
-                    </p>
-                  </div>
-                </section>
-              )}
+      <p>
+        <b>Name:</b> {formik.values.Name}
+      </p>
+
+      <p>
+        <b>Gender:</b> {formik.values.Gender}
+      </p>
+
+      <p>
+        <b>Age:</b> {formik.values.Age}
+      </p>
+
+      <p>
+        <b>Mobile:</b> {formik.values.Mobile}
+      </p>
+
+      <p>
+        <b>Category:</b> {formik.values.FinCategory}
+      </p>
+
+      <p>
+        <b>Payment Mode:</b>
+        {
+          Picaso_Paymode_Options.find(
+            (x) =>
+              String(x.id) ===
+              String(formik.values.payMode)
+          )?.name || "-"
+        }
+      </p>
+
+    </div>
+
+    {/* Payment Summary */}
+    <div className="border-t pt-3 text-sm grid md:grid-cols-3 gap-3">
+
+      <p>
+        <b>Total Qty:</b>{" "}
+        {formik.values.totalQuantity || 0}
+      </p>
+
+      <p>
+        <b>Gross Amount:</b> ₹{" "}
+        {formik.values.grossAmount || 0}
+      </p>
+
+      <p>
+        <b>Discount:</b> ₹{" "}
+        {formik.values.totalDiscount || 0}
+      </p>
+
+      <p>
+        <b>CGST:</b> ₹{" "}
+        {formik.values.cgstAmount || 0}
+      </p>
+
+      <p>
+        <b>SGST:</b> ₹{" "}
+        {formik.values.sgstAmount || 0}
+      </p>
+
+      <p>
+        <b>Taxable Amount:</b> ₹{" "}
+        {formik.values.taxableAmount || 0}
+      </p>
+
+      <p>
+        <b>Paid Amount:</b> ₹{" "}
+        {formik.values.paidAmount || 0}
+      </p>
+
+      <p>
+        <b>Due Amount:</b> ₹{" "}
+        {formik.values.dueAmount || 0}
+      </p>
+
+      <p className="text-emerald-600 font-semibold">
+        <b>Final Amount:</b> ₹{" "}
+        {formik.values.totalAmount || 0}
+      </p>
+
+    </div>
+
+    {/* Medicine Details */}
+    <div className="border-t pt-4">
+      <h4 className="font-semibold text-slate-700 mb-2">
+        Medicines ({formik.values.items?.length || 0})
+      </h4>
+
+      {formik.values.items?.length > 0 ? (
+        <div className="overflow-x-auto rounded-xl border border-sky-100">
+
+          <table className="min-w-full text-sm">
+
+            <thead className="bg-sky-100 text-slate-700">
+              <tr>
+                <th className="px-3 py-2 text-left">
+                  Medicine
+                </th>
+
+                <th className="px-3 py-2 text-left">
+                  Batch
+                </th>
+
+                <th className="px-3 py-2 text-left">
+                  HSN
+                </th>
+
+                <th className="px-3 py-2 text-center">
+                  Qty
+                </th>
+
+                <th className="px-3 py-2 text-right">
+                  MRP
+                </th>
+
+                <th className="px-3 py-2 text-right">
+                  Total
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {formik.values.items.map((item, idx) => (
+                <tr
+                  key={idx}
+                  className="border-t border-sky-50"
+                >
+                  <td className="px-3 py-2 font-medium">
+                    {item.description || "-"}
+                  </td>
+
+                  <td className="px-3 py-2">
+                    {item.batchNo || "-"}
+                  </td>
+
+                  <td className="px-3 py-2">
+                    {item.hsn || "-"}
+                  </td>
+
+                  <td className="px-3 py-2 text-center">
+                    {item.qty || 0}
+                  </td>
+
+                  <td className="px-3 py-2 text-right">
+                    ₹ {item.saleRate || 0}
+                  </td>
+
+                  <td className="px-3 py-2 text-right font-semibold">
+                    ₹ {item.total || 0}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+
+          </table>
+        </div>
+      ) : (
+        <p className="text-gray-500">
+          No medicines added
+        </p>
+      )}
+    </div>
+
+  </div>
+)}
               <div className="flex justify-between items-center pt-6 border-t">
                 <div className="flex gap-3">
                   {activeStep > 1 && (
@@ -1121,7 +1324,7 @@ if (activeStep === 2) {
                       variant="sky"
                       onClick={formik.handleSubmit}
                     >
-                      Save Bill
+                     {id ? "Update " : "Save "}
                     </Button>
                   )}
                 </div>

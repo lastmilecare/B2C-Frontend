@@ -10,6 +10,10 @@ import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
 import Avatar from "../components/common/Avatar";
 import { useNavigate } from "react-router-dom";
+import {
+  formatDate,
+  formatTime,
+} from "../utils/helper";
 
 const PatientListCopy = () => {
   const navigate = useNavigate();
@@ -259,10 +263,21 @@ const PatientListCopy = () => {
       name: "Referred By",
       selector: (row) => row.ReferredBy || "N/A",
     },
-    {
-      name: "Added On",
-      selector: (row) => new Date(row.createdAt).toISOString().split("T")[0],
-    },
+     {
+          name: "Added On",
+    
+          cell: (row) => (
+            <div className="flex flex-col text-xs">
+              <span className="font-medium text-slate-700">
+               {formatDate(row.createdAt)}
+              </span>
+    
+              <span className="text-slate-400">
+               {formatTime(row.createdAt)}
+              </span>
+            </div>
+          ),
+        },
   ];
 
   return (

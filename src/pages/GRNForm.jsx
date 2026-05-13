@@ -52,20 +52,18 @@ const GRNFormCopy = () => {
 
       return;
     }
-
-    if (activeStep === 2 && formik.values.items.length === 0) {
-      formik.setTouched({
-        ItemName: true,
-        BatchNo: true,
-        CP: true,
-        MRP: true,
-        HSNCode: true,
-      });
-
-      healthAlerts.warning("Please fill required item fields");
+    if (
+      activeStep === 2 &&
+      formik.values.items.length === 0
+    ) {
+      healthAlerts.warning(
+        "Please add at least one item"
+      );
 
       return;
     }
+
+
 
     setActiveStep((prev) => prev + 1);
   };
@@ -88,11 +86,19 @@ const GRNFormCopy = () => {
   const { data: Supplier, isLoading: SupplierLoading } =
     useGetComboQuery("mediciene-supplier");
   const validationSchema = Yup.object({
-    InvoiceDate: Yup.string().required("Required"),
+    InvoiceDate: Yup.string().required(
+      "Invoice Date is required"
+    ),
 
-    RecieptNo: Yup.string().required("Required"),
-    SupplierName: Yup.string().required("Required"),
-    HSNCode: Yup.string().required("HSN Code is required"),
+    RecieptNo: Yup.string().required(
+      "Invoice No is required"
+    ),
+
+    SupplierName: Yup.string().required(
+      "Supplier is required"
+    ),
+
+    
   });
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
 
@@ -113,11 +119,11 @@ const GRNFormCopy = () => {
 
   const hsnCodeOptions = HSNCode
     ? HSNCode.map((t) => ({
-        value: t.HSNID,
-        label: t.HSNCode,
-        CGST: t.CGST,
-        SGST: t.SGST,
-      }))
+      value: t.HSNID,
+      label: t.HSNCode,
+      CGST: t.CGST,
+      SGST: t.SGST,
+    }))
     : [];
 
   const SupplierOptions = Supplier
@@ -147,6 +153,7 @@ const GRNFormCopy = () => {
       ExpiryDate: "",
       RagNo: "",
       HSNCode: "",
+      HSNID: "",
       TotalAmount: 0,
       TotalDiscount: 0,
       GrandTotal: 0,
@@ -278,12 +285,18 @@ const GRNFormCopy = () => {
       CGST: editData.CGST ?? 0,
       SGST: editData.SGST ?? 0,
       HSNCode: editData.HSNCode ?? "",
-
+HSNID:
+  editData.HSNID ||
+  hsnCodeOptions.find(
+    (h) => h.label === editData.HSNCode
+  )?.value ||
+  "",
       items: [],
     });
 
     setMedicineSearch(editData.ItemName ?? "");
   }, [editData]);
+
   useEffect(() => {
     if (!medicineTypeOptions.length) return;
     if (!formik.values.ItemTypeID) return;
@@ -411,12 +424,66 @@ const GRNFormCopy = () => {
     }
   }, [centerIdFromCookie]);
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     const v = formik.values;
-    console.log("Adding Item with values: ", v);
-    if (!v.ItemName || !v.BatchNo || !v.CP) {
-      return healthAlerts.error("Missing Item Details", "Item");
-    }
+
+    const requiredFields = [
+      "ItemName",
+      "BatchNo",
+      "MenufacturingDate",
+      "ExpiryDate",
+      "NoStrip",
+      "NoQtyperStrip",
+      "CP",
+      "MRP",
+      "DiscountPCperitem",
+      "HSNCode",
+      "CGST",
+      "SGST",
+    ];
+    requiredFields.forEach((field) => {
+  formik.setFieldTouched(field, true, false);
+
+  if (!v[field]) {
+    formik.setFieldError(
+      field,
+      `${field} is required`
+    );
+  }
+});
+
+const hasErrors = requiredFields.some((field) => {
+  return !v[field];
+});
+
+if (hasErrors) {
+  healthAlerts.warning(
+    "Please fill all required item fields"
+  );
+
+  return;
+}
+
+if (
+  v.MenufacturingDate &&
+  v.ExpiryDate &&
+  new Date(v.MenufacturingDate) >
+    new Date(v.ExpiryDate)
+) {
+
+  formik.setFieldError(
+    "MenufacturingDate",
+    "Mfg Date cannot be greater than Expiry Date"
+  );
+
+  formik.setFieldError(
+    "ExpiryDate",
+    "Expiry Date cannot be less than Mfg Date"
+  );
+
+  return;
+}
+   
     const recvQty = Number(v.RecvQty || 0);
     const qtyPerStrip = Number(v.NoQtyperStrip || 0);
     const cpPerStrip = Number(v.CP || 0);
@@ -454,7 +521,14 @@ const GRNFormCopy = () => {
       SLNo: v.items.length + 1,
       ItemName: v.ItemName,
       BatchNo: v.BatchNo,
-      HSNCode: v.HSNCode,
+      HSNCode:
+  hsnCodeOptions.find(
+    (h) =>
+      h.value.toString() ===
+      v.HSNID.toString()
+  )?.label || "",
+
+HSNID: v.HSNID,
       MenufacturingDate: v.MenufacturingDate,
       ExpiryDate: v.ExpiryDate,
       InvoiceDate: v.InvoiceDate,
@@ -481,25 +555,45 @@ const GRNFormCopy = () => {
       NoStrip: Number(v.NoStrip || 0),
     };
 
-    formik.setFieldValue("items", [...v.items, newItem]);
+    formik.setValues({
+  ...formik.values,
 
-    [
-      "ItemName",
-      "ItemTypeID",
-      "ItemType",
-      "BatchNo",
-      "MenufacturingDate",
-      "ExpiryDate",
-      "NoStrip",
-      "NoQtyperStrip",
-      "RecvQty",
-      "FreeRecvQty",
-      "CP",
-      "MRP",
-      "DiscountPCperitem",
-      "CGST",
-      "SGST",
-    ].forEach((f) => formik.setFieldValue(f, ""));
+  items: [...formik.values.items, newItem],
+
+  ItemName: "",
+  ItemTypeID: "",
+  ItemType: "",
+  BatchNo: "",
+  MenufacturingDate: "",
+  ExpiryDate: "",
+  NoStrip: "",
+  NoQtyperStrip: "",
+  RecvQty: "",
+  FreeRecvQty: "",
+  CP: "",
+  MRP: "",
+  DiscountPCperitem: "",
+  CGST: "",
+  SGST: "",
+  HSNCode: "",
+  HSNID: "",
+});
+    formik.setTouched({
+      ...formik.touched,
+
+      ItemName: false,
+      BatchNo: false,
+      MenufacturingDate: false,
+      ExpiryDate: false,
+      NoStrip: false,
+      NoQtyperStrip: false,
+      CP: false,
+      MRP: false,
+      DiscountPCperitem: false,
+      HSNCode: false,
+      CGST: false,
+      SGST: false,
+    });
 
     setMedicineSearch("");
     setSelectedMedicine(null);
@@ -546,9 +640,8 @@ const GRNFormCopy = () => {
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${
-                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                }`}
+                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                  }`}
               />
             ))}
           </div>
@@ -676,7 +769,12 @@ const GRNFormCopy = () => {
                         setSelectedMedicine(null);
                         formik.setFieldValue("ItemName", e.target.value);
                       }}
+                      error={
+                        formik.touched.ItemName &&
+                        formik.errors.ItemName
+                      }
                       autoComplete="off"
+
                     />
 
                     {!isEditMode &&
@@ -1014,7 +1112,7 @@ const GRNFormCopy = () => {
                             </th>
 
                             <th className="px-4 py-3 text-right whitespace-nowrap">
-                              Total 
+                              Total
                             </th>
 
                             <th className="px-4 py-3 text-center whitespace-nowrap">
@@ -1266,25 +1364,89 @@ const GRNFormCopy = () => {
               </section>
             )}
             <div className="flex justify-between items-center pt-6 border-t">
-              <div>
+
+              {/* LEFT SIDE */}
+              <div className="flex gap-3">
+
                 {activeStep > 1 && (
-                  <Button type="button" variant="gray" onClick={prevStep}>
+                  <Button
+                    type="button"
+                    variant="gray"
+                    onClick={prevStep}
+                  >
                     Back
                   </Button>
                 )}
-              </div>
 
-              <div className="flex gap-3">
                 <Button
                   type="button"
                   variant="gray"
-                  onClick={formik.handleReset}
-                >
-                  <ArrowPathIcon className="w-5 h-5 mr-1" /> Reset
-                </Button>
+                  onClick={() => {
 
+                    if (activeStep === 1) {
+                      formik.setValues({
+                        ...formik.values,
+                        InvoiceDate: "",
+                        RecieptNo: "",
+                        SupplierName: "",
+                        SupplierID: "",
+                        RagNo: "",
+                      });
+
+                      formik.setTouched({});
+                    }
+
+                    if (activeStep === 2) {
+                      formik.setValues({
+                        ...formik.values,
+                        items: [],
+                        ItemName: "",
+                        ItemTypeID: "",
+                        ItemType: "",
+                        BatchNo: "",
+                        MenufacturingDate: "",
+                        ExpiryDate: "",
+                        NoStrip: "",
+                        NoQtyperStrip: "",
+                        RecvQty: "",
+                        FreeRecvQty: "",
+                        CP: "",
+                        MRP: "",
+                        DiscountPCperitem: "",
+                        Discountperitem: "",
+                        CGST: "",
+                        SGST: "",
+                        HSNCode: "",
+                        HSNID: "",
+                      });
+
+                      setMedicineSearch("");
+                      setSelectedMedicine(null);
+
+                      formik.setTouched({});
+                    }
+
+                    if (activeStep === 3) {
+                      formik.resetForm();
+
+                      setMedicineSearch("");
+                      setSelectedMedicine(null);
+                    }
+                  }}
+                >
+                  <ArrowPathIcon className="w-5 h-5 mr-1" />
+                  Reset
+                </Button>
+              </div>
+
+              
+              <div>
                 {activeStep < 3 ? (
-                  <Button type="button" variant="sky" onClick={nextStep}>
+                  <Button
+                    type="button"
+                    variant="sky"
+                    onClick={nextStep}
+                  >
                     Continue
                   </Button>
                 ) : (
@@ -1294,6 +1456,7 @@ const GRNFormCopy = () => {
                     disabled={isLoading}
                     onClick={() => {
                       if (activeStep !== 3) return;
+
                       formik.handleSubmit();
                     }}
                   >

@@ -14,6 +14,10 @@ import useDebounce from "../hooks/useDebounce";
 import { healthAlerts, healthAlert } from "../utils/healthSwal";
 import { generateFileName, downloadBlob } from "../utils/helper";
 import Avatar from "../components/common/Avatar";
+import {
+  formatDate,
+  formatTime,
+} from "../utils/helper";
 const PrescriptionListCopy = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
   const [page, setPage] = useState(1);
@@ -220,13 +224,22 @@ const PrescriptionListCopy = () => {
 
       grow: 1,
     },
-    {
-      name: "Added Date",
-      selector: (row) =>
-        row?.addedDate
-          ? new Date(row.addedDate).toISOString().split("T")[0]
-          : "-",
-    },
+    
+      {
+              name: "Added On",
+        
+              cell: (row) => (
+                <div className="flex flex-col text-xs">
+                  <span className="font-medium text-slate-700">
+                   {formatDate(row.addedDate)}
+                  </span>
+        
+                  <span className="text-slate-400">
+                   {formatTime(row.addedDate)}
+                  </span>
+                </div>
+              ),
+            },
     {
       name: "Status",
       cell: (row) => {
