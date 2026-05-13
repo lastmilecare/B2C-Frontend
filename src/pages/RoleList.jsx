@@ -135,7 +135,7 @@ const columns = [
 
   {
     name: "Tenant",
-    center: true,
+    // center: true,
     cell: (row) => (
       <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm">
         {row?.tenant?.name || "Global"}
@@ -145,7 +145,7 @@ const columns = [
 
   {
     name: "Status",
-    center: true,
+    // center: true,
     cell: (row) => {
       const isActive = Boolean(row.status);
 

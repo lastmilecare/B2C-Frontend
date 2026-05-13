@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import { useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   UsersIcon,
@@ -9,6 +9,8 @@ import {
   ClipboardDocumentIcon,
   ArrowPathIcon,
   CheckCircleIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 
 import {
@@ -19,7 +21,7 @@ import {
 
 import { Input, Select, Button } from "../components/UIComponents";
 import { healthAlert } from "../utils/healthSwal";
-
+import * as Yup from "yup";
 
 const STEPS = [
   { id: 1, label: "Staff Details", icon: ClipboardDocumentIcon },
@@ -28,10 +30,14 @@ const STEPS = [
 ];
 
 const StaffForm = () => {
+
   const [activeStep, setActiveStep] = useState(1);
   const [editUser, setEditUser] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const location = useLocation();
+  const navigate = useNavigate();
   const { tenantId } = useSelector((state) => state.auth);
 
   const { data: rolesData } = useGetAllRoleComboQuery();
@@ -46,7 +52,37 @@ const StaffForm = () => {
       setEditUser(location.state.editData);
     }
   }, [location.state]);
+  const validationSchema = Yup.object({
+    name: Yup.string()
+      .trim()
+      .required("Name is required"),
 
+    email: Yup.string()
+      .email("Invalid email")
+      .required("Email is required"),
+
+    phone: Yup.string()
+      .matches(
+        /^[0-9]{10}$/,
+        "Mobile number must be 10 digits"
+      )
+      .required("Mobile is required"),
+
+    password: !editUser
+      ? Yup.string().required("Password is required")
+      : Yup.string(),
+
+    confirmPassword: !editUser
+      ? Yup.string()
+        .oneOf(
+          [Yup.ref("password")],
+          "Passwords do not match"
+        )
+        .required("Confirm Password is required")
+      : Yup.string(),
+
+    b2cRoleId: Yup.string().required("Role is required"),
+  });
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -59,29 +95,9 @@ const StaffForm = () => {
       confirmPassword: "",
       b2cRoleId: editUser?.b2c_role_id || "",
     },
+    validationSchema,
 
-    validate: (values) => {
-      const errors = {};
 
-      if (activeStep === 1) {
-        if (!values.name) errors.name = "Name required";
-        if (!values.email) errors.email = "Email required";
-        if (!values.phone) errors.phone = "Mobile required";
-
-        if (!editUser) {
-          if (!values.password) errors.password = "Password required";
-          if (values.password !== values.confirmPassword) {
-            errors.confirmPassword = "Passwords do not match";
-          }
-        }
-      }
-
-      if (activeStep === 2) {
-        if (!values.b2cRoleId) errors.b2cRoleId = "Role required";
-      }
-
-      return errors;
-    },
 
     onSubmit: async (values) => {
       try {
@@ -107,10 +123,13 @@ const StaffForm = () => {
         }
 
         healthAlert({
+          title: "Success",
           icon: "success",
-          title: editUser ? "Updated" : "Created",
+          text: editUser ?
+            "Staff Updated Successfully"
+            : "Staff Created Successfully",
         });
-
+        navigate("/staff-list");
         formik.resetForm();
         setActiveStep(1);
         setEditUser(null);
@@ -187,8 +206,8 @@ const StaffForm = () => {
                 key={step.id}
                 disabled
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold ${activeStep === step.id
-                    ? "text-sky-600 border-b-2 border-sky-600"
-                    : "text-gray-400"
+                  ? "text-sky-600 border-b-2 border-sky-600"
+                  : "text-gray-400"
                   }`}
               >
                 <step.icon className="w-4 h-4" />
@@ -213,8 +232,18 @@ const StaffForm = () => {
                 <Input
                   label="Mobile"
                   required
+                  maxLength={10}
+                  value={formik.values.phone}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+
+                    if (value.length <= 10) {
+                      formik.setFieldValue("phone", value);
+                    }
+                  }}
+                  onBlur={formik.handleBlur}
+                  name="phone"
                   error={formik.touched.phone && formik.errors.phone}
-                  {...formik.getFieldProps("phone")}
                 />
                 <Input
                   label="Email"
@@ -226,23 +255,53 @@ const StaffForm = () => {
 
                 {!editUser && (
                   <>
-                    <Input
-                      type="password"
-                      label="Password"
-                      required
-                      error={formik.touched.password && formik.errors.password}
-                      {...formik.getFieldProps("password")}
-                    />
-                    <Input
-                      type="password"
-                      label="Confirm Password"
-                      required
-                      error={
-                        formik.touched.confirmPassword &&
-                        formik.errors.confirmPassword
-                      }
-                      {...formik.getFieldProps("confirmPassword")}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        label="Password"
+                        required
+                        error={formik.touched.password && formik.errors.password}
+                        {...formik.getFieldProps("password")}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-9 text-gray-500"
+                      >
+                        {showPassword ? (
+                          <EyeSlashIcon className="w-5 h-5" />
+                        ) : (
+                          <EyeIcon className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        label="Confirm Password"
+                        required
+                        error={
+                          formik.touched.confirmPassword &&
+                          formik.errors.confirmPassword
+                        }
+                        {...formik.getFieldProps("confirmPassword")}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="absolute right-3 top-9 text-gray-500"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeSlashIcon className="w-5 h-5" />
+                        ) : (
+                          <EyeIcon className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                   </>
                 )}
               </div>
@@ -261,7 +320,10 @@ const StaffForm = () => {
                     <Select
                       label="Role"
                       required
-                     
+                      error={
+                        formik.touched.b2cRoleId &&
+                        formik.errors.b2cRoleId
+                      }
                       {...formik.getFieldProps("b2cRoleId")}
                     >
                       <option value="">Select Role</option>
@@ -271,12 +333,6 @@ const StaffForm = () => {
                         </option>
                       ))}
                     </Select>
-
-                    {formik.touched.b2cRoleId && formik.errors.b2cRoleId && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {formik.errors.b2cRoleId}
-                      </p>
-                    )}
                   </div>
 
 
@@ -312,20 +368,30 @@ const StaffForm = () => {
                 </h3>
 
                 <p><b>Name:</b> {formik.values.name}</p>
+
+                <p><b>Username:</b> {formik.values.username || "-"}</p>
+
+                <p><b>Employee No:</b> {formik.values.employeeNo || "-"}</p>
+
                 <p><b>Email:</b> {formik.values.email}</p>
+
                 <p><b>Mobile:</b> {formik.values.phone}</p>
-                <p><b>Role:</b> {
-                  roles.find(
-                    (r) =>
-                      String(r.id) ===
-                      String(formik.values.b2cRoleId)
-                  )?.name
-                }</p>
+
+                <p>
+                  <b>Role:</b>{" "}
+                  {
+                    roles.find(
+                      (r) =>
+                        String(r.id) ===
+                        String(formik.values.b2cRoleId)
+                    )?.name || "-"
+                  }
+                </p>
               </div>
             )}
 
 
-            <div className="flex justify-between items-center pt-6 border-t border-gray-100">
+            <div className="flex justify-between items-center pt-6 border-t border-black flex-wrap gap-3">
 
 
               <div className="flex gap-3">
@@ -338,7 +404,27 @@ const StaffForm = () => {
                 <Button
                   type="button"
                   variant="gray"
-                  onClick={formik.handleReset}
+                  onClick={() => {
+
+
+                    if (activeStep === 1) {
+                      formik.setValues({
+                        ...formik.values,
+                        name: "",
+                        username: "",
+                        email: "",
+                        phone: "",
+                        employeeNo: "",
+                        password: "",
+                        confirmPassword: "",
+                      });
+                    }
+
+
+                    if (activeStep === 2) {
+                      formik.setFieldValue("b2cRoleId", "");
+                    }
+                  }}
                 >
                   <ArrowPathIcon className="w-5 h-5 inline mr-1" />
                   Reset
@@ -358,8 +444,9 @@ const StaffForm = () => {
                     onClick={formik.handleSubmit}
                     disabled={isCreating || isUpdating}
                   >
-                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-                    {isCreating || isUpdating ? "Saving..." : "Save Staff"}
+                     <CheckCircleIcon className="w-5 h-5 inline mr-1" /> 
+                    { editUser
+                    ? "Update " : "Save "}
                   </Button>
                 )}
               </div>

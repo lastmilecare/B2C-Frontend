@@ -176,7 +176,7 @@ const Resources = () => {
                             )}
 
                            
-                            <div className="flex justify-between pt-8 border-t border-slate-50">
+                           <div className="flex justify-between items-center mt-8 pt-6 border-t border-black flex-wrap gap-3">
                                 <div className="flex gap-3">
                                     {activeStep > 1 && (
                                         <Button
@@ -208,8 +208,8 @@ const Resources = () => {
                                         variant="sky"
                                         onClick={formik.handleSubmit}
                                     >
-                                        <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-                                        Save Resource
+                                        {/* <CheckCircleIcon className="w-5 h-5 inline mr-1" /> */}
+                                        Save 
                                     </Button>
                                 )}
                             </div>

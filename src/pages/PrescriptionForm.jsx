@@ -502,7 +502,7 @@ const PrescriptionFormCopy = () => {
             <span className="bg-blue-100 p-2 rounded-xl">
               <ClipboardDocumentIcon className="w-6 text-blue-600" />
             </span>
-            Prescription
+            {id ? "Edit Prescription" : "Prescription"}
           </h1>
 
           <div className="flex gap-2">

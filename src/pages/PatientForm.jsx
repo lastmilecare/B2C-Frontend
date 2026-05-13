@@ -100,21 +100,21 @@ const PatientRegistrationCopy = () => {
       return;
     }
     if (
-  activeStep === 3 &&
-  (
-   
-    errors.idProof_name ||
-    errors.idProof_number
-  )
-) {
-  formik.setTouched({
-    
-    idProof_name: true,
-    idProof_number: true,
-  });
+      activeStep === 3 &&
+      (
 
-  return;
-}
+        errors.idProof_name ||
+        errors.idProof_number
+      )
+    ) {
+      formik.setTouched({
+
+        idProof_name: true,
+        idProof_number: true,
+      });
+
+      return;
+    }
 
     setActiveStep((prev) => prev + 1);
   };
@@ -683,10 +683,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     <Input
                       label="Health Card Number"
                       value={formik.values.healthCardNumber}
-                      onChange={(e) => {
-                        const cleaned = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
-                        formik.setFieldValue("healthCardNumber", cleaned);
-                      }}
+                      onChange={formik.handleChange}
+                      name="healthCardNumber"
                     />
                     <Input
                       {...formik.getFieldProps("localAddress")}
@@ -777,9 +775,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       label="Identification Type"
                       required
                       error={
-    formik.touched.idProof_name &&
-    formik.errors.idProof_name
-  }
+                        formik.touched.idProof_name &&
+                        formik.errors.idProof_name
+                      }
                     >
                       <option value="">Select</option>
                       {IDENTIFICATION_TYPES.map((b) => (
@@ -790,19 +788,17 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     </Select>
 
                     {formik.values.idProof_name && (
-                      <Input
-                        label="Identification Number"
-                        required
-                        value={formik.values.idProof_number}
-                        onChange={(e) => {
-                          const cleaned = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
-                          formik.setFieldValue("idProof_number", cleaned);
-                        }}
-                        error={
-                          formik.touched.idProof_number &&
-                          formik.errors.idProof_number
-                        }
-                      />
+                     <Input
+  label="Identification Number"
+  required
+  value={formik.values.idProof_number}
+  onChange={formik.handleChange}
+  name="idProof_number"
+  error={
+    formik.touched.idProof_number &&
+    formik.errors.idProof_number
+  }
+/>
                     )}
                   </div>
                 </section>

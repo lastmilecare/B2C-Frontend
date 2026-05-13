@@ -110,6 +110,7 @@ const OpdFormCopy = () => {
   const [suggestionsList, setSuggestionsList] = useState([]);
   const { data: doctors, isLoading: doctorsComboLoading } =
     useGetComboQuery("doctor");
+    
   const { data: department, isLoading: departmentComboLoading } =
     useGetComboQuery("department");
   const { data: collectedBy, isLoading: collectedComboLoading } =
@@ -557,7 +558,7 @@ const payObj = Picaso_Paymode_Options.find(
             </span>
 
 
-            {"OPD Billing"}
+            {editData ? "Edit OPD Billing" : "OPD Billing"}
           </h1>
 
           <div className="flex gap-2">

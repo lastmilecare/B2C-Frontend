@@ -28,15 +28,15 @@ const StaffList = () => {
 
   const [filters, setFilters] = useState({});
 
-  const debouncedName = useDebounce(tempFilters.name, 400);
-  const debouncedEmail = useDebounce(tempFilters.email, 400);
+  const debouncedName = useDebounce(filters.name, 400);
+const debouncedEmail = useDebounce(filters.email, 400);
 
   const { data, isLoading, isFetching } = useGetUsersQuery({
     page,
     limit,
     name: debouncedName,
     email: debouncedEmail,
-    status: tempFilters.status || undefined,
+    status: filters.status || undefined,
   });
 
   const [deleteStaff] = useDeleteUserMutation();
@@ -117,10 +117,11 @@ const StaffList = () => {
     }
   };
 
-  const handleEdit = (row) => {
-    navigate("/staff-form", { state: { editData: row } });
-  };
-
+ const handleEdit = (row) => {
+  navigate(`/staff-form/${row.id}`, {
+    state: { editData: row },
+  });
+};
 
 
   const columns = [
