@@ -19,7 +19,7 @@ import {
 
 import { Input, Select, Button } from "../components/UIComponents";
 import { healthAlert } from "../utils/healthSwal";
-
+import { useNavigate } from "react-router-dom";
 
 const STEPS = [
   { id: 1, label: "Staff Details", icon: ClipboardDocumentIcon },
@@ -39,7 +39,7 @@ const StaffForm = () => {
   const [updateStaff, { isLoading: isUpdating }] = useUpdateUserMutation();
 
   const roles = rolesData?.data || [];
-
+const navigate = useNavigate();
 
   useEffect(() => {
     if (location.state?.editData) {
@@ -108,12 +108,13 @@ const StaffForm = () => {
 
         healthAlert({
           icon: "success",
-          title: editUser ? "Updated" : "Created",
+          title: editUser ? "Staff Updated successfully." : "Staff Created successfully.",
         });
 
         formik.resetForm();
         setActiveStep(1);
         setEditUser(null);
+        navigate("/staff-list");
 
       } catch (err) {
         healthAlert({

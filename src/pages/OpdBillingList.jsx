@@ -162,6 +162,7 @@ const OpdBillingListCopy = () => {
   const handleExport = async () => {
     try {
       const blob = await exportExcel(filters).unwrap();
+
       const fileName = generateFileName("OpdBillingDetail", {
         dateFrom: filters?.date_from,
         dateTo: filters?.date_to,
@@ -170,9 +171,22 @@ const OpdBillingListCopy = () => {
 
       downloadBlob(blob, fileName);
     } catch (error) {
+      const status = error?.status;
+      const message = error?.data?.message || "Something went wrong";
+
+      // No data case
+      if (status === 404) {
+        return healthAlert({
+          title: "No Data Found",
+          text: message,
+          icon: "info",
+        });
+      }
+
+      // Real error
       healthAlert({
-        title: "OPD Error",
-        text: error?.data?.message || "Something went wrong",
+        title: "Export Error",
+        text: message,
         icon: "error",
       });
     }
