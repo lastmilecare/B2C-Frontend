@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import { useSelector } from "react-redux";
+
 import { useLocation, useNavigate } from "react-router-dom";
 
 import {
@@ -21,7 +22,9 @@ import {
 
 import { Input, Select, Button } from "../components/UIComponents";
 import { healthAlert } from "../utils/healthSwal";
+
 import * as Yup from "yup";
+
 
 const STEPS = [
   { id: 1, label: "Staff Details", icon: ClipboardDocumentIcon },
@@ -97,7 +100,7 @@ const StaffForm = () => {
     },
     validationSchema,
 
-
+    
 
     onSubmit: async (values) => {
       try {
@@ -125,10 +128,12 @@ const StaffForm = () => {
         healthAlert({
           title: "Success",
           icon: "success",
+          
           text: editUser ?
             "Staff Updated Successfully"
             : "Staff Created Successfully",
         });
+
         navigate("/staff-list");
         formik.resetForm();
         setActiveStep(1);
@@ -206,6 +211,7 @@ const StaffForm = () => {
                 key={step.id}
                 disabled
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold ${activeStep === step.id
+                   
                   ? "text-sky-600 border-b-2 border-sky-600"
                   : "text-gray-400"
                   }`}
@@ -244,6 +250,7 @@ const StaffForm = () => {
                   onBlur={formik.handleBlur}
                   name="phone"
                   error={formik.touched.phone && formik.errors.phone}
+                  {...formik.getFieldProps("phone")}
                 />
                 <Input
                   label="Email"
@@ -255,6 +262,7 @@ const StaffForm = () => {
 
                 {!editUser && (
                   <>
+                   
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
@@ -320,6 +328,7 @@ const StaffForm = () => {
                     <Select
                       label="Role"
                       required
+                     
                       error={
                         formik.touched.b2cRoleId &&
                         formik.errors.b2cRoleId
@@ -333,6 +342,8 @@ const StaffForm = () => {
                         </option>
                       ))}
                     </Select>
+
+                   
                   </div>
 
 
@@ -376,6 +387,7 @@ const StaffForm = () => {
                 <p><b>Email:</b> {formik.values.email}</p>
 
                 <p><b>Mobile:</b> {formik.values.phone}</p>
+              
 
                 <p>
                   <b>Role:</b>{" "}
@@ -391,6 +403,7 @@ const StaffForm = () => {
             )}
 
 
+           
             <div className="flex justify-between items-center pt-6 border-t border-black flex-wrap gap-3">
 
 
@@ -404,6 +417,7 @@ const StaffForm = () => {
                 <Button
                   type="button"
                   variant="gray"
+                 
                   onClick={() => {
 
 
@@ -444,6 +458,7 @@ const StaffForm = () => {
                     onClick={formik.handleSubmit}
                     disabled={isCreating || isUpdating}
                   >
+                    
                      <CheckCircleIcon className="w-5 h-5 inline mr-1" /> 
                     { editUser
                     ? "Update " : "Save "}

@@ -137,6 +137,10 @@ const TenantList = () => {
       selector: (row) => row.name,
     },
     {
+      name: "Type",
+      selector: (row) => row.tenant_type,
+    },
+    {
       name: "Created At",
       selector: (row) => new Date(row.created_at).toISOString().split("T")[0],
     },
