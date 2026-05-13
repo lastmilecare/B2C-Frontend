@@ -31,13 +31,30 @@ const Roles = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef();
 
-  const filteredPermissions =
-    userRole === "LMC_ADMIN"
-      ? permissions
-      : permissions.filter(
-          (p) => p.resource !== "tenant" && p.resource !== "role",
-        );
+  const filteredPermissions = permissions.filter((p) => {
+    if (p.description?.toLowerCase() === "admin") {
+      return false;
+    }
+    if (
+      userRole !== "LMC_ADMIN" &&
+      (p.resource === "tenant" || p.resource === "role")
+    ) {
+      return false;
+    }
 
+    return true;
+  });
+  const groupedPermissions = filteredPermissions.reduce((acc, permission) => {
+    const group = permission.description?.toLowerCase() || "other";
+
+    if (!acc[group]) {
+      acc[group] = [];
+    }
+
+    acc[group].push(permission);
+
+    return acc;
+  }, {});
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -84,7 +101,6 @@ const Roles = () => {
         });
         formik.resetForm();
         setActiveStep(1);
-        
       } catch (error) {
         healthAlert({
           title: "Error",
@@ -217,7 +233,10 @@ const Roles = () => {
                       <Input
                         label="Description"
                         {...formik.getFieldProps("description")}
-                        error={formik.touched.description && formik.errors.description}
+                        error={
+                          formik.touched.description &&
+                          formik.errors.description
+                        }
                         placeholder="What can this role do?"
                         required
                       />
@@ -258,39 +277,164 @@ const Roles = () => {
                       />
 
                       {showDropdown && (
-                        <div className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-auto z-50 shadow-lg">
-                          {filteredPermissionList.length > 0 ? (
-                            filteredPermissionList.map((p) => {
-                              const id = Number(p.id);
+                        // <div className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-auto z-50 shadow-lg">
+                        //   {filteredPermissionList.length > 0 ? (
+                        //     filteredPermissionList.map((p) => {
+                        //       const id = Number(p.id);
+
+                        //       return (
+                        //         <div
+                        //           key={p.id}
+                        //           // onMouseDown={() => {
+                        //           //   if (
+                        //           //     !formik.values.permissionIds.includes(id)
+                        //           //   ) {
+                        //           //     formik.setFieldValue("permissionIds", [
+                        //           //       ...formik.values.permissionIds,
+                        //           //       id,
+                        //           //     ]);
+                        //           //   }
+
+                        //           //   setShowDropdown(false);
+                        //           //   setPermissionSearch("");
+                        //           // }}
+                        //           onMouseDown={() => {
+                        //             const currentIds =
+                        //               formik.values.permissionIds;
+
+                        //             const updatedIds = currentIds.includes(id)
+                        //               ? currentIds.filter((pid) => pid !== id)
+                        //               : [...currentIds, id];
+
+                        //             formik.setFieldValue(
+                        //               "permissionIds",
+                        //               updatedIds,
+                        //             );
+                        //           }}
+                        //           className="px-3 py-2 text-sm hover:bg-sky-50 cursor-pointer"
+                        //         >
+                        //           {p.action.toUpperCase()} :{" "}
+                        //           {p.resource.replace("_", " ")}
+                        //           {p.description
+                        //             ? ` (${p.description})`
+                        //             : ""}{" "}
+                        //         </div>
+                        //       );
+                        //     })
+                        //   ) : (
+                        //     <div className="p-3 text-xs text-gray-400">
+                        //       No permissions found
+                        //     </div>
+                        //   )}
+                        // </div>
+                        <div className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-80 overflow-auto z-50 shadow-lg">
+                          {Object.entries(groupedPermissions).map(
+                            ([group, perms]) => {
+                              const groupPermissions = perms.filter((p) =>
+                                `${p.action} ${p.resource}`
+                                  .toLowerCase()
+                                  .includes(permissionSearch.toLowerCase()),
+                              );
+
+                              if (groupPermissions.length === 0) return null;
+
+                              const groupIds = groupPermissions.map((p) =>
+                                Number(p.id),
+                              );
+
+                              const isAllSelected = groupIds.every((id) =>
+                                formik.values.permissionIds.includes(id),
+                              );
 
                               return (
                                 <div
-                                  key={p.id}
-                                  onMouseDown={() => {
-                                    if (
-                                      !formik.values.permissionIds.includes(id)
-                                    ) {
-                                      formik.setFieldValue("permissionIds", [
-                                        ...formik.values.permissionIds,
-                                        id,
-                                      ]);
-                                    }
-
-                                    setShowDropdown(false);
-                                    setPermissionSearch("");
-                                  }}
-                                  className="px-3 py-2 text-sm hover:bg-sky-50 cursor-pointer"
+                                  key={group}
+                                  className="border-b border-gray-100 last:border-0"
                                 >
-                                  {p.action.toUpperCase()} :{" "}
-                                  {p.resource.replace("_", " ")}
-                                  {p.description ? ` (${p.description})` : ""}{" "}
+                                  {/* Group Header */}
+                                  <div className="sticky top-0 bg-slate-50 px-3 py-2 flex justify-between items-center border-b">
+                                    <span className="text-xs font-bold uppercase text-slate-600">
+                                      {group}
+                                    </span>
+
+                                    <button
+                                      type="button"
+                                      className="text-xs text-sky-600 font-semibold hover:underline"
+                                      onMouseDown={(e) => {
+                                        e.preventDefault();
+
+                                        let updatedIds;
+
+                                        if (isAllSelected) {
+                                          updatedIds =
+                                            formik.values.permissionIds.filter(
+                                              (id) => !groupIds.includes(id),
+                                            );
+                                        } else {
+                                          updatedIds = [
+                                            ...new Set([
+                                              ...formik.values.permissionIds,
+                                              ...groupIds,
+                                            ]),
+                                          ];
+                                        }
+
+                                        formik.setFieldValue(
+                                          "permissionIds",
+                                          updatedIds,
+                                        );
+                                      }}
+                                    >
+                                      {isAllSelected
+                                        ? "Remove All"
+                                        : "Select All"}
+                                    </button>
+                                  </div>
+
+                                  {/* Permissions */}
+                                  {groupPermissions.map((p) => {
+                                    const id = Number(p.id);
+
+                                    const isSelected =
+                                      formik.values.permissionIds.includes(id);
+
+                                    return (
+                                      <div
+                                        key={p.id}
+                                        onMouseDown={() => {
+                                          const currentIds =
+                                            formik.values.permissionIds;
+
+                                          const updatedIds = isSelected
+                                            ? currentIds.filter(
+                                                (pid) => pid !== id,
+                                              )
+                                            : [...currentIds, id];
+
+                                          formik.setFieldValue(
+                                            "permissionIds",
+                                            updatedIds,
+                                          );
+                                        }}
+                                        className={`px-3 py-2 text-sm cursor-pointer flex justify-between items-center transition
+                ${isSelected ? "bg-sky-100 text-sky-700" : "hover:bg-sky-50"}`}
+                                      >
+                                        <span>
+                                          {p.action.toUpperCase()} :{" "}
+                                          {p.resource.replaceAll("_", " ")}
+                                        </span>
+
+                                        {isSelected && (
+                                          <span className="text-sky-600 font-bold">
+                                            ✓
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               );
-                            })
-                          ) : (
-                            <div className="p-3 text-xs text-gray-400">
-                              No permissions found
-                            </div>
+                            },
                           )}
                         </div>
                       )}
@@ -309,7 +453,10 @@ const Roles = () => {
                             key={id}
                             className="flex items-center gap-2 bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs border border-sky-200"
                           >
-                            {perm.action}:{perm.resource}{perm.description ? ` (${perm.description})` : ""}{" "}
+                            {perm.action}:{perm.resource}
+                            {perm.description
+                              ? ` (${perm.description})`
+                              : ""}{" "}
                             <span
                               onClick={() => {
                                 formik.setFieldValue(
