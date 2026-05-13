@@ -184,14 +184,14 @@ const FilterBar = ({
         )}
 
         {onPrint && (
-          <button
-            onClick={onPrint}
-            className="inline-flex items-center gap-1 bg-slate-600 text-white px-3 py-1 rounded hover:bg-slate-700 text-xs"
-          >
-            <ArrowDownTrayIcon className="w-4 h-4" />
-            Print
-          </button>
-        )}
+  <button
+    onClick={onPrint}
+    className="inline-flex items-center gap-1 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs"
+  >
+    <ArrowDownTrayIcon className="w-4 h-4" />
+    Print
+  </button>
+)}
       </div>
     </div>
   );

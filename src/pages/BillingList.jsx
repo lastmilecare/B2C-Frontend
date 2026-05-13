@@ -16,6 +16,10 @@ import { healthAlert } from "../utils/healthSwal";
 import PharmaBillPrint from "./PharmaBillPrint";
 import { useReactToPrint } from "react-to-print";
 import Avatar from "../components/common/Avatar";
+import {
+  formatDate,
+  formatTime,
+} from "../utils/helper";
 const username = cookie.get("username");
 
 const BillingListCopy = () => {
@@ -273,16 +277,23 @@ const BillingListCopy = () => {
         parseCurrency(row.DueAmount || 0),
       width: "80px",
     },
-    {
-      name: "Date",
-      width: "110px",
-      center: true,
-      cell: (row) => (
-        <span className="text-gray-500 text-sm">
-          {new Date(row.AddedDate).toISOString().split("T")[0]}
-        </span>
-      ),
-    },
+   
+      {
+                      name: "Added On",
+                    
+                      cell: (row) => (
+                        <div className="flex flex-col text-xs">
+                          <span className="font-medium text-slate-700">
+                           {formatDate(row.AddedDate)}
+                          </span>
+                
+                          <span className="text-slate-400">
+                           {formatTime(row.AddedDate)}
+                          </span>
+                        </div>
+                      ),
+                    },
+    
     {
       name: "id",
       selector: (row) => row.ID,

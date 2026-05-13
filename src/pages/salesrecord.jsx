@@ -13,7 +13,10 @@ import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
 import Avatar from "../components/common/Avatar";
 import { parseCurrency } from "../utils/helper";  
-
+import {
+  formatDate,
+  formatTime,
+} from "../utils/helper";
 const username = cookie.get("username");
 
 const SalesRecordCopy = () => {
@@ -246,11 +249,23 @@ const SalesRecordCopy = () => {
         </span>
       ),
     },
-    {
-      name: "Bill Date",
-      selector: (row) => new Date(row.AddedDate).toLocaleDateString(),
-      width: "120px",
-    },
+    
+     {
+                          name: "Bill Date",
+                          width: "120px",
+                          cell: (row) => (
+                            <div className="flex flex-col text-xs">
+                              <span className="font-medium text-slate-700">
+                               {formatDate(row.AddedDate)}
+                              </span>
+                    
+                              <span className="text-slate-400">
+                               {formatTime(row.AddedDate)}
+                              </span>
+                            </div>
+                          ),
+                        },
+        
   ];
   const handlePrint = () => {
     const today = new Date().toLocaleDateString();
