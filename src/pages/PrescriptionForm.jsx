@@ -387,7 +387,7 @@ const PrescriptionFormCopy = () => {
         medicine: item.item,
         type: item.typeOfMedicine,
         dosage: item.dosage,
-        instructions: "",
+         instructions: item.remarks || "",
         preferredTime: item.pillsConsumption,
         duration: item.duration,
       }))
@@ -905,12 +905,13 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 </div>
                 <div className="mt-3">
                   <Button
-                    type="button"
-                    onClick={handleAddPrescription}
-                    className="bg-emerald-600 text-white hover:bg-emerald-700 h-10  w-30 "
-                  >
-                    Add Medicine
-                  </Button>
+  type="button"
+  onClick={handleAddPrescription}
+  className="mt-4 flex items-center gap-1"
+>
+  <PlusIcon className="w-4 h-4" />
+  Add Medicine
+</Button>
                 </div>
 
                 {prescriptionList.length > 0 && (
@@ -929,6 +930,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                             <th className="px-4 py-3 text-left">Medicine</th>
                             <th className="px-4 py-3 text-left">Type</th>
                             <th className="px-4 py-3 text-left">Dosage</th>
+                            <th className="px-4 py-3 text-left">Instructions</th>
                             <th className="px-4 py-3 text-left">Time</th>
                             <th className="px-4 py-3 text-left">Days</th>
                             <th className="px-4 py-3 text-center">Delete</th>
@@ -947,6 +949,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                               </td>
                               <td className="px-4 py-3">{item.type}</td>
                               <td className="px-4 py-3">{item.dosage}</td>
+                              <td className="px-4 py-3">
+  {item.instructions || "-"}
+</td>
                               <td className="px-4 py-3">
                                 {item.preferredTime || "-"}
                               </td>
