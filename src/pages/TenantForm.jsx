@@ -11,10 +11,10 @@ import { Input, Button } from "../components/UIComponents";
 import { Tenant_Type_Options } from "../utils/constants";
 import { Select } from "../components/FormControls";
 import * as Yup from "yup";
-
+import { useNavigate } from "react-router-dom";
 const TenantForm = ({ refetchList }) => {
   const [createTenant, { isLoading }] = useCreateTenantMutation();
-
+  const navigate = useNavigate();
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -36,6 +36,7 @@ const TenantForm = ({ refetchList }) => {
 
         resetForm();
         refetchList?.();
+        navigate("/tenant-list");
       } catch (err) {
         healthAlert({
           title: "Error",
@@ -59,14 +60,22 @@ const TenantForm = ({ refetchList }) => {
             label="Tenant Name"
             required
             {...formik.getFieldProps("name")}
-             error={formik.touched.name && formik.errors.name ? formik.errors.name : null}
+            error={
+              formik.touched.name && formik.errors.name
+                ? formik.errors.name
+                : null
+            }
           />
 
           <Select
             {...formik.getFieldProps("tenant_type")}
             label="Tenant Type"
             required
-            error={formik.touched.tenant_type && formik.errors.tenant_type ? formik.errors.tenant_type : null}
+            error={
+              formik.touched.tenant_type && formik.errors.tenant_type
+                ? formik.errors.tenant_type
+                : null
+            }
           >
             <option value="">Select</option>
             {Tenant_Type_Options.map((b) => (

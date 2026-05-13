@@ -12,7 +12,6 @@ const Login = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [searchType, setSearchType] = useState("email");
-  const tenantType = cookie.get("tenantType") || null;
   const navigate = useNavigate();
   const [login] = useLoginMutation();
   const dispatch = useDispatch();
@@ -23,6 +22,7 @@ const Login = () => {
       dispatch(setCredentials(data));
       // navigate("/");
       const role = data?.data?.role;
+      const tenantType = data?.data?.tenantType;
       if (role === "LMC_ADMIN") {
         navigate("/dashboard");
       } else if (tenantType === "ohc") {

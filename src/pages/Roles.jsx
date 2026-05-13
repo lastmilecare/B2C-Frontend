@@ -84,6 +84,7 @@ const Roles = () => {
         });
         formik.resetForm();
         setActiveStep(1);
+        
       } catch (error) {
         healthAlert({
           title: "Error",

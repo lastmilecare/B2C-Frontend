@@ -15,6 +15,8 @@ const TenantList = () => {
   const [limit, setLimit] = useState(10);
   const [tempFilters, setTempFilters] = useState({
     name: "",
+    startDate: "",
+    endDate: "",
   });
   const [filters, setFilters] = useState({});
   const {
@@ -37,8 +39,16 @@ const TenantList = () => {
   const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
   const filtersConfig = [
     { label: "Name", name: "name", type: "text" },
-    { label: "Date from ", name: "startDate", type: "date" },
-    { label: "Date to", name: "endDate", type: "date" },
+    {
+      label: "Date From",
+      name: "startDate",
+      type: "date",
+    },
+    {
+      label: "Date To",
+      name: "endDate",
+      type: "date",
+    },
   ];
   const handleResetFilters = () => {
     setTempFilters({
@@ -154,6 +164,12 @@ const TenantList = () => {
         tempFilters={tempFilters}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
+        onChange={(e) =>
+          setTempFilters({
+            ...tempFilters,
+            [e.target.name]: e.target.value,
+          })
+        }
       />
       <CommonList
         data={tenants}

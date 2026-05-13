@@ -91,8 +91,8 @@ export const GENDER_OPTIONS = [
 export const Tenant_Type_Options = [
   { label: "Ohc", value: "ohc" },
   { label: "Company", value: "company" },
-  { label: "Hospital", value: "hospital" },
-  { label: "Corporate", value: "corporate" },
+  // { label: "Hospital", value: "hospital" },
+  // { label: "Corporate", value: "corporate" },
 ];
 
 export const Referral_Options = [

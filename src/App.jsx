@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "./components/Updates/AppLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { ROUTES } from "./config/routes.config";
+import Unauthorized from "./pages/Unauthorized";
 
 // ── Public pages ─────────────────────────────────────────────────────────────
 import Login from "./pages/Login";
@@ -13,11 +14,12 @@ import AppLoader from "./AppLoader";
 function App() {
   return (
     <BrowserRouter>
-    <AppLoader />
+      <AppLoader />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/print-opd-form" element={<PrintOpdForm />} />
-       {ROUTES.map(({ path, component: Component, permission }) => (
+        <Route path="/403" element={<Unauthorized />} />
+        {ROUTES.map(({ path, component: Component, permission }) => (
           <Route
             key={path}
             path={path}
