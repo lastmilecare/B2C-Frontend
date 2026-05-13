@@ -204,20 +204,15 @@ const OpdFormCopy = () => {
       const docObj = doctors.find(
         (d) => (d.name || d.doctor_name) === editData.doctor_name,
       );
-      const payObj = Picaso_Paymode_Options.find((p) => {
+     const mode = editData.payment_mode
+  ?.toString()
+  .toLowerCase()
+  .trim();
 
-        const mode = editData.payment_mode
-          ?.toLowerCase()
-          .trim();
-
-        return (
-          (mode === "cash" && p.id === "1") ||
-          (mode === "credit card" && p.id === "2") ||
-          (mode === "cash/online payment" && p.id === "3") ||
-          (mode === "upi" && p.id === "4") ||
-          (mode === "cost free" && p.id === "5")
-        );
-      });
+const payObj = Picaso_Paymode_Options.find(
+  (p) =>
+    p.name?.toLowerCase().trim() === mode
+);
 
       formik.setValues({
         ...formik.initialValues,
@@ -616,32 +611,32 @@ const OpdFormCopy = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="relative">
-                      <label className="text-sm text-gray-600 block mb-1">
-                        UHID <span className="text-red-500">*</span>
-                      </label>
 
-                      <input
-                        type="text"
+
+                      <Input
+                        label="UHID"
                         required
-                        className={`${baseInput} ${editData ? "bg-sky-50 cursor-not-allowed" : ""}`}
+                        type="text"
                         placeholder="Search UHID (e.g., LMC-123)"
                         value={uhidSearch || formik.values.UHID}
                         readOnly={!!editData}
+                        className={editData ? "bg-sky-50 cursor-not-allowed" : ""}
+                        onBlur={() => formik.setFieldTouched("UHID", true)}
                         onChange={(e) => {
                           const val = e.target.value.toUpperCase();
+
                           setUhidSearch(val);
                           setSelectedUhid("");
+
                           formik.setFieldValue("UHID", "");
                           setSuggestionsList([]);
+
                           populatedUhidRef.current = "";
                         }}
+                        error={formik.touched.UHID && formik.errors.UHID}
                         autoComplete="off"
                       />
-                      {formik.touched.UHID && formik.errors.UHID && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formik.errors.UHID}
-                        </p>
-                      )}
+
 
                       {suggestionsList.length > 0 && uhidSearch.length >= 2 && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">

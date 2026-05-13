@@ -109,7 +109,11 @@ const ItemMaster = () => {
               value={formik.values.itemCode}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              className="border rounded-lg px-3 py-2 w-full"
+              className={`border rounded-lg px-3 py-2 w-full outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-500 ${
+  formik.touched.itemCode && formik.errors.itemCode
+    ? "border-red-500"
+    : "border-slate-300"
+}`}
             />
             {formik.touched.itemCode && formik.errors.itemCode && (
               <p className="text-xs text-red-500">
@@ -126,7 +130,11 @@ const ItemMaster = () => {
               value={formik.values.description}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              className="border rounded-lg px-3 py-2 w-full"
+              className={`border rounded-lg px-3 py-2 w-full outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-500 ${
+  formik.touched.itemCode && formik.errors.itemCode
+    ? "border-red-500"
+    : "border-slate-300"
+}`}
             />
             {formik.touched.description &&
               formik.errors.description && (
@@ -135,25 +143,40 @@ const ItemMaster = () => {
                 </p>
               )}
           </div>
-          <div>
-            <label className="text-sm text-gray-600">
-              Item Type <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="itemtypeid"
-              value={formik.values.itemtypeid}
-              onChange={formik.handleChange}
-              className="border rounded-lg px-3 py-2 w-full"
-            >
-              <option value="">-- Select --</option>
-              {medicineTypes?.map((type) => (
-                <option key={type.ID} value={type.ID}>
-                  {type.Descriptions}
-                </option>
-              ))}
-            </select>
-            {formik.touched.itemtypeid && formik.errors.itemtypeid}
-          </div>
+         <div>
+  <label className="text-sm text-gray-600">
+    Item Type <span className="text-red-500">*</span>
+  </label>
+
+  <select
+    name="itemtypeid"
+    value={formik.values.itemtypeid}
+    onChange={formik.handleChange}
+    onBlur={formik.handleBlur}
+    className={`border rounded-lg px-3 py-2 w-full outline-none 
+    focus:ring-2 focus:ring-sky-200 focus:border-sky-500 ${
+      formik.touched.itemtypeid &&
+      formik.errors.itemtypeid
+        ? "border-red-500"
+        : "border-slate-300"
+    }`}
+  >
+    <option value="">-- Select --</option>
+
+    {medicineTypes?.map((type) => (
+      <option key={type.ID} value={type.ID}>
+        {type.Descriptions}
+      </option>
+    ))}
+  </select>
+
+  {formik.touched.itemtypeid &&
+    formik.errors.itemtypeid && (
+      <p className="text-xs text-red-500 mt-1">
+        {formik.errors.itemtypeid}
+      </p>
+  )}
+</div>
           <div className="flex items-end gap-2">
             <button
               type="submit"

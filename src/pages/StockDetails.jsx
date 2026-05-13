@@ -13,50 +13,46 @@ import { useNavigate } from "react-router-dom";
 import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
 import { parseCurrency } from "../utils/helper";
+import {
+  formatDate,
+  formatTime,
+} from "../utils/helper";
 const username = cookie.get("username");
 const StockDetailsCopy = () => {
   const [deleteitemid] = useDeleteitemMutation();
-  const handleDelete = async (row) => {
-    const id = row?.ID;
+ const handleDelete = async (row) => {
+  const id = row?.ID;
 
-    if (!id) {
-      healthAlert({
-        title: "Error",
-        text: "ID number not found for this record.",
-        icon: "error",
-      });
-      return;
-    }
+  if (!id) {
+    healthAlert({
+      title: "Error",
+      text: "ID number not found for this record.",
+      icon: "error",
+    });
+
+    return;
+  }
+
+  try {
+    await deleteitemid(id).unwrap();
 
     healthAlert({
-      title: "Are you sure?",
-      text: `You are about to delete item id: ${id}. This action cannot be undone!`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await deleteitemid(id).unwrap();
-
-          healthAlert({
-            title: "Deleted!",
-            text: "Stock record deleted successfully.",
-            icon: "success",
-          });
-        } catch (error) {
-          healthAlert({
-            title: "Delete Error",
-            text:
-              error?.data?.message || "Something went wrong while deleting.",
-            icon: "error",
-          });
-        }
-      }
+      title: "Deleted!",
+      text: "Stock record deleted successfully.",
+      icon: "success",
     });
-  };
+
+  } catch (error) {
+
+    healthAlert({
+      title: "Delete Error",
+      text:
+        error?.data?.message ||
+        "Something went wrong while deleting.",
+      icon: "error",
+    });
+  }
+};
   const [ItemSearch, ItemNameSearch] = useState("");
   const debouncedItemSearch = useDebounce(ItemSearch, 500);
   const { data: suggestions = [] } = useGetMediceneListQuery(
@@ -317,11 +313,22 @@ const StockDetailsCopy = () => {
         );
       },
     },
+    
     {
-      name: "Date",
-      selector: (row) => new Date(row.AddedDate).toISOString().split("T")[0],
-      width: "120px",
-    },
+                  name: "Added On",
+                 width: "140px",
+                  cell: (row) => (
+                    <div className="flex flex-col text-xs">
+                      <span className="font-medium text-slate-700">
+                       {formatDate(row.AddedDate)}
+                      </span>
+            
+                      <span className="text-slate-400">
+                       {formatTime(row.AddedDate)}
+                      </span>
+                    </div>
+                  ),
+                },
 
     {
       name: "ID",

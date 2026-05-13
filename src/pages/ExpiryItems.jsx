@@ -9,8 +9,8 @@ import {
   ClockIcon,
   ArchiveBoxXMarkIcon,
 } from "@heroicons/react/24/outline";
-import {parseCurrency} from "../utils/helper";
-
+import {parseCurrency, formatDate } from "../utils/helper";
+;
 const username = cookie.get("username");
 
 const ExpiryItemsCopy = () => {
@@ -78,7 +78,7 @@ const ExpiryItemsCopy = () => {
           <span
             className={`px-2 py-1 rounded-md text-xs font-semibold ${badge}`}
           >
-            {expiry.toISOString().split("T")[0]}
+            {formatDate(row.ExpiryDate)}
           </span>
         );
       },
@@ -104,7 +104,7 @@ const ExpiryItemsCopy = () => {
         <td>${row.ItemName || "N/A"}</td>
         <td>${parseCurrency(row.CPU).toFixed(2)}</td>
         <td>${parseCurrency(row.MRPU).toFixed(2)}</td>
-        <td>${new Date(row.ExpiryDate).toLocaleDateString()}</td>
+        <td>${formatDate(row.ExpiryDate)}</td>
       </tr>
     `
     ).join("");
@@ -208,6 +208,7 @@ const ExpiryItemsCopy = () => {
         title="Medicine Expire Stock List"
         onPrint={handlePrint}
         showSearch={false}
+        
       />
 
       
