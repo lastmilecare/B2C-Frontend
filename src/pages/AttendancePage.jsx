@@ -35,7 +35,7 @@ import { generateFileName, downloadBlob } from "../utils/helper";
 
 const AttendancePage = () => {
   const role = cookie.get("role") || "USER";
-  const username = cookie.get("username") || "Pooja Jaiswal";
+  const username = cookie.get("name") || "user";
   const [checkIn] = useCheckInMutation();
   const [checkOut] = useCheckOutMutation();
   const { data: User, isLoading: SupplierLoading } =
@@ -552,7 +552,7 @@ const AttendancePage = () => {
         <div className="absolute -left-10 -top-10 h-40 w-40 bg-sky-500/20 rounded-full blur-[80px] group-hover:bg-sky-500/30 transition-all duration-1000"></div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <StatCard title="Monthly Work Target" value={detailStats.workingDays} />
+        <StatCard title="Total Days" value={detailStats.workingDays} />
         <StatCard
           title="I'm Present"
           value={detailStats.present}

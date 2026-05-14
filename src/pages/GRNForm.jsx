@@ -633,7 +633,7 @@ HSNID: v.HSNID,
             <span className="bg-blue-100 p-2 rounded-xl">
               <ClipboardDocumentIcon className="w-6 text-blue-600" />
             </span>
-            Goods Received Note
+          {isEditMode ? "Edit Goods Received Note" : "Goods Received Note"}
           </h1>
 
           <div className="flex gap-2">

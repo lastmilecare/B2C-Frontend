@@ -48,7 +48,7 @@ const AppDashboard = () => {
   ).length;
 
   const recentPatients = patients.slice(0, 5);
-  const username = cookie.get("username") || "User";
+  const username = cookie.get("name") || "User";
  const lowStockItems = lowStockData?.data || [];
  const [page, setPage] = useState(1);
 const itemsPerPage = 5;

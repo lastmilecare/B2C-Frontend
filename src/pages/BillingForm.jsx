@@ -56,7 +56,7 @@ const BillingFormCopy = ({ refetchList }) => {
         return;
       }
     }
-    if (activeStep === 4 && errors.payMode) {
+    if (activeStep === 3 && errors.payMode) {
       formik.setTouched({
         payMode: true,
       });
@@ -526,7 +526,7 @@ if (!formik.values.medicine || !formik.values.quantity) {
               <span className="bg-blue-100 p-2 rounded-xl">
                 <CreditCardIcon className="w-6 text-blue-600" />
               </span>
-              Medicine Billing
+            {id ? "Edit Medicine Billing" : "Medicine Billing"}
             </h1>
 
             <div className="flex gap-2">
@@ -1004,7 +1004,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         readOnly
                       />
                       <Select
-                        label="Pay Mode *"
+                        label="Pay Mode"
                         required
                         error={formik.touched.payMode && formik.errors.payMode}
                         {...formik.getFieldProps("payMode")}

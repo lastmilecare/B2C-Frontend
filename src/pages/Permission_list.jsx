@@ -88,7 +88,9 @@ const PermissionList = () => {
   const filtersConfig = [
     {
       label: "Action",
+      center: true,
       name: "action",
+      
       type: "select",
       options: ACTIONS.map((a) => ({ label: a.toUpperCase(), value: a })),
     },

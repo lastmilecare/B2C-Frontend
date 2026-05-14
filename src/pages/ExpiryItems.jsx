@@ -50,15 +50,22 @@ const ExpiryItemsCopy = () => {
       selector: (row, i) => (page - 1) * limit + i + 1,
       width: "80px",
     },
-    { name: "Batch No", selector: (row) => row.BatchNo, width: "150px" },
-    { name: "Supplier", selector: (row) => row.SupplierName, width: "300px" },
+    { name: "Batch No",
+      center: true,
+      selector: (row) => row.BatchNo, width: "150px" },
+    { name: "Supplier",
+      center: true,
+      selector: (row) => row.SupplierName, width: "300px" },
     { name: "Receipt No", selector: (row) => row.RecieptNo, width: "150px" },
-    { name: "Item Name", selector: (row) => row.ItemName, width: "200px" },
+    { name: "Item Name",
+      center: true,
+      selector: (row) => row.ItemName, width: "200px" },
     { name: "CPU (₹)", selector: (row) => parseCurrency(row.CPU), width: "120px" },
     { name: "MRPU (₹)", selector: (row) => parseCurrency(row.MRPU), width: "120px" },
 
     {
       name: "Expiry",
+      center: true,
       selector: (row) => {
         const expiry = new Date(row.ExpiryDate);
         const diffDays = Math.ceil(
@@ -75,11 +82,13 @@ const ExpiryItemsCopy = () => {
         }
 
         return (
-          <span
-            className={`px-2 py-1 rounded-md text-xs font-semibold ${badge}`}
-          >
+          <div className="flex justify-center items-center">
+  <span
+    className={`px-2 py-1 rounded-md text-xs font-semibold text-center min-w-[90px] ${badge}`}
+  >
             {formatDate(row.ExpiryDate)}
-          </span>
+           </span>
+</div>
         );
       },
       width: "150px",
