@@ -165,7 +165,8 @@ const PrescriptionListCopy = () => {
     },
     {
       name: "Patient",
-      minWidth: "250px",
+      center: true,
+      minWidth: "50px",
 
       cell: (row) => (
         <div className="flex items-center gap-3">
@@ -189,6 +190,7 @@ const PrescriptionListCopy = () => {
     },
     {
       name: "Age",
+      center: true,
       cell: (row) => (
         <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
           {`${row.age ? `${row.age} yrs` : "N/A"}`}
@@ -197,6 +199,7 @@ const PrescriptionListCopy = () => {
     },
     {
       name: "Gender",
+      center: true,
       cell: (row) => {
         const gender = row.gender?.toLowerCase();
 
@@ -219,6 +222,7 @@ const PrescriptionListCopy = () => {
     },
     {
       name: "Phone",
+      center: true,
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNo, "-"),
 
@@ -227,7 +231,7 @@ const PrescriptionListCopy = () => {
     
       {
               name: "Added On",
-        
+              center: true,
               cell: (row) => (
                 <div className="flex flex-col text-xs">
                   <span className="font-medium text-slate-700">
@@ -242,6 +246,7 @@ const PrescriptionListCopy = () => {
             },
     {
       name: "Status",
+      center: true,
       cell: (row) => {
         const active = row.isActive;
 
@@ -272,7 +277,7 @@ const PrescriptionListCopy = () => {
   const handleDelete = async (row) => {
     try {
       await toggleStatus(row.ID).unwrap();
-      healthAlerts.warning("Prescription Inactive successfully");
+      healthAlerts.warning("Prescription Deleted Successfully");
     } catch (error) {
       healthAlert({
         title: "Prescription Error",

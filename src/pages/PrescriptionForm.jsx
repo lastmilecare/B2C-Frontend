@@ -8,6 +8,7 @@ import {
   CreditCardIcon,
   DocumentCheckIcon,
   BeakerIcon,
+  CheckCircleIcon
 } from "@heroicons/react/24/outline";
 import DiseaseSelect from "../components/DiseaseSelect";
 import useDebounce from "../hooks/useDebounce";
@@ -335,11 +336,11 @@ const PrescriptionFormCopy = () => {
       try {
         if (id) {
           await updatePrescription({ id, ...payload }).unwrap();
-          healthAlerts.success("Prescription updated successfully");
+          healthAlerts.success("Prescription Updated Successfully");
           navigate(`/prescription-list`);
         } else {
           await createPrescription(payload).unwrap();
-          healthAlerts.success("Prescription saved successfully");
+          healthAlerts.success("Prescription Saved Successfully");
           navigate(`/prescription-list`);
         }
       } catch (error) {
@@ -1224,6 +1225,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       setPrescriptionList([]);
 
                       populatedUhidRef.current = "";
+                      setActiveStep(1);
                     }
                   }}
                 >
@@ -1262,7 +1264,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
               ) : (
                 <div className="flex gap-2">
                   <Button type="submit" variant="sky" disabled={isLoading}>
-                    {isLoading ? "Saving..." : id ? "Update" : "Save"}
+                     <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+                    { id ? "Update" : "Save"}
                   </Button>
                 </div>
               )}

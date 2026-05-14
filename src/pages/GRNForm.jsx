@@ -828,6 +828,7 @@ HSNID: v.HSNID,
                   <Input
                     type="date"
                     label="Mfg Date"
+                    max={new Date().toISOString().split("T")[0]}
                     required
                     error={
                       formik.touched.MenufacturingDate &&

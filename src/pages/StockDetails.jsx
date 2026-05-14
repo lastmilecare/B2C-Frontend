@@ -38,7 +38,7 @@ const StockDetailsCopy = () => {
 
     healthAlert({
       title: "Deleted!",
-      text: "Stock record deleted successfully.",
+      text: "Stock Record Deleted Successfully.",
       icon: "success",
     });
 
@@ -296,6 +296,7 @@ const StockDetailsCopy = () => {
     },
     {
       name: "Expiry",
+      center:true,
       width: "120px",
       cell: (row) => {
         const expiry = new Date(row.ExpiryDate);
@@ -316,6 +317,7 @@ const StockDetailsCopy = () => {
     
     {
                   name: "Added On",
+                  center: true,
                  width: "140px",
                   cell: (row) => (
                     <div className="flex flex-col text-xs">

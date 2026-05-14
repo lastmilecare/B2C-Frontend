@@ -127,6 +127,7 @@ const debouncedEmail = useDebounce(filters.email, 400);
   const columns = [
     {
       name: "Staff",
+      center: true,
       cell: (row) => (
         <div className="flex items-center gap-3">
           <Avatar name={row.name} />
@@ -141,11 +142,13 @@ const debouncedEmail = useDebounce(filters.email, 400);
 
     {
       name: "Mobile",
+      center: true,
       selector: (row) => row.phone || "-",
     },
 
     {
       name: "Role",
+      center: true,
       cell: (row) => (
         <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded text-xs font-medium">
           {row.roleb2c?.name || "-"}
@@ -155,6 +158,7 @@ const debouncedEmail = useDebounce(filters.email, 400);
 
     {
       name: "Status",
+      center: true,
       cell: (row) => (
         <button
           onClick={() => handleToggle(row)}

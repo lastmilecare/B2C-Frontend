@@ -28,7 +28,7 @@ const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
-  tagTypes: ["Bill", "Inventory", "Patient"],
+  tagTypes: ["Bill", "Inventory", "Patient", "Prescription"],
   endpoints: (build) => ({
     login: build.mutation({
       query: (body) => ({
@@ -391,6 +391,7 @@ export const api = createApi({
         data: response.data || [],
         pagination: response.pagination || {},
       }),
+       providesTags: ["Prescription"],
     }),
     createPrescription: build.mutation({
       query: (PrescriptionData) => ({
@@ -412,7 +413,7 @@ export const api = createApi({
         method: "PATCH",
         data: {},
       }),
-      invalidatesTags: ["PrescriptionDetail"],
+      invalidatesTags: ["Prescription"],
     }),
     exportOpdExcel: build.query({
       query: (filters = {}) => ({

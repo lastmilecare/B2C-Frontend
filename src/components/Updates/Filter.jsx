@@ -79,7 +79,7 @@ rounded-xl border border-sky-100 shadow-sm p-4 mb-5"
                   onFocus={() => setActiveField(filter.name)}
                   placeholder={filter.placeholder || `Enter ${filter.label}`}
                   className={`w-full border border-gray-300 px-3 py-2 rounded-md text-xs
-focus:ring-2 focus:ring-sky-400 focus:border-sky-400
+outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
 bg-white shadow-sm transition
 ${filter.name === "external_id" ? "uppercase" : ""}`}
                 />
@@ -142,8 +142,8 @@ ${filter.name === "external_id" ? "uppercase" : ""}`}
                 name={filter.name}
                 value={tempFilters[filter.name] || ""}
                 onChange={onChange}
-                className="w-full border border-gray-300 bg-white shadow-sm border-gray-200 px-3 py-2 rounded-md text-xs
-                focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                className="w-full border border-sky-200 bg-white shadow-sm px-3 py-2 rounded-md text-xs
+outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
               >
                 <option value="">Select</option>
 
@@ -166,8 +166,8 @@ ${filter.name === "external_id" ? "uppercase" : ""}`}
                     ? today
                     : tempFilters.endDate || today
                 }
-                className="w-full border border-gray-300 bg-white shadow-sm px-3 py-2 rounded-md text-xs
-                focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                className="w-full border border-sky-200 bg-white shadow-sm px-3 py-2 rounded-md text-xs
+                outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
               />
             )}
           </div>

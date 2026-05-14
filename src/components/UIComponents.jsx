@@ -32,6 +32,7 @@ export const NumericInput = (props) => (
     {...props}
     type="number"
     inputMode="numeric"
+    min={0}
     onKeyDown={(e) => {
       if (["e", "E", "+", "-"].includes(e.key)) e.preventDefault();
     }}
