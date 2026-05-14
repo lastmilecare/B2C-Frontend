@@ -842,9 +842,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       <p>
                         <b>C/O:</b> {formik.values.CO || "-"}
                       </p>
-                      <p>
+                      {/* <p>
                         <b>Local Address:</b> {formik.values.localAddress}
-                      </p>
+                      </p> */}
 
                       <p>
                         <b>Relationship:</b> {formik.values.relationship || "-"}

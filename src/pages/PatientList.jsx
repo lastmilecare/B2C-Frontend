@@ -10,10 +10,7 @@ import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
 import Avatar from "../components/common/Avatar";
 import { useNavigate } from "react-router-dom";
-import {
-  formatDate,
-  formatTime,
-} from "../utils/helper";
+import { formatDate, formatTime } from "../utils/helper";
 
 const PatientListCopy = () => {
   const navigate = useNavigate();
@@ -230,11 +227,18 @@ const PatientListCopy = () => {
 
     {
       name: "Age",
-      cell: (row) => (
-        <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-          {`${row.age ? `${row.age} yrs` : "N/A"}`}
-        </span>
-      ),
+      cell: (row) => {
+        const hasAge =
+          row.iage != null || row.imonth != null || row.idays != null;
+
+        return (
+          <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+            {hasAge
+              ? `${row.iage || 0} y ${row.imonth || 0} m ${row.idays || 0} d`
+              : "N/A"}
+          </span>
+        );
+      },
     },
 
     {
@@ -263,21 +267,19 @@ const PatientListCopy = () => {
       name: "Referred By",
       selector: (row) => row.ReferredBy || "N/A",
     },
-     {
-          name: "Added On",
-    
-          cell: (row) => (
-            <div className="flex flex-col text-xs">
-              <span className="font-medium text-slate-700">
-               {formatDate(row.createdAt)}
-              </span>
-    
-              <span className="text-slate-400">
-               {formatTime(row.createdAt)}
-              </span>
-            </div>
-          ),
-        },
+    {
+      name: "Added On",
+
+      cell: (row) => (
+        <div className="flex flex-col text-xs">
+          <span className="font-medium text-slate-700">
+            {formatDate(row.createdAt)}
+          </span>
+
+          <span className="text-slate-400">{formatTime(row.createdAt)}</span>
+        </div>
+      ),
+    },
   ];
 
   return (
