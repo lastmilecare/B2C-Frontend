@@ -17,9 +17,11 @@ import {
 import { healthAlert } from "../utils/healthSwal";
 import { Input, Select, Button } from "../components/FormControls";
 import { cookie } from "../utils/cookie";
+import { useNavigate } from "react-router-dom";
 
 const Roles = () => {
   const [activeStep, setActiveStep] = useState(1);
+  const navigate = useNavigate();
   const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
   const { data: tenantData } = useGetAllTenantsQuery();
   const { data: permissionsData } = useGetAllPermissionsComboQuery();
@@ -99,6 +101,10 @@ const Roles = () => {
           text: "Role created successfully",
           icon: "success",
         });
+
+        navigate("/roles", {
+  state: { goToList: true },
+});
         formik.resetForm();
         setActiveStep(1);
       } catch (error) {
@@ -168,9 +174,8 @@ const Roles = () => {
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${
-                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                }`}
+                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                  }`}
               />
             ))}
           </div>
@@ -188,11 +193,10 @@ const Roles = () => {
                 key={step.id}
                 type="button"
                 disabled
-                className={`flex-1 py-4 flex items-center justify-center gap-2 transition-colors ${
-                  activeStep === step.id
-                    ? "bg-white text-sky-600 font-bold"
-                    : "text-gray-400"
-                }`}
+                className={`flex-1 py-4 flex items-center justify-center gap-2 transition-colors ${activeStep === step.id
+                  ? "bg-white text-sky-600 font-bold"
+                  : "text-gray-400"
+                  }`}
               >
                 <step.icon className="w-5 h-5" />
                 {step.label}
@@ -269,11 +273,10 @@ const Roles = () => {
                         onFocus={() => setShowDropdown(true)}
                         className={`w-full p-3 border-2 rounded-2xl bg-slate-50 transition-all 
           focus:ring-4 focus:ring-sky-100 outline-none text-sm
-          ${
-            formik.touched.permissionIds && formik.errors.permissionIds
-              ? "border-red-300"
-              : "border-slate-100 focus:border-sky-400"
-          }`}
+          ${formik.touched.permissionIds && formik.errors.permissionIds
+                            ? "border-red-300"
+                            : "border-slate-100 focus:border-sky-400"
+                          }`}
                       />
 
                       {showDropdown && (
@@ -351,7 +354,7 @@ const Roles = () => {
                                   key={group}
                                   className="border-b border-gray-100 last:border-0"
                                 >
-                                  {/* Group Header */}
+
                                   <div className="sticky top-0 bg-slate-50 px-3 py-2 flex justify-between items-center border-b">
                                     <span className="text-xs font-bold uppercase text-slate-600">
                                       {group}
@@ -391,7 +394,7 @@ const Roles = () => {
                                     </button>
                                   </div>
 
-                                  {/* Permissions */}
+
                                   {groupPermissions.map((p) => {
                                     const id = Number(p.id);
 
@@ -407,8 +410,8 @@ const Roles = () => {
 
                                           const updatedIds = isSelected
                                             ? currentIds.filter(
-                                                (pid) => pid !== id,
-                                              )
+                                              (pid) => pid !== id,
+                                            )
                                             : [...currentIds, id];
 
                                           formik.setFieldValue(
@@ -539,7 +542,7 @@ const Roles = () => {
                 </section>
               )}
 
-              <div className="flex justify-between pt-8 border-t border-slate-50">
+              <div className="flex justify-between items-center pt-6 border-t border-black flex-wrap gap-3">
                 <div className="flex gap-3">
                   {activeStep > 1 && (
                     <Button type="button" variant="gray" onClick={prevStep}>
@@ -550,8 +553,29 @@ const Roles = () => {
                     type="button"
                     variant="gray"
                     onClick={() => {
-                      formik.resetForm();
-                      setActiveStep(1);
+
+
+                      if (activeStep === 1) {
+                        formik.setValues({
+                          ...formik.values,
+                          name: "",
+                          tenantId: "",
+                          description: "",
+                        });
+                      }
+
+
+                      if (activeStep === 2) {
+                        formik.setFieldValue("permissionIds", []);
+                        setPermissionSearch("");
+                      }
+
+
+                      if (activeStep === 3) {
+                        formik.resetForm();
+                        setActiveStep(1);
+                        setPermissionSearch("");
+                      }
                     }}
                   >
                     <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset

@@ -12,11 +12,14 @@ import {
   useCreatePermissionMutation,
   useGetAllResourceComboQuery,
 } from "../redux/apiSlice";
+
+import { useNavigate } from "react-router-dom";
 import { healthAlert } from "../utils/healthSwal";
 import { Select, Button } from "../components/FormControls";
 
 const Permission = () => {
   const [activeStep, setActiveStep] = useState(1);
+  const navigate = useNavigate();
   const [createPermission, { isLoading: isCreating }] =
     useCreatePermissionMutation();
   const { data: ResourceData } = useGetAllResourceComboQuery();
@@ -39,6 +42,9 @@ const Permission = () => {
           title: "Success",
           text: "Permission created successfully",
           icon: "success",
+        });
+        navigate("/permissions", {
+          state: { goToList: true },
         });
         formik.resetForm();
         setActiveStep(1);
@@ -185,7 +191,7 @@ const Permission = () => {
                 </section>
               )}
 
-              <div className="flex justify-between pt-8 border-t border-slate-50">
+              <div className="flex justify-between items-center pt-6 border-t border-black flex-wrap gap-3">
                 <div className="flex gap-3">
                   {activeStep > 1 && (
                     <Button
@@ -199,7 +205,19 @@ const Permission = () => {
                   <Button
                     type="button"
                     variant="gray"
-                    onClick={() => formik.resetForm()}
+                    onClick={() => {
+                      if (activeStep === 1) {
+                        formik.setValues({
+                          ...formik.values,
+                          action: "",
+                          resource: "",
+                        });
+                      }
+                      if (activeStep === 2) {
+                        formik.resetForm();
+                        setActiveStep(1);
+                      }
+                    }}
                   >
                     <ArrowPathIcon className="w-5 h-5 inline mr-1" /> Reset
                   </Button>
@@ -216,8 +234,8 @@ const Permission = () => {
                     onClick={formik.handleSubmit}
                     disabled={isCreating}
                   >
-                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-                    {isCreating ? "Saving..." : "Save Permission"}
+                    {/* <CheckCircleIcon className="w-5 h-5 inline mr-1" /> */}
+                    Save 
                   </Button>
                 )}
               </div>

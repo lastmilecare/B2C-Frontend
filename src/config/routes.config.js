@@ -115,6 +115,12 @@ export const ROUTES = [
     showInSidebar: false,
   },
   {
+  path: "/staff-form/:id",
+  component: StaffForm,
+  permission: "create:staff_form",
+  showInSidebar: false,
+},
+  {
     path: "/attendance",
     component: AttendancePage,
     permission: "read:attendance",

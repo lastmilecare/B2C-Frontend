@@ -12,6 +12,10 @@ import {
 } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 import CommonList from "../components/CommonList";
+import {
+  formatDate,
+  formatTime,
+} from "../utils/helper";
 const ItemMaster = () => {
   const [activateItem] = useActivateItemMutation();
   const [inactivateItem] = useInactivateItemMutation();
@@ -227,11 +231,21 @@ const ItemMaster = () => {
                   name: "Item Type",
                   selector: (row) => row.itemType?.Descriptions,
                 },
+               
                 {
-                  name: "Added Date",
-                  selector: (row) =>
-                    new Date(row.addeddate).toLocaleDateString(),
-                },
+                    name: "Added Date",
+                    cell: (row) => (
+                      <div className="flex flex-col text-xs">
+                        <span className="font-medium text-slate-800">
+                          {formatDate(row.addeddate)}
+                        </span>
+                
+                        <span className="text-slate-400">
+                          {formatTime(row.addeddate)}
+                        </span>
+                      </div>
+                    ),
+                  },
                 {
                   name: "Status",
                   selector: (row) =>
