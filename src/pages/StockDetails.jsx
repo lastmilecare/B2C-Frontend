@@ -229,7 +229,7 @@ const StockDetailsCopy = () => {
       right: true,
       cell: (row) => (
         <span className="font-semibold text-green-600">
-          Rs.{parseCurrency(row.CP)}
+          {parseCurrency(row.CP)}
         </span>
       ),
     },
