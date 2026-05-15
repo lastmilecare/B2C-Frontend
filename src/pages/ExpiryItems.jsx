@@ -10,7 +10,9 @@ import {
   ArchiveBoxXMarkIcon,
 } from "@heroicons/react/24/outline";
 import {parseCurrency, formatDate } from "../utils/helper";
-;
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
 const username = cookie.get("username");
 
 const ExpiryItemsCopy = () => {
@@ -60,8 +62,8 @@ const ExpiryItemsCopy = () => {
     { name: "Item Name",
       center: true,
       selector: (row) => row.ItemName, width: "200px" },
-    { name: "CPU (₹)", selector: (row) => parseCurrency(row.CPU), width: "120px" },
-    { name: "MRPU (₹)", selector: (row) => parseCurrency(row.MRPU), width: "120px" },
+    { name: "CPU (Rs.)", selector: (row) => parseCurrency(row.CPU), width: "120px" },
+    { name: "MRPU (Rs.)", selector: (row) => parseCurrency(row.MRPU), width: "120px" },
 
     {
       name: "Expiry",
@@ -96,7 +98,67 @@ const ExpiryItemsCopy = () => {
         new Date(a.ExpiryDate) - new Date(b.ExpiryDate),
     },
   ];
+const handleDownloadPdf = () => {
+  const todayDate = new Date().toLocaleDateString();
+  const loginUser = username || "Admin";
 
+  const doc = new jsPDF("landscape");
+
+  doc.setFontSize(16);
+  doc.text("Expired Medicines List", 14, 15);
+
+  const tableColumn = [
+    "S.No",
+    "Batch",
+    "Supplier",
+    "Receipt",
+    "Item Name",
+    "CPU (Rs.)",
+    "MRPU (Rs.)",
+    "Expiry",
+  ];
+
+  const tableRows = Stock.map((row, index) => [
+    index + 1,
+    row.BatchNo || "",
+    row.SupplierName || "N/A",
+    row.RecieptNo || "N/A",
+    row.ItemName || "N/A",
+    Number(parseCurrency(row.CPU || 0)).toFixed(2),
+    Number(parseCurrency(row.MRPU || 0)).toFixed(2),
+    formatDate(row.ExpiryDate),
+  ]);
+
+  autoTable(doc, {
+    head: [tableColumn],
+    body: tableRows,
+    startY: 25,
+    styles: {
+      fontSize: 8,
+      cellPadding: 2,
+    },
+    headStyles: {
+      fillColor: [220, 220, 220],
+      textColor: 0,
+      fontStyle: "bold",
+    },
+    theme: "grid",
+    margin: {
+      left: 5,
+      right: 5,
+    },
+  });
+
+  const finalY = doc.lastAutoTable.finalY || 30;
+
+  doc.setFontSize(10);
+
+  doc.text("Powered by Last Mile Care", 14, finalY + 10);
+  doc.text(`Prepared By: ${loginUser}`, 120, finalY + 10);
+  doc.text(`Date: ${todayDate}`, 240, finalY + 10);
+
+  doc.save(`Expired_Medicines_${Date.now()}.pdf`);
+};
   const handlePrint = () => {
     const todayDate = new Date().toLocaleDateString();
     const loginUser = username || "Admin";
@@ -171,8 +233,8 @@ const ExpiryItemsCopy = () => {
     <th>Supplier</th>
     <th>Receipt</th>
     <th>Item Name</th>
-    <th>CPU (₹)</th>
-    <th>MRPU (₹)</th>
+    <th>CPU (Rs.)</th>
+    <th>MRPU (Rs.)</th>
     <th>Expiry</th>
     </tr>
     </thead>
@@ -215,7 +277,7 @@ const ExpiryItemsCopy = () => {
 
       <FilterBar
         title="Medicine Expire Stock List"
-        onPrint={handlePrint}
+        onExport={handleDownloadPdf}
         showSearch={false}
         
       />

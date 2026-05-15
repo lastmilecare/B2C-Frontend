@@ -211,7 +211,7 @@ const OpdBillingListCopy = () => {
     setUhidSearch("");
   };
   const formatCurrency = (value) => {
-    if (value === null || value === undefined || value === "") return `₹0.00`;
+    if (value === null || value === undefined || value === "") return `Rs.0.00`;
     let v = value;
     if (typeof value === "object" && value !== null) {
       if ("amount" in value) v = value.amount;
@@ -222,8 +222,8 @@ const OpdBillingListCopy = () => {
       v = v.replace(/,/g, "");
     }
     const n = Number(v);
-    if (!Number.isFinite(n)) return `₹0.00`;
-    return `₹${n.toFixed(0)}`;
+    if (!Number.isFinite(n)) return `Rs.0.00`;
+    return `Rs.${n.toFixed(0)}`;
   };
   const safeString = (v, fallback = "-") =>
     v === null || v === undefined || v === "" ? fallback : String(v);

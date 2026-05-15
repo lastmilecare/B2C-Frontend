@@ -204,13 +204,13 @@ ${filter.name === "external_id" ? "uppercase" : ""}`}
         )}
 
         {onPrint && (
-  <button
-    onClick={onPrint}
-    className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow-sm transition"
-  >
-    Print
-  </button>
-)}
+          <button
+            onClick={onPrint}
+            className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow-sm transition"
+          >
+            Print
+          </button>
+        )}
       </div>
     </div>
   );

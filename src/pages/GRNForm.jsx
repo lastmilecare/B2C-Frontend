@@ -1015,13 +1015,13 @@ HSNID: v.HSNID,
                               {item.RecvQty}
                             </td>
                             <td className="border px-2 py-2 text-right">
-                              ₹ {item.totalCp.toFixed(2)}
+                              Rs. {item.totalCp.toFixed(2)}
                             </td>
                             <td className="border px-2 py-2 text-right">
-                              ₹ {item.totalGst.toFixed(2)}
+                              Rs. {item.totalGst.toFixed(2)}
                             </td>
                             <td className="border px-2 py-2 text-right font-semibold">
-                              ₹ {item.total.toFixed(2)}
+                              Rs. {item.total.toFixed(2)}
                             </td>
                           </tr>
                         ))}
@@ -1060,11 +1060,11 @@ HSNID: v.HSNID,
                             </th>
 
                             <th className="px-4 py-3 text-right whitespace-nowrap">
-                              CP (₹)
+                              CP (Rs.)
                             </th>
 
                             <th className="px-4 py-3 text-right whitespace-nowrap">
-                              MRP (₹)
+                              MRP (Rs.)
                             </th>
 
                             <th className="px-4 py-3 text-right whitespace-nowrap">
@@ -1084,11 +1084,11 @@ HSNID: v.HSNID,
                             </th>
 
                             <th className="px-4 py-3 text-right whitespace-nowrap">
-                              CGST Amt (₹)
+                              CGST Amt (Rs.)
                             </th>
 
                             <th className="px-4 py-3 text-right whitespace-nowrap">
-                              SGST Amt (₹)
+                              SGST Amt (Rs.)
                             </th>
 
                             <th className="px-4 py-3 text-center whitespace-nowrap">
@@ -1225,13 +1225,13 @@ HSNID: v.HSNID,
                             <td colSpan={2}></td>
 
                             <td className="px-4 py-4 text-right">
-                              ₹ {totals.gst.toFixed(2)}
+                              Rs. {totals.gst.toFixed(2)}
                             </td>
 
                             <td colSpan={5}></td>
 
                             <td className="px-4 py-4 text-right">
-                              ₹ {totals.discount.toFixed(2)}
+                              Rs. {totals.discount.toFixed(2)}
                             </td>
 
                             <td></td>
@@ -1321,11 +1321,11 @@ HSNID: v.HSNID,
                               </td>
 
                               <td className="px-3 py-2 text-right">
-                                ₹ {Number(item.totalGst || 0).toFixed(2)}
+                                Rs. {Number(item.totalGst || 0).toFixed(2)}
                               </td>
 
                               <td className="px-3 py-2 text-right font-semibold text-green-700">
-                                ₹ {Number(item.total || 0).toFixed(2)}
+                                Rs. {Number(item.total || 0).toFixed(2)}
                               </td>
                             </tr>
                           ))}
@@ -1345,19 +1345,19 @@ HSNID: v.HSNID,
                     </p>
 
                     <p>
-                      <b>Total CP:</b> ₹ {totals.totalCp.toFixed(2)}
+                      <b>Total CP:</b> Rs. {totals.totalCp.toFixed(2)}
                     </p>
 
                     <p>
-                      <b>Discount:</b> ₹ {totals.discount.toFixed(2)}
+                      <b>Discount:</b> Rs. {totals.discount.toFixed(2)}
                     </p>
 
                     <p>
-                      <b>GST:</b> ₹ {totals.gst.toFixed(2)}
+                      <b>GST:</b> Rs. {totals.gst.toFixed(2)}
                     </p>
 
                     <p className="text-base font-bold text-green-700">
-                      <b>Grand Total:</b> ₹ {totals.grand.toFixed(2)}
+                      <b>Grand Total:</b> Rs. {totals.grand.toFixed(2)}
                     </p>
                   </div>
                 </div>

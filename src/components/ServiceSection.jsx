@@ -104,7 +104,7 @@ const ServiceSection = ({
                     onClick={() => handleAddService(service)}
                     className="px-3 py-2 cursor-pointer hover:bg-sky-100"
                   >
-                    {service.name} — ₹{service.price}
+                    {service.name} — Rs.{service.price}
                   </li>
                 ))
               ) : (
@@ -144,8 +144,8 @@ const ServiceSection = ({
                     <td className="p-2 text-center">{service.type}</td>
                     <td className="p-2 text-left">{service.name}</td>
                     <td className="p-2 text-center">{service.quantity}</td>
-                    <td className="p-2 text-center">₹{service.price}</td>
-                    <td className="p-2 text-center">₹{service.price * service.quantity}</td>
+                    <td className="p-2 text-center">Rs.{service.price}</td>
+                    <td className="p-2 text-center">Rs.{service.price * service.quantity}</td>
                     <td className="p-2 text-center">
                       <TrashIcon
                         className="h-5 w-5 text-red-500 cursor-pointer hover:text-red-700 "
