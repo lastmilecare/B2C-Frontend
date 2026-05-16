@@ -6,7 +6,9 @@ import {
   useGetComboQuery,
   useGetMediceneListQuery,
   useGetPatientNameFromSalesQuery,
+
 } from "../redux/apiSlice";
+import { skipToken } from "@reduxjs/toolkit/query";
 import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { cookie } from "../utils/cookie";
@@ -14,9 +16,13 @@ import { healthAlert } from "../utils/healthSwal";
 import PharmaBillPrint from "./PharmaBillPrint";
 import { useReactToPrint } from "react-to-print";
 import Avatar from "../components/common/Avatar";
+import {
+  formatDate,
+  formatTime,
+} from "../utils/helper";
 const username = cookie.get("username");
 
-const CampBillingList = () => {
+const CampBillingListCopy = () => {
   const navigate = useNavigate();
   const [searchTerms, setSearchTerms] = useState({
     descriptions: "",
@@ -25,7 +31,7 @@ const CampBillingList = () => {
   const debouncedMedicine = useDebounce(searchTerms.descriptions, 500);
   const debouncedPatient = useDebounce(searchTerms.CustommerName, 500);
   const { data: medicineSuggestions = [] } = useGetMediceneListQuery(
-    debouncedMedicine,
+     { searchTerm: debouncedMedicine || skipToken },
     { skip: debouncedMedicine.length < 2 },
   );
   const [printRow, setPrintRow] = useState(null);
@@ -271,16 +277,23 @@ const CampBillingList = () => {
         parseCurrency(row.DueAmount || 0),
       width: "80px",
     },
-    {
-      name: "Date",
-      width: "110px",
-      center: true,
-      cell: (row) => (
-        <span className="text-gray-500 text-sm">
-          {new Date(row.AddedDate).toISOString().split("T")[0]}
-        </span>
-      ),
-    },
+   
+      {
+                      name: "Added On",
+                    
+                      cell: (row) => (
+                        <div className="flex flex-col text-xs">
+                          <span className="font-medium text-slate-700">
+                           {formatDate(row.AddedDate)}
+                          </span>
+                
+                          <span className="text-slate-400">
+                           {formatTime(row.AddedDate)}
+                          </span>
+                        </div>
+                      ),
+                    },
+    
     {
       name: "id",
       selector: (row) => row.ID,
@@ -328,7 +341,7 @@ const CampBillingList = () => {
       </div>
       <div className="bg-white shadow-xl rounded-xl border p-2">
         <CommonList
-          title="💊 Pharmacy Billing List"
+          title="💊 Pharmacy Camp Billing List"
           columns={columns}
           data={Stock}
           totalRows={pagination.totalRecords || 0}
@@ -379,4 +392,4 @@ const CampBillingList = () => {
   );
 };
 
-export default CampBillingList;
+export default CampBillingListCopy;

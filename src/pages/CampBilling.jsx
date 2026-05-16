@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CampBillingFormCopy from "./CampBillingForm";
-import CampBillingList from "./CampBillingList"
-import { useParams } from "react-router-dom";
+import CampBillingList from "./CampBillingList";
+import { useParams, useLocation } from "react-router-dom";
 
 import {
   ClipboardDocumentIcon,
@@ -9,30 +9,34 @@ import {
 } from "@heroicons/react/24/outline";
 
 const CampBillingCopy = () => {
-
   const { id } = useParams();
-  const [activeTab, setActiveTab] = useState(id ? "billing" : "history");
+
+  const location = useLocation();
+
+  const [activeTab, setActiveTab] = useState(
+  id ? "billing" : "history"
+);
 
   useEffect(() => {
     if (id) {
       setActiveTab("billing");
+    } else if (location.state?.goToList) {
+      setActiveTab("history");
     }
-  }, [id]);
+  }, [id, location.state]);
 
   return (
-<div className="max-w-[1400px] mx-auto mt-3">
-
-
-       <div className="flex justify-center -mt-3 mb-4"> 
-
-  <div className="flex bg-white shadow-md border border-gray-200 rounded-2xl overflow-hidden">
+    <div className="max-w-[1400px] mx-auto mt-3">
+      <div className="flex justify-center -mt-3 mb-4">
+        <div className="flex bg-white shadow-md border border-gray-200 rounded-2xl overflow-hidden">
           <button
             onClick={() => setActiveTab("billing")}
             className={`px-8 py-3 flex items-center gap-2 text-sm font-semibold
-            ${activeTab === "billing"
-               ? "bg-emerald-500 text-white shadow-md"
-          : "text-gray-600 hover:bg-gray-50"
-              }`}
+            ${
+              activeTab === "billing"
+                ? "bg-emerald-500 text-white shadow-md"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
           >
             <ClipboardDocumentIcon className="w-4 h-4" />
             Billing Form
@@ -41,29 +45,23 @@ const CampBillingCopy = () => {
           <button
             onClick={() => setActiveTab("history")}
             className={`px-8 py-2.5 text-sm font-semibold flex items-center gap-2 transition-all
-            ${activeTab === "history"
+            ${
+              activeTab === "history"
                 ? "bg-emerald-500 text-white shadow-md"
-          : "text-gray-600 hover:bg-gray-50"
-              }`}
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
           >
             <CreditCardIcon className="w-4 h-4" />
             Billing List
           </button>
-
         </div>
-
       </div>
 
-      
-
-      {/* <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100"> */}
-
-        {activeTab === "billing"
-          ? <CampBillingFormCopy />
-          : <CampBillingList />}
-
-      {/* </div> */}
-
+      {activeTab === "billing" ? (
+        <CampBillingFormCopy />
+      ) : (
+        <CampBillingList />
+      )}
     </div>
   );
 };

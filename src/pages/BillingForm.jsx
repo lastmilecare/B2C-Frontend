@@ -188,6 +188,7 @@ const BillingFormCopy = ({ refetchList }) => {
         UHID: values.UHID || null,
         Name: values.Name || "",
         Age: values.Age || "",
+        Gender: values.Gender || "",
         Mobile: values.Mobile || "",
         FinCategory: values.FinCategory || "",
         opdBillNo: values.opdBillNo || "",
