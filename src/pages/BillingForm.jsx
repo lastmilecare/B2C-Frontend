@@ -922,7 +922,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">
-                                      ₹{item.saleRate}
+                                      Rs.{item.saleRate}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">
@@ -930,7 +930,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">
-                                      ₹{item.discAmt}
+                                      Rs.{item.discAmt}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">
@@ -938,7 +938,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">
-                                      ₹{item.cgstAmt}
+                                      Rs.{item.cgstAmt}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">
@@ -946,7 +946,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">
-                                      ₹{item.sgstAmt}
+                                      Rs.{item.sgstAmt}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">
@@ -954,7 +954,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                     </td>
 
                                     <td className="px-3 py-3 text-right font-bold text-sky-700">
-                                      {/* ₹{item.total.toFixed(2)} */}₹
+                                      {/* Rs.{item.total.toFixed(2)} */}Rs.
                                       {Number(item.total || 0).toFixed(2)}
                                     </td>
 
@@ -1112,42 +1112,42 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     </p>
 
                     <p>
-                      <b>Gross Amount:</b> ₹{" "}
+                      <b>Gross Amount:</b> ?{" "}
                       {formik.values.grossAmount || 0}
                     </p>
 
                     <p>
-                      <b>Discount:</b> ₹{" "}
+                      <b>Discount:</b> ?{" "}
                       {formik.values.totalDiscount || 0}
                     </p>
 
                     <p>
-                      <b>CGST:</b> ₹{" "}
+                      <b>CGST:</b> ?{" "}
                       {formik.values.cgstAmount || 0}
                     </p>
 
                     <p>
-                      <b>SGST:</b> ₹{" "}
+                      <b>SGST:</b> ?{" "}
                       {formik.values.sgstAmount || 0}
                     </p>
 
                     <p>
-                      <b>Taxable Amount:</b> ₹{" "}
+                      <b>Taxable Amount:</b> ?{" "}
                       {formik.values.taxableAmount || 0}
                     </p>
 
                     <p>
-                      <b>Paid Amount:</b> ₹{" "}
+                      <b>Paid Amount:</b> ?{" "}
                       {formik.values.paidAmount || 0}
                     </p>
 
                     <p>
-                      <b>Due Amount:</b> ₹{" "}
+                      <b>Due Amount:</b> ?{" "}
                       {formik.values.dueAmount || 0}
                     </p>
 
                     <p className="text-emerald-600 font-semibold">
-                      <b>Final Amount:</b> ₹{" "}
+                      <b>Final Amount:</b> ?{" "}
                       {formik.values.totalAmount || 0}
                     </p>
 
@@ -1215,11 +1215,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                 </td>
 
                                 <td className="px-3 py-2 text-right">
-                                  ₹ {item.saleRate || 0}
+                                  ? {item.saleRate || 0}
                                 </td>
 
                                 <td className="px-3 py-2 text-right font-semibold">
-                                  ₹ {item.total || 0}
+                                  ? {item.total || 0}
                                 </td>
                               </tr>
                             ))}
@@ -1358,3 +1358,4 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 };
 
 export default BillingFormCopy;
+

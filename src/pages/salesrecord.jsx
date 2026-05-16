@@ -12,11 +12,10 @@ import { useNavigate } from "react-router-dom";
 import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
 import Avatar from "../components/common/Avatar";
-import { parseCurrency } from "../utils/helper";  
-import {
-  formatDate,
-  formatTime,
-} from "../utils/helper";
+import { parseCurrency } from "../utils/helper";
+import { formatDate, formatTime } from "../utils/helper";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 const username = cookie.get("username");
 
 const SalesRecordCopy = () => {
@@ -249,28 +248,87 @@ const SalesRecordCopy = () => {
         </span>
       ),
     },
-    
-     {
-                          name: "Bill Date",
-                          width: "120px",
-                          cell: (row) => (
-                            <div className="flex flex-col text-xs">
-                              <span className="font-medium text-slate-700">
-                               {formatDate(row.AddedDate)}
-                              </span>
-                    
-                              <span className="text-slate-400">
-                               {formatTime(row.AddedDate)}
-                              </span>
-                            </div>
-                          ),
-                        },
-        
+
+    {
+      name: "Bill Date",
+      width: "120px",
+      cell: (row) => (
+        <div className="flex flex-col text-xs">
+          <span className="font-medium text-slate-700">
+            {formatDate(row.AddedDate)}
+          </span>
+
+          <span className="text-slate-400">{formatTime(row.AddedDate)}</span>
+        </div>
+      ),
+    },
   ];
+  const handleDownloadPdf = () => {
+  const today = new Date().toLocaleDateString();
+  const loginUser = username || "Admin";
+
+  const doc = new jsPDF("landscape");
+
+  doc.setFontSize(16);
+  doc.text("Medicine Sales List", 14, 15);
+
+  const tableColumn = [
+    "S.No",
+    "Bill No",
+    "Uhid",
+    "Customer Name",
+    "Fin. Category",
+    "ItemName",
+    "Qty",
+    "Rate",
+    "Net Amount",
+    "Added By",
+    "Added Date",
+  ];
+
+  const tableRows = Stock.map((row, index) => [
+    index + 1,
+    row.BillNo || "",
+    row.PicasoID || "",
+    row.CustommerName || "",
+    row.PatientType || "",
+    row.footer.ItemName || "N/A",
+    row.footer.IssueQty || 0,
+    parseCurrency(row.footer.Rate) || "N/A",
+    parseCurrency(row.footer.NetAmount) || "N/A",
+    userLookup[row.AddedBy] || "N/A",
+    new Date(row.AddedDate).toLocaleDateString(),
+  ]);
+
+  autoTable(doc, {
+    head: [tableColumn],
+    body: tableRows,
+    startY: 25,
+    styles: {
+      fontSize: 8,
+    },
+    headStyles: {
+      fillColor: [220, 220, 220],
+      textColor: 0,
+    },
+  });
+
+  const finalY = doc.lastAutoTable.finalY || 30;
+
+  doc.setFontSize(10);
+
+  doc.text("Powered by : Last Mile Care", 14, finalY + 10);
+  doc.text(`Prepared By: ${loginUser}`, 120, finalY + 10);
+  doc.text(`Date: ${today}`, 220, finalY + 10);
+
+  doc.save(`Medicine_Sales_List_${Date.now()}.pdf`);
+};
+
   const handlePrint = () => {
     const today = new Date().toLocaleDateString();
     const loginUser = username || "Admin";
-    const printWindow = window.open("", "", "width=1200,height=800");
+    // const printWindow = window.open("", "", "width=1200,height=800");
+    const printWindow = window.open("", "_blank");
     const tableRows = Stock.map(
       (row, index) => `
       <tr>
@@ -341,12 +399,12 @@ const SalesRecordCopy = () => {
           <thead>
             <tr>
               <th>S.No</th>
-              <th>BillNo</th>
+              <th>Bill No</th>
               <th>Uhid</th>
-              <th>Custommer Name</th>
+              <th>Customer Name</th>
               <th>Fin. Category</th>
               <th>ItemName</th>
-              <th>IssueQty</th>
+              <th>Qty</th>
               <th>Rate</th>
               <th>Net Amount</th>
               <th>Added By</th>
@@ -367,19 +425,22 @@ const SalesRecordCopy = () => {
       </body>
     </html>
   `);
-
     printWindow.document.close();
     printWindow.focus();
-    printWindow.print();
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 500);
+    };
   };
   const ExpandedComponent = ({ data }) => {
     const totalQty = (data.footerItems || []).reduce(
       (sum, item) => sum + Number(item.IssueQty || 0),
       0,
     );
-debugger
     const totalAmount = (data.footerItems || []).reduce(
-      (sum, item) => sum + parseCurrency(item.NetAmount) ,
+      (sum, item) => sum + parseCurrency(item.NetAmount),
       0,
     );
 
@@ -525,7 +586,8 @@ debugger
             [fieldName]: "",
           }));
         }}
-        onPrint={handlePrint}
+        // onPrint={handleDownloadPdf}
+        onExport={handleDownloadPdf}
       />
 
       <CommonList
@@ -556,7 +618,7 @@ debugger
 
           <span>
             Total Amount :{" "}
-            <span className="font-semibold">₹ {data?.totalSales || 0}</span>
+            <span className="font-semibold">Rs. {data?.totalSales || 0}</span>
           </span>
         </div>
       </section>

@@ -204,13 +204,13 @@ outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky
         )}
 
         {onPrint && (
-  <button
-    onClick={onPrint}
-    className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow-sm transition"
-  >
-    Print
-  </button>
-)}
+          <button
+            onClick={onPrint}
+            className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow-sm transition"
+          >
+            Print
+          </button>
+        )}
       </div>
     </div>
   );

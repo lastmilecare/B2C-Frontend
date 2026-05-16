@@ -1020,7 +1020,7 @@ const payObj = Picaso_Paymode_Options.find(
 
                         <p>
                           <b>Previous Due:</b>{" "}
-                          ₹{formik.values.PreviousDue}
+                          Rs.{formik.values.PreviousDue}
                         </p>
                       </div>
                     </div>
@@ -1087,11 +1087,11 @@ const payObj = Picaso_Paymode_Options.find(
                                   </td>
 
                                   <td className="px-3 py-2 text-right">
-                                    ₹{service.price}
+                                    Rs.{service.price}
                                   </td>
 
                                   <td className="px-3 py-2 text-right font-medium">
-                                    ₹
+                                    Rs.
                                     {(service.price || 0) *
                                       (service.quantity || 1)}
                                   </td>
@@ -1115,27 +1115,27 @@ const payObj = Picaso_Paymode_Options.find(
 
                       <div className="grid md:grid-cols-2 gap-3 text-sm">
                         <p>
-                          <b>Total Amount:</b> ₹
+                          <b>Total Amount:</b> Rs.
                           {formik.values.TotalAmount}
                         </p>
 
                         <p>
-                          <b>Paid Amount:</b> ₹
+                          <b>Paid Amount:</b> Rs.
                           {formik.values.PaidAmount}
                         </p>
 
                         <p>
-                          <b>Due Amount:</b> ₹
+                          <b>Due Amount:</b> Rs.
                           {formik.values.DueAmount}
                         </p>
 
                         <p>
-                          <b>Cash Amount:</b> ₹
+                          <b>Cash Amount:</b> Rs.
                           {formik.values.CashAmount}
                         </p>
 
                         <p>
-                          <b>Card / Online Amount:</b> ₹
+                          <b>Card / Online Amount:</b> Rs.
                           {formik.values.CardAmount}
                         </p>
 

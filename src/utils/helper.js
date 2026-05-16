@@ -77,7 +77,7 @@ export function cleanCurrency(value) {
  */
 
 // export const getPharmaSellingFromCP = (item, qty, discountPercent) => {
-//   debugger;
+
 //   const cp = Number(item?.CP) || 0;
 //   const cgstPercent = Number(item?.CGST) || 0;
 //   const sgstPercent = Number(item?.SGST) || 0;

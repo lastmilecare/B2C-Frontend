@@ -623,7 +623,7 @@ return (
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-right">
-                                                                            ₹{item.saleRate}
+                                                                            Rs.{item.saleRate}
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-right">
@@ -631,7 +631,7 @@ return (
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-right">
-                                                                            ₹{item.discAmt}
+                                                                            Rs.{item.discAmt}
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-right">
@@ -639,7 +639,7 @@ return (
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-right">
-                                                                            ₹{item.cgstAmt}
+                                                                            Rs.{item.cgstAmt}
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-right">
@@ -647,7 +647,7 @@ return (
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-right">
-                                                                            ₹{item.sgstAmt}
+                                                                            Rs.{item.sgstAmt}
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-right">
@@ -655,7 +655,7 @@ return (
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-right font-bold text-sky-700">
-                                                                            ₹{item.total.toFixed(2)}
+                                                                            Rs.{item.total.toFixed(2)}
                                                                         </td>
 
                                                                         <td className="px-3 py-3 text-center">

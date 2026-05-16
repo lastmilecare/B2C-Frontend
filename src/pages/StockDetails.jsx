@@ -13,28 +13,28 @@ import { useNavigate } from "react-router-dom";
 import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
 import { parseCurrency } from "../utils/helper";
-import {
-  formatDate,
-  formatTime,
-} from "../utils/helper";
+import { formatDate, formatTime } from "../utils/helper";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 const username = cookie.get("username");
+
 const StockDetailsCopy = () => {
   const [deleteitemid] = useDeleteitemMutation();
- const handleDelete = async (row) => {
-  const id = row?.ID;
+  const handleDelete = async (row) => {
+    const id = row?.ID;
 
-  if (!id) {
-    healthAlert({
-      title: "Error",
-      text: "ID number not found for this record.",
-      icon: "error",
-    });
+    if (!id) {
+      healthAlert({
+        title: "Error",
+        text: "ID number not found for this record.",
+        icon: "error",
+      });
 
-    return;
-  }
+      return;
+    }
 
-  try {
-    await deleteitemid(id).unwrap();
+    try {
+      await deleteitemid(id).unwrap();
 
     healthAlert({
       title: "Deleted!",
@@ -228,17 +228,17 @@ const StockDetailsCopy = () => {
     { name: "CGST (%)", selector: (row) => row.CGST, width: "120px" },
     { name: "SGST (%)", selector: (row) => row.SGST, width: "120px" },
     {
-      name: "CP (₹)",
+      name: "CP (Rs.)",
       width: "110px",
       right: true,
       cell: (row) => (
         <span className="font-semibold text-green-600">
-          ₹{parseCurrency(row.CP)}
+          {parseCurrency(row.CP)}
         </span>
       ),
     },
     {
-      name: "MRP (₹)",
+      name: "MRP (Rs.)",
       width: "110px",
       right: true,
       cell: (row) => (
@@ -248,12 +248,12 @@ const StockDetailsCopy = () => {
       ),
     },
     {
-      name: "CPU (₹)",
+      name: "CPU (Rs.)",
       selector: (row) => ` ${parseCurrency(row.CPU)}`,
       width: "120px",
     },
     {
-      name: "MRPU (₹)",
+      name: "MRPU (Rs.)",
       selector: (row) => `${parseCurrency(row.MRPU)}`,
       width: "120px",
     },
@@ -314,7 +314,7 @@ const StockDetailsCopy = () => {
         );
       },
     },
-    
+
     {
                   name: "Added On",
                   center: true,
@@ -338,6 +338,89 @@ const StockDetailsCopy = () => {
       hidden: true,
     },
   ];
+  const handleDownloadPdf = () => {
+    const today = new Date().toLocaleDateString();
+    const loginUser = username || "Admin";
+
+    const doc = new jsPDF("landscape");
+
+    doc.setFontSize(16);
+    doc.text("Stock Report List", 14, 15);
+
+    const tableColumn = [
+      "S.No",
+      "Supplier Name",
+      "Invoice Date",
+      "RecieptNo",
+      "Batch No",
+      "Rag No",
+      "HSN Code",
+      "CGST (%)",
+      "SGST (%)",
+      "CP (Rs.)",
+      "MRP (Rs.)",
+      "CPU (Rs.)",
+      "MRPU (Rs.)",
+      "Cond. Qty",
+      "Recv. Qty",
+      "Sales Qty",
+      "Bal Qty",
+      "Expiry Date",
+      "Date",
+    ];
+
+    const tableRows = Stock.map((row, index) => [
+      index + 1,
+      row.SupplierName || "N/A",
+      row.InvoiceDate ? new Date(row.InvoiceDate).toLocaleDateString() : "N/A",
+      row.RecieptNo || "",
+      row.BatchNo || "",
+      row.RagNo || "",
+      row.HSNCode || "",
+      row.CGST || "N/A",
+      row.SGST || "N/A",
+      parseCurrency(row.CP || 0),
+      parseCurrency(row.MRP || 0),
+      parseCurrency(row.CPU || 0),
+      parseCurrency(row.MRPU || 0),
+      row.CondmQty || 0,
+      row.RecvQty || 0,
+      (row.RecvQty || 0) - (row.BalQty || 0),
+      row.BalQty || 0,
+      row.ExpiryDate ? new Date(row.ExpiryDate).toLocaleDateString() : "N/A",
+      row.AddedDate ? new Date(row.AddedDate).toLocaleDateString() : "N/A",
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 25,
+      styles: {
+        fontSize: 7,
+        cellPadding: 2,
+      },
+      headStyles: {
+        fillColor: [220, 220, 220],
+        textColor: 0,
+        fontStyle: "bold",
+      },
+      theme: "grid",
+      margin: {
+        left: 5,
+        right: 5,
+      },
+    });
+
+    const finalY = doc.lastAutoTable.finalY || 30;
+
+    doc.setFontSize(10);
+
+    doc.text("Powered by : Last Mile Care", 14, finalY + 10);
+    doc.text(`Prepared By: ${loginUser}`, 120, finalY + 10);
+    doc.text(`Date: ${today}`, 240, finalY + 10);
+
+    doc.save(`Stock_Report_${Date.now()}.pdf`);
+  };
   const handlePrint = () => {
     const today = new Date().toLocaleDateString();
     const loginUser = username || "Admin";
@@ -429,10 +512,10 @@ const StockDetailsCopy = () => {
               <th>HSN Code</th>
               <th>CGST (%)</th>
               <th>SGST (%)</th>
-              <th>CP (₹)</th>
-              <th>MRP (₹)</th>
-              <th>CPU (₹)</th>
-              <th>MRPU (₹)</th>
+              <th>CP (Rs.)</th>
+              <th>MRP (Rs.)</th>
+              <th>CPU (Rs.)</th>
+              <th>MRPU (Rs.)</th>
               <th>Cond. Qty</th>
               <th>Recv. Qty</th>
               <th>Sales Qty</th>
@@ -524,7 +607,7 @@ const StockDetailsCopy = () => {
         suggestions={suggestions?.data || []}
         ItemSearch={ItemSearch}
         onSelectSuggestion={handleSelectSuggestion}
-        onPrint={handlePrint}
+        onExport={handleDownloadPdf}
       />
 
       <CommonList
@@ -555,7 +638,7 @@ const StockDetailsCopy = () => {
       <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-4 shadow-sm">
         <div className="flex flex-wrap gap-x-8 gap-y-3 items-center w-full text-sm text-emerald-900">
           <span>
-            Total Cost Price : ₹{" "}
+            Total Cost Price : Rs.{" "}
             <span className="font-semibold">
               {summary.totalCostPrice
                 ? parseCurrency(summary.totalCostPrice.toFixed(2))
@@ -564,14 +647,16 @@ const StockDetailsCopy = () => {
           </span>
 
           <span>
-            Total MRP : ₹{" "}
+            Total MRP : Rs.{" "}
             <span className="font-semibold">
-              {summary.totalMrp ? parseCurrency(summary.totalMrp.toFixed(2)) : "0"}
+              {summary.totalMrp
+                ? parseCurrency(summary.totalMrp.toFixed(2))
+                : "0"}
             </span>
           </span>
 
           <span>
-            Total Remaining Cost Price : ₹{" "}
+            Total Remaining Cost Price : Rs.{" "}
             <span className="font-semibold">
               {parseCurrency(
                 summary.totalRemainingCostPrice
@@ -582,10 +667,12 @@ const StockDetailsCopy = () => {
           </span>
 
           <span>
-            Total Sales Amount : ₹{" "}
+            Total Sales Amount : Rs.{" "}
             <span className="font-semibold">
               {parseCurrency(
-                summary.totalSalesAmount ? summary.totalSalesAmount.toFixed(2) : 0,
+                summary.totalSalesAmount
+                  ? summary.totalSalesAmount.toFixed(2)
+                  : 0,
               )}
             </span>
           </span>
@@ -626,3 +713,4 @@ const StockDetailsCopy = () => {
 };
 
 export default StockDetailsCopy;
+
