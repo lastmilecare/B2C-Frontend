@@ -15,121 +15,297 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useGetPatientsQuery } from "../redux/apiSlice";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const username = cookie?.get?.("username") || "Admin";
+//   const centerType =
+//   cookie?.get?.("centerType") || "Parent";
 
+// const userCenter =
+//   cookie?.get?.("centerName") || "XYZ";
+const centerType = "PARENT";
+
+const userCenter = "XYZ";
+const { data: patientData } = useGetPatientsQuery({ page: 1, limit: 100 });
+const patients = patientData?.data || [];
   const today = new Date().toISOString().split("T")[0];
+ const todayPatients = patients.filter(
+    (p) => new Date(p.createdAt).toDateString() === today,
+  ).length;
+  const centerWiseData = {
 
+  All: [
+    {
+      label: "Jan",
+      CBC: 40,
+      ECG: 18,
+      MRI: 22,
+      XRay: 30,
+    },
 
+    {
+      label: "Feb",
+      CBC: 52,
+      ECG: 25,
+      MRI: 18,
+      XRay: 35,
+    },
 
-  const tenants = ["All", "Tenant A", "Tenant B"];
-  const centers = ["All", "Gurgaon", "Noida"];
-  const years = ["2026", "2025"];
+    {
+      label: "Mar",
+      CBC: 65,
+      ECG: 32,
+      MRI: 25,
+      XRay: 40,
+    },
 
- 
+    {
+      label: "Apr",
+      CBC: 70,
+      ECG: 38,
+      MRI: 28,
+      XRay: 45,
+    },
 
-  const initialFilters = {
-    tenant: "All",
-    center: "All",
-    from: "",
-    to: "",
-    year: "2026",
-    type: "Monthly",
-  };
+    {
+      label: "May",
+      CBC: 80,
+      ECG: 45,
+      MRI: 35,
+      XRay: 55,
+    },
 
-  const [filters, setFilters] = useState(initialFilters);
-  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
+    {
+      label: "Jun",
+      CBC: 92,
+      ECG: 52,
+      MRI: 40,
+      XRay: 60,
+    },
+  ],
 
- 
+  XYZ: [
+    {
+      label: "Jan",
+      CBC: 15,
+      ECG: 8,
+      MRI: 10,
+      XRay: 12,
+    },
 
-  const rawData = useMemo(() => [
-    { date: "2026-01-01", tenant: "Tenant A", center: "Gurgaon", tested: 40, pending: 200 },
-    { date: "2026-02-01", tenant: "Tenant A", center: "Noida", tested: 110, pending: 300 },
-    { date: "2026-03-01", tenant: "Tenant B", center: "Gurgaon", tested: 150, pending: 400 },
-    { date: "2026-04-01", tenant: "Tenant A", center: "Noida", tested: 380, pending: 3000 },
-    { date: "2026-04-05", tenant: "Tenant B", center: "Noida", tested: 120, pending: 500 },
-  ], []);
+    {
+      label: "Feb",
+      CBC: 20,
+      ECG: 10,
+      MRI: 12,
+      XRay: 15,
+    },
 
-  
+    {
+      label: "Mar",
+      CBC: 28,
+      ECG: 15,
+      MRI: 14,
+      XRay: 18,
+    },
 
-  const filteredData = useMemo(() => {
-    let data = [...rawData];
+    {
+      label: "Apr",
+      CBC: 35,
+      ECG: 20,
+      MRI: 18,
+      XRay: 22,
+    },
 
-    if (appliedFilters.tenant !== "All") {
-      data = data.filter(d => d.tenant === appliedFilters.tenant);
-    }
+    {
+      label: "May",
+      CBC: 42,
+      ECG: 25,
+      MRI: 22,
+      XRay: 28,
+    },
 
-    if (appliedFilters.center !== "All") {
-      data = data.filter(d => d.center === appliedFilters.center);
-    }
+    {
+      label: "Jun",
+      CBC: 50,
+      ECG: 30,
+      MRI: 28,
+      XRay: 35,
+    },
+  ],
 
-    if (appliedFilters.year) {
-      data = data.filter(d => d.date.startsWith(appliedFilters.year));
-    }
+  TTT: [
+    {
+      label: "Jan",
+      CBC: 8,
+      ECG: 15,
+      MRI: 5,
+      XRay: 10,
+    },
 
-    if (appliedFilters.from) {
-      data = data.filter(d => new Date(d.date) >= new Date(appliedFilters.from));
-    }
+    {
+      label: "Feb",
+      CBC: 12,
+      ECG: 18,
+      MRI: 7,
+      XRay: 14,
+    },
 
-    if (appliedFilters.to) {
-      data = data.filter(d => new Date(d.date) <= new Date(appliedFilters.to));
-    }
+    {
+      label: "Mar",
+      CBC: 15,
+      ECG: 22,
+      MRI: 9,
+      XRay: 18,
+    },
 
-    return data;
-  }, [appliedFilters, rawData]);
+    {
+      label: "Apr",
+      CBC: 20,
+      ECG: 28,
+      MRI: 12,
+      XRay: 20,
+    },
 
+    {
+      label: "May",
+      CBC: 25,
+      ECG: 35,
+      MRI: 16,
+      XRay: 24,
+    },
 
-  const chartData = useMemo(() => {
-    const grouped = {};
+    {
+      label: "Jun",
+      CBC: 30,
+      ECG: 42,
+      MRI: 20,
+      XRay: 28,
+    },
+  ],
+  IIIS: [
+  {
+    label: "Jan",
+    CBC: 12,
+    ECG: 8,
+    MRI: 5,
+    XRay: 10,
+  },
 
-    filteredData.forEach(d => {
-      const key =
-        appliedFilters.type === "Yearly"
-          ? d.date.substring(0, 4)
-          : new Date(d.date).toLocaleString("default", { month: "short" });
+  {
+    label: "Feb",
+    CBC: 18,
+    ECG: 10,
+    MRI: 7,
+    XRay: 12,
+  },
 
-      if (!grouped[key]) {
-        grouped[key] = { label: key, tested: 0, pending: 0 };
-      }
+  {
+    label: "Mar",
+    CBC: 22,
+    ECG: 15,
+    MRI: 10,
+    XRay: 18,
+  },
 
-      grouped[key].tested += d.tested;
-      grouped[key].pending += d.pending;
-    });
+  {
+    label: "Apr",
+    CBC: 28,
+    ECG: 18,
+    MRI: 12,
+    XRay: 20,
+  },
 
-    return Object.values(grouped);
-  }, [filteredData, appliedFilters.type]);
+  {
+    label: "May",
+    CBC: 32,
+    ECG: 22,
+    MRI: 16,
+    XRay: 24,
+  },
 
-  
+  {
+    label: "Jun",
+    CBC: 38,
+    ECG: 28,
+    MRI: 20,
+    XRay: 30,
+  },
+],
+VAX: [
+  {
+    label: "Jan",
+    CBC: 10,
+    ECG: 5,
+    MRI: 3,
+    XRay: 8,
+  },
 
-  const stats = useMemo(() => {
-    const total = filteredData.reduce((a, c) => a + c.tested + c.pending, 0);
-    const tested = filteredData.reduce((a, c) => a + c.tested, 0);
-    const pending = filteredData.reduce((a, c) => a + c.pending, 0);
+  {
+    label: "Feb",
+    CBC: 14,
+    ECG: 8,
+    MRI: 5,
+    XRay: 10,
+  },
 
-    const todayTested =
-      filteredData.filter(d => d.date === today)
-        .reduce((a, c) => a + c.tested, 0);
+  {
+    label: "Mar",
+    CBC: 18,
+    ECG: 12,
+    MRI: 8,
+    XRay: 14,
+  },
 
-    const coverage =
-      total > 0 ? ((tested / total) * 100).toFixed(1) + "%" : "0%";
+  {
+    label: "Apr",
+    CBC: 24,
+    ECG: 16,
+    MRI: 10,
+    XRay: 18,
+  },
 
-    return { total, tested, pending, todayTested, coverage };
-  }, [filteredData, today]);
+  {
+    label: "May",
+    CBC: 28,
+    ECG: 20,
+    MRI: 14,
+    XRay: 22,
+  },
 
+  {
+    label: "Jun",
+    CBC: 35,
+    ECG: 25,
+    MRI: 18,
+    XRay: 28,
+  },
+],
 
-  const handleChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-  }, []);
+};
+const [selectedCenter, setSelectedCenter] =
+  useState("All");
 
-  const handleApply = () => setAppliedFilters(filters);
-
-  const handleReset = () => {
-    setFilters(initialFilters);
-    setAppliedFilters(initialFilters);
-  };
+const graphData =
+  centerType === "PARENT"
+    ? centerWiseData[selectedCenter]
+    : centerWiseData[userCenter];
+const chartColors = [
+  "#10b981", 
+  "#3b82f6", 
+  "#f59e0b", 
+  "#ef4444", 
+  "#8b5cf6", 
+  "#06b6d4", 
+  "#ec4899", 
+  "#84cc16", 
+  "#f97316", 
+  "#14b8a6", 
+  "#6366f1", 
+  "#e11d48", 
+];
 
 
   return (
@@ -152,73 +328,137 @@ const Dashboard = () => {
         </button>
       </div>
 
-      
-      <div className="bg-emerald-50 border rounded-xl p-4">
-
-        <div className="grid grid-cols-4 gap-4 mb-3">
-          <Select label="Tenant" name="tenant" value={filters.tenant} onChange={handleChange} options={tenants} />
-          <Select label="Center" name="center" value={filters.center} onChange={handleChange} options={centers} />
-          <Input label="From Date" type="date" name="from" max={today} value={filters.from} onChange={handleChange} />
-          <Input label="To Date" type="date" name="to" max={today} value={filters.to} onChange={handleChange} />
-        </div>
-
-        <div className="grid grid-cols-4 gap-4 items-end">
-          <Select label="Year" name="year" value={filters.year} onChange={handleChange} options={years} />
-          <Select label="View Type" name="type" value={filters.type} onChange={handleChange} options={["Monthly", "Yearly"]} />
-
-          <div className="col-span-2 flex justify-end gap-2">
-            <button onClick={handleReset} className="px-4 py-2 border rounded-lg">
-              Reset
-            </button>
-            <button onClick={handleApply} className="px-4 py-2 bg-emerald-600 text-white rounded-lg">
-              Apply
-            </button>
-          </div>
-        </div>
-
-      </div>
-
   
-      <div className="grid grid-cols-5 gap-4">
-        <Card title="Total" value={stats.total} />
-        <Card title="Tested" value={stats.tested} color="text-green-600" />
-        <Card title="Pending" value={stats.pending} color="text-red-500" />
-        <Card title="Coverage" value={stats.coverage} />
-        <Card title="Today" value={stats.todayTested} />
-      </div>
-
+       <div className="grid grid-cols-4 gap-6">
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm"
+              >
+                <p className="text-sm">Today Patients</p>
       
-      {chartData.length === 0 ? (
-        <div className="text-center text-gray-500 py-10">
-          No data found for selected filters
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-4">
+                <h2 className="text-3xl font-bold">{todayPatients}</h2>
+              </motion.div>
+               <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm"
+              >
+                <p className="text-sm">Today Appointments</p>
+      
+                <h2 className="text-3xl font-bold">{todayPatients}</h2>
+              </motion.div>
+               <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm"
+              >
+                <p className="text-sm">Today Patient Examination</p>
+      
+                <h2 className="text-3xl font-bold">{todayPatients}</h2>
+              </motion.div>
+               <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm"
+              >
+                <p className="text-sm">Today Patients</p>
+      
+                <h2 className="text-3xl font-bold">{todayPatients}</h2>
+              </motion.div>
+      </div>
+      <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-6"
+>
 
-          <ChartCard title="Testing Trend">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" />
-              <YAxis />
-              <Tooltip />
-              <Line dataKey="tested" stroke="#059669" />
-            </LineChart>
-          </ChartCard>
+  <div className="flex justify-between items-center mb-6">
 
-          <ChartCard title="Tested vs Pending">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="tested" fill="#059669" />
-              <Bar dataKey="pending" fill="#ef4444" />
-            </BarChart>
-          </ChartCard>
+    <div>
+      <h2 className="text-xl font-bold text-slate-800">
+        Most Tests In Last 6 Months
+      </h2>
 
-        </div>
-      )}
+      <p className="text-sm text-gray-500">
+        Laboratory & Radiology Monthly Trends
+      </p>
+      {
+  centerType === "PARENT" && (
+
+    <div className="mt-4 w-56">
+
+      <select
+        value={selectedCenter}
+        onChange={(e) =>
+          setSelectedCenter(e.target.value)
+        }
+        className="w-full border border-emerald-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+      >
+
+        <option value="All">
+          All Centers
+        </option>
+
+        <option value="XYZ">
+          XYZ Center
+        </option>
+
+        <option value="TTT">
+          TTT Center
+        </option>
+        <option value="IIIS">
+  IIIS Center
+</option>
+
+<option value="VAX">
+  VAX Center
+</option>
+
+      </select>
+
+    </div>
+
+  )
+}
+    </div>
+
+  </div>
+
+  <div className="h-[400px]">
+
+    <ResponsiveContainer width="100%" height="100%">
+
+      <BarChart data={graphData}>
+
+        <CartesianGrid strokeDasharray="3 3" />
+
+        <XAxis dataKey="label" />
+
+        <YAxis />
+
+        <Tooltip />
+
+        <Legend />
+
+        {
+  Object.keys(graphData[0] || {})
+    .filter((key) => key !== "label")
+    .map((test, index) => (
+
+     <Bar
+  key={test}
+  dataKey={test}
+  fill={chartColors[index % chartColors.length]}
+  radius={[4, 4, 0, 0]}
+/>
+
+    ))
+}
+
+      </BarChart>
+
+    </ResponsiveContainer>
+
+  </div>
+
+</motion.div>
 
     </div>
   );
@@ -246,21 +486,4 @@ const Input = ({ label, ...props }) => (
     <input {...props} className="w-full border p-2 rounded-lg text-sm" />
   </div>
 );
-
-const Card = ({ title, value, color }) => (
-  <motion.div whileHover={{ scale: 1.05 }} className="bg-white p-4 rounded-lg shadow text-center">
-    <p className="text-xs text-gray-500">{title}</p>
-    <h2 className={`text-lg font-bold ${color || ""}`}>{value}</h2>
-  </motion.div>
-);
-
-const ChartCard = ({ title, children }) => (
-  <div className="bg-white p-4 rounded-xl shadow">
-    <h3 className="text-sm font-semibold mb-2">{title}</h3>
-    <ResponsiveContainer width="100%" height={200}>
-      {children}
-    </ResponsiveContainer>
-  </div>
-);
-
 export default Dashboard;

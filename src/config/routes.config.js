@@ -33,6 +33,7 @@ import ResourcePage from "../pages/ResourcePage";
 import ItemMaster from "../pages/ItemMaster";
 import RolesPage from "../pages/RolesPage";
 import PermissionPage from "../pages/PermissionPage";
+import PatientExaminationDetails from "../pages/PatientExaminationDetails";
 
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -155,7 +156,7 @@ export const ROUTES = [
   {
     path: "/PatientRegistrationOhc",
     component: PatientPage,
-    permission: "create:patient_registration",
+    permission: "create:ohc_patient_registration",
     label: "OHC Registration",
     icon: "UserPlusIcon",
     group: "Patient",
@@ -164,7 +165,7 @@ export const ROUTES = [
    {
     path: "/PatientRegistrationOhc/:id",
     component: PatientPage,
-    permission: "create:patient_registration",
+    permission: "create:ohc_patient_registration",
     showInSidebar: false,
   },
 
@@ -413,7 +414,7 @@ export const ROUTES = [
     permission: null,
     label: "Vitals",
     icon: "ShieldCheckIcon",
-    group: "Administration",
+    group: "Clinical",
     showInSidebar: true,
   },
    {
@@ -430,6 +431,15 @@ export const ROUTES = [
     icon: "ShieldCheckIcon",
     group: "Administration",
     showInSidebar: false,
+  },
+  {
+    path: "/patient-examination-details",
+    component: PatientExaminationDetails,
+    permission: null,
+    label: "PatientExaminationDetails",
+    icon: "ShieldCheckIcon",
+    group: "Clinical",
+    showInSidebar: true,
   }
 
  
