@@ -33,7 +33,8 @@ import ResourcePage from "../pages/ResourcePage";
 import ItemMaster from "../pages/ItemMaster";
 import RolesPage from "../pages/RolesPage";
 import PermissionPage from "../pages/PermissionPage";
-
+import CenterForm from "../pages/CenterForm";
+import CenterList from "../pages/CenterList";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -99,6 +100,21 @@ export const ROUTES = [
   
 
   // ── Staff ─────────────────────────────────────────────────────────────────
+  {
+    path: "/center-list",
+    component: CenterList,
+    permission: "read:center",
+    label: "Centers",
+    icon: "BuildingOfficeIcon",
+    group: "Administration",
+    showInSidebar: true,
+  },
+  {
+    path: "/centers",
+    component: CenterForm,
+    permission: "create:center",
+    showInSidebar: false,
+  },
   {
     path: "/staff-form",
     component: StaffForm,

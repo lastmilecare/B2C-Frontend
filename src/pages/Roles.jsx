@@ -486,7 +486,7 @@ const Roles = () => {
                       )}
 
                     <p className="text-xs text-slate-400 italic">
-                      Tip: Search and click to select permissions one by one.
+                      Note: Before creating a role, ensure that the necessary permissions are selected. After role creation, permissions cannot be assigned.
                     </p>
                   </div>
                 </section>
