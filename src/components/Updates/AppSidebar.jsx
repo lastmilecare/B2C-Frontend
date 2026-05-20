@@ -35,6 +35,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     roles: false,
     tenants: false,
     ohc: false,
+    centers: false,
   });
 
   const toggleSubMenu = (menu) => {
@@ -334,7 +335,30 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             </NavLink>
           </MenuGroup>
         )}
-
+        {can("read:center") && (
+          <MenuGroup
+            menuKey="centers"
+            icon={BuildingLibraryIcon}
+            label="Centers"
+          >
+            {can("create:center") && (
+              <NavLink
+                to="/centers"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Add Center
+              </NavLink>
+            )}
+            <NavLink
+              to="/center-list"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Center List
+            </NavLink>
+          </MenuGroup>
+        )}
         {/* ── Tenants — LMC Admin only ──────────────────────── */}
         {can("read:tenant") && (
           <MenuGroup

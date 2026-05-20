@@ -421,6 +421,7 @@ const StockDetailsCopy = () => {
 
     doc.save(`Stock_Report_${Date.now()}.pdf`);
   };
+  
   const handlePrint = () => {
     const today = new Date().toLocaleDateString();
     const loginUser = username || "Admin";

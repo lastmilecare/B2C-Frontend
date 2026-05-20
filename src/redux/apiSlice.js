@@ -1340,6 +1340,70 @@ export const api = createApi({
       }),
       invalidatesTags: ["Resource"],
     }),
+    createCenter: build.mutation({
+      query: (body) => ({
+        url: `${VITE_AUTH_URL}tenants/centers`,
+        method: "POST",
+        data: body,
+      }),
+
+      invalidatesTags: ["Centers"],
+    }),
+    getCenters: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        status,
+        startDate,
+        endDate,
+      } = {}) => ({
+        url: `${VITE_AUTH_URL}tenants/centers`,
+        method: "GET",
+        params: {
+          page,
+          limit,
+          name,
+          status,
+          startDate,
+          endDate,
+        },
+      }),
+      providesTags: ["Center"],
+    }),
+
+    getCenterById: build.query({
+      query: (id) => ({
+        url: `${VITE_AUTH_URL}tenants/centers/detail/${id}`,
+        method: "GET",
+      }),
+    }),
+
+    updateCenter: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `${VITE_AUTH_URL}tenants/centers/update/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+
+      invalidatesTags: ["Centers"],
+    }),
+
+    deleteCenter: build.mutation({
+      query: (id) => ({
+        url: `${VITE_AUTH_URL}tenants/centers/delete/${id}`,
+        method: "DELETE",
+      }),
+
+      invalidatesTags: ["Centers"],
+    }),
+    toggleCenterStatus: build.mutation({
+      query: (id) => ({
+        url: `${VITE_AUTH_URL}tenants/centers/${id}/toggle-status`,
+        method: "patch",
+      }),
+      invalidatesTags: ["Center"],
+    }),
   }),
 });
 
@@ -1492,4 +1556,10 @@ export const {
   useUpdateTemplateMutation,
   useFetchResourceMutation,
   useDeleteResourceMutation,
+  useCreateCenterMutation,
+  useGetCentersQuery,
+  useGetCenterByIdQuery,
+  useUpdateCenterMutation,
+  useDeleteCenterMutation,
+  useToggleCenterStatusMutation,
 } = api;
