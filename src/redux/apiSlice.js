@@ -1403,6 +1403,12 @@ export const api = createApi({
       }),
       invalidatesTags: ["Center"],
     }),
+    centerComboList: build.query({
+      query: () => ({
+        url: `${VITE_AUTH_URL}tenants/centers/combo`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -1561,4 +1567,5 @@ export const {
   useUpdateCenterMutation,
   useDeleteCenterMutation,
   useToggleCenterStatusMutation,
+  useCenterComboListQuery,
 } = api;

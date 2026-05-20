@@ -45,7 +45,10 @@ const CenterList = () => {
     });
     return map;
   }, [tenants]);
-  const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
+  const pagination = data?.data?.pagination || {
+    currentPage: page,
+    totalRecords: 0,
+  };
   const filtersConfig = [
     { label: "Name", name: "name", type: "text" },
     {
@@ -142,17 +145,13 @@ const CenterList = () => {
       selector: (_, x) => x + 1,
     },
     {
-      name: "Project Name",
-      selector: (row) => row.project_name,
+      name: "agency_name",
+      selector: (row) => row.agency_name,
     },
 
     {
-      name: "agency_name",
-      selector: (row) => row.agency_name,
-    },
-    {
-      name: "agency_name",
-      selector: (row) => row.agency_name,
+      name: "Agency Spoc Contact Number",
+      selector: (row) => row.agency_spoc_contact_number,
     },
     {
       name: "Agency State",
@@ -162,9 +161,14 @@ const CenterList = () => {
       name: "Agency Spoc Email",
       selector: (row) => row.agency_spoc_email,
     },
+
     {
-      name: "agency_name",
-      selector: (row) => row.agency_name,
+      name: "Project Name",
+      selector: (row) => row.project_name,
+    },
+    {
+      name: "Project Address",
+      selector: (row) => row.project_address,
     },
     {
       name: "Tenant Name",
