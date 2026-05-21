@@ -5,34 +5,52 @@ import {
   ArrowPathIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
-import { useCreateTenantMutation } from "../redux/apiSlice";
+import { useCreateTenantMutation, useUpdateTenantMutation } from "../redux/apiSlice";
 import { healthAlert } from "../utils/healthSwal";
 import { Input, Button } from "../components/UIComponents";
 import { Tenant_Type_Options } from "../utils/constants";
 import { Select } from "../components/FormControls";
 import * as Yup from "yup";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 const TenantForm = ({ refetchList }) => {
   const [createTenant, { isLoading }] = useCreateTenantMutation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const editData = location.state?.editData;
+  const [updateTenant, { isLoading: isUpdating }] =
+    useUpdateTenantMutation();
   const formik = useFormik({
     initialValues: {
-      name: "",
-      tenant_type: "",
+      name: editData?.name || "",
+      tenant_type: editData?.tenant_type || "",
     },
+    enableReinitialize: true,
     validationSchema: Yup.object({
       name: Yup.string().required("Tenant Name is required"),
       tenant_type: Yup.string().required("Tenant Type is required"),
     }),
     onSubmit: async (values, { resetForm }) => {
       try {
-        await createTenant(values).unwrap();
+        if (editData?.id) {
+          await updateTenant({
+            id: editData.id,
+            ...values,
+          }).unwrap();
 
-        healthAlert({
-          title: "Success",
-          text: "Tenant Created Successfully",
-          icon: "success",
-        });
+          healthAlert({
+            title: "Success",
+            text: "Tenant Updated Successfully",
+            icon: "success",
+          });
+        } else {
+          await createTenant(values).unwrap();
+
+          healthAlert({
+            title: "Success",
+            text: "Tenant Created Successfully",
+            icon: "success",
+          });
+        }
 
         resetForm();
         refetchList?.();
@@ -52,7 +70,7 @@ const TenantForm = ({ refetchList }) => {
       <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow">
         <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
           <UserPlusIcon className="w-6 text-blue-600" />
-          Add Tenant
+          {editData ? "Edit Tenant" : "Add Tenant"}
         </h1>
 
         <form onSubmit={formik.handleSubmit} className="space-y-4">
@@ -90,9 +108,17 @@ const TenantForm = ({ refetchList }) => {
               Reset
             </Button>
 
-            <Button type="submit" variant="sky" disabled={isLoading}>
+            <Button
+              type="submit"
+              variant="sky"
+              disabled={isLoading || isUpdating}
+            >
               <CheckCircleIcon className="w-4 mr-1" />
-              {isLoading ? "Saving..." : "Save"}
+              {isLoading || isUpdating
+                ? "Saving..."
+                : editData
+                  ? "Update"
+                  : "Save"}
             </Button>
           </div>
         </form>

@@ -37,6 +37,8 @@ import PatientExaminationDetails from "../pages/PatientExaminationDetails";
 
 import CenterForm from "../pages/CenterForm";
 import CenterList from "../pages/CenterList";
+import StaffPage from "../pages/StaffPageOhc";
+import PatientExaminationPage from "../pages/PatientExaminationPage";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -79,6 +81,12 @@ export const ROUTES = [
     permission: "create:tenant",
     showInSidebar: false,
   },
+   {
+  path: "/tenants/:id",
+  component: TenantForm,
+  permission: "update:tenant",
+  showInSidebar: false,
+},
   {
     path: "/roles",
     component: RolesPage,
@@ -117,6 +125,12 @@ export const ROUTES = [
     permission: "create:center",
     showInSidebar: false,
   },
+  {
+  path: "/centers/:id",
+  component: CenterForm,
+  permission: "update:center",
+  showInSidebar: false,
+},
   {
     path: "/staff-form",
     component: StaffForm,
@@ -451,13 +465,28 @@ export const ROUTES = [
   },
   {
     path: "/patient-examination-details",
-    component: PatientExaminationDetails,
+    component: PatientExaminationPage,
     permission: null,
     label: "PatientExaminationDetails",
     icon: "ShieldCheckIcon",
     group: "Clinical",
     showInSidebar: true,
-  }
+  },
+  {
+    path: "/staff-page-ohc",
+    component: StaffPage,
+    permission: null,
+    label: "Staff",
+    icon: "UsersIcon",
+    group: "Staff",
+    showInSidebar: true,
+  },
+  {
+  path: "/staff-page-ohc/:id",
+  component: StaffPage,
+  permission: null,
+  showInSidebar: false,
+},
 
  
 ];

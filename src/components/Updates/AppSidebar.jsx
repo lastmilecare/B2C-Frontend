@@ -489,6 +489,13 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Fitness Certificate
               </NavLink>
             )}
+             <NavLink
+                to="/staff-page-ohc"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Add Staff 
+              </NavLink>
           </MenuGroup>
         )}
       </nav>

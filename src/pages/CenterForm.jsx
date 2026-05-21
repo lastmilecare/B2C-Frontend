@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useFormik } from "formik";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import {
   ClipboardDocumentIcon,
@@ -13,7 +13,7 @@ import { Input, Select, Button } from "../components/UIComponents";
 import { healthAlert } from "../utils/healthSwal";
 import * as Yup from "yup";
 
-import { useGetTenantsQuery, useCreateCenterMutation } from "../redux/apiSlice";
+import { useGetTenantsQuery, useCreateCenterMutation, useUpdateCenterMutation } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 
 const STEPS = [
@@ -27,7 +27,8 @@ const ROLE_ADMIN = "LMC_ADMIN";
 const CenterForm = () => {
   const [activeStep, setActiveStep] = useState(1);
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const editData = location.state?.editData;
   const role = cookie.get("role");
   const isAdmin = role === ROLE_ADMIN;
   const cookieTenantId = cookie.get("tenant_id");
@@ -35,26 +36,36 @@ const CenterForm = () => {
   const { data } = useGetTenantsQuery();
   const tenants = data?.data?.data || [];
   const [createCenter] = useCreateCenterMutation();
+  const [updateCenter] = useUpdateCenterMutation();
   const formik = useFormik({
-    initialValues: {
-      tenant_id: "",
-      project_name: "",
-      short_code: "",
-      project_district: "",
-      project_state: "",
-      project_address: "",
-      agency_name: "",
-      agency_district: "",
-      agency_address: "",
-      agency_state: "",
-      agency_spoc_name: "",
-      agency_spoc_email: "",
-      agency_spoc_contact_number: "",
-      agency_spoc_alternate_name: "",
-      agency_spoc_alternate_contact_number: "",
-      project_start_date: "",
-      project_end_date: "",
-    },
+   initialValues: {
+  tenant_id: editData?.tenant_id || "",
+  project_name: editData?.project_name || "",
+  short_code: editData?.short_code || "",
+  project_district: editData?.project_district || "",
+  project_state: editData?.project_state || "",
+  project_address: editData?.project_address || "",
+
+  agency_name: editData?.agency_name || "",
+  agency_district: editData?.agency_district || "",
+  agency_address: editData?.agency_address || "",
+  agency_state: editData?.agency_state || "",
+
+  agency_spoc_name: editData?.agency_spoc_name || "",
+  agency_spoc_email: editData?.agency_spoc_email || "",
+  agency_spoc_contact_number:
+    editData?.agency_spoc_contact_number || "",
+
+  agency_spoc_alternate_name:
+    editData?.agency_spoc_alternate_name || "",
+
+  agency_spoc_alternate_contact_number:
+    editData?.agency_spoc_alternate_contact_number || "",
+
+  project_start_date: editData?.project_start_date || "",
+  project_end_date: editData?.project_end_date || "",
+},
+enableReinitialize: true,
 
     validationSchema: Yup.object({
       tenant_id: Yup.string().required("Tenant is required"),
@@ -75,59 +86,84 @@ const CenterForm = () => {
       // project_end_date: Yup.string().required("End Date is required"),
     }),
 
+   
     onSubmit: async (values, { setSubmitting }) => {
-      try {
-        debugger;
-        const finalTenantId = isAdmin ? values.tenant_id : cookieTenantId;
+  try {
+    const finalTenantId = isAdmin
+      ? values.tenant_id
+      : cookieTenantId;
 
-        const payload = {
-          tenant_id: Number(finalTenantId),
+    const payload = {
+      tenant_id: Number(finalTenantId),
 
-          createdBy: Number(userId),
+      createdBy: Number(userId),
 
-          project_name: values.project_name,
-          short_code: values.short_code,
+      project_name: values.project_name,
+      short_code: values.short_code,
 
-          project_district: values.project_district,
-          project_state: values.project_state,
-          project_address: values.project_address,
+      project_district: values.project_district,
+      project_state: values.project_state,
+      project_address: values.project_address,
 
-          agency_name: values.agency_name,
-          agency_address: values.agency_address,
-          agency_district: values.agency_district,
-          agency_state: values.agency_state,
+      agency_name: values.agency_name,
+      agency_address: values.agency_address,
+      agency_district: values.agency_district,
+      agency_state: values.agency_state,
 
-          agency_spoc_name: values.agency_spoc_name,
-          agency_spoc_email: values.agency_spoc_email,
-          agency_spoc_contact_number: values.agency_spoc_contact_number,
+      agency_spoc_name: values.agency_spoc_name,
+      agency_spoc_email: values.agency_spoc_email,
+      agency_spoc_contact_number:
+        values.agency_spoc_contact_number,
 
-          agency_spoc_alternate_name: values.agency_spoc_alternate_name || null,
+      agency_spoc_alternate_name:
+        values.agency_spoc_alternate_name || null,
 
-          agency_spoc_alternate_contact_number:
-            values.agency_spoc_alternate_contact_number || null,
+      agency_spoc_alternate_contact_number:
+        values.agency_spoc_alternate_contact_number || null,
 
-          project_start_date: values.project_start_date || null,
+      project_start_date:
+        values.project_start_date || null,
 
-          project_end_date: values.project_end_date || null,
-        };
+      project_end_date:
+        values.project_end_date || null,
+    };
 
-        const result = await createCenter(payload).unwrap();
-        debugger;
+    let result;
 
-        healthAlert({
-          title: "Success",
-          text: `${result?.message} created successfully!`,
-          icon: "success",
-        });
-        navigate(`/centers-list`);
-      } catch (err) {
-        healthAlert({
-          title: "Error",
-          text: err?.data?.message || "Failed to create center",
-          icon: "error",
-        });
-      }
-    },
+    if (editData?.id) {
+      result = await updateCenter({
+        id: editData.id,
+        ...payload,
+      }).unwrap();
+
+      healthAlert({
+        title: "Success",
+        text: "Center Updated Successfully",
+        icon: "success",
+      });
+    } else {
+      result = await createCenter(payload).unwrap();
+
+      healthAlert({
+        title: "Success",
+        text: "Center Created Successfully",
+        icon: "success",
+      });
+    }
+
+    navigate(`/center-list`);
+  } catch (err) {
+    healthAlert({
+      title: "Error",
+      text:
+        err?.data?.message ||
+        "Failed to save center",
+      icon: "error",
+    });
+  } finally {
+    setSubmitting(false);
+  }
+},
   });
 
   const nextStep = async () => {
@@ -181,9 +217,9 @@ const CenterForm = () => {
         {/* HEADER */}
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold flex items-center gap-3">
-            <UsersIcon className="w-7 text-blue-600" />
-            Add Center / Project
-          </h1>
+  <UsersIcon className="w-7 text-blue-600" />
+  {editData ? "Edit Center / Project" : "Add Center / Project"}
+</h1>
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl border overflow-hidden">
@@ -368,13 +404,13 @@ const CenterForm = () => {
                   </Button>
                 ) : (
                   <Button
-                    type="button"
-                    variant="sky"
-                    onClick={formik.handleSubmit}
-                  >
-                    <CheckCircleIcon className="w-4 mr-1" />
-                    Save
-                  </Button>
+  type="button"
+  variant="sky"
+  onClick={formik.handleSubmit}
+>
+  <CheckCircleIcon className="w-4 mr-1" />
+  {editData ? "Update" : "Save"}
+</Button>
                 )}
               </div>
             </div>

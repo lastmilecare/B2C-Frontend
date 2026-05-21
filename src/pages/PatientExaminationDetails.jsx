@@ -12,9 +12,11 @@ import {
     DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import {
-    useCreateVitalsMutation,
-    useUpdateVitalsMutation,
-    useGetVitalsByIdQuery
+    useSaveOhcCombinedMutation,
+    useGetOhcCombinedByIdQuery,
+    
+    useUploadLabReportMutation,
+    useUploadRadiologyReportMutation,
 } from "../redux/apiSlice";
 
 import { healthAlerts } from "../utils/healthSwal";
@@ -30,10 +32,20 @@ const PatientExaminationDetails = () => {
     const { id } = useParams();
     const isEditMode = Boolean(id);
 
-    const [createVitals] = useCreateVitalsMutation();
-    const [updateVitals] = useUpdateVitalsMutation();
+    const [saveOhcCombined] =
+        useSaveOhcCombinedMutation();
 
-    const { data: editData } = useGetVitalsByIdQuery(id, {
+    // const [updateOhcCombined] =
+    //     useUpdateOhcCombinedMutation();
+
+    const [uploadLabReport] =
+        useUploadLabReportMutation();
+
+    const [uploadRadiologyReport] =
+        useUploadRadiologyReportMutation();
+
+    const { data: editData } =
+    useGetOhcCombinedByIdQuery(id, {
         skip: !id,
     });
     const formik = useFormik({
@@ -77,6 +89,7 @@ const PatientExaminationDetails = () => {
             resultSummary: "",
             doctorRemarks: "",
             radiologyReportFile: null,
+            packageName: "",
         },
         validationSchema: Yup.object({
             patient_id: Yup.string().required("Patient is required"),
@@ -158,74 +171,196 @@ const PatientExaminationDetails = () => {
                 .required("Skin condition required"),
 
         }),
-        onSubmit: async (values, { resetForm }) => {
-            try {
+        onSubmit: async (
+            values,
+            { resetForm }
+        ) => {
+
+            try {              
+                const uploadedLabTests =
+                    await Promise.all(
+
+                        bloodTestList.map(
+                            async (test) => {
+
+                                let report_url = "";
+
+                                if (test.report_file) {
+
+                                    const formData =
+                                        new FormData();
+
+                                    formData.append(
+                                        "file",
+                                        test.report_file
+                                    );
+
+                                    const uploadRes =
+                                        await uploadLabReport(
+                                            formData
+                                        ).unwrap();
+
+                                    report_url =
+                                        uploadRes.path;
+                                }
+
+                                return {
+
+                                    test_name:
+                                        test.test_name,
+
+                                    result_value:
+                                        test.result_value,
+
+                                    normal_range:
+                                        test.normal_range,
+
+                                    remarks:
+                                        test.remarks,
+
+                                    report_url,
+                                };
+                            }
+                        )
+                    );
+
+                // =========================
+                // RADIOLOGY FILE UPLOAD
+                // =========================
+
+                const uploadedRadiologyTests =
+                    await Promise.all(
+
+                        radiologyTestList.map(
+                            async (test) => {
+
+                                let report_url = "";
+
+                                if (test.report_file) {
+
+                                    const formData =
+                                        new FormData();
+
+                                    formData.append(
+                                        "file",
+                                        test.report_file
+                                    );
+
+                                    const uploadRes = await uploadRadiologyReport(
+                                            formData
+                                        ).unwrap();
+
+                                    report_url =
+                                        uploadRes.path;
+                                }
+
+                                return {
+
+                                    test_type:
+                test.test_type,
+                    result_summary:test.result_summary,
+                                    doctor_remarks:test.doctor_remarks,
+                                    report_url,
+                                };
+                            }
+                        )
+                    );
                 const payload = {
+                    selected_package_name: [
+                        values.packageName,],
+                    blood_pressure_unit: {
+
+                        systolic:values.bpsystolic,
+
+                        diastolic:values.bpdiastolic,
+                    },
+
+                    pulse_unit: {pulse: values.pulserate,},
+
+                    spo2_unit: {
+
+                        spo2:values.spo2,
+                    },
+
+                    bmi_unit: {
+
+                        bmi:values.bmi,
+                    },
+
+                    temperature_unit: {
+
+                        temperature: values.temprature,
+                    },
+
+                   
 
                     patient: {
-                        patient_id: values.patient_id,
-                        employee_id: values.EmployeeId,
+                        patient_id:values.patient_id,
+                        employee_id:values.EmployeeId,
                         name: values.Name,
-                        gender: values.Gender,
-                        age: values.Age,
+                        gender:values.Gender,
+                        age:values.Age,
                     },
-
                     vitals: {
-                        bpsystolic: values.bpsystolic,
+                        bpsystolic:values.bpsystolic,
                         bpdiastolic: values.bpdiastolic,
-                        pulserate: values.pulserate,
-                        spo2: values.spo2,
-                        temperature: values.temprature,
-                        height: values.height,
-                        weight: values.weight,
-                        bmi: values.bmi,
-                        respiratory_rate: values.respiratoryRate,
+                        pulserate:values.pulserate,
+                        spo2:values.spo2,
+                        temperature:values.temprature,
+                        height:values.height,
+                        weight:values.weight,
+                        bmi:values.bmi,
+                        respiratory_rate:values.respiratoryRate,
                     },
-
                     clinical_examination: {
-                        generalAppearance: values.generalAppearance,
-                        vision: values.vision,
-                        colorBlindness: values.colorBlindness,
-                        ear: values.ear,
-                        nose: values.nose,
-                        throat: values.throat,
-                        cardiovascular: values.cardiovascular,
-                        respiratory: values.respiratory,
-                        abdomen: values.abdomen,
-                        nervousSystem: values.nervousSystem,
-                        musculoskeletal: values.musculoskeletal,
-                        skin: values.skin,
+      general_appearance: values.generalAppearance,
+      eye_examination: values.vision,
+      ear: values.ear,
+      nose: values.nose,
+      throat: values.throat,
+      cardiovascular_system: values.cardiovascular,
+      respiratory_system: values.respiratory,
+      abdomen: values.abdomen,
+      nervous_system: values.nervousSystem,
+      musculoskeletal_system: values.musculoskeletal,
+      skin_condition: values.skin,
+      color_blindness: values.colorBlindness,
                     },
-
-                    laboratory: bloodTestList,
-
-                    radiology: radiologyTestList,
+        laboratory: {
+  investigation_date: new Date(),
+  remarks: "",
+  tests: uploadedLabTests,   
+},
+radiology: {
+  remarks: "",
+  tests: uploadedRadiologyTests,
+                    },
                 };
 
                 let res;
-
                 if (isEditMode) {
-                    res = await updateVitals({
-                        id,
-                        body: payload,
-                    }).unwrap();
+                    res =
+                        await updateOhcCombined({
+                            id,
+                            body: payload,
+                        }).unwrap();
                 } else {
-                    res = await createVitals(payload).unwrap();
+                    res =
+                        await saveOhcCombined(
+                            payload
+                        ).unwrap();
                 }
-
                 healthAlerts.success(
-                    res.message || "Vitals saved successfully"
+                    res.message ||
+                    "Saved Successfully"
                 );
-
                 resetForm();
-
-                navigate("/vitals", {
-                    state: { goToList: true },
-                });
-
+                setBloodTestList([]);
+                setRadiologyTestList([]);
             } catch (error) {
                 healthAlerts.error(
-                    error?.data?.message || "Save failed"
+                    error?.data?.message ||
+                    "Save Failed"
                 );
             }
         }
@@ -268,121 +403,107 @@ const PatientExaminationDetails = () => {
     useEffect(() => {
         formik.setFieldValue("bmi", bmiValue);
     }, [bmiValue]);
-   const nextStep = async () => {
+    const nextStep = async () => {
 
-  const errors = await formik.validateForm();
+        const errors = await formik.validateForm();
 
-  if (activeStep === 1 && !formik.values.Name) {
+        if (activeStep === 1 && !formik.values.Name) {
 
-    healthAlerts.warning("Name is required");
-    return;
-  }
-  if (
-    activeStep === 2 &&
-    (
-      errors.bpsystolic ||
-      errors.bpdiastolic ||
-      errors.pulserate ||
-      errors.spo2 ||
-      errors.temprature ||
-      errors.height ||
-      errors.weight ||
-      errors.respiratoryRate
-    )
-  ) {
+            healthAlerts.warning("Name is required");
+            return;
+        }
+        if (
+            activeStep === 2 &&
+            (
+                errors.bpsystolic ||
+                errors.bpdiastolic ||
+                errors.pulserate ||
+                errors.spo2 ||
+                errors.temprature ||
+                errors.height ||
+                errors.weight ||
+                errors.respiratoryRate
+            )
+        ) {
 
-    formik.setTouched({
-      bpsystolic: true,
-      bpdiastolic: true,
-      pulserate: true,
-      spo2: true,
-      temprature: true,
-      height: true,
-      weight: true,
-      respiratoryRate: true,
-    });
+            formik.setTouched({
+                bpsystolic: true,
+                bpdiastolic: true,
+                pulserate: true,
+                spo2: true,
+                temprature: true,
+                height: true,
+                weight: true,
+                respiratoryRate: true,
+            });
 
-    const firstError = Object.values(errors)[0];
+            const firstError = Object.values(errors)[0];
 
-    healthAlerts.warning(firstError);
+            healthAlerts.warning(firstError);
 
-    return;
-  }
-  if (
-    activeStep === 3 &&
-    (
-      errors.generalAppearance ||
-      errors.vision ||
-      errors.colorBlindness ||
-      errors.ear ||
-      errors.nose ||
-      errors.throat
-    )
-  ) {
+            return;
+        }
+        if (
+            activeStep === 3 &&
+            (
+                errors.generalAppearance ||
+                errors.vision ||
+                errors.colorBlindness ||
+                errors.ear ||
+                errors.nose ||
+                errors.throat ||
+                errors.cardiovascular ||
+                errors.respiratory ||
+                errors.abdomen ||
+                errors.nervousSystem ||
+                errors.musculoskeletal ||
+                errors.skin
+            )
+        ) {
 
-    formik.setTouched({
-      generalAppearance: true,
-      vision: true,
-      colorBlindness: true,
-      ear: true,
-      nose: true,
-      throat: true,
-    });
+            formik.setTouched({
+                generalAppearance: true,
+                vision: true,
+                colorBlindness: true,
+                ear: true,
+                nose: true,
+                throat: true,
+                cardiovascular: true,
+                respiratory: true,
+                abdomen: true,
+                nervousSystem: true,
+                musculoskeletal: true,
+                skin: true,
+            });
 
-    const firstError = Object.values(errors)[0];
+            const firstError = Object.values(errors)[0];
 
-    healthAlerts.warning(firstError);
+            healthAlerts.warning(firstError);
 
-    return;
-  }
-
-  if (
-    activeStep === 4 &&
-    (
-      errors.cardiovascular ||
-      errors.respiratory ||
-      errors.abdomen ||
-      errors.nervousSystem ||
-      errors.musculoskeletal ||
-      errors.skin
-    )
-  ) {
-
-    formik.setTouched({
-      cardiovascular: true,
-      respiratory: true,
-      abdomen: true,
-      nervousSystem: true,
-      musculoskeletal: true,
-      skin: true,
-    });
-
-    const firstError = Object.values(errors)[0];
-
-    healthAlerts.warning(firstError);
-
-    return;
-  }
-
-  if (activeStep === 5) {
-
-    if (bloodTestList.length === 0) {
-      healthAlerts.warning("Add at least one blood test");
-      return;
-    }
-  }
+            return;
+        }
 
 
-  if (activeStep === 6) {
 
-    if (radiologyTestList.length === 0) {
-      healthAlerts.warning("Add at least one radiology test");
-      return;
-    }
-  }
+        if (activeStep === 4) {
 
-  setActiveStep((prev) => prev + 1);
-};
+            if (bloodTestList.length === 0) {
+                healthAlerts.warning("Add at least one blood test");
+                return;
+            }
+        }
+
+
+        if (activeStep === 5) {
+
+            if (radiologyTestList.length === 0) {
+                healthAlerts.warning("Add at least one radiology test");
+                return;
+            }
+        }
+
+        setActiveStep((prev) => prev + 1);
+    };
 
     const prevStep = () => setActiveStep((prev) => prev - 1);
     const handleAddLabTest = () => {
@@ -400,12 +521,19 @@ const PatientExaminationDetails = () => {
         }
 
         const newTest = {
-            name: testName,
-            result,
-            min: minRange,
-            max: maxRange,
-            remarks,
-        };
+
+    test_name: testName,
+
+    result_value: result,
+
+    normal_range:
+        `${minRange} - ${maxRange}`,
+
+    remarks,
+
+    report_file:
+        formik.values.labReportFile,
+};
 
         setBloodTestList((prev) => [...prev, newTest]);
 
@@ -420,33 +548,28 @@ const PatientExaminationDetails = () => {
             prev.filter((_, i) => i !== index)
         );
     };
-    const handleAddRadiologyTest = () => {
-        const {
-            testType,
-            resultSummary,
-            doctorRemarks,
-        } = formik.values;
+   const handleAddRadiologyTest = () => {
+    const { testType, resultSummary, doctorRemarks } = formik.values;
 
-        if (!testType || !resultSummary) {
-            healthAlerts.warning(
-                "Test Type & Result Summary required"
-            );
-            return;
-        }
+    if (!testType || !resultSummary) {
+        healthAlerts.warning("Test Type & Result Summary required");
+        return;
+    }
 
-        setRadiologyTestList((prev) => [
-            ...prev,
-            {
-                testType,
-                resultSummary,
-                doctorRemarks,
-            },
-        ]);
+    setRadiologyTestList((prev) => [
+        ...prev,
+        {
+            test_type: testType,
+            result_summary: resultSummary, 
+            doctor_remarks: doctorRemarks, 
+            report_file: formik.values.radiologyReportFile,
+        },
+    ]);
 
-        formik.setFieldValue("testType", "");
-        formik.setFieldValue("resultSummary", "");
-        formik.setFieldValue("doctorRemarks", "");
-    };
+    formik.setFieldValue("testType", "");
+    formik.setFieldValue("resultSummary", "");
+    formik.setFieldValue("doctorRemarks", "");
+};
     const handleDeleteRadiologyTest = (index) => {
         setRadiologyTestList((prev) =>
             prev.filter((_, i) => i !== index)
@@ -461,7 +584,7 @@ const PatientExaminationDetails = () => {
                 Patient Examination Details
             </h1>
             <div className="flex gap-2">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                {[1, 2, 3, 4, 5, 6,].map((s) => (
                     <div
                         key={s}
                         className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-blue-100"
@@ -477,13 +600,14 @@ const PatientExaminationDetails = () => {
                 {[
 
                     { id: 1, label: "Patient", icon: UserIcon },
+
                     { id: 2, label: "Vitals", icon: ClipboardDocumentIcon },
                     { id: 3, label: "Clinical", icon: ClipboardDocumentCheckIcon },
-                    { id: 4, label: "Clinical Systems", icon: ClipboardDocumentCheckIcon },
-                    { id: 5, label: "Laboratory", icon: BeakerIcon },
-                    { id: 6, label: "Radiology", icon: CreditCardIcon },
-                    { id: 7, label: "Reports", icon: DocumentArrowUpIcon },
-                    { id: 8, label: "Confirm", icon: DocumentCheckIcon },
+                    // { id: 4, label: "Clinical Systems", icon: ClipboardDocumentCheckIcon },
+                    { id: 4, label: "Laboratory", icon: BeakerIcon },
+                    { id: 5, label: "Radiology", icon: CreditCardIcon },
+                    // { id: 7, label: "Reports", icon: DocumentArrowUpIcon },
+                    { id: 6, label: "Confirm", icon: DocumentCheckIcon },
 
                 ].map((step) => (
                     <button
@@ -509,8 +633,27 @@ const PatientExaminationDetails = () => {
             >
 
                 {activeStep === 1 && (
-                    <section>
+                    <section className="space-y-6">
+
                         <PatientSelector formik={formik} />
+
+                        <div className="grid md:grid-cols-2 gap-4">
+
+                            <Select
+                                label="Select Package"
+                                // required
+                                value={formik.values.packageName || ""}
+                                onChange={(e) =>
+                                    formik.setFieldValue("packageName", e.target.value)
+                                }
+                            >
+                                <option value="">Select Package</option>
+                                <option value="COUNSELLING">COUNSELLING</option>
+                                <option value="ADVANCED">ADVANCED</option>
+                                <option value="BASIC">BASIC</option>
+                            </Select>
+
+                        </div>
 
                     </section>
                 )}
@@ -600,59 +743,175 @@ const PatientExaminationDetails = () => {
                 {activeStep === 3 && (
                     <section className="space-y-6">
 
-
+                        {/* General Appearance */}
                         <div>
-                            <h3 className="text-sky-700 font-semibold mb-2">General Appearance</h3>
+                            <h3 className="text-sky-700 font-semibold mb-2">
+                                General Appearance
+                            </h3>
+
                             <Input
-                                label="General Appearance "
+                                label="General Appearance"
                                 required
                                 {...formik.getFieldProps("generalAppearance")}
-                                error={formik.touched.generalAppearance && formik.errors.generalAppearance}
+                                error={
+                                    formik.touched.generalAppearance &&
+                                    formik.errors.generalAppearance
+                                }
                             />
                         </div>
 
+                        {/* Eye Examination */}
                         <div>
-                            <h3 className="text-sky-700 font-semibold mb-2">Eye Examination</h3>
+                            <h3 className="text-sky-700 font-semibold mb-2">
+                                Eye Examination
+                            </h3>
 
                             <div className="grid md:grid-cols-2 gap-3">
-                                <Input label="Vision " required error={formik.touched.vision && formik.errors.vision}{...formik.getFieldProps("vision")} />
-                                <Select label="Color Blindness" required error={formik.touched.colorBlindness && formik.errors.colorBlindness} {...formik.getFieldProps("colorBlindness")}>
+
+                                <Input
+                                    label="Vision"
+                                    required
+                                    error={
+                                        formik.touched.vision &&
+                                        formik.errors.vision
+                                    }
+                                    {...formik.getFieldProps("vision")}
+                                />
+
+                                <Select
+                                    label="Color Blindness"
+                                    required
+                                    error={
+                                        formik.touched.colorBlindness &&
+                                        formik.errors.colorBlindness
+                                    }
+                                    {...formik.getFieldProps("colorBlindness")}
+                                >
                                     <option value="">Select</option>
                                     <option>No</option>
                                     <option>Yes</option>
                                 </Select>
+
                             </div>
                         </div>
-
 
                         <div>
-                            <h3 className="text-sky-700 font-semibold mb-2">ENT</h3>
+                            <h3 className="text-sky-700 font-semibold mb-2">
+                                ENT
+                            </h3>
+
                             <div className="grid md:grid-cols-3 gap-3">
-                                <Input label="Ear" required error={formik.touched.ear && formik.errors.ear} {...formik.getFieldProps("ear")} />
-                                <Input label="Nose" required error={formik.touched.nose && formik.errors.nose} {...formik.getFieldProps("nose")} />
-                                <Input label="Throat" required error={formik.touched.throat && formik.errors.throat} {...formik.getFieldProps("throat")} />
+
+                                <Input
+                                    label="Ear"
+                                    required
+                                    error={
+                                        formik.touched.ear &&
+                                        formik.errors.ear
+                                    }
+                                    {...formik.getFieldProps("ear")}
+                                />
+
+                                <Input
+                                    label="Nose"
+                                    required
+                                    error={
+                                        formik.touched.nose &&
+                                        formik.errors.nose
+                                    }
+                                    {...formik.getFieldProps("nose")}
+                                />
+
+                                <Input
+                                    label="Throat"
+                                    required
+                                    error={
+                                        formik.touched.throat &&
+                                        formik.errors.throat
+                                    }
+                                    {...formik.getFieldProps("throat")}
+                                />
+
+                            </div>
+                        </div>
+
+                        {/* System Examination */}
+                        <div>
+                            <h3 className="text-sky-700 font-semibold mb-4">
+                                System Examination
+                            </h3>
+
+                            <div className="grid md:grid-cols-6 gap-4">
+
+                                <Input
+                                    label="Cardiovascular System"
+                                    required
+                                    error={
+                                        formik.touched.cardiovascular &&
+                                        formik.errors.cardiovascular
+                                    }
+                                    {...formik.getFieldProps("cardiovascular")}
+                                />
+
+                                <Input
+                                    label="Respiratory System"
+                                    required
+                                    error={
+                                        formik.touched.respiratory &&
+                                        formik.errors.respiratory
+                                    }
+                                    {...formik.getFieldProps("respiratory")}
+                                />
+
+                                <Input
+                                    label="Abdomen"
+                                    required
+                                    error={
+                                        formik.touched.abdomen &&
+                                        formik.errors.abdomen
+                                    }
+                                    {...formik.getFieldProps("abdomen")}
+                                />
+
+                                <Input
+                                    label="Nervous System"
+                                    required
+                                    error={
+                                        formik.touched.nervousSystem &&
+                                        formik.errors.nervousSystem
+                                    }
+                                    {...formik.getFieldProps("nervousSystem")}
+                                />
+
+                                <Input
+                                    label="Musculoskeletal System"
+                                    required
+                                    error={
+                                        formik.touched.musculoskeletal &&
+                                        formik.errors.musculoskeletal
+                                    }
+                                    {...formik.getFieldProps("musculoskeletal")}
+                                />
+
+                                <Input
+                                    label="Skin Condition"
+                                    required
+                                    error={
+                                        formik.touched.skin &&
+                                        formik.errors.skin
+                                    }
+                                    {...formik.getFieldProps("skin")}
+                                />
+
                             </div>
                         </div>
 
                     </section>
                 )}
 
+
+
                 {activeStep === 4 && (
-                    <section>
-                        <h3 className="text-sky-700 font-semibold mb-4">System Examination</h3>
-
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <Input label="Cardiovascular System " required error={formik.touched.cardiovascular && formik.errors.cardiovascular} {...formik.getFieldProps("cardiovascular")} />
-                            <Input label="Respiratory System " required error={formik.touched.respiratory && formik.errors.respiratory} {...formik.getFieldProps("respiratory")} />
-                            <Input label="Abdomen " required error={formik.touched.abdomen && formik.errors.abdomen} {...formik.getFieldProps("abdomen")} />
-                            <Input label="Nervous System " required error={formik.touched.nervousSystem && formik.errors.nervousSystem} {...formik.getFieldProps("nervousSystem")} />
-                            <Input label="Musculoskeletal System " required error={formik.touched.musculoskeletal && formik.errors.musculoskeletal} {...formik.getFieldProps("musculoskeletal")} />
-                            <Input label="Skin Condition " required error={formik.touched.skin && formik.errors.skin} {...formik.getFieldProps("skin")} />
-                        </div>
-                    </section>
-                )}
-
-                {activeStep === 5 && (
                     <section>
                         <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
                             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
@@ -684,6 +943,36 @@ const PatientExaminationDetails = () => {
                             <Input label="Min Range" {...formik.getFieldProps("minRange")} />
                             <Input label="Max Range" {...formik.getFieldProps("maxRange")} />
                             <Input label="Remarks" {...formik.getFieldProps("remarks")} />
+                            <div className="flex items-center gap-3 mt-1">
+
+                                <label
+                                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2
+    rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100
+    text-sky-700 text-sm font-medium transition"
+                                >
+                                    <DocumentArrowUpIcon className="w-5 h-5" />
+
+                                    Upload Report
+
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) =>
+                                            formik.setFieldValue(
+                                                "labReportFile",
+                                                e.target.files[0]
+                                            )
+                                        }
+                                    />
+                                </label>
+
+                                <span className="text-sm text-gray-500 truncate max-w-[180px]">
+                                    {formik.values.labReportFile
+                                        ? formik.values.labReportFile.name
+                                        : "No file selected"}
+                                </span>
+
+                            </div>
                         </div>
 
 
@@ -720,26 +1009,23 @@ const PatientExaminationDetails = () => {
                                         </thead>
 
                                         <tbody>
-                                            {bloodTestList.map((t, i) => (
-                                                <tr key={i} className="border-t">
-                                                    <td className="px-4 py-3">{t.name}</td>
-                                                    <td className="px-4 py-3">{t.result}</td>
-                                                    <td className="px-4 py-3">
-                                                        {t.min} - {t.max}
-                                                    </td>
-                                                    <td className="px-4 py-3">{t.remarks}</td>
-
-                                                    <td className="px-4 py-3">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleDeleteLabTest(i)}
-                                                            className="text-red-400 hover:text-red-600 font-semibold"
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                           {bloodTestList.map((t, i) => (
+    <tr key={i} className="border-t">
+        <td className="px-4 py-3">{t.test_name}</td>   
+        <td className="px-4 py-3">{t.result_value}</td> 
+        <td className="px-4 py-3">{t.normal_range}</td> 
+        <td className="px-4 py-3">{t.remarks}</td>
+        <td className="px-4 py-3">
+            <button
+                type="button"
+                onClick={() => handleDeleteLabTest(i)}
+                className="text-red-400 hover:text-red-600 font-semibold"
+            >
+                Delete
+            </button>
+        </td>
+    </tr>
+))}
                                         </tbody>
                                     </table>
                                 </div>
@@ -748,7 +1034,7 @@ const PatientExaminationDetails = () => {
                     </section>
                 )}
 
-                {activeStep === 6 && (
+                {activeStep === 5 && (
                     <section>
                         <h3 className="text-lg font-semibold text-sky-700 mb-4 flex gap-2">
                             <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
@@ -775,6 +1061,36 @@ const PatientExaminationDetails = () => {
 
                             <Input label="Result Summary" required error={formik.touched.resultSummary && formik.errors.resultSummary} {...formik.getFieldProps("resultSummary")} />
                             <Input label="Doctor Remarks" {...formik.getFieldProps("doctorRemarks")} />
+                            <div className="flex items-center gap-3 mt-1">
+
+                                <label
+                                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2
+    rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100
+    text-sky-700 text-sm font-medium transition"
+                                >
+                                    <DocumentArrowUpIcon className="w-5 h-5" />
+
+                                    Upload Report
+
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) =>
+                                            formik.setFieldValue(
+                                                "radiologyReportFile",
+                                                e.target.files[0]
+                                            )
+                                        }
+                                    />
+                                </label>
+
+                                <span className="text-sm text-gray-500 truncate max-w-[180px]">
+                                    {formik.values.radiologyReportFile
+                                        ? formik.values.radiologyReportFile.name
+                                        : "No file selected"}
+                                </span>
+
+                            </div>
                         </div>
 
 
@@ -801,74 +1117,34 @@ const PatientExaminationDetails = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {radiologyTestList.map((t, i) => (
-                                            <tr key={i} className="border-t">
-                                                <td className="p-3">{t.testType}</td>
-                                                <td className="p-3">{t.resultSummary}</td>
-                                                <td className="p-3">{t.doctorRemarks}</td>
-                                                <td className="p-3 text-center">
-                                                    <button
-                                                        onClick={() =>
-                                                            setRadiologyTestList((prev) =>
-                                                                prev.filter((_, idx) => idx !== i)
-                                                            )
-                                                        }
-                                                        className="text-red-500"
-                                                    >
-                                                        ❌
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                       {radiologyTestList.map((t, i) => (
+    <tr key={i} className="border-t">
+        <td className="p-3">{t.test_type}</td>         
+        <td className="p-3">{t.result_summary}</td>    
+        <td className="p-3">{t.doctor_remarks}</td>    
+        <td className="p-3 text-center">
+            <button
+                onClick={() =>
+                    setRadiologyTestList((prev) =>
+                        prev.filter((_, idx) => idx !== i)
+                    )
+                }
+                className="text-red-500"
+            >
+                ❌
+            </button>
+        </td>
+    </tr>
+))}
                                     </tbody>
                                 </table>
                             </div>
                         )}
                     </section>
                 )}
-                {activeStep === 7 && (
-                    <section>
+                
 
-                        <div className="grid md:grid-cols-2 gap-8">
-
-                            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-6">
-                                <h3 className="text-lg font-semibold text-sky-700 mb-4">
-                                    Laboratory Report
-                                </h3>
-
-                                <input
-                                    type="file"
-                                    onChange={(e) =>
-                                        formik.setFieldValue(
-                                            "labReportFile",
-                                            e.target.files[0]
-                                        )
-                                    }
-                                />
-                            </div>
-
-                            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-6">
-                                <h3 className="text-lg font-semibold text-sky-700 mb-4">
-                                    Radiology Report
-                                </h3>
-
-                                <input
-                                    type="file"
-                                    onChange={(e) =>
-                                        formik.setFieldValue(
-                                            "radiologyReportFile",
-                                            e.target.files[0]
-                                        )
-                                    }
-                                />
-                            </div>
-
-                        </div>
-
-                    </section>
-                )}
-
-                {activeStep === 8 && (
+                {activeStep === 6 && (
                     <section>
                         <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-6">
 
@@ -889,7 +1165,7 @@ const PatientExaminationDetails = () => {
                                 </div>
                             </div>
 
-                      
+
                             <div className="border-t pt-4">
                                 <h4 className="font-semibold text-sky-600 mb-2">
                                     Vitals
@@ -961,7 +1237,7 @@ const PatientExaminationDetails = () => {
                     </div>
 
                     {/* RIGHT SIDE */}
-                    {activeStep < 8 ? (
+                    {activeStep < 6 ? (
                         <button
                             type="button"
                             onClick={(e) => {
