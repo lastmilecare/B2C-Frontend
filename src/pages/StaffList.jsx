@@ -151,6 +151,14 @@ const StaffList = () => {
         </span>
       ),
     },
+     {
+      name: "Center",
+      cell: (row) => (
+        <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded text-xs font-medium">
+          {row.center?.project_name || "-"}
+        </span>
+      ),
+    },
 
     {
       name: "Status",
