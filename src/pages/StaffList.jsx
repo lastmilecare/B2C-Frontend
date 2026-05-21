@@ -3,6 +3,7 @@ import {
   useGetUsersQuery,
   useDeleteUserMutation,
   useToggleUserStatusMutation,
+  useCenterComboListQuery,
 } from "../redux/apiSlice";
 
 import CopyFilterBar from "../components/Updates/Filter";
@@ -18,7 +19,7 @@ const StaffList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
-  const [loadingId, setLoadingId] = useState(null); 
+  const [loadingId, setLoadingId] = useState(null);
 
   const [tempFilters, setTempFilters] = useState({
     name: "",
@@ -29,8 +30,9 @@ const StaffList = () => {
   const [filters, setFilters] = useState({});
 
   const debouncedName = useDebounce(filters.name, 400);
-const debouncedEmail = useDebounce(filters.email, 400);
-
+  const debouncedEmail = useDebounce(filters.email, 400);
+  const { data: centersData = [], isLoading: centersLoading } =
+    useCenterComboListQuery();
   const { data, isLoading, isFetching } = useGetUsersQuery({
     page,
     limit,
@@ -38,7 +40,7 @@ const debouncedEmail = useDebounce(filters.email, 400);
     email: debouncedEmail,
     status: filters.status || undefined,
   });
-
+  console.log("centersData", centersData);
   const [deleteStaff] = useDeleteUserMutation();
   const [toggleStatus] = useToggleUserStatusMutation();
   const staffList = data?.data?.data || [];
@@ -66,8 +68,6 @@ const debouncedEmail = useDebounce(filters.email, 400);
     setFilters({});
     setPage(1);
   };
-
-
 
   const handleDelete = async (row) => {
     const result = await healthAlert({
@@ -117,12 +117,11 @@ const debouncedEmail = useDebounce(filters.email, 400);
     }
   };
 
- const handleEdit = (row) => {
-  navigate(`/staff-form/${row.id}`, {
-    state: { editData: row },
-  });
-};
-
+  const handleEdit = (row) => {
+    navigate(`/staff-form/${row.id}`, {
+      state: { editData: row },
+    });
+  };
 
   const columns = [
     {
@@ -176,7 +175,6 @@ const debouncedEmail = useDebounce(filters.email, 400);
     },
   ];
 
-
   const filtersConfig = [
     { label: "Name", name: "name", type: "text" },
     { label: "Email", name: "email", type: "text" },
@@ -193,9 +191,7 @@ const debouncedEmail = useDebounce(filters.email, 400);
   return (
     <div className="max-w-7xl mx-auto">
       <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-700">
-          Staff List
-        </h1>
+        <h1 className="text-2xl font-semibold text-gray-700">Staff List</h1>
 
         {/* <button
           onClick={() => navigate("/staff")}
@@ -228,7 +224,6 @@ const debouncedEmail = useDebounce(filters.email, 400);
         onDelete={handleDelete}
         loadingId={loadingId}
       />
-
     </div>
   );
 };
