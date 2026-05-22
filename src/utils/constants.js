@@ -102,3 +102,10 @@ export const Referral_Options = [
   { label: "Digital Marketing", value: "Digital Marketing" },
   // { label: "Amp Family", value: "Amp Family" },
 ];
+
+export const PERMISSION_DESCRIPTION_OPTIONS = [
+  { label: "Standard", value: "Standard" },
+  { label: "Ohc", value: "Ohc" },
+  { label: "Admin", value: "Admin" },
+  { label: "Other", value: "Other" },
+];

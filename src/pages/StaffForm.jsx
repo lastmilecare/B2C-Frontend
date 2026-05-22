@@ -45,7 +45,7 @@ const StaffForm = () => {
   const { data: rolesData } = useGetAllRoleComboQuery();
   const [createStaff, { isLoading: isCreating }] = useCreateUserMutation();
   const [updateStaff, { isLoading: isUpdating }] = useUpdateUserMutation();
-
+  const [isSuperadmin, setIsSuperadmin] = useState(false);
   const roles = rolesData?.data || [];
   const { data: centersData = [] } = useCenterComboListQuery();
   const centerData = centersData?.data || [];
@@ -74,6 +74,14 @@ const StaffForm = () => {
       : Yup.string(),
 
     b2cRoleId: Yup.string().required("Role is required"),
+    center_id: Yup.string().test(
+      "center-validation",
+      "Center is required",
+      function (value) {
+        if (isSuperadmin) return true;
+        return !!value;
+      },
+    ),
   });
   const formik = useFormik({
     enableReinitialize: true,
@@ -220,7 +228,8 @@ const StaffForm = () => {
                 />
                 <Select
                   label="Select Center"
-                  required
+                  required={!isSuperadmin}
+                  disabled={isSuperadmin}
                   error={formik.touched.center_id && formik.errors.center_id}
                   {...formik.getFieldProps("center_id")}
                 >
@@ -307,25 +316,51 @@ const StaffForm = () => {
                         )}
                       </button>
                     </div>
-                    <div className="flex items-center gap-3 mt-2">
-                      <input
-                        type="checkbox"
-                        id="isAdmin"
-                        name="isAdmin"
-                        checked={formik.values.isAdmin}
-                        onChange={(e) =>
-                          formik.setFieldValue("isAdmin", e.target.checked)
-                        }
-                        className="w-4 h-4 text-sky-600 border-gray-300 rounded"
-                      />
 
-                      <label
-                        htmlFor="isAdmin"
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        Is Admin
+                    <div className="flex items-center gap-6 mt-2 flex-wrap">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          id="isAdmin"
+                          name="isAdmin"
+                          checked={formik.values.isAdmin}
+                          onChange={(e) =>
+                            formik.setFieldValue("isAdmin", e.target.checked)
+                          }
+                          className="w-4 h-4 text-sky-600 border-gray-300 rounded"
+                        />
+
+                        <span className="text-sm font-medium text-gray-700">
+                          Is Admin
+                        </span>
+                      </label>
+
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          id="isSuperadmin"
+                          checked={isSuperadmin}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+
+                            setIsSuperadmin(checked);
+
+                            if (checked) {
+                              formik.setFieldValue("center_id", "");
+                            }
+                          }}
+                          className="w-4 h-4 text-sky-600 border-gray-300 rounded"
+                        />
+
+                        <span className="text-sm font-medium text-gray-700">
+                          Is Superadmin 
+                        </span>
                       </label>
                     </div>
+
+                    <span className="text-xs text-gray-500">
+                     NOTE : While Select the IsSuperadmin, Center will be automatically unassigned and disabled. Superadmin will have access to all centers and functionalities without any restrictions.
+                    </span>
                   </>
                 )}
               </div>
@@ -404,13 +439,13 @@ const StaffForm = () => {
                   <b>Role:</b>{" "}
                   {roles.find(
                     (r) => String(r.id) === String(formik.values.b2cRoleId),
-                  )?.name || "-"}
+                  )?.name || "N/A"}
                 </p>
                 <p>
                   <b>Center:</b>{" "}
                   {centerData.find(
                     (r) => String(r.id) === String(formik.values.center_id),
-                  )?.project_name || "-"}
+                  )?.project_name || "N/A"}
                 </p>
               </div>
             )}
