@@ -34,7 +34,8 @@ import {
 import { generateFileName, downloadBlob } from "../utils/helper";
 
 const AttendancePage = () => {
-  const role = cookie.get("role") || "USER";
+  // const role = cookie.get("role") || "USER";
+  const isAdmin = cookie.get("isAdmin") === "true";
   const username = cookie.get("name") || "user";
   const [checkIn] = useCheckInMutation();
   const [checkOut] = useCheckOutMutation();
@@ -138,7 +139,7 @@ const AttendancePage = () => {
       year: viewConfig.year,
     },
     {
-      skip: role === "admin" && !viewingEmployee,
+      skip: isAdmin && !viewingEmployee,
     },
     {
       refetchOnFocus: true,
@@ -255,7 +256,7 @@ const AttendancePage = () => {
     }
   };
 
-  if (role === "admin" && viewingEmployee) {
+  if (isAdmin && viewingEmployee) {
     return (
       <div className="p-8 space-y-10 animate-in slide-in-from-bottom-8 duration-700">
         <div className="flex justify-between items-center bg-white p-6 rounded-[2.5rem] shadow-xl border border-gray-100">
@@ -389,7 +390,7 @@ const AttendancePage = () => {
     );
   }
 
-  if (role === "admin") {
+  if (isAdmin) {
     return (
       <div className="p-8 space-y-12 animate-in fade-in duration-1000">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
@@ -466,7 +467,7 @@ const AttendancePage = () => {
           }}
           onExport={handleExport}
         />
-        <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-50 overflow-hidden">
+       <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-50 relative">
           <AppCommonList
             title={
               appliedFilters.date
