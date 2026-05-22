@@ -919,7 +919,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                     </td>
 
                                     <td className="px-3 py-3 text-center text-red-500 text-xs">
-                                      {item.expDate}
+                                      {item.expDate
+  ? new Date(item.expDate).toLocaleDateString("en-GB")
+  : "-"}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">

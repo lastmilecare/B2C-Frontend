@@ -347,6 +347,9 @@ radiology: {
                     "Saved Successfully"
                 );
                 resetForm();
+                navigate("/patient-examination-details", {
+          state: { goToList: true },
+        });
                 setBloodTestList([]);
                 setRadiologyTestList([]);
             } catch (error) {

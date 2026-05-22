@@ -8,7 +8,7 @@ import CommonList from "../components/CommonList";
 import { healthAlert } from "../utils/healthSwal";
 import { useNavigate } from "react-router-dom";
 import CopyFilterBar from "../components/Updates/Filter";
-
+import { formatDate } from "../utils/helper";
 const TenantList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
@@ -140,10 +140,15 @@ const TenantList = () => {
       name: "Type",
       selector: (row) => row.tenant_type,
     },
+    // {
+    //   name: "Created At",
+    //   selector: (row) => new Date(row.created_at).toISOString().split("T")[0],
+    // },
     {
-      name: "Created At",
-      selector: (row) => new Date(row.created_at).toISOString().split("T")[0],
-    },
+  name: "Created At",
+  selector: (row) =>
+    formatDate(row.created_at),
+},
     {
       name: "Status",
       cell: (row) => (

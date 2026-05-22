@@ -15,7 +15,8 @@ import * as Yup from "yup";
 
 import { useGetTenantsQuery, useCreateCenterMutation, useUpdateCenterMutation } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
-
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 const STEPS = [
   { id: 1, label: "Project Details", icon: ClipboardDocumentIcon },
   { id: 2, label: "Agency Details", icon: UserPlusIcon },
@@ -38,34 +39,34 @@ const CenterForm = () => {
   const [createCenter] = useCreateCenterMutation();
   const [updateCenter] = useUpdateCenterMutation();
   const formik = useFormik({
-   initialValues: {
-  tenant_id: editData?.tenant_id || "",
-  project_name: editData?.project_name || "",
-  short_code: editData?.short_code || "",
-  project_district: editData?.project_district || "",
-  project_state: editData?.project_state || "",
-  project_address: editData?.project_address || "",
+    initialValues: {
+      tenant_id: editData?.tenant_id || "",
+      project_name: editData?.project_name || "",
+      short_code: editData?.short_code || "",
+      project_district: editData?.project_district || "",
+      project_state: editData?.project_state || "",
+      project_address: editData?.project_address || "",
 
-  agency_name: editData?.agency_name || "",
-  agency_district: editData?.agency_district || "",
-  agency_address: editData?.agency_address || "",
-  agency_state: editData?.agency_state || "",
+      agency_name: editData?.agency_name || "",
+      agency_district: editData?.agency_district || "",
+      agency_address: editData?.agency_address || "",
+      agency_state: editData?.agency_state || "",
 
-  agency_spoc_name: editData?.agency_spoc_name || "",
-  agency_spoc_email: editData?.agency_spoc_email || "",
-  agency_spoc_contact_number:
-    editData?.agency_spoc_contact_number || "",
+      agency_spoc_name: editData?.agency_spoc_name || "",
+      agency_spoc_email: editData?.agency_spoc_email || "",
+      agency_spoc_contact_number:
+        editData?.agency_spoc_contact_number || "",
 
-  agency_spoc_alternate_name:
-    editData?.agency_spoc_alternate_name || "",
+      agency_spoc_alternate_name:
+        editData?.agency_spoc_alternate_name || "",
 
-  agency_spoc_alternate_contact_number:
-    editData?.agency_spoc_alternate_contact_number || "",
+      agency_spoc_alternate_contact_number:
+        editData?.agency_spoc_alternate_contact_number || "",
 
-  project_start_date: editData?.project_start_date || "",
-  project_end_date: editData?.project_end_date || "",
-},
-enableReinitialize: true,
+      project_start_date: editData?.project_start_date || "",
+      project_end_date: editData?.project_end_date || "",
+    },
+    enableReinitialize: true,
 
     validationSchema: Yup.object({
       tenant_id: Yup.string().required("Tenant is required"),
@@ -86,84 +87,84 @@ enableReinitialize: true,
       // project_end_date: Yup.string().required("End Date is required"),
     }),
 
-   
+
     onSubmit: async (values, { setSubmitting }) => {
-  try {
-    const finalTenantId = isAdmin
-      ? values.tenant_id
-      : cookieTenantId;
+      try {
+        const finalTenantId = isAdmin
+          ? values.tenant_id
+          : cookieTenantId;
 
-    const payload = {
-      tenant_id: Number(finalTenantId),
+        const payload = {
+          tenant_id: Number(finalTenantId),
 
-      createdBy: Number(userId),
+          createdBy: Number(userId),
 
-      project_name: values.project_name,
-      short_code: values.short_code,
+          project_name: values.project_name,
+          short_code: values.short_code,
 
-      project_district: values.project_district,
-      project_state: values.project_state,
-      project_address: values.project_address,
+          project_district: values.project_district,
+          project_state: values.project_state,
+          project_address: values.project_address,
 
-      agency_name: values.agency_name,
-      agency_address: values.agency_address,
-      agency_district: values.agency_district,
-      agency_state: values.agency_state,
+          agency_name: values.agency_name,
+          agency_address: values.agency_address,
+          agency_district: values.agency_district,
+          agency_state: values.agency_state,
 
-      agency_spoc_name: values.agency_spoc_name,
-      agency_spoc_email: values.agency_spoc_email,
-      agency_spoc_contact_number:
-        values.agency_spoc_contact_number,
+          agency_spoc_name: values.agency_spoc_name,
+          agency_spoc_email: values.agency_spoc_email,
+          agency_spoc_contact_number:
+            values.agency_spoc_contact_number,
 
-      agency_spoc_alternate_name:
-        values.agency_spoc_alternate_name || null,
+          agency_spoc_alternate_name:
+            values.agency_spoc_alternate_name || null,
 
-      agency_spoc_alternate_contact_number:
-        values.agency_spoc_alternate_contact_number || null,
+          agency_spoc_alternate_contact_number:
+            values.agency_spoc_alternate_contact_number || null,
 
-      project_start_date:
-        values.project_start_date || null,
+          project_start_date:
+            values.project_start_date || null,
 
-      project_end_date:
-        values.project_end_date || null,
-    };
+          project_end_date:
+            values.project_end_date || null,
+        };
 
-    let result;
+        let result;
 
-    if (editData?.id) {
-      result = await updateCenter({
-        id: editData.id,
-        ...payload,
-      }).unwrap();
+        if (editData?.id) {
+          result = await updateCenter({
+            id: editData.id,
+            ...payload,
+          }).unwrap();
 
-      healthAlert({
-        title: "Success",
-        text: "Center Updated Successfully",
-        icon: "success",
-      });
-    } else {
-      result = await createCenter(payload).unwrap();
+          healthAlert({
+            title: "Success",
+            text: "Center Updated Successfully",
+            icon: "success",
+          });
+        } else {
+          result = await createCenter(payload).unwrap();
 
-      healthAlert({
-        title: "Success",
-        text: "Center Created Successfully",
-        icon: "success",
-      });
-    }
+          healthAlert({
+            title: "Success",
+            text: "Center Created Successfully",
+            icon: "success",
+          });
+        }
 
-    navigate(`/center-list`);
-  } catch (err) {
-    healthAlert({
-      title: "Error",
-      text:
-        err?.data?.message ||
-        "Failed to save center",
-      icon: "error",
-    });
-  } finally {
-    setSubmitting(false);
-  }
-},
+        navigate(`/center-list`);
+      } catch (err) {
+        healthAlert({
+          title: "Error",
+          text:
+            err?.data?.message ||
+            "Failed to save center",
+          icon: "error",
+        });
+      } finally {
+        setSubmitting(false);
+      }
+    },
   });
 
   const nextStep = async () => {
@@ -172,20 +173,20 @@ enableReinitialize: true,
     const stepFields = {
       1: isAdmin
         ? [
-            "tenant_id",
-            "project_name",
-            "short_code",
-            "project_district",
-            "project_state",
-            "project_address",
-          ]
+          "tenant_id",
+          "project_name",
+          "short_code",
+          "project_district",
+          "project_state",
+          "project_address",
+        ]
         : [
-            "project_name",
-            "short_code",
-            "project_district",
-            "project_state",
-            "project_address",
-          ],
+          "project_name",
+          "short_code",
+          "project_district",
+          "project_state",
+          "project_address",
+        ],
 
       2: ["agency_name", "agency_district", "agency_address", "agency_state"],
 
@@ -217,9 +218,9 @@ enableReinitialize: true,
         {/* HEADER */}
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold flex items-center gap-3">
-  <UsersIcon className="w-7 text-blue-600" />
-  {editData ? "Edit Center / Project" : "Add Center / Project"}
-</h1>
+            <UsersIcon className="w-7 text-blue-600" />
+            {editData ? "Edit Center / Project" : "Add Center / Project"}
+          </h1>
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl border overflow-hidden">
@@ -229,11 +230,10 @@ enableReinitialize: true,
               <button
                 key={step.id}
                 type="button"
-                className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold ${
-                  activeStep === step.id
+                className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold ${activeStep === step.id
                     ? "text-sky-600 border-b-2 border-sky-600"
                     : "text-gray-400"
-                }`}
+                  }`}
               >
                 <step.icon className="w-4 h-4" />
                 {step.label}
@@ -352,7 +352,7 @@ enableReinitialize: true,
             {/* STEP 3 */}
             {activeStep === 3 && (
               <div className="grid md:grid-cols-3 gap-6">
-                <Input
+                {/* <Input
                   type="date"
                   label="Start Date"
                   // required
@@ -361,9 +361,39 @@ enableReinitialize: true,
                   //   formik.touched.project_start_date &&
                   //   formik.errors.project_start_date
                   // }
-                />
+                /> */}
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-gray-700 mb-1">
+                    Start Date
+                  </label>
 
-                <Input
+                  <DatePicker
+                    selected={
+                      formik.values.project_start_date
+                        ? new Date(formik.values.project_start_date)
+                        : null
+                    }
+                    onChange={(date) => {
+                      formik.setFieldValue(
+                        "project_start_date",
+                        date
+                          ? date.toISOString().split("T")[0]
+                          : ""
+                      );
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
+                    showMonthDropdown
+                    showYearDropdown
+                    scrollableYearDropdown
+                    yearDropdownItemNumber={100}
+                    wrapperClassName="w-full"
+                    popperClassName="z-[99999]"
+                    className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
+    outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                  />
+                </div>
+                {/* <Input
                   type="date"
                   label="End Date"
                   // required
@@ -372,7 +402,38 @@ enableReinitialize: true,
                   //   formik.touched.project_end_date &&
                   //   formik.errors.project_end_date
                   // }
-                />
+                /> */}
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-gray-700 mb-1">
+                    End Date
+                  </label>
+
+                  <DatePicker
+                    selected={
+                      formik.values.project_end_date
+                        ? new Date(formik.values.project_end_date)
+                        : null
+                    }
+                    onChange={(date) => {
+                      formik.setFieldValue(
+                        "project_end_date",
+                        date
+                          ? date.toISOString().split("T")[0]
+                          : ""
+                      );
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
+                    showMonthDropdown
+                    showYearDropdown
+                    scrollableYearDropdown
+                    yearDropdownItemNumber={100}
+                    wrapperClassName="w-full"
+                    popperClassName="z-[99999]"
+                    className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
+    outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                  />
+                </div>
               </div>
             )}
 
@@ -404,13 +465,13 @@ enableReinitialize: true,
                   </Button>
                 ) : (
                   <Button
-  type="button"
-  variant="sky"
-  onClick={formik.handleSubmit}
->
-  <CheckCircleIcon className="w-4 mr-1" />
-  {editData ? "Update" : "Save"}
-</Button>
+                    type="button"
+                    variant="sky"
+                    onClick={formik.handleSubmit}
+                  >
+                    <CheckCircleIcon className="w-4 mr-1" />
+                    {editData ? "Update" : "Save"}
+                  </Button>
                 )}
               </div>
             </div>

@@ -9,7 +9,7 @@ import CommonList from "../components/CommonList";
 import { healthAlert } from "../utils/healthSwal";
 import { useNavigate } from "react-router-dom";
 import CopyFilterBar from "../components/Updates/Filter";
-
+import { formatDate } from "../utils/helper";
 const CenterList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
@@ -175,9 +175,10 @@ const CenterList = () => {
       selector: (row) => tenantMap[row.tenant_id] || "N/A",
     },
     {
-      name: "Created At",
-      selector: (row) => new Date(row.createdAt).toISOString().split("T")[0],
-    },
+  name: "Created At",
+  selector: (row) =>
+    formatDate(row.createdAt),
+},
     {
       name: "Status",
       cell: (row) => (

@@ -183,7 +183,10 @@ outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky
       scrollableYearDropdown
       yearDropdownItemNumber={100}
       wrapperClassName="w-full"
-      popperClassName="z-50"
+       portalId="root"
+      popperClassName="z-[9999]"
+  //     placement="top-start"
+  // popperPlacement="top-start"
       className="w-full border border-sky-200 bg-white shadow-sm px-3 py-2 rounded-md text-xs
       outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
     />

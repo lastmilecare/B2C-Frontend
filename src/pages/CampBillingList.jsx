@@ -320,7 +320,7 @@ const CampBillingListCopy = () => {
   };
   return (
     <div className="p-2 space-y-4">
-      <div className="bg-white/80 backdrop-blur-lg shadow rounded-xl p-4 border">
+     <div className="bg-white/80 backdrop-blur-lg shadow rounded-xl p-4 border overflow-visible relative z-10">
         <CopyFilterBar
           filtersConfig={filtersConfig}
           tempFilters={tempFilters}
