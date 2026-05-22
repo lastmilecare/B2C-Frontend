@@ -126,7 +126,7 @@ const StaffList = () => {
   const columns = [
     {
       name: "Staff",
-      center: true,
+      // center: true,
       cell: (row) => (
         <div className="flex items-center gap-3">
           <Avatar name={row.name} />

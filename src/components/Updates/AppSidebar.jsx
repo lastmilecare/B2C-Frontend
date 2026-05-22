@@ -413,13 +413,13 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Patient Examination Details
               </NavLink>
-            <NavLink
+            {/* <NavLink
               to="/vitals"
               className={subNavItem}
               onClick={() => setIsOpen(false)}
             >
               Vitals Form
-            </NavLink>
+            </NavLink> */}
             {can("create:appointment_visit") && (
               <NavLink
                 to="/appointment"
@@ -440,7 +440,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
             )}
 
-            {can("create:clinical_examination") && (
+            {/* {can("create:clinical_examination") && (
               <NavLink
                 to="/clinical-examination"
                 className={subNavItem}
@@ -448,9 +448,9 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Clinical Examination
               </NavLink>
-            )}
+            )} */}
 
-            {can("create:laboratory_investigation") && (
+            {/* {can("create:laboratory_investigation") && (
               <NavLink
                 to="/laboratory-investigation"
                 className={subNavItem}
@@ -458,9 +458,9 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Lab Investigation
               </NavLink>
-            )}
+            )} */}
 
-            {can("create:radiology") && (
+            {/* {can("create:radiology") && (
               <NavLink
                 to="/radiology-screen"
                 className={subNavItem}
@@ -468,7 +468,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Radiology
               </NavLink>
-            )}
+            )} */}
 
             {can("create:doctor_assessment") && (
               <NavLink
