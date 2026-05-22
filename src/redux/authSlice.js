@@ -35,9 +35,11 @@ const authSlice = createSlice({
       cookie.set("name", data.name ?? "");
       cookie.set("user_id", data.user_id ?? "");
       cookie.set("tenantType", data.tenantType ?? "");
+      cookie.set("center_id", data.center_id ?? "");
       // cookie.set("permissions", JSON.stringify(data.permissions || []));
       localStorage.setItem("permissions", JSON.stringify(data.permissions));
       localStorage.setItem("token", JSON.stringify(data.token));
+      cookie.set("isAdmin", data.isAdmin || data.role === "LMC_ADMIN" || false);
     },
 
     logout: (state) => {
@@ -58,6 +60,8 @@ const authSlice = createSlice({
       // cookie.remove("permissions");
       localStorage.removeItem("permissions");
       localStorage.removeItem("token");
+      cookie.remove("center_id");
+      cookie.remove("isAdmin");
     },
   },
 });

@@ -219,12 +219,12 @@ const StaffForm = () => {
                   {...formik.getFieldProps("employeeNo")}
                 />
                 <Select
-                  label="Role"
+                  label="Select Center"
                   required
                   error={formik.touched.center_id && formik.errors.center_id}
                   {...formik.getFieldProps("center_id")}
                 >
-                  <option value="">Select Role</option>
+                  <option value="">Select Center</option>
                   {centerData.map((r) => (
                     <option key={r.id} value={r.id}>
                       {`${r.project_name} - ${r.project_address} `}
@@ -307,6 +307,25 @@ const StaffForm = () => {
                         )}
                       </button>
                     </div>
+                    <div className="flex items-center gap-3 mt-2">
+                      <input
+                        type="checkbox"
+                        id="isAdmin"
+                        name="isAdmin"
+                        checked={formik.values.isAdmin}
+                        onChange={(e) =>
+                          formik.setFieldValue("isAdmin", e.target.checked)
+                        }
+                        className="w-4 h-4 text-sky-600 border-gray-300 rounded"
+                      />
+
+                      <label
+                        htmlFor="isAdmin"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        Is Admin
+                      </label>
+                    </div>
                   </>
                 )}
               </div>
@@ -386,6 +405,12 @@ const StaffForm = () => {
                   {roles.find(
                     (r) => String(r.id) === String(formik.values.b2cRoleId),
                   )?.name || "-"}
+                </p>
+                <p>
+                  <b>Center:</b>{" "}
+                  {centerData.find(
+                    (r) => String(r.id) === String(formik.values.center_id),
+                  )?.project_name || "-"}
                 </p>
               </div>
             )}
