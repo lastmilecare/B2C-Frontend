@@ -14,7 +14,7 @@ import {
 import {
     useSaveOhcCombinedMutation,
     useGetOhcCombinedByIdQuery,
-    
+    useUpdateOhcCombinedMutation,
     useUploadLabReportMutation,
     useUploadRadiologyReportMutation,
 } from "../redux/apiSlice";
@@ -35,15 +35,9 @@ const PatientExaminationDetails = () => {
     const [saveOhcCombined] =
         useSaveOhcCombinedMutation();
 
-    // const [updateOhcCombined] =
-    //     useUpdateOhcCombinedMutation();
-
-    const [uploadLabReport] =
-        useUploadLabReportMutation();
-
-    const [uploadRadiologyReport] =
-        useUploadRadiologyReportMutation();
-
+    const [updateOhcCombined] = useUpdateOhcCombinedMutation();
+    const [uploadLabReport] = useUploadLabReportMutation();
+    const [uploadRadiologyReport] = useUploadRadiologyReportMutation();
     const { data: editData } =
     useGetOhcCombinedByIdQuery(id, {
         skip: !id,
@@ -224,9 +218,7 @@ const PatientExaminationDetails = () => {
                         )
                     );
 
-                // =========================
-                // RADIOLOGY FILE UPLOAD
-                // =========================
+                
 
                 const uploadedRadiologyTests =
                     await Promise.all(
@@ -365,32 +357,81 @@ radiology: {
             }
         }
     });
-    useEffect(() => {
-        console.log(editData);
-        if (!editData?.data) return;
+  useEffect(() => {
+    if (!editData?.data) return;
 
-        const v = editData.data;
+    const v = editData.data;
+    const patient = v.selected_test?.patient || {};
+    const vitals = v.selected_test?.vitals || {};
+    const clinical = v.selected_test?.clinical_examination || {};
+    const lab = v.selected_test?.laboratory || {};
+    const radiology = v.selected_test?.radiology || {};
 
-        formik.setValues({
-            EmployeeId: v.employee_id || "",
-            Name: v.name || "",
-            Gender: v.gender || "",
-            Age: v.age || "",
+  
+    formik.setValues({
+        patient_id: patient.patient_id || "",
+        EmployeeId: patient.employee_id || "",
+        Name: patient.name || "",
+        Gender: patient.gender || "",
+        Age: patient.age || "",
 
-            bpsystolic: v.bpsystolic || "",
-            bpdiastolic: v.bpdiastolic || "",
-            pulserate: v.pulserate || "",
-            spo2: v.spo2 || "",
+        bpsystolic: vitals.bpsystolic || "",
+        bpdiastolic: vitals.bpdiastolic || "",
+        pulserate: vitals.pulserate || "",
+        spo2: vitals.spo2 || "",
+        temprature: vitals.temperature || "",
+        height: vitals.height || "",
+        weight: vitals.weight || "",
+        bmi: vitals.bmi || "",
+        respiratoryRate: vitals.respiratory_rate || "",
+        generalAppearance: clinical.general_appearance || "",
+        vision: clinical.eye_examination || "",
+        colorBlindness: clinical.color_blindness || "",
+        ear: clinical.ear || "",
+        nose: clinical.nose || "",
+        throat: clinical.throat || "",
+        cardiovascular: clinical.cardiovascular_system || "",
+        respiratory: clinical.respiratory_system || "",
+        abdomen: clinical.abdomen || "",
+        nervousSystem: clinical.nervous_system || "",
+        musculoskeletal: clinical.musculoskeletal_system || "",
+        skin: clinical.skin_condition || "",
+        testName: "",
+        result: "",
+        minRange: "",
+        maxRange: "",
+        remarks: "",
+        labReportFile: null,
+        testType: "",
+        resultSummary: "",
+        doctorRemarks: "",
+        radiologyReportFile: null,
+        packageName: v.selected_package_name?.[0] || "",
+    });
+    if (lab.tests?.length) {
+        setBloodTestList(
+            lab.tests.map((t) => ({
+                test_name: t.test_name,
+                result_value: t.result_value,
+                normal_range: t.normal_range,
+                remarks: t.remarks,
+                report_file: null,
+            }))
+        );
+    }
 
-            temprature: v.temperature || "",
-            height: v.height || "",
-            weight: v.weight || "",
-            bmi: v.bmi || "",
-            respiratoryRate: v.respiratory_rate || "",
-            patient_id: v.patient_id || "",
-        });
-
-    }, [editData]);
+    
+    if (radiology.tests?.length) {
+        setRadiologyTestList(
+            radiology.tests.map((t) => ({
+                test_type: t.test_type,
+                result_summary: t.result_summary,
+                doctor_remarks: t.doctor_remarks,
+                report_file: null,
+            }))
+        );
+    }
+}, [editData]);
 
     const bmiValue = useMemo(() => {
         const h = Number(formik.values.height);

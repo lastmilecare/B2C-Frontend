@@ -473,6 +473,12 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
+  path: "/patient-examination-details/:id",
+  component: PatientExaminationPage,
+  permission: null,
+  showInSidebar: false,
+},
+  {
     path: "/staff-page-ohc",
     component: StaffPage,
     permission: null,

@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { healthAlert } from "../utils/healthSwal";
 import GlobalLoader from "./common/GlobalLoader";
+import { cookie } from "../utils/cookie";
 const CommonList = ({
   title = "Records",
   columns = [],
@@ -117,7 +118,11 @@ const CommonList = ({
 
   const enhancedColumns = useMemo(() => {
     if (!enableActions) return visibleColumns;
-
+    const role = cookie.get("role");
+const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
+const filteredActionButtons = isAdmin
+  ? actionButtons
+  : actionButtons.filter((btn) => btn !== "edit" && btn !== "delete");
     const buttonConfig = {
       view: { label: "View", color: "text-sky-700", handler: onView },
       edit: { label: "Edit", color: "text-yellow-600", handler: onEdit },
@@ -142,7 +147,7 @@ const CommonList = ({
         cell: (row) => (
           <ActionMenu
             row={row}
-            actionButtons={actionButtons}
+            actionButtons={filteredActionButtons}
             buttonConfig={buttonConfig}
             openMenuRow={openMenuRow}
             setOpenMenuRow={setOpenMenuRow}

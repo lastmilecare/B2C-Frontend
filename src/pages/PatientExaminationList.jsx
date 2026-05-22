@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import {
  useGetOhcCombinedListQuery,
   useSearchEmployeeQuery,
+  useDeleteOhcCombinedMutation
 } from "../redux/apiSlice";
 
 import { healthAlerts } from "../utils/healthSwal";
@@ -22,8 +23,8 @@ const PatientExaminationList = () => {
     isLoading,
   } = useGetOhcCombinedListQuery();
 
-//   const [deleteOhcCombined] =
-//     useDeleteOhcCombinedMutation();
+  const [deleteOhcCombined] =
+    useDeleteOhcCombinedMutation();
 
   
 
@@ -36,112 +37,57 @@ const PatientExaminationList = () => {
       fromDate: "",
       toDate: "",
     });
-
   const [filters,
     setFilters] =
     useState({});
-
-
-
   const {
     data: empSuggestions = [],
   } = useSearchEmployeeQuery(
-
     tempFilters.employee_id,
-
     {
       skip:
         !tempFilters.employee_id,
     }
   );
-
-  
-
   const handleChange = (e) => {
-
     const {
       name,
       value,
     } = e.target;
-
     setTempFilters((prev) => ({
-
       ...prev,
-
       [name]: value,
     }));
   };
-
- 
-
   const handleApplyFilters = () => {
-
     setFilters(tempFilters);
   };
-
-
-
   const handleResetFilters = () => {
-
     const reset = {
-
       employee_id: "",
       name: "",
       fromDate: "",
       toDate: "",
     };
-
     setTempFilters(reset);
-
     setFilters({});
   };
-
-  
-
   const records =
     (data?.data || []).map((item) => ({
-
       id: item.id,
-
-      patient_id:
-        item.selected_test?.patient?.patient_id,
-
-      employee_id:
-        item.selected_test?.patient?.employee_id,
-
-      name:
-        item.selected_test?.patient?.name,
-
-      gender:
-        item.selected_test?.patient?.gender,
-
-      age:
-        item.selected_test?.patient?.age,
-
-      package_name:
-        item.selected_package_name?.[0],
-
-      bpsystolic:
-        item.selected_test?.vitals?.bpsystolic,
-
-      bpdiastolic:
-        item.selected_test?.vitals?.bpdiastolic,
-
-      pulserate:
-        item.selected_test?.vitals?.pulserate,
-
-      spo2:
-        item.selected_test?.vitals?.spo2,
-
-      bmi:
-        item.selected_test?.vitals?.bmi,
-
-      created_at:
-        item.createdAt,
+      patient_id: item.selected_test?.patient?.patient_id,
+      employee_id: item.selected_test?.patient?.employee_id,
+      name: item.selected_test?.patient?.name,
+      gender: item.selected_test?.patient?.gender,
+      age: item.selected_test?.patient?.age,
+      package_name: item.selected_package_name?.[0],
+      bpsystolic: item.selected_test?.vitals?.bpsystolic,
+      bpdiastolic: item.selected_test?.vitals?.bpdiastolic,
+      pulserate: item.selected_test?.vitals?.pulserate,
+      spo2: item.selected_test?.vitals?.spo2,
+      bmi: item.selected_test?.vitals?.bmi,
+      created_at: item.createdAt,
     }));
-
- 
-
   const filteredData =
     records.filter((item) => {
 
@@ -166,150 +112,103 @@ const PatientExaminationList = () => {
               employee_id.toLowerCase()
             )
         )
+        &&
+        (!name ||item.name ?.toLowerCase().includes(name.toLowerCase()))
 
         &&
 
-        (!name ||
-
-          item.name
-            ?.toLowerCase()
-            .includes(
-              name.toLowerCase()
-            )
-        )
+        (!fromDate || itemDate >= fromDate)
 
         &&
 
-        (!fromDate ||
-          itemDate >= fromDate)
-
-        &&
-
-        (!toDate ||
-          itemDate <= toDate)
+        (!toDate || itemDate <= toDate)
       );
     });
+  const handleDelete =
+    async (row) => {
 
-  
+      try {
 
-//   const handleDelete =
-//     async (row) => {
+        await deleteOhcCombined(
+          row.id
+        ).unwrap();
 
-//       try {
+        healthAlerts.success(
+          "Deleted Successfully"
+        );
 
-//         await deleteOhcCombined(
-//           row.id
-//         ).unwrap();
+      } catch (err) {
 
-//         healthAlerts.success(
-//           "Deleted Successfully"
-//         );
+        healthAlerts.error(
 
-//       } catch (err) {
+          err?.data?.message ||
 
-//         healthAlerts.error(
-
-//           err?.data?.message ||
-
-//           "Delete Failed"
-//         );
-//       }
-//     };
-
-  
+          "Delete Failed"
+        );
+      }
+    };
 
   const filtersConfig = [
-
     {
       label: "Employee ID",
-
       name: "employee_id",
-
       type: "text",
-
       suggestionConfig: {
-
         minLength: 1,
-
         keyField: "employeeId",
-
         valueField: "employeeId",
       },
     },
-
     {
       label: "Name",
-
       name: "name",
-
       type: "text",
     },
-
     {
       label: "From Date",
-
       name: "fromDate",
-
       type: "date",
     },
-
     {
       label: "To Date",
-
       name: "toDate",
-
       type: "date",
     },
   ];
-
-
   const columns = [
-
     {
       name: "Patient ID",
-
-      selector:
-        (row) => row.patient_id || "-",
+      selector: (row) => row.patient_id || "-",
     },
 
     {
       name: "Employee ID",
-
-      selector:
-        (row) => row.employee_id || "-",
+      selector: (row) => row.employee_id || "-",
     },
 
     {
       name: "Name",
-
-      selector:
-        (row) => row.name || "-",
+      selector: (row) => row.name || "-",
     },
 
     {
       name: "Gender",
-
       selector:
         (row) => row.gender || "-",
     },
 
     {
       name: "Age",
-
       selector:
         (row) => row.age || "-",
     },
 
     {
       name: "Package",
-
-      selector:
-        (row) => row.package_name || "-",
+      selector: (row) => row.package_name || "-",
     },
-
     {
       name: "BP",
-
       cell: (row) =>
 
         `${row.bpsystolic || "-"}
@@ -319,91 +218,48 @@ const PatientExaminationList = () => {
 
     {
       name: "Pulse",
-
       selector:
         (row) => row.pulserate || "-",
     },
 
     {
       name: "SPO2",
-
       selector:
         (row) => row.spo2 || "-",
     },
 
     {
       name: "BMI",
-
       selector:
         (row) => row.bmi || "-",
     },
-
     {
       name: "Date",
-
-      selector: (row) =>
-
-        row.created_at
-          ?.split("T")[0],
+      selector: (row) => row.created_at ?.split("T")[0],
     },
   ];
-
   return (
-
     <div className="max-w-7xl mx-auto">
-
       <h1 className="text-2xl font-semibold text-gray-700 mb-6">
-
         Patient Examination List
-
       </h1>
-
-      {/* FILTER */}
-
       <CopyFilterBar
-
-        filtersConfig={
-          filtersConfig
-        }
-
-        tempFilters={
-          tempFilters
-        }
-
-        onChange={
-          handleChange
-        }
-
-        onApply={
-          handleApplyFilters
-        }
-
-        onReset={
-          handleResetFilters
-        }
-
-        suggestionsMap={{
-
-          employee_id:
-            empSuggestions,
-        }}
-
+        filtersConfig={filtersConfig}
+        tempFilters={tempFilters}
+        onChange={handleChange}
+        onApply={handleApplyFilters }
+        onReset={ handleResetFilters}
+        suggestionsMap={{employee_id:empSuggestions,}}
         onSelectSuggestion={(
           field,
           value
         ) => {
-
           setTempFilters((prev) => ({
-
             ...prev,
-
             [field]: value,
           }));
         }}
       />
-
-      {/* TABLE */}
-
       <PatientTable
 
         title="Patient Examination Records"
@@ -426,14 +282,14 @@ const PatientExaminationList = () => {
 
         isLoading={isLoading}
 
-        // onEdit={(row) =>
+        onEdit={(row) =>
 
-        //   navigate(
-        //     `/patient-examination/${row.id}`
-        //   )
-        // }
+          navigate(
+            `/patient-examination-details/${row.id}`
+          )
+        }
 
-        onDelete={() => {}}
+        onDelete={handleDelete}
       />
 
     </div>

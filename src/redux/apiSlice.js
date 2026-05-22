@@ -1463,13 +1463,27 @@ uploadRadiologyReport: build.mutation({
 
     query: (body) => ({
 
-        url:
-            "/picasoid-prescription/upload/radiology-report",
+        url: "/picasoid-prescription/upload/radiology-report",
 
         method: "POST",
 
         data: body,
     }),
+}),
+
+updateOhcCombined: build.mutation({
+    query: ({ id, body }) => ({
+        url: `/picasoid-prescription/ohc-combined/${id}`,
+        method: "PUT",
+        data: body,
+    }),
+}),
+deleteOhcCombined: build.mutation({
+    query: (id) => ({
+        url: `/picasoid-prescription/ohc-combined/${id}`,
+        method: "DELETE",   
+    }),
+    invalidatesTags: ["OHCCombined"],
 }),
   }),
 });
@@ -1632,10 +1646,10 @@ export const {
   useCenterComboListQuery,
  useSaveOhcCombinedMutation,
 useGetOhcCombinedByIdQuery,
-useUpdateOhcCombinedMutation,
-useDeleteOhcCombinedMutation,
 useUploadLabReportMutation,
 useUploadRadiologyReportMutation,
-useGetOhcCombinedListQuery
+useGetOhcCombinedListQuery,
+useUpdateOhcCombinedMutation,
+useDeleteOhcCombinedMutation,
 } = api;
 

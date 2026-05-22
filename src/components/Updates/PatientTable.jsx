@@ -1,6 +1,7 @@
 import React from "react";
 import CommonList from "../CommonList";
-
+import { useSelector } from "react-redux";
+import { cookie } from "../../utils/cookie";
 const PatientTable = ({
  data,
  columns,
@@ -12,14 +13,18 @@ const PatientTable = ({
  onPerPageChange,
  isLoading,
 
- enableActions=true,
- actionButtons=["edit","delete"],
+//  enableActions=true,
+//  actionButtons=["edit","delete"],
 
  onEdit,
  onDelete,
  onPrint,
  onPrintCS
 }) => {
+    const role = cookie.get("role");
+  const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
+  const actionButtons = isAdmin ? ["edit", "delete"] : [];
+  const enableActions = isAdmin;
 
  return (
 
