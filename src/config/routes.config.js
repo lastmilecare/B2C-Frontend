@@ -33,8 +33,12 @@ import ResourcePage from "../pages/ResourcePage";
 import ItemMaster from "../pages/ItemMaster";
 import RolesPage from "../pages/RolesPage";
 import PermissionPage from "../pages/PermissionPage";
+import PatientExaminationDetails from "../pages/PatientExaminationDetails";
+
 import CenterForm from "../pages/CenterForm";
 import CenterList from "../pages/CenterList";
+import StaffPage from "../pages/StaffPageOhc";
+import PatientExaminationPage from "../pages/PatientExaminationPage";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -77,6 +81,12 @@ export const ROUTES = [
     permission: "create:tenant",
     showInSidebar: false,
   },
+   {
+  path: "/tenants/:id",
+  component: TenantForm,
+  permission: "update:tenant",
+  showInSidebar: false,
+},
   {
     path: "/roles",
     component: RolesPage,
@@ -115,6 +125,12 @@ export const ROUTES = [
     permission: "create:center",
     showInSidebar: false,
   },
+  {
+  path: "/centers/:id",
+  component: CenterForm,
+  permission: "update:center",
+  showInSidebar: false,
+},
   {
     path: "/staff-form",
     component: StaffForm,
@@ -171,7 +187,7 @@ export const ROUTES = [
   {
     path: "/PatientRegistrationOhc",
     component: PatientPage,
-    permission: "create:patient_registration",
+    permission: "create:ohc_patient_registration",
     label: "OHC Registration",
     icon: "UserPlusIcon",
     group: "Patient",
@@ -180,7 +196,7 @@ export const ROUTES = [
    {
     path: "/PatientRegistrationOhc/:id",
     component: PatientPage,
-    permission: "create:patient_registration",
+    permission: "create:ohc_patient_registration",
     showInSidebar: false,
   },
 
@@ -429,7 +445,7 @@ export const ROUTES = [
     permission: null,
     label: "Vitals",
     icon: "ShieldCheckIcon",
-    group: "Administration",
+    group: "Clinical",
     showInSidebar: true,
   },
    {
@@ -446,7 +462,38 @@ export const ROUTES = [
     icon: "ShieldCheckIcon",
     group: "Administration",
     showInSidebar: false,
-  }
+  },
+  {
+    path: "/patient-examination-details",
+    component: PatientExaminationPage,
+    permission: null,
+    label: "PatientExaminationDetails",
+    icon: "ShieldCheckIcon",
+    group: "Clinical",
+    showInSidebar: true,
+  },
+  {
+  path: "/patient-examination-details/:id",
+  component: PatientExaminationPage,
+  permission: null,
+  showInSidebar: false,
+},
+  {
+    path: "/staff-page-ohc",
+    component: StaffPage,
+    permission: null,
+    label: "Staff",
+    icon: "UsersIcon",
+    group: "Staff",
+    showInSidebar: true,
+  },
+  {
+  path: "/staff-page-ohc/:id",
+  component: StaffPage,
+  permission: null,
+  showInSidebar: false,
+},
 
  
 ];
+

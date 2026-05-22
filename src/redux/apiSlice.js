@@ -28,7 +28,7 @@ const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
-  tagTypes: ["Bill", "Inventory", "Patient"],
+  tagTypes: ["Bill", "Inventory", "Patient", "Prescription"],
   endpoints: (build) => ({
     login: build.mutation({
       query: (body) => ({
@@ -391,6 +391,7 @@ export const api = createApi({
         data: response.data || [],
         pagination: response.pagination || {},
       }),
+       providesTags: ["Prescription"],
     }),
     createPrescription: build.mutation({
       query: (PrescriptionData) => ({
@@ -412,7 +413,7 @@ export const api = createApi({
         method: "PATCH",
         data: {},
       }),
-      invalidatesTags: ["PrescriptionDetail"],
+      invalidatesTags: ["Prescription"],
     }),
     exportOpdExcel: build.query({
       query: (filters = {}) => ({
@@ -1409,6 +1410,81 @@ export const api = createApi({
         method: "GET",
       }),
     }),
+
+    saveOhcCombined: build.mutation({
+    query: (body) => ({
+        url: "/picasoid-prescription/save-ohc-combined",
+        method: "POST",
+        data: body,
+    }),
+}),
+
+getOhcCombinedList: build.query({
+
+    query: () => ({
+
+        url:
+            "/picasoid-prescription/ohc-combined",
+
+        method: "GET",
+    }),
+
+    providesTags:
+      ["OHCCombined"],
+}),
+
+getOhcCombinedById: build.query({
+
+    query: (id) => ({
+
+        url:
+            `/picasoid-prescription/ohc-combined/${id}`,
+
+        method: "GET",
+    }),
+
+    providesTags:
+      ["OHCCombined"],
+}),
+uploadLabReport: build.mutation({
+
+    query: (body) => ({
+
+        url:
+            "/picasoid-prescription/upload/lab-report",
+
+        method: "POST",
+
+        data: body,
+    }),
+}),
+
+uploadRadiologyReport: build.mutation({
+
+    query: (body) => ({
+
+        url: "/picasoid-prescription/upload/radiology-report",
+
+        method: "POST",
+
+        data: body,
+    }),
+}),
+
+updateOhcCombined: build.mutation({
+    query: ({ id, body }) => ({
+        url: `/picasoid-prescription/ohc-combined/${id}`,
+        method: "PUT",
+        data: body,
+    }),
+}),
+deleteOhcCombined: build.mutation({
+    query: (id) => ({
+        url: `/picasoid-prescription/ohc-combined/${id}`,
+        method: "DELETE",   
+    }),
+    invalidatesTags: ["OHCCombined"],
+}),
   }),
 });
 
@@ -1568,4 +1644,12 @@ export const {
   useDeleteCenterMutation,
   useToggleCenterStatusMutation,
   useCenterComboListQuery,
+ useSaveOhcCombinedMutation,
+useGetOhcCombinedByIdQuery,
+useUploadLabReportMutation,
+useUploadRadiologyReportMutation,
+useGetOhcCombinedListQuery,
+useUpdateOhcCombinedMutation,
+useDeleteOhcCombinedMutation,
 } = api;
+

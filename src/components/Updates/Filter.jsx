@@ -3,6 +3,8 @@ import {
   ArrowDownTrayIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { healthAlert } from "../../utils/healthSwal";
 
 const CopyFilterBar = ({
@@ -79,7 +81,7 @@ rounded-xl border border-sky-100 shadow-sm p-4 mb-5"
                   onFocus={() => setActiveField(filter.name)}
                   placeholder={filter.placeholder || `Enter ${filter.label}`}
                   className={`w-full border border-gray-300 px-3 py-2 rounded-md text-xs
-focus:ring-2 focus:ring-sky-400 focus:border-sky-400
+outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
 bg-white shadow-sm transition
 ${filter.name === "external_id" ? "uppercase" : ""}`}
                 />
@@ -142,8 +144,8 @@ ${filter.name === "external_id" ? "uppercase" : ""}`}
                 name={filter.name}
                 value={tempFilters[filter.name] || ""}
                 onChange={onChange}
-                className="w-full border border-gray-300 bg-white shadow-sm border-gray-200 px-3 py-2 rounded-md text-xs
-                focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                className="w-full border border-sky-200 bg-white shadow-sm px-3 py-2 rounded-md text-xs
+outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
               >
                 <option value="">Select</option>
 
@@ -155,21 +157,38 @@ ${filter.name === "external_id" ? "uppercase" : ""}`}
               </select>
             )}
 
-            {filter.type === "date" && (
-              <input
-                type="date"
-                name={filter.name}
-                value={tempFilters[filter.name] || ""}
-                onChange={onChange}
-                max={
-                  filter.name === "endDate"
-                    ? today
-                    : tempFilters.endDate || today
-                }
-                className="w-full border border-gray-300 bg-white shadow-sm px-3 py-2 rounded-md text-xs
-                focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
-              />
-            )}
+          {filter.type === "date" && (
+  <div className="w-full">
+    <DatePicker
+      selected={
+        tempFilters[filter.name]
+          ? new Date(tempFilters[filter.name])
+          : null
+      }
+      onChange={(date) => {
+        onChange({
+          target: {
+            name: filter.name,
+            value: date
+              ? date.toISOString().split("T")[0]
+              : "",
+          },
+        });
+      }}
+      dateFormat="dd/MM/yyyy"
+      placeholderText="DD/MM/YYYY"
+      maxDate={new Date()}
+      showMonthDropdown
+      showYearDropdown
+      scrollableYearDropdown
+      yearDropdownItemNumber={100}
+      wrapperClassName="w-full"
+      popperClassName="z-50"
+      className="w-full border border-sky-200 bg-white shadow-sm px-3 py-2 rounded-md text-xs
+      outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+    />
+  </div>
+)}
           </div>
         ))}
       </div>

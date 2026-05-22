@@ -36,19 +36,23 @@ const StockDetailsCopy = () => {
     try {
       await deleteitemid(id).unwrap();
 
-      healthAlert({
-        title: "Deleted!",
-        text: "Stock record deleted successfully.",
-        icon: "success",
-      });
-    } catch (error) {
-      healthAlert({
-        title: "Delete Error",
-        text: error?.data?.message || "Something went wrong while deleting.",
-        icon: "error",
-      });
-    }
-  };
+    healthAlert({
+      title: "Deleted!",
+      text: "Stock Record Deleted Successfully.",
+      icon: "success",
+    });
+
+  } catch (error) {
+
+    healthAlert({
+      title: "Delete Error",
+      text:
+        error?.data?.message ||
+        "Something went wrong while deleting.",
+      icon: "error",
+    });
+  }
+};
   const [ItemSearch, ItemNameSearch] = useState("");
   const debouncedItemSearch = useDebounce(ItemSearch, 500);
   const { data: suggestions = [] } = useGetMediceneListQuery(
@@ -292,6 +296,7 @@ const StockDetailsCopy = () => {
     },
     {
       name: "Expiry",
+      center:true,
       width: "120px",
       cell: (row) => {
         const expiry = new Date(row.ExpiryDate);
@@ -311,18 +316,21 @@ const StockDetailsCopy = () => {
     },
 
     {
-      name: "Added On",
-      width: "140px",
-      cell: (row) => (
-        <div className="flex flex-col text-xs">
-          <span className="font-medium text-slate-700">
-            {formatDate(row.AddedDate)}
-          </span>
-
-          <span className="text-slate-400">{formatTime(row.AddedDate)}</span>
-        </div>
-      ),
-    },
+                  name: "Added On",
+                  center: true,
+                 width: "140px",
+                  cell: (row) => (
+                    <div className="flex flex-col text-xs">
+                      <span className="font-medium text-slate-700">
+                       {formatDate(row.AddedDate)}
+                      </span>
+            
+                      <span className="text-slate-400">
+                       {formatTime(row.AddedDate)}
+                      </span>
+                    </div>
+                  ),
+                },
 
     {
       name: "ID",
@@ -706,3 +714,4 @@ const StockDetailsCopy = () => {
 };
 
 export default StockDetailsCopy;
+

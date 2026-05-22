@@ -107,7 +107,7 @@ const CenterList = () => {
       });
       return;
     }
-    navigate(`/centers/${row.id}/edit`, {
+    navigate(`/centers/${row.id}`, {
       state: {
         editData: row,
       },

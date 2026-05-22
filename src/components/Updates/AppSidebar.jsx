@@ -407,6 +407,13 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
             )}
             <NavLink
+                to="/patient-examination-details"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Patient Examination Details
+              </NavLink>
+            <NavLink
               to="/vitals"
               className={subNavItem}
               onClick={() => setIsOpen(false)}
@@ -482,6 +489,13 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Fitness Certificate
               </NavLink>
             )}
+             <NavLink
+                to="/staff-page-ohc"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Add Staff 
+              </NavLink>
           </MenuGroup>
         )}
       </nav>

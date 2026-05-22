@@ -95,7 +95,7 @@ const TenantList = () => {
       });
       return;
     }
-    navigate(`/tenants`, {
+    navigate(`/tenants/${row.id}`, {
       state: {
         editData: row,
       },

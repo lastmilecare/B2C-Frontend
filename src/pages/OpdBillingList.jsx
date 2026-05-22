@@ -39,7 +39,7 @@ const OpdBillingListCopy = () => {
 
       healthAlert({
         title: "Deleted!",
-        text: "OPD Bill has been deleted successfully.",
+        text: "OPD Bill Deleted Successfully.",
         icon: "success",
       });
     } catch (error) {
@@ -298,9 +298,9 @@ const OpdBillingListCopy = () => {
       name: "gender",
       type: "select",
       options: [
-        { label: "Male", value: "male" },
-        { label: "Female", value: "female" },
-        { label: "Other", value: "other" },
+        { label: "Male", value: "Male" },
+        { label: "Female", value: "Female" },
+        { label: "Other", value: "Other" },
       ],
     },
 

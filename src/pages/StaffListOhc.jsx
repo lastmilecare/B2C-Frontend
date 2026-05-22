@@ -3,7 +3,6 @@ import {
   useGetUsersQuery,
   useDeleteUserMutation,
   useToggleUserStatusMutation,
-  useCenterComboListQuery,
 } from "../redux/apiSlice";
 
 import CopyFilterBar from "../components/Updates/Filter";
@@ -13,13 +12,13 @@ import { healthAlert } from "../utils/healthSwal";
 import Avatar from "../components/common/Avatar";
 import { useNavigate } from "react-router-dom";
 
-const StaffList = () => {
+const StaffListOhc = () => {
   const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
-  const [loadingId, setLoadingId] = useState(null);
+  const [loadingId, setLoadingId] = useState(null); 
 
   const [tempFilters, setTempFilters] = useState({
     name: "",
@@ -30,9 +29,8 @@ const StaffList = () => {
   const [filters, setFilters] = useState({});
 
   const debouncedName = useDebounce(filters.name, 400);
-  const debouncedEmail = useDebounce(filters.email, 400);
-  const { data: centersData = [], isLoading: centersLoading } =
-    useCenterComboListQuery();
+const debouncedEmail = useDebounce(filters.email, 400);
+
   const { data, isLoading, isFetching } = useGetUsersQuery({
     page,
     limit,
@@ -40,7 +38,7 @@ const StaffList = () => {
     email: debouncedEmail,
     status: filters.status || undefined,
   });
-  console.log("centersData", centersData);
+
   const [deleteStaff] = useDeleteUserMutation();
   const [toggleStatus] = useToggleUserStatusMutation();
   const staffList = data?.data?.data || [];
@@ -68,6 +66,8 @@ const StaffList = () => {
     setFilters({});
     setPage(1);
   };
+
+
 
   const handleDelete = async (row) => {
     const result = await healthAlert({
@@ -117,11 +117,12 @@ const StaffList = () => {
     }
   };
 
-  const handleEdit = (row) => {
-    navigate(`/staff-form/${row.id}`, {
-      state: { editData: row },
-    });
-  };
+//  const handleEdit = (row) => {
+//   navigate(`/staff-page-ohc/${row.id}`, {
+//     state: { editData: row },
+//   });
+// };
+
 
   const columns = [
     {
@@ -154,14 +155,6 @@ const StaffList = () => {
         </span>
       ),
     },
-     {
-      name: "Center",
-      cell: (row) => (
-        <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded text-xs font-medium">
-          {row.center?.project_name || "-"}
-        </span>
-      ),
-    },
 
     {
       name: "Status",
@@ -183,6 +176,7 @@ const StaffList = () => {
     },
   ];
 
+
   const filtersConfig = [
     { label: "Name", name: "name", type: "text" },
     { label: "Email", name: "email", type: "text" },
@@ -199,7 +193,9 @@ const StaffList = () => {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-700">Staff List</h1>
+        <h1 className="text-2xl font-semibold text-gray-700">
+          Staff List
+        </h1>
 
         {/* <button
           onClick={() => navigate("/staff")}
@@ -228,12 +224,17 @@ const StaffList = () => {
           setPage(1);
         }}
         isLoading={isLoading || isFetching}
-        onEdit={handleEdit}
+      onEdit={(row) =>
+  navigate(`/staff-page-ohc/${row.id}`, {
+    state: { editData: row },
+  })
+}
         onDelete={handleDelete}
         loadingId={loadingId}
       />
+
     </div>
   );
 };
 
-export default StaffList;
+export default StaffListOhc;

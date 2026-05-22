@@ -80,24 +80,36 @@ const OpdFormCopy = () => {
     }
 
 
-    if (
-      activeStep === 3 &&
-      !formik.values.PayMode
-    ) {
+    if (activeStep === 3) {
 
-      formik.setTouched({
-        PayMode: true,
-      });
+  if (!formik.values.PayMode) {
 
-      healthAlert({
-        title: "Payment Mode Required",
-        text: "Please select payment mode",
-        icon: "warning",
-      });
+    formik.setTouched({
+      PayMode: true,
+    });
 
-      return;
-    }
+    healthAlert({
+      title: "Payment Mode Required",
+      text: "Please select payment mode",
+      icon: "warning",
+    });
 
+    return;
+  }
+
+  if (!formik.values.AdjustWithBalance) {
+
+    formik.setFieldTouched("AdjustWithBalance", true);
+
+    healthAlert({
+      title: "Adjust With Balance Required",
+      text: "Please tick Adjust With Balance before continuing.",
+      icon: "warning",
+    });
+
+    return;
+  }
+}
     setActiveStep((prev) => prev + 1);
   };
 
@@ -436,6 +448,7 @@ const payObj = Picaso_Paymode_Options.find(
     setSuggestionsList([]);
     populatedUhidRef.current = "";
     setIsPaidManuallyEdited(false);
+    
   };
 
   useEffect(() => {
@@ -1225,6 +1238,8 @@ const payObj = Picaso_Paymode_Options.find(
                         populatedUhidRef.current = "";
 
                         setIsPaidManuallyEdited(false);
+                        setActiveStep(1);
+
                       }
                     }}
                   >

@@ -159,7 +159,7 @@ const PatientListCopy = () => {
 
       healthAlert({
         title: "Success",
-        text: "Patient deleted successfully",
+        text: "Patient Deleted Successfully",
         icon: "success",
       });
     } catch (err) {
@@ -174,6 +174,7 @@ const PatientListCopy = () => {
   const columns = [
     {
       name: "Patient",
+      center: true,
       cell: (row) => (
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -193,11 +194,13 @@ const PatientListCopy = () => {
 
     {
       name: "Mobile",
+      center: true,
       selector: (row) => row.contactNumber,
     },
 
     {
       name: "Gender",
+      center: true,
       cell: (row) => {
         const gender = row.gender?.toLowerCase();
 
@@ -227,6 +230,7 @@ const PatientListCopy = () => {
 
     {
       name: "Age",
+      center: true,
       cell: (row) => {
         const hasAge =
           row.iage != null || row.imonth != null || row.idays != null;
@@ -265,10 +269,12 @@ const PatientListCopy = () => {
     },
     {
       name: "Referred By",
+      center: true,
       selector: (row) => row.ReferredBy || "N/A",
     },
     {
       name: "Added On",
+      center: true,
 
       cell: (row) => (
         <div className="flex flex-col text-xs">
