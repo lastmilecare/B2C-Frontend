@@ -18,6 +18,7 @@ import { healthAlert } from "../utils/healthSwal";
 import { Input, Select, Button } from "../components/FormControls";
 import { cookie } from "../utils/cookie";
 import { useNavigate } from "react-router-dom";
+import { ROLES } from "../utils/constants";
 
 const Roles = () => {
   const [activeStep, setActiveStep] = useState(1);
@@ -32,7 +33,7 @@ const Roles = () => {
   const [permissionSearch, setPermissionSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef();
-
+  const RoleOption = ROLES.map((r) => ({ label: r.label, value: r.value }));
   const filteredPermissions = permissions.filter((p) => {
     if (p.description?.toLowerCase() === "admin") {
       return false;
@@ -67,25 +68,25 @@ const Roles = () => {
     validationSchema: Yup.object({
       // name: Yup.string().required("Role name is required"),
       name: Yup.string()
-        .required("Role name is required")
-        .test(
-          "tenant-in-name",
-          "Role name must include tenant name",
-          function (value) {
-            const { tenantId } = this.parent;
-            if (!tenantId || !value) return true;
+        .required("Role name is required"),
+        // .test(
+        //   "tenant-in-name",
+        //   "Role name must include tenant name",
+        //   function (value) {
+        //     const { tenantId } = this.parent;
+        //     if (!tenantId || !value) return true;
 
-            const tenant = tenants.find((t) => t.id === Number(tenantId));
-            if (!tenant) return true;
+        //     const tenant = tenants.find((t) => t.id === Number(tenantId));
+        //     if (!tenant) return true;
 
-            const formattedTenant = tenant.name
-              .trim()
-              .replace(/\s+/g, "_")
-              .toLowerCase();
+        //     const formattedTenant = tenant.name
+        //       .trim()
+        //       .replace(/\s+/g, "_")
+        //       .toLowerCase();
 
-            return value.toLowerCase().includes(formattedTenant);
-          },
-        ),
+        //     return value.toLowerCase().includes(formattedTenant);
+        //   },
+        // ),
       tenantId: Yup.string().required("Tenant selection is required"),
       permissionIds: Yup.array().min(1, "At least one permission is required"),
     }),
@@ -103,8 +104,8 @@ const Roles = () => {
         });
 
         navigate("/roles", {
-  state: { goToList: true },
-});
+          state: { goToList: true },
+        });
         formik.resetForm();
         setActiveStep(1);
       } catch (error) {
@@ -174,8 +175,9 @@ const Roles = () => {
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                  }`}
+                className={`h-2 w-12 rounded-full ${
+                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                }`}
               />
             ))}
           </div>
@@ -193,10 +195,11 @@ const Roles = () => {
                 key={step.id}
                 type="button"
                 disabled
-                className={`flex-1 py-4 flex items-center justify-center gap-2 transition-colors ${activeStep === step.id
-                  ? "bg-white text-sky-600 font-bold"
-                  : "text-gray-400"
-                  }`}
+                className={`flex-1 py-4 flex items-center justify-center gap-2 transition-colors ${
+                  activeStep === step.id
+                    ? "bg-white text-sky-600 font-bold"
+                    : "text-gray-400"
+                }`}
               >
                 <step.icon className="w-5 h-5" />
                 {step.label}
@@ -226,13 +229,26 @@ const Roles = () => {
                         </option>
                       ))}
                     </Select>
-                    <Input
+                    <Select
+                      label="Assign Role"
+                      {...formik.getFieldProps("name")}
+                      error={formik.touched.name  && formik.errors.name}
+                      required
+                    >
+                      <option value="">Select Role</option>
+                      {ROLES.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.label  }
+                        </option>
+                      ))}
+                    </Select>
+                    {/* <Input
                       label="Role Name"
                       {...formik.getFieldProps("name")}
                       error={formik.touched.name && formik.errors.name}
                       placeholder="e.g. editor_tenantName"
                       required
-                    />
+                    /> */}
                     <div className="md:col-span-2">
                       <Input
                         label="Description"
@@ -273,63 +289,14 @@ const Roles = () => {
                         onFocus={() => setShowDropdown(true)}
                         className={`w-full p-3 border-2 rounded-2xl bg-slate-50 transition-all 
           focus:ring-4 focus:ring-sky-100 outline-none text-sm
-          ${formik.touched.permissionIds && formik.errors.permissionIds
-                            ? "border-red-300"
-                            : "border-slate-100 focus:border-sky-400"
-                          }`}
+          ${
+            formik.touched.permissionIds && formik.errors.permissionIds
+              ? "border-red-300"
+              : "border-slate-100 focus:border-sky-400"
+          }`}
                       />
 
                       {showDropdown && (
-                        // <div className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-auto z-50 shadow-lg">
-                        //   {filteredPermissionList.length > 0 ? (
-                        //     filteredPermissionList.map((p) => {
-                        //       const id = Number(p.id);
-
-                        //       return (
-                        //         <div
-                        //           key={p.id}
-                        //           // onMouseDown={() => {
-                        //           //   if (
-                        //           //     !formik.values.permissionIds.includes(id)
-                        //           //   ) {
-                        //           //     formik.setFieldValue("permissionIds", [
-                        //           //       ...formik.values.permissionIds,
-                        //           //       id,
-                        //           //     ]);
-                        //           //   }
-
-                        //           //   setShowDropdown(false);
-                        //           //   setPermissionSearch("");
-                        //           // }}
-                        //           onMouseDown={() => {
-                        //             const currentIds =
-                        //               formik.values.permissionIds;
-
-                        //             const updatedIds = currentIds.includes(id)
-                        //               ? currentIds.filter((pid) => pid !== id)
-                        //               : [...currentIds, id];
-
-                        //             formik.setFieldValue(
-                        //               "permissionIds",
-                        //               updatedIds,
-                        //             );
-                        //           }}
-                        //           className="px-3 py-2 text-sm hover:bg-sky-50 cursor-pointer"
-                        //         >
-                        //           {p.action.toUpperCase()} :{" "}
-                        //           {p.resource.replace("_", " ")}
-                        //           {p.description
-                        //             ? ` (${p.description})`
-                        //             : ""}{" "}
-                        //         </div>
-                        //       );
-                        //     })
-                        //   ) : (
-                        //     <div className="p-3 text-xs text-gray-400">
-                        //       No permissions found
-                        //     </div>
-                        //   )}
-                        // </div>
                         <div className="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-80 overflow-auto z-50 shadow-lg">
                           {Object.entries(groupedPermissions).map(
                             ([group, perms]) => {
@@ -354,7 +321,6 @@ const Roles = () => {
                                   key={group}
                                   className="border-b border-gray-100 last:border-0"
                                 >
-
                                   <div className="sticky top-0 bg-slate-50 px-3 py-2 flex justify-between items-center border-b">
                                     <span className="text-xs font-bold uppercase text-slate-600">
                                       {group}
@@ -394,7 +360,6 @@ const Roles = () => {
                                     </button>
                                   </div>
 
-
                                   {groupPermissions.map((p) => {
                                     const id = Number(p.id);
 
@@ -410,8 +375,8 @@ const Roles = () => {
 
                                           const updatedIds = isSelected
                                             ? currentIds.filter(
-                                              (pid) => pid !== id,
-                                            )
+                                                (pid) => pid !== id,
+                                              )
                                             : [...currentIds, id];
 
                                           formik.setFieldValue(
@@ -486,7 +451,9 @@ const Roles = () => {
                       )}
 
                     <p className="text-xs text-slate-400 italic">
-                      Note: Before creating a role, ensure that the necessary permissions are selected. After role creation, permissions cannot be assigned.
+                      Note: Before creating a role, ensure that the necessary
+                      permissions are selected. After role creation, permissions
+                      cannot be assigned.
                     </p>
                   </div>
                 </section>
@@ -553,8 +520,6 @@ const Roles = () => {
                     type="button"
                     variant="gray"
                     onClick={() => {
-
-
                       if (activeStep === 1) {
                         formik.setValues({
                           ...formik.values,
@@ -564,12 +529,10 @@ const Roles = () => {
                         });
                       }
 
-
                       if (activeStep === 2) {
                         formik.setFieldValue("permissionIds", []);
                         setPermissionSearch("");
                       }
-
 
                       if (activeStep === 3) {
                         formik.resetForm();

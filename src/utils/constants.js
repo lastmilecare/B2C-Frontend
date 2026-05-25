@@ -109,3 +109,51 @@ export const PERMISSION_DESCRIPTION_OPTIONS = [
   { label: "Admin", value: "Admin" },
   { label: "Other", value: "Other" },
 ];
+
+export const ROLES = [
+  {
+    label: "SUPER_ADMIN",
+    value: "LMC_ADMIN",
+  },
+  // 🏢 Tenant level admin (company/organization owner/admin)
+  {
+    label: "TENANT_ADMIN",
+    value: "TENANT_ADMIN",
+  },
+
+  // 🏥 Center level admin (manages center + staff)
+  {
+    label: "CENTER_ADMIN",
+    value: "CENTER_ADMIN",
+  },
+
+  // 👥 Normal staff under a center
+  {
+    label: "STAFF",
+    value: "STAFF",
+  },
+
+  // ✏️ Content / data editor role (optional but useful for limited write access)
+  {
+    label: "EDITOR",
+    value: "EDITOR",
+  },
+
+  // 👀 Read-only access users
+  {
+    label: "VIEWER",
+    value: "VIEWER",
+  },
+
+  // 🧪 Optional: support / ops team role (very common in enterprise systems)
+  {
+    label: "SUPPORT",
+    value: "SUPPORT",
+  },
+
+  // 🧭 Optional: auditor / compliance role (read + logs only)
+  {
+    label: "AUDITOR",
+    value: "AUDITOR",
+  },
+];

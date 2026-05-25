@@ -4,6 +4,7 @@ import {
   useDeleteUserMutation,
   useToggleUserStatusMutation,
   useCenterComboListQuery,
+  useGetAllTenantsQuery
 } from "../redux/apiSlice";
 
 import CopyFilterBar from "../components/Updates/Filter";
@@ -40,7 +41,15 @@ const StaffList = () => {
     email: debouncedEmail,
     status: filters.status || undefined,
   });
-  console.log("centersData", centersData);
+  const { data: tenantData } = useGetAllTenantsQuery();
+  const tenants = tenantData?.data?.data || [];
+  const tenantMap = React.useMemo(() => {
+    const map = {};
+    tenants.forEach((tenant) => {
+      map[tenant.id] = tenant;
+    });
+    return map;
+  }, [tenants]);
   const [deleteStaff] = useDeleteUserMutation();
   const [toggleStatus] = useToggleUserStatusMutation();
   const staffList = data?.data?.data || [];
@@ -154,7 +163,15 @@ const StaffList = () => {
         </span>
       ),
     },
-     {
+    {
+      name: "Tenant",
+      cell: (row) => (
+        <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded text-xs font-medium">
+          {tenantMap[row.tenant_id]?.name || "N/A"}
+        </span>
+      ),
+    },
+    {
       name: "Center",
       cell: (row) => (
         <span className="bg-sky-100 text-sky-700 px-2 py-1 rounded text-xs font-medium">

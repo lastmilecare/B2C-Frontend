@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import { useSelector } from "react-redux";
-
+import { isSuperAdminAndTenantAdmin } from "../utils/helper";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import {
@@ -19,13 +19,14 @@ import {
   useCreateUserMutation,
   useUpdateUserMutation,
   useCenterComboListQuery,
+  useGetAllTenantsQuery,
 } from "../redux/apiSlice";
 
 import { Input, Select, Button } from "../components/UIComponents";
 import { healthAlert } from "../utils/healthSwal";
-
+import { ROLE_ASSIGNMENT_MAP } from "../utils/helper";
 import * as Yup from "yup";
-
+import { cookie } from "../utils/cookie";
 const STEPS = [
   { id: 1, label: "Staff Details", icon: ClipboardDocumentIcon },
   { id: 2, label: "Role", icon: UserPlusIcon },
@@ -37,10 +38,24 @@ const StaffForm = () => {
   const [editUser, setEditUser] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { data: tenantData } = useGetAllTenantsQuery();
+  const tenants = tenantData?.data?.data || [];
+  const tenantMap = React.useMemo(() => {
+    const map = {};
+    tenants.forEach((tenant) => {
+      map[String(tenant.id)] = tenant;
+    });
+    return map;
+  }, [tenants]);
 
+  const currentUserRole = cookie.get("role");
+
+  const allowedRoles = ROLE_ASSIGNMENT_MAP[currentUserRole] || [];
   const location = useLocation();
   const navigate = useNavigate();
   const { tenantId } = useSelector((state) => state.auth);
+  const role = cookie.get("role") || null;
+  const isSuperAdminOrTenantAdmin = isSuperAdminAndTenantAdmin(role);
 
   const { data: rolesData } = useGetAllRoleComboQuery();
   const [createStaff, { isLoading: isCreating }] = useCreateUserMutation();
@@ -48,7 +63,19 @@ const StaffForm = () => {
   const [isSuperadmin, setIsSuperadmin] = useState(false);
   const roles = rolesData?.data || [];
   const { data: centersData = [] } = useCenterComboListQuery();
-  const centerData = centersData?.data || [];
+  const center_id = cookie.get("center_id") || null;
+
+  const centerData = React.useMemo(() => {
+    const centers = centersData?.data || [];
+
+    if (!center_id) return centers;
+
+    return centers.filter((c) => String(c.id) === String(center_id));
+  }, [centersData, center_id]);
+
+  const filteredRoles = roles.filter((role) =>
+    allowedRoles.includes(role.name),
+  );
   useEffect(() => {
     if (location.state?.editData) {
       setEditUser(location.state.editData);
@@ -100,7 +127,7 @@ const StaffForm = () => {
 
     onSubmit: async (values) => {
       try {
-        const selectedRole = roles.find(
+        const selectedRole = filteredRoles.find(
           (r) => String(r.id) === String(values.b2cRoleId),
         );
 
@@ -316,51 +343,60 @@ const StaffForm = () => {
                         )}
                       </button>
                     </div>
+                    {isSuperAdminOrTenantAdmin && (
+                      <>
+                        <div className="flex items-center gap-6 mt-2 flex-wrap">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              id="isAdmin"
+                              name="isAdmin"
+                              checked={formik.values.isAdmin}
+                              onChange={(e) =>
+                                formik.setFieldValue(
+                                  "isAdmin",
+                                  e.target.checked,
+                                )
+                              }
+                              className="w-4 h-4 text-sky-600 border-gray-300 rounded"
+                            />
 
-                    <div className="flex items-center gap-6 mt-2 flex-wrap">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          id="isAdmin"
-                          name="isAdmin"
-                          checked={formik.values.isAdmin}
-                          onChange={(e) =>
-                            formik.setFieldValue("isAdmin", e.target.checked)
-                          }
-                          className="w-4 h-4 text-sky-600 border-gray-300 rounded"
-                        />
+                            <span className="text-sm font-medium text-gray-700">
+                              Is Admin
+                            </span>
+                          </label>
 
-                        <span className="text-sm font-medium text-gray-700">
-                          Is Admin
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              id="isSuperadmin"
+                              checked={isSuperadmin}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+
+                                setIsSuperadmin(checked);
+
+                                if (checked) {
+                                  formik.setFieldValue("center_id", "");
+                                }
+                              }}
+                              className="w-4 h-4 text-sky-600 border-gray-300 rounded"
+                            />
+
+                            <span className="text-sm font-medium text-gray-700">
+                              Is Superadmin
+                            </span>
+                          </label>
+                        </div>
+
+                        <span className="text-xs text-gray-500">
+                          NOTE : While Select the IsSuperadmin, Center will be
+                          automatically unassigned and disabled. Superadmin will
+                          have access to all centers and functionalities without
+                          any restrictions.
                         </span>
-                      </label>
-
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          id="isSuperadmin"
-                          checked={isSuperadmin}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-
-                            setIsSuperadmin(checked);
-
-                            if (checked) {
-                              formik.setFieldValue("center_id", "");
-                            }
-                          }}
-                          className="w-4 h-4 text-sky-600 border-gray-300 rounded"
-                        />
-
-                        <span className="text-sm font-medium text-gray-700">
-                          Is Superadmin 
-                        </span>
-                      </label>
-                    </div>
-
-                    <span className="text-xs text-gray-500">
-                     NOTE : While Select the IsSuperadmin, Center will be automatically unassigned and disabled. Superadmin will have access to all centers and functionalities without any restrictions.
-                    </span>
+                      </>
+                    )}
                   </>
                 )}
               </div>
@@ -383,9 +419,9 @@ const StaffForm = () => {
                       {...formik.getFieldProps("b2cRoleId")}
                     >
                       <option value="">Select Role</option>
-                      {roles.map((r) => (
+                      {filteredRoles.map((r) => (
                         <option key={r.id} value={r.id}>
-                          {r.name}
+                          {r.name} ({tenantMap[r.tenantId]?.name || "N/A"})
                         </option>
                       ))}
                     </Select>
@@ -399,7 +435,7 @@ const StaffForm = () => {
                       <div>
                         <p className="text-xs text-gray-500">Selected Role</p>
                         <p className="text-sm font-semibold text-sky-700">
-                          {roles.find(
+                          {filteredRoles.find(
                             (r) =>
                               String(r.id) === String(formik.values.b2cRoleId),
                           )?.name || "—"}
