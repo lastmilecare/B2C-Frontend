@@ -13,7 +13,7 @@ import {
   useGetPatientsQuery,
   useGetOpdBillingQuery,
   useGetPrescriptionsListQuery,
-  useGetLowStockItemsQuery
+  useGetLowStockItemsQuery,
 } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 
@@ -26,8 +26,8 @@ const AppDashboard = () => {
     page: 1,
     limit: 100,
   });
- const { data: lowStockData, isLoading: stockLoading } =
-  useGetLowStockItemsQuery();
+  const { data: lowStockData, isLoading: stockLoading } =
+    useGetLowStockItemsQuery();
 
   const patients = patientData?.data || [];
   const opd = opdData?.data || [];
@@ -49,15 +49,16 @@ const AppDashboard = () => {
 
   const recentPatients = patients.slice(0, 5);
   const username = cookie.get("name") || "User";
- const lowStockItems = lowStockData?.data || [];
- const [page, setPage] = useState(1);
-const itemsPerPage = 5;
-const startIndex = (page - 1) * itemsPerPage;
+  const role = cookie.get("role") || "N/A";
+  const lowStockItems = lowStockData?.data || [];
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 5;
+  const startIndex = (page - 1) * itemsPerPage;
 
-const paginatedItems = lowStockItems.slice(
-  startIndex,
-  startIndex + itemsPerPage
-);
+  const paginatedItems = lowStockItems.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
   /* ---------------- MODULES ---------------- */
 
   const modules = [
@@ -88,27 +89,26 @@ const paginatedItems = lowStockItems.slice(
       ],
     },
 
-   {
-  title: "Inventory",
-  icon: <ArchiveBoxIcon className="w-6" />,
-  items: [
-    { name: "Purchase Entry", path: "/purchased-entry" },
-    { name: "Medicine Billing", path: "/billing" },
-    { name: "Expiry Items", path: "/expiry-items" },
-    { name: "Camp Billing", path: "/camp-billing" },
-    { name: "Sales Record", path: "/sales-record" },
-  ],
-},
+    {
+      title: "Inventory",
+      icon: <ArchiveBoxIcon className="w-6" />,
+      items: [
+        { name: "Purchase Entry", path: "/purchased-entry" },
+        { name: "Medicine Billing", path: "/billing" },
+        { name: "Expiry Items", path: "/expiry-items" },
+        { name: "Camp Billing", path: "/camp-billing" },
+        { name: "Sales Record", path: "/sales-record" },
+      ],
+    },
 
-{
-  title: "Staff",
-  icon: <UserGroupIcon className="w-6" />,
-  items: [
-    { name: "Staff", path: "/staff-form" },
-    { name: "Staff List", path: "/staff-list" },
-    
-  ],
-},
+    {
+      title: "Staff",
+      icon: <UserGroupIcon className="w-6" />,
+      items: [
+        { name: "Staff", path: "/staff-form" },
+        { name: "Staff List", path: "/staff-list" },
+      ],
+    },
   ];
 
   return (
@@ -118,11 +118,11 @@ const paginatedItems = lowStockItems.slice(
       transition={{ duration: 0.4 }}
       className="space-y-10"
     >
-      
-
       <div className="bg-gradient-to-r from-emerald-600 via-emerald-350 to-emerald-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
         <div>
-          <h2 className="text-2xl font-bold">Welcome back, {username} 👋</h2>
+          <h2 className="text-2xl font-bold">
+            Welcome back, {username} ({role}) 👋
+          </h2>
 
           <p className="opacity-90">LMC Healthcare Management System</p>
         </div>
@@ -137,8 +137,6 @@ const paginatedItems = lowStockItems.slice(
         </div>
       </div>
 
-    
-
       <div className="grid grid-cols-4 gap-6 overflow-visible">
         {modules.map((m) => (
           <motion.div
@@ -151,8 +149,6 @@ const paginatedItems = lowStockItems.slice(
 
               <h3 className="font-semibold text-gray-700">{m.title}</h3>
             </div>
-
-            
 
             <div className="absolute left-0 top-16 hidden group-hover:block bg-white shadow-xl rounded-xl mt-2 w-56 p-4 z-[999]">
               {m.items.map((item) => (
@@ -168,8 +164,6 @@ const paginatedItems = lowStockItems.slice(
           </motion.div>
         ))}
       </div>
-
-     
 
       <div className="grid grid-cols-4 gap-6">
         <motion.div
@@ -197,8 +191,8 @@ const paginatedItems = lowStockItems.slice(
           <p className="text-sm">Low Stock</p>
 
           <h2 className="text-3xl font-bold">
-  {stockLoading ? "..." : lowStockItems.length}
-</h2>
+            {stockLoading ? "..." : lowStockItems.length}
+          </h2>
         </motion.div>
 
         <motion.div
@@ -210,8 +204,6 @@ const paginatedItems = lowStockItems.slice(
           <h2 className="text-3xl font-bold">{todayPrescription}</h2>
         </motion.div>
       </div>
-
-      
 
       {/* <div className="grid grid-cols-4 gap-6">
 
@@ -270,41 +262,39 @@ const paginatedItems = lowStockItems.slice(
 
         <div className="bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6">
           <h3 className="font-semibold mb-4">Low Stock Medicines</h3>
-            <div className="space-y-2 text-sm">
-  {stockLoading ? (
-    <p>Loading...</p>
-  ) : lowStockItems.length === 0 ? (
-    <p>No low stock items</p>
-  ) : (
-    paginatedItems.map((item) => (
-      <div key={item.ID} className="flex justify-between">
-        <span>{item.ItemName}</span>
-        <span className="text-red-500 font-semibold">
-          {item.BalQty} left
-        </span>
-      </div>
-    ))
-  )}
-</div>
-<div className="flex justify-between mt-4">
-  <button
-    disabled={page === 1}
-    onClick={() => setPage(page - 1)}
-    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-  >
-    Prev
-  </button>
+          <div className="space-y-2 text-sm">
+            {stockLoading ? (
+              <p>Loading...</p>
+            ) : lowStockItems.length === 0 ? (
+              <p>No low stock items</p>
+            ) : (
+              paginatedItems.map((item) => (
+                <div key={item.ID} className="flex justify-between">
+                  <span>{item.ItemName}</span>
+                  <span className="text-red-500 font-semibold">
+                    {item.BalQty} left
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="flex justify-between mt-4">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+            >
+              Prev
+            </button>
 
-  <button
-    disabled={startIndex + itemsPerPage >= lowStockItems.length}
-    onClick={() => setPage(page + 1)}
-    className="px-3 py-1 bg-emerald-500 text-white rounded disabled:opacity-50"
-  >
-    Next
-  </button>
-</div>
-          
-          
+            <button
+              disabled={startIndex + itemsPerPage >= lowStockItems.length}
+              onClick={() => setPage(page + 1)}
+              className="px-3 py-1 bg-emerald-500 text-white rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>
