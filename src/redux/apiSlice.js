@@ -336,15 +336,6 @@ export const api = createApi({
 
       invalidatesTags: ["Patient"],
     }),
-    // getMediceneList: build.query({
-    //   query: (id) => ({
-    //     url: "/medicine-inventory",
-    //     method: "GET",
-    //     params: {
-    //       medicineId: id,
-    //     },
-    //   }),
-    // }),
 
     getMediceneList: build.query({
       query: ({ searchTerm, code, itemtypeid } = {}) => ({
