@@ -326,6 +326,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Permissions
               </NavLink>
             )}
+            {can("create:resource") && (
             <NavLink
               to="/resource"
               className={subNavItem}
@@ -333,6 +334,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             >
               Resources
             </NavLink>
+            )}
           </MenuGroup>
         )}
         {can("read:center") && (
@@ -406,6 +408,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Patient Registration
               </NavLink>
             )}
+             {can("create:patient_examination_details_ohc") && (
             <NavLink
                 to="/patient-examination-details"
                 className={subNavItem}
@@ -413,6 +416,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Patient Examination Details
               </NavLink>
+             )}
             {/* <NavLink
               to="/vitals"
               className={subNavItem}
@@ -489,6 +493,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Fitness Certificate
               </NavLink>
             )}
+            {can("create:ohc_staff_page") && (
              <NavLink
                 to="/staff-page-ohc"
                 className={subNavItem}
@@ -496,6 +501,16 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Add Staff 
               </NavLink>
+            )}
+              {can("create:ohc_center") && (
+              <NavLink
+                to="/ohc-centers"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Add Center
+              </NavLink>
+            )}
           </MenuGroup>
         )}
       </nav>
