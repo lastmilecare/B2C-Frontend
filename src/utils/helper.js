@@ -234,3 +234,33 @@ export const formatDateTime = (value) => {
 
   return `${formatDate(date)} ${formatTime(date)}`;
 };
+
+export const isSuperAdminAndTenantAdmin = (role) => {
+  return role === "LMC_ADMIN" || role === "TENANT_ADMIN";
+};
+
+export const ROLE_ASSIGNMENT_MAP = {
+  LMC_ADMIN: [
+    "LMC_ADMIN",
+    "TENANT_ADMIN",
+    "CENTER_ADMIN",
+    "STAFF",
+    "EDITOR",
+    "VIEWER",
+    "SUPPORT",
+    "AUDITOR",
+  ],
+
+  TENANT_ADMIN: [
+    "CENTER_ADMIN",
+    "STAFF",
+    "EDITOR",
+    "VIEWER",
+  ],
+
+  CENTER_ADMIN: [
+    "STAFF",
+  ],
+
+  STAFF: [],
+};

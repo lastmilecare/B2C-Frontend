@@ -268,7 +268,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                Staff
+               Add Staff
               </NavLink>
             )}
             {can("read:staff_form") && (

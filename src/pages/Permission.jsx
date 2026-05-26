@@ -12,7 +12,7 @@ import {
   useCreatePermissionMutation,
   useGetAllResourceComboQuery,
 } from "../redux/apiSlice";
-
+import { PERMISSION_DESCRIPTION_OPTIONS } from "../utils/constants";
 import { useNavigate } from "react-router-dom";
 import { healthAlert } from "../utils/healthSwal";
 import { Select, Button } from "../components/FormControls";
@@ -30,10 +30,12 @@ const Permission = () => {
     initialValues: {
       action: "",
       resource: "",
+      description: "",
     },
     validationSchema: Yup.object({
       action: Yup.string().required("Action is required"),
       resource: Yup.string().required("Resource is required"),
+      description: Yup.string().required("Description is required"),
     }),
     onSubmit: async (values) => {
       try {
@@ -139,6 +141,21 @@ const Permission = () => {
                         </option>
                       ))}
                     </Select>
+                    <Select
+                      label="Description"
+                      required
+                      {...formik.getFieldProps("description")}
+                      error={
+                        formik.touched.description && formik.errors.description
+                      }
+                    >
+                      <option value="">Select Description</option>
+                      {PERMISSION_DESCRIPTION_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </Select>
                   </div>
 
                   {formik.values.action && formik.values.resource && (
@@ -147,7 +164,7 @@ const Permission = () => {
                         Generated Key
                       </p>
                       <code className="text-lg font-mono text-sky-800">
-                        {formik.values.action}:{formik.values.resource}
+                        {formik.values.action}:{formik.values.resource} - {formik.values.description}
                       </code>
                     </div>
                   )}
@@ -235,7 +252,7 @@ const Permission = () => {
                     disabled={isCreating}
                   >
                     {/* <CheckCircleIcon className="w-5 h-5 inline mr-1" /> */}
-                    Save 
+                    Save
                   </Button>
                 )}
               </div>

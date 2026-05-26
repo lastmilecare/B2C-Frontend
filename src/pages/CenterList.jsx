@@ -145,6 +145,14 @@ const CenterList = () => {
       selector: (_, x) => x + 1,
     },
     {
+      name: "Project Name",
+      selector: (row) => row.project_name,
+    },
+    {
+      name: "Project Address",
+      selector: (row) => row.project_address,
+    },
+    {
       name: "agency_name",
       selector: (row) => row.agency_name,
     },
@@ -162,14 +170,6 @@ const CenterList = () => {
       selector: (row) => row.agency_spoc_email,
     },
 
-    {
-      name: "Project Name",
-      selector: (row) => row.project_name,
-    },
-    {
-      name: "Project Address",
-      selector: (row) => row.project_address,
-    },
     {
       name: "Tenant Name",
       selector: (row) => tenantMap[row.tenant_id] || "N/A",
