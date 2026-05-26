@@ -382,7 +382,7 @@ export const api = createApi({
         data: response.data || [],
         pagination: response.pagination || {},
       }),
-       providesTags: ["Prescription"],
+      providesTags: ["Prescription"],
     }),
     createPrescription: build.mutation({
       query: (PrescriptionData) => ({
@@ -1403,79 +1403,74 @@ export const api = createApi({
     }),
 
     saveOhcCombined: build.mutation({
-    query: (body) => ({
+      query: (body) => ({
         url: "/picasoid-prescription/save-ohc-combined",
         method: "POST",
         data: body,
+      }),
     }),
-}),
 
-getOhcCombinedList: build.query({
-
-    query: () => ({
-
-        url:
-            "/picasoid-prescription/ohc-combined",
+    getOhcCombinedList: build.query({
+      query: () => ({
+        url: "/picasoid-prescription/ohc-combined",
 
         method: "GET",
+      }),
+
+      providesTags: ["OHCCombined"],
     }),
 
-    providesTags:
-      ["OHCCombined"],
-}),
-
-getOhcCombinedById: build.query({
-
-    query: (id) => ({
-
-        url:
-            `/picasoid-prescription/ohc-combined/${id}`,
+    getOhcCombinedById: build.query({
+      query: (id) => ({
+        url: `/picasoid-prescription/ohc-combined/${id}`,
 
         method: "GET",
+      }),
+
+      providesTags: ["OHCCombined"],
     }),
-
-    providesTags:
-      ["OHCCombined"],
-}),
-uploadLabReport: build.mutation({
-
-    query: (body) => ({
-
-        url:
-            "/picasoid-prescription/upload/lab-report",
+    uploadLabReport: build.mutation({
+      query: (body) => ({
+        url: "/picasoid-prescription/upload/lab-report",
 
         method: "POST",
 
         data: body,
+      }),
     }),
-}),
 
-uploadRadiologyReport: build.mutation({
-
-    query: (body) => ({
-
+    uploadRadiologyReport: build.mutation({
+      query: (body) => ({
         url: "/picasoid-prescription/upload/radiology-report",
 
         method: "POST",
 
         data: body,
+      }),
     }),
-}),
 
-updateOhcCombined: build.mutation({
-    query: ({ id, body }) => ({
+    updateOhcCombined: build.mutation({
+      query: ({ id, body }) => ({
         url: `/picasoid-prescription/ohc-combined/${id}`,
         method: "PUT",
         data: body,
+      }),
     }),
-}),
-deleteOhcCombined: build.mutation({
-    query: (id) => ({
+    deleteOhcCombined: build.mutation({
+      query: (id) => ({
         url: `/picasoid-prescription/ohc-combined/${id}`,
-        method: "DELETE",   
+        method: "DELETE",
+      }),
+      invalidatesTags: ["OHCCombined"],
     }),
-    invalidatesTags: ["OHCCombined"],
-}),
+    createDisease: build.mutation({
+      query: (body) => ({
+        url: "/diseases",
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Disease"],
+    }),
   }),
 });
 
@@ -1635,12 +1630,12 @@ export const {
   useDeleteCenterMutation,
   useToggleCenterStatusMutation,
   useCenterComboListQuery,
- useSaveOhcCombinedMutation,
-useGetOhcCombinedByIdQuery,
-useUploadLabReportMutation,
-useUploadRadiologyReportMutation,
-useGetOhcCombinedListQuery,
-useUpdateOhcCombinedMutation,
-useDeleteOhcCombinedMutation,
+  useSaveOhcCombinedMutation,
+  useGetOhcCombinedByIdQuery,
+  useUploadLabReportMutation,
+  useUploadRadiologyReportMutation,
+  useGetOhcCombinedListQuery,
+  useUpdateOhcCombinedMutation,
+  useDeleteOhcCombinedMutation,
+  useCreateDiseaseMutation,
 } = api;
-

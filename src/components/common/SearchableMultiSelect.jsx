@@ -8,6 +8,7 @@ const SearchableMultiSelect = ({
   onChange,
   maxSelection = 5,
   placeholder = "Search...",
+  inputAction,
 }) => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(search);
@@ -18,7 +19,7 @@ const SearchableMultiSelect = ({
 
   const { data: apiResponse, isFetching } = queryHook(
     { q: debouncedSearch, page: 1, limit: 20 },
-    { skip: !debouncedSearch }
+    { skip: !debouncedSearch },
   );
 
   const results = apiResponse?.data || [];
@@ -59,7 +60,7 @@ const SearchableMultiSelect = ({
         placeholder={placeholder}
         className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none"
       />
-
+      {inputAction}
       {debouncedSearch && (
         <ul className="absolute z-10 border border-gray-200 rounded-lg mt-1 bg-white shadow-sm max-h-40 overflow-y-auto w-full">
           {isFetching ? (
@@ -75,27 +76,30 @@ const SearchableMultiSelect = ({
               </li>
             ))
           ) : (
-            <li className="px-3 py-2 text-gray-500 text-sm">No results found</li>
+            <li className="px-3 py-2 text-gray-500 text-sm">
+              No results found
+            </li>
           )}
         </ul>
       )}
 
       <div className="flex flex-wrap gap-2 mt-2">
-        {value && value?.map((item) => (
-          <span
-            key={item.id}
-            className="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs flex items-center gap-1"
-          >
-            {item.name}
-            <button
-              type="button"
-              onClick={() => handleRemove(item.id)}
-              className="text-red-500 font-bold"
+        {value &&
+          value?.map((item) => (
+            <span
+              key={item.id}
+              className="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs flex items-center gap-1"
             >
-              ×
-            </button>
-          </span>
-        ))}
+              {item.name}
+              <button
+                type="button"
+                onClick={() => handleRemove(item.id)}
+                className=" cursor-pointer text-red-500 font-bold"
+              >
+                ×
+              </button>
+            </span>
+          ))}
       </div>
     </div>
   );
