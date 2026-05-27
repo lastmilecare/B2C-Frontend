@@ -1471,6 +1471,62 @@ export const api = createApi({
       }),
       invalidatesTags: ["Disease"],
     }),
+    getOrgProfiles: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        tenant_id,
+        center_id,
+        display_name,
+      } = {}) => ({
+        url: "/organization-profile",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          tenant_id,
+          center_id,
+          display_name,
+        },
+      }),
+      providesTags: ["OrgProfile"],
+    }),
+    createOrgProfile: build.mutation({
+      query: (body) => ({
+        url: "/organization-profile",
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["OrgProfile"],
+    }),
+    updateOrgProfile: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/organization-profile/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+      invalidatesTags: ["OrgProfile"],
+    }),
+    deleteOrgProfile: build.mutation({
+      query: (id) => ({
+        url: `/organization-profile/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["OrgProfile"],
+    }),
+    toggleOrgProfileStatus: build.mutation({
+      query: (id) => ({
+        url: `/organization-profile/toggle/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["OrgProfile"],
+    }),
+    getOrgProfileById: build.query({
+      query: (id) => ({
+        url: `/organization-profile/${id}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -1638,4 +1694,10 @@ export const {
   useUpdateOhcCombinedMutation,
   useDeleteOhcCombinedMutation,
   useCreateDiseaseMutation,
+  useGetOrgProfilesQuery,
+  useCreateOrgProfileMutation,
+  useUpdateOrgProfileMutation,
+  useDeleteOrgProfileMutation,
+  useToggleOrgProfileStatusMutation,
+  useGetOrgProfileByIdQuery,
 } = api;

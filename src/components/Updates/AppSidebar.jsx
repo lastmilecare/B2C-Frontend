@@ -382,6 +382,20 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             >
               Tenant List
             </NavLink>
+            <NavLink
+              to="/organization-profile"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Add Organization Profile
+            </NavLink>
+            <NavLink
+              to="/organization-profiles-list"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Organization Profiles
+            </NavLink>
           </MenuGroup>
         )}
 
