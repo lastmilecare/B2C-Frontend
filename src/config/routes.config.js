@@ -19,7 +19,6 @@ import StaffList from "../pages/StaffList";
 import TenantForm from "../pages/TenantForm";
 import TenantList from "../pages/TenantList";
 
-
 import Appointment from "../pages/Appointment";
 import MedicalHistoryPage from "../pages/MedicalHistoryPage";
 import ClinicalExaminationPage from "../pages/ClinicalExaminationPage";
@@ -40,13 +39,16 @@ import CenterList from "../pages/CenterList";
 import StaffPage from "../pages/StaffPageOhc";
 import PatientExaminationPage from "../pages/PatientExaminationPage";
 import OhcCenterPage from "../pages/OhcCenterPage";
+import OrganizationProfileForm from "../pages/OrganizationProfileForm";
+import OrganizationProfileList from "../pages/OrganizationProfileList";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
-	path: "/",
+    path: "/",
     component: AppDashboard,
-    permission: null,           
-    showInSidebar: false,  },
+    permission: null,
+    showInSidebar: false,
+  },
   {
     path: "/dashboard",
     component: AppDashboard,
@@ -82,12 +84,12 @@ export const ROUTES = [
     permission: "create:tenant",
     showInSidebar: false,
   },
-   {
-  path: "/tenants/:id",
-  component: TenantForm,
-  permission: "update:tenant",
-  showInSidebar: false,
-},
+  {
+    path: "/tenants/:id",
+    component: TenantForm,
+    permission: "update:tenant",
+    showInSidebar: false,
+  },
   {
     path: "/roles",
     component: RolesPage,
@@ -97,7 +99,7 @@ export const ROUTES = [
     group: "Administration",
     showInSidebar: true,
   },
-  
+
   {
     path: "/permissions",
     component: PermissionPage,
@@ -107,8 +109,6 @@ export const ROUTES = [
     group: "Administration",
     showInSidebar: true,
   },
- 
-  
 
   // ── Staff ─────────────────────────────────────────────────────────────────
   {
@@ -127,11 +127,11 @@ export const ROUTES = [
     showInSidebar: false,
   },
   {
-  path: "/centers/:id",
-  component: CenterForm,
-  permission: "update:center",
-  showInSidebar: false,
-},
+    path: "/centers/:id",
+    component: CenterForm,
+    permission: "update:center",
+    showInSidebar: false,
+  },
   {
     path: "/staff-form",
     component: StaffForm,
@@ -148,11 +148,11 @@ export const ROUTES = [
     showInSidebar: false,
   },
   {
-  path: "/staff-form/:id",
-  component: StaffForm,
-  permission: "create:staff_form",
-  showInSidebar: false,
-},
+    path: "/staff-form/:id",
+    component: StaffForm,
+    permission: "create:staff_form",
+    showInSidebar: false,
+  },
   {
     path: "/attendance",
     component: AttendancePage,
@@ -194,7 +194,7 @@ export const ROUTES = [
     group: "Patient",
     showInSidebar: true,
   },
-   {
+  {
     path: "/PatientRegistrationOhc/:id",
     component: PatientPage,
     permission: "create:ohc_patient_registration",
@@ -325,12 +325,12 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-  path: "/appointment/:id",
-  component: Appointment,
-  permission: "update:appointment_visit",
-  showInSidebar: false,
-},
-  
+    path: "/appointment/:id",
+    component: Appointment,
+    permission: "update:appointment_visit",
+    showInSidebar: false,
+  },
+
   {
     path: "/medical-history",
     component: MedicalHistoryPage,
@@ -341,12 +341,12 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-  path: "/medical-history/:id",
-  component: MedicalHistoryPage,
-  permission: "update:medical_history",
-  showInSidebar: false,
-},
-  
+    path: "/medical-history/:id",
+    component: MedicalHistoryPage,
+    permission: "update:medical_history",
+    showInSidebar: false,
+  },
+
   {
     path: "/clinical-examination",
     component: ClinicalExaminationPage,
@@ -357,11 +357,11 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-  path: "/clinical-examination/:id",
-  component: ClinicalExaminationPage,
-  permission: "update:clinical_examination",
-  showInSidebar: false,
-},
+    path: "/clinical-examination/:id",
+    component: ClinicalExaminationPage,
+    permission: "update:clinical_examination",
+    showInSidebar: false,
+  },
   {
     path: "/laboratory-investigation",
     component: LaboratoryInvestigationPage,
@@ -372,12 +372,12 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-  path: "/laboratory-investigation/:id",
-  component: LaboratoryInvestigationPage,
-  permission: "update:laboratory_investigation",
-  showInSidebar: false,
-},
-  
+    path: "/laboratory-investigation/:id",
+    component: LaboratoryInvestigationPage,
+    permission: "update:laboratory_investigation",
+    showInSidebar: false,
+  },
+
   {
     path: "/radiology-screen",
     component: RadiologyPage,
@@ -387,13 +387,13 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
-   {
-  path: "/radiology-screen/:id",
-  component: RadiologyPage,
-  permission: "update:radiology",
-  showInSidebar: false,
-},
-   
+  {
+    path: "/radiology-screen/:id",
+    component: RadiologyPage,
+    permission: "update:radiology",
+    showInSidebar: false,
+  },
+
   {
     path: "/doctor-assessment",
     component: DoctorAssessmentPage,
@@ -403,13 +403,13 @@ export const ROUTES = [
     group: "Clinical",
     showInSidebar: true,
   },
-   {
-  path: "/doctor-assessment/:id",
-  component: DoctorAssessmentPage,
-  permission: "update:doctor_assessment",
-  showInSidebar: false,
-},
- 
+  {
+    path: "/doctor-assessment/:id",
+    component: DoctorAssessmentPage,
+    permission: "update:doctor_assessment",
+    showInSidebar: false,
+  },
+
   {
     path: "/fitness-certificate",
     component: FitnessCertificatePage,
@@ -420,17 +420,17 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-  path: "/fitness-certificate/:id",
-  component: FitnessCertificatePage,
-  permission: "update:fitness_certificate",
-  showInSidebar: false,
-},
-{
-  path: "/fitness-certificate/template/:id",
-  component: FitnessCertificatePage,
-  permission: "update:fitness_certificate",
-  showInSidebar: false,
-},
+    path: "/fitness-certificate/:id",
+    component: FitnessCertificatePage,
+    permission: "update:fitness_certificate",
+    showInSidebar: false,
+  },
+  {
+    path: "/fitness-certificate/template/:id",
+    component: FitnessCertificatePage,
+    permission: "update:fitness_certificate",
+    showInSidebar: false,
+  },
   {
     path: "/resource",
     component: ResourcePage,
@@ -479,6 +479,7 @@ export const ROUTES = [
   permission: "update:patient_examination_details_ohc",
   showInSidebar: false,
 },
+   
   {
     path: "/staff-page-ohc",
     component: StaffPage,
@@ -500,6 +501,16 @@ export const ROUTES = [
     component: OhcCenterPage,
     permission: "create:ohc_center",
     label: "Centers",
+    path: "/staff-page-ohc/:id",
+    component: StaffPage,
+    permission: null,
+    showInSidebar: false,
+  },
+  {
+    path: "/organization-profile",
+    component: OrganizationProfileForm,
+    permission: null,
+    label: "Organization Profile",
     icon: "BuildingOfficeIcon",
     group: "Administration",
     showInSidebar: true,
@@ -510,6 +521,13 @@ export const ROUTES = [
   permission: "update:ohc_center",
   showInSidebar: false,
 },
- 
+ {
+    path: "/organization-profiles-list",
+    component: OrganizationProfileList,
+    permission: null,
+    label: "Organization Profiles",
+    icon: "BuildingOfficeIcon",
+    group: "Administration",
+    showInSidebar: true,
+  },
 ];
-

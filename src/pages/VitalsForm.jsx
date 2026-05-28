@@ -33,12 +33,6 @@ const VitalsForm = () => {
   const { data: editData } = useGetVitalsByIdQuery(id, {
     skip: !id,
   });
-  // const { data: patientData } = useGetPatientByEmployeeIdQuery(
-  // selectedEmp ? selectedEmp : skipToken
-  // );
-  // const { data: suggestions = [] } = useSearchEmployeeQuery(empSearch, {
-  // skip: empSearch.length < 1,
-  // });
   const formik = useFormik({
     initialValues: {
       patient_id: "",
