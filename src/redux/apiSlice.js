@@ -1499,14 +1499,22 @@ export const api = createApi({
       }),
       invalidatesTags: ["OrgProfile"],
     }),
+    // updateOrgProfile: build.mutation({
+    //   query: ({ id, ...body }) => ({
+    //     url: `/organization-profile/${id}`,
+    //     method: "PUT",
+    //     data: body,
+    //   }),
+    //   invalidatesTags: ["OrgProfile"],
+    // }),
     updateOrgProfile: build.mutation({
-      query: ({ id, ...body }) => ({
-        url: `/organization-profile/${id}`,
-        method: "PUT",
-        data: body,
-      }),
-      invalidatesTags: ["OrgProfile"],
-    }),
+  query: ({ id, body }) => ({
+    url: `/organization-profile/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+  invalidatesTags: ["OrgProfile"],
+}),
     deleteOrgProfile: build.mutation({
       query: (id) => ({
         url: `/organization-profile/${id}`,

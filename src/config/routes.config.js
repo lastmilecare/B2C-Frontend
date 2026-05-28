@@ -530,4 +530,13 @@ export const ROUTES = [
     group: "Administration",
     showInSidebar: true,
   },
+  {
+    path: "/organization-profile/:id",
+    component: OrganizationProfileForm,
+    permission: null,
+    label: "Organization Profiles",
+    icon: "BuildingOfficeIcon",
+    group: "Administration",
+    showInSidebar: true,
+  },
 ];

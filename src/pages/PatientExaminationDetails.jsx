@@ -1188,70 +1188,326 @@ radiology: {
                 )}
                 
 
-                {activeStep === 6 && (
-                    <section>
-                        <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-6">
+               {activeStep === 6 && (
+  <section>
 
-                            <h3 className="text-2xl font-bold text-sky-700">
-                                FINAL PREVIEW
-                            </h3>
+    <div className="space-y-6">
 
-                            <div>
-                                <h4 className="font-semibold text-sky-600 mb-2">
-                                    Patient Details
-                                </h4>
+      {/* HEADER */}
+      <div className="bg-gradient-to-r from-sky-600 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
 
-                                <div className="grid md:grid-cols-2 gap-2 text-sm">
-                                    <p><b>Name:</b> {formik.values.Name}</p>
-                                    <p><b>Gender:</b> {formik.values.Gender}</p>
-                                    <p><b>Age:</b> {formik.values.Age}</p>
-                                    <p><b>Patient ID:</b> {formik.values.patient_id}</p>
-                                </div>
-                            </div>
+        <h2 className="text-3xl font-bold">
+          Final Preview
+        </h2>
 
+        <p className="text-sky-100 mt-1">
+          Verify all patient examination details before save
+        </p>
 
-                            <div className="border-t pt-4">
-                                <h4 className="font-semibold text-sky-600 mb-2">
-                                    Vitals
-                                </h4>
+      </div>
 
-                                <div className="grid md:grid-cols-3 gap-2 text-sm">
-                                    <p><b>BP:</b> {formik.values.bpsystolic}/{formik.values.bpdiastolic}</p>
-                                    <p><b>Pulse:</b> {formik.values.pulserate}</p>
-                                    <p><b>SPO2:</b> {formik.values.spo2}</p>
-                                    <p><b>Temperature:</b> {formik.values.temprature}</p>
-                                    <p><b>BMI:</b> {formik.values.bmi}</p>
-                                </div>
-                            </div>
+      {/* PATIENT DETAILS */}
+      <div className="bg-white border border-sky-100 rounded-2xl shadow-sm overflow-hidden">
 
-                            <div className="border-t pt-4">
-                                <h4 className="font-semibold text-sky-600 mb-2">
-                                    Laboratory Tests
-                                </h4>
+        <div className="bg-sky-50 px-5 py-3 border-b border-sky-100">
+          <h3 className="font-semibold text-sky-700 text-lg">
+            Patient Details
+          </h3>
+        </div>
 
-                                {bloodTestList.map((t, i) => (
-                                    <div key={i} className="text-sm mb-2">
-                                        <p><b>Test:</b> {t.name}</p>
-                                        <p><b>Result:</b> {t.result}</p>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="border-t pt-4">
-                                <h4 className="font-semibold text-sky-600 mb-2">
-                                    Radiology Tests
-                                </h4>
+        <div className="grid md:grid-cols-4 gap-4 p-5">
 
-                                {radiologyTestList.map((t, i) => (
-                                    <div key={i} className="text-sm mb-2">
-                                        <p><b>Test:</b> {t.testType}</p>
-                                        <p><b>Result:</b> {t.resultSummary}</p>
-                                    </div>
-                                ))}
-                            </div>
+          <div>
+            <p className="text-xs text-gray-500">
+              Patient Name
+            </p>
 
-                        </div>
-                    </section>
-                )}
+            <p className="font-semibold text-slate-700">
+              {formik.values.Name || "-"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">
+              Gender
+            </p>
+
+            <p className="font-semibold text-slate-700">
+              {formik.values.Gender || "-"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">
+              Age
+            </p>
+
+            <p className="font-semibold text-slate-700">
+              {formik.values.Age || "-"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">
+              Employee ID
+            </p>
+
+            <p className="font-semibold text-slate-700">
+              {formik.values.EmployeeId || "-"}
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* VITALS */}
+      <div className="bg-white border border-sky-100 rounded-2xl shadow-sm overflow-hidden">
+
+        <div className="bg-sky-50 px-5 py-3 border-b border-sky-100">
+          <h3 className="font-semibold text-sky-700 text-lg">
+            Vitals
+          </h3>
+        </div>
+
+        <div className="grid md:grid-cols-4 gap-4 p-5">
+
+          <div>
+            <p className="text-xs text-gray-500">BP</p>
+
+            <p className="font-semibold">
+              {formik.values.bpsystolic}/
+              {formik.values.bpdiastolic}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">Pulse</p>
+
+            <p className="font-semibold">
+              {formik.values.pulserate}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">SPO2</p>
+
+            <p className="font-semibold">
+              {formik.values.spo2}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">Temperature</p>
+
+            <p className="font-semibold">
+              {formik.values.temprature}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">Height</p>
+
+            <p className="font-semibold">
+              {formik.values.height}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">Weight</p>
+
+            <p className="font-semibold">
+              {formik.values.weight}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">BMI</p>
+
+            <p className="font-semibold">
+              {formik.values.bmi}
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* CLINICAL */}
+      <div className="bg-white border border-sky-100 rounded-2xl shadow-sm overflow-hidden">
+
+        <div className="bg-sky-50 px-5 py-3 border-b border-sky-100">
+          <h3 className="font-semibold text-sky-700 text-lg">
+            Clinical Examination
+          </h3>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4 p-5">
+
+          <div>
+            <p className="text-xs text-gray-500">
+              General Appearance
+            </p>
+
+            <p className="font-semibold">
+              {formik.values.generalAppearance}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">
+              Vision
+            </p>
+
+            <p className="font-semibold">
+              {formik.values.vision}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500">
+              Color Blindness
+            </p>
+
+            <p className="font-semibold">
+              {formik.values.colorBlindness}
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* LAB TEST */}
+      <div className="bg-white border border-sky-100 rounded-2xl shadow-sm overflow-hidden">
+
+        <div className="bg-sky-50 px-5 py-3 border-b border-sky-100">
+          <h3 className="font-semibold text-sky-700 text-lg">
+            Laboratory Tests
+          </h3>
+        </div>
+
+        <div className="p-5 space-y-3">
+
+          {bloodTestList.map((t, i) => (
+            <div
+              key={i}
+              className="border rounded-xl p-4 bg-slate-50"
+            >
+
+              <div className="grid md:grid-cols-4 gap-4">
+
+                <div>
+                  <p className="text-xs text-gray-500">
+                    Test Name
+                  </p>
+
+                  <p className="font-semibold">
+                    {t.test_name}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500">
+                    Result
+                  </p>
+
+                  <p className="font-semibold">
+                    {t.result_value}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500">
+                    Range
+                  </p>
+
+                  <p className="font-semibold">
+                    {t.normal_range}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500">
+                    Remarks
+                  </p>
+
+                  <p className="font-semibold">
+                    {t.remarks}
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+          ))}
+
+        </div>
+
+      </div>
+
+      {/* RADIOLOGY */}
+      <div className="bg-white border border-sky-100 rounded-2xl shadow-sm overflow-hidden">
+
+        <div className="bg-sky-50 px-5 py-3 border-b border-sky-100">
+          <h3 className="font-semibold text-sky-700 text-lg">
+            Radiology Tests
+          </h3>
+        </div>
+
+        <div className="p-5 space-y-3">
+
+          {radiologyTestList.map((t, i) => (
+            <div
+              key={i}
+              className="border rounded-xl p-4 bg-slate-50"
+            >
+
+              <div className="grid md:grid-cols-3 gap-4">
+
+                <div>
+                  <p className="text-xs text-gray-500">
+                    Test Type
+                  </p>
+
+                  <p className="font-semibold">
+                    {t.test_type}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500">
+                    Result
+                  </p>
+
+                  <p className="font-semibold">
+                    {t.result_summary}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-500">
+                    Doctor Remarks
+                  </p>
+
+                  <p className="font-semibold">
+                    {t.doctor_remarks}
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+          ))}
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+)}
                 <div className="flex justify-between items-center pt-6 border-t border-gray-100">
 
 
