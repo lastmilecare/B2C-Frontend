@@ -1478,6 +1478,7 @@ export const api = createApi({
         tenant_id,
         center_id,
         display_name,
+        address,
       } = {}) => ({
         url: "/organization-profile",
         method: "GET",
@@ -1487,6 +1488,7 @@ export const api = createApi({
           tenant_id,
           center_id,
           display_name,
+          address,
         },
       }),
       providesTags: ["OrgProfile"],

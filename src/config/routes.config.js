@@ -501,9 +501,6 @@ export const ROUTES = [
     component: OhcCenterPage,
     permission: "create:ohc_center",
     label: "Centers",
-    path: "/staff-page-ohc/:id",
-    component: StaffPage,
-    permission: null,
     showInSidebar: false,
   },
   {
