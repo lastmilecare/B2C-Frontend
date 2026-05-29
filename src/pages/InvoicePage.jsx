@@ -1,8 +1,26 @@
 import React, { forwardRef } from "react";
-
+import { useGetOrgProfilesQuery } from "../redux/apiSlice";
+import { cookie } from "../utils/cookie";
 const safeFixed = (value) => Number(value || 0).toFixed(2);
 
 const InvoiceTemplate = forwardRef(({ data }, ref) => {
+  const center_id = cookie.get("center_id");
+  const page = 1;
+  const limit = 10;
+  const filters = {
+    center_id: center_id,
+  };
+  const {
+    data: oragnisationData,
+    isLoading,
+    refetch,
+  } = useGetOrgProfilesQuery({
+    page,
+    limit,
+    ...filters,
+  });
+  const profiles = oragnisationData?.data || {};
+  const profile = profiles?.[0] || {};
   const add = import.meta.env.VITE_CENTER_ADD;
   const mobile = import.meta.env.VITE_CENTER_MOBILE;
   const center = import.meta.env.VITE_CENTER_NAME;
@@ -18,7 +36,19 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
         hour12: true,
       })
     : "";
+  const BASE_URL = import.meta.env.VITE_API_URL;
+  const mainlogo = profile?.logo
+    ? `${BASE_URL}${profile.logo}`
+    : "/images/LMC_logo.webp";
 
+  const secondaryLogo = profile?.secondary_logo
+    ? `${BASE_URL}${profile.secondary_logo}`
+    : null;
+  const address = profile?.address || "N/A";
+  const contact = profile?.mobile || "N/A";
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   return (
     <div
       ref={ref}
@@ -48,22 +78,48 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
         Last Mile Care Pvt Ltd
       </div>
 
-      <img src="/images/LMC_logo.webp" alt="logo" />
+      <div className="flex justify-start mb-2">
+        <img
+          className="h-16 w-auto object-contain"
+          src="/images/LMC_logo.webp"
+          alt="logo"
+        />
+      </div>
       <div className="relative z-10">
-        <div className="text-center mb-6 border-b pb-6 pt-4">
-          <h1 className="text-[#00397A] text-[32px] font-extrabold tracking-wide leading-none">
-            MEDI KAVACH
-          </h1>
-          <h2 className="text-[#4A6FA1] text-[13px] font-semibold tracking-[0.25em] mt-1">
+        <div className="text-center mb-4 border-b pb-4">
+          <div className="flex justify-center items-center gap-2 mb-2">
+            <img
+              src={mainlogo}
+              alt="organization logo"
+              className="h-16 w-auto object-contain"
+              onError={(e) => {
+                e.currentTarget.src = "/images/LMC_logo.webp";
+              }}
+            />
+
+            {secondaryLogo && (
+              <img
+                src={secondaryLogo}
+                alt="secondary logo"
+                className="h-16 w-auto object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            )}
+          </div>
+
+          <h2 className="text-[#4A6FA1] text-[15px] font-bold tracking-[0.25em]">
             HEALTH CENTRE
           </h2>
-          <p className="text-[10px] text-[#4A6FA1] mt-2">
-            {add || ""} • Contact: {mobile || ""}
+
+          <p className="text-[10px] text-[#4A6FA1] mt-1">
+            {address} • Contact: {contact}
           </p>
         </div>
 
         <h3 className="text-center text-[12px] font-bold mb-3 text-[#1A73E8] tracking-wide underline">
-          Patient Invoice ({center})
+          Patient Invoice 
         </h3>
 
         <div className="rounded-md overflow-hidden shadow-sm border border-gray-300 mb-4 bg-white">
@@ -97,7 +153,6 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
           </table>
         </div>
 
-       
         <div className="flex justify-between items-center text-[11px] font-semibold mb-3 py-2 px-3 border border-gray-300 rounded-md shadow-sm bg-gray-50">
           <div>Bill No : {data?.bill_no || ""}</div>
           <div className="text-[#1A73E8] font-bold text-[12px] uppercase tracking-wide">
@@ -106,7 +161,6 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
           <div>Bill Date: {billDate}</div>
         </div>
 
-       
         <div className="rounded-md shadow-sm overflow-hidden border border-gray-300 mb-4 bg-white">
           <table className="w-full border-collapse text-[11px]">
             <thead className="bg-[#1A73E8] text-white">
@@ -136,7 +190,6 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
           </table>
         </div>
 
-       
         <div className="grid grid-cols-2 gap-4 text-[11px]">
           <div className="space-y-1">
             <p>
@@ -192,12 +245,10 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
           </div>
         </div>
 
-       
         <div className="text-right mt-16 mb-4">
           <p className="font-semibold text-[12px]">Signature</p>
         </div>
 
-        
         <div className="grid grid-cols-2 text-[10px] italic text-gray-600 mt-6 border-t pt-2">
           <p>Powered By : Last Mile Care</p>
           <p className="text-right">Prepared By : {data?.added_by}</p>

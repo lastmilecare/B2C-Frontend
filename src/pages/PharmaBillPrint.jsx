@@ -2,8 +2,26 @@ import React, { forwardRef } from "react";
 import { cookie } from "../utils/cookie";
 import { cleanCurrency } from "../utils/helper";
 import { Picaso_Paymode_Options } from "../utils/constants";
+
 const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
   const username = cookie.get("username");
+  const center_id = cookie.get("center_id");
+  const page = 1;
+  const limit = 10;
+  const filters = {
+    center_id: center_id,
+  };
+  const {
+    data: oragnisationData,
+    isLoading,
+    refetch,
+  } = useGetOrgProfilesQuery({
+    page,
+    limit,
+    ...filters,
+  });
+  const profiles = oragnisationData?.data || {};
+  const profile = profiles?.[0] || {};
   if (!data) return null;
 
   const header = data;
@@ -38,6 +56,19 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
   const mobile = import.meta.env.VITE_CENTER_MOBILE;
   const gst = import.meta.env.VITE_COMPANY_GST;
   const license = import.meta.env.VITE_COMPANY_LICENSE_NO;
+  const BASE_URL = import.meta.env.VITE_API_URL;
+  const mainlogo = profile?.logo
+    ? `${BASE_URL}${profile.logo}`
+    : "/images/LMC_logo.webp";
+
+  const secondaryLogo = profile?.secondary_logo
+    ? `${BASE_URL}${profile.secondary_logo}`
+    : null;
+  const address = profile?.address || "N/A";
+  const contact = profile?.mobile || "N/A";
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   return (
     <div
       ref={ref}
@@ -66,17 +97,42 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
       >
         Last Mile Care Pvt Ltd
       </div>
-      <img src="/images/LMC_logo.webp" alt="logo" />
-      
-      <div style={{ textAlign: "center", marginBottom: "10px" }}>
-        <h2 style={{ color: "#00397A", margin: 0, fontWeight: "800" }}>
-          MEDI KAVACH
-        </h2>
-        <h3 style={{ color: "#4A6FA1", margin: 0, fontWeight: "600" }}>
+      <div className="flex justify-start mb-2">
+        <img
+          className="h-16 w-auto object-contain"
+          src="/images/LMC_logo.webp"
+          alt="logo"
+        />
+      </div>
+      <div className="text-center mb-4 border-b pb-4">
+        <div className="flex justify-center items-center gap-2 mb-2">
+          <img
+            src={mainlogo}
+            alt="organization logo"
+            className="h-16 w-auto object-contain"
+            onError={(e) => {
+              e.currentTarget.src = "/images/LMC_logo.webp";
+            }}
+          />
+
+          {secondaryLogo && (
+            <img
+              src={secondaryLogo}
+              alt="secondary logo"
+              className="h-16 w-auto object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          )}
+        </div>
+
+        <h2 className="text-[#4A6FA1] text-[15px] font-bold tracking-[0.25em]">
           HEALTH CENTRE
-        </h3>
-        <p style={{ fontSize: "11px", color: "#4A6FA1" }}>
-          {`Address: ${add ?? ""} • Phone: ${mobile ?? ""}`}
+        </h2>
+
+        <p className="text-[10px] text-[#4A6FA1] mt-1">
+          {address} • Contact: {contact}
         </p>
       </div>
 
@@ -260,4 +316,3 @@ const tdCenter = {
 };
 
 export default PharmaInvoicePrint;
-

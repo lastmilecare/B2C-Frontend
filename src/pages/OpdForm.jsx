@@ -770,9 +770,12 @@ const payObj = Picaso_Paymode_Options.find(
                       label="Refer By"
                     >
                       <option value="">Refer By</option>
-                      {collectedBy?.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.name}
+                      {doctors?.map((d) => (
+                        // <option key={u.id} value={u.id}>
+                        //   {u.name}
+                        // </option>
+                        <option key={d.id} value={d.id}>
+                          {d.name || d.doctor_name}
                         </option>
                       ))}
                     </Select>

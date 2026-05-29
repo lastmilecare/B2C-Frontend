@@ -194,6 +194,13 @@ const StockDetailsCopy = () => {
       width: "80px",
     },
     {
+      name: "Item Name",
+      width: "160px",
+      cell: (row) => (
+        <span className="text-gray-700 font-medium">{row.ItemName}</span>
+      ),
+    },
+    {
       name: "Supplier",
       width: "160px",
       cell: (row) => (
