@@ -384,8 +384,8 @@ const BillingFormCopy = ({ refetchList }) => {
       discountPercent: cleanCurrency(
         stockDetails?.data[0]?.DiscountPCperitem || 0,
       ),
-      mrp: cleanCurrency(stockDetails?.data[0]?.MRP || 0),
-      cp: cleanCurrency(stockDetails?.data[0]?.CP || 0),
+      mrp: cleanCurrency(stockDetails?.data[0]?.MRPU || 0),
+      cp: cleanCurrency(stockDetails?.data[0]?.CPU || 0),
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [stockDetails]);
@@ -468,7 +468,7 @@ const BillingFormCopy = ({ refetchList }) => {
       itemId: selectedMedicine.id,
       stockId: stockDetails?.data[0]?.StockID,
       stockNo: stockDetails?.data[0]?.StockNo,
-      basePrice: cleanCurrency(stockDetails?.data[0]?.CP),
+      basePrice: cleanCurrency(stockDetails?.data[0]?.CPU),
       stockDetailId: stockDetails?.data[0]?.ID || 0,
     };
     formik.setFieldValue("items", [...formik.values.items, newItem]);
@@ -776,7 +776,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       />
                     </div>
                     <Input
-                      label="MRP"
+                      label="MRPU"
                       {...formik.getFieldProps("mrp")}
                       readOnly
                     />
@@ -805,7 +805,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       }}
                     />
                     <Input
-                      label="CP"
+                      label="CPU"
                       {...formik.getFieldProps("cp")}
                       readOnly
                     />

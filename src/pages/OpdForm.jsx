@@ -703,6 +703,7 @@
                           formik.setFieldValue("ChiefComplaint", selected)
                         }
                         required
+                        allowManualAdd={true}
                       />
 
                       <Input

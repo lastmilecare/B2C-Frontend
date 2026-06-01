@@ -162,7 +162,7 @@ outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky
     <DatePicker
       selected={
         tempFilters[filter.name]
-          ? new Date(tempFilters[filter.name])
+          ? new Date(tempFilters[filter.name] + "T00:00:00")
           : null
       }
       onChange={(date) => {
@@ -170,8 +170,12 @@ outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky
           target: {
             name: filter.name,
             value: date
-              ? date.toISOString().split("T")[0]
-              : "",
+          ? `${date.getFullYear()}-${String(
+              date.getMonth() + 1
+            ).padStart(2, "0")}-${String(
+              date.getDate()
+            ).padStart(2, "0")}`
+          : "",
           },
         });
       }}

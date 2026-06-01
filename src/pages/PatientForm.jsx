@@ -221,6 +221,7 @@ const PatientRegistrationCopy = () => {
       }
     },
   });
+  
   useEffect(() => {
     if (!id) {
       formik.resetForm();
@@ -506,21 +507,24 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
   </label>
 
   <DatePicker
+  
     selected={
-      formik.values.dob
-        ? new Date(formik.values.dob)
-        : null
-    }
+  formik.values.dob
+    ? new Date(formik.values.dob + "T00:00:00")
+    : null
+}
     onChange={(date) => {
       if (!date) {
         formik.setFieldValue("dob", "");
         formik.setFieldValue("age", "");
         return;
       }
+       
 
-      const formattedDate = date.toISOString().split("T")[0];
-
-      formik.setFieldValue("dob", formattedDate);
+const formattedDate = `${date.getFullYear()}-${String(
+  date.getMonth() + 1
+).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  formik.setFieldValue("dob", formattedDate);
 
       const birth = new Date(date);
       const today = new Date();

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -37,12 +37,35 @@ const OrganizationProfileForm = () => {
   const [updateProfile, { isLoading: isUpdating }] =
     useUpdateOrgProfileMutation();
 
-  const [logoPreview, setLogoPreview] = useState(editData?.logo || "");
-  const [activeStep, setActiveStep] = useState(1);
-  const [secondaryLogoPreview, setSecondaryLogoPreview] = useState(
-    editData?.secondary_logo || "",
-  );
+//   const [logoPreview, setLogoPreview] = useState(editData?.logo || "");
+//   const [activeStep, setActiveStep] = useState(1);
+//   const [secondaryLogoPreview, setSecondaryLogoPreview] = useState(
+//     editData?.secondary_logo || "",
+//   );
+// useEffect(() => {
+//   console.log("Edit Data =>", editData);
+//   console.log("Logo =>", editData?.logo);
+//   console.log("Secondary Logo =>", editData?.secondary_logo);
+// }, [editData]);
+const BASE_URL = import.meta.env.VITE_API_URL;
 
+const [logoPreview, setLogoPreview] = useState("");
+const [activeStep, setActiveStep] = useState(1);
+const [secondaryLogoPreview, setSecondaryLogoPreview] = useState("");
+
+useEffect(() => {
+  console.log("Edit Data =>", editData);
+
+  if (editData?.logo) {
+    setLogoPreview(`${BASE_URL}${editData.logo}`);
+  }
+
+  if (editData?.secondary_logo) {
+    setSecondaryLogoPreview(
+      `${BASE_URL}${editData.secondary_logo}`
+    );
+  }
+}, [editData]);
   const validationSchema = Yup.object({
     tenant_id: Yup.string().required("Tenant is required"),
     display_name: Yup.string().required("Display name is required"),

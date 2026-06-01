@@ -215,7 +215,7 @@ const BillingListCopy = () => {
       cell: (row) => (
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Avatar name={row.CustommerName} gender="male" age="0" />
+            <Avatar name={row.CustommerName} gender={row.gender} age={row.age}  />
 
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
           </div>
@@ -320,7 +320,7 @@ const BillingListCopy = () => {
   };
   return (
     <div className="p-2 space-y-4">
-      <div className="bg-white/80 backdrop-blur-lg shadow rounded-xl p-4 border overflow-visible relative z-10">
+      {/* <div className="bg-white/80 backdrop-blur-lg shadow rounded-xl p-4 border overflow-visible relative z-10"> */}
         <CopyFilterBar
           filtersConfig={filtersConfig}
           tempFilters={tempFilters}
@@ -338,7 +338,7 @@ const BillingListCopy = () => {
             }));
           }}
         />
-      </div>
+      {/* </div> */}
       <div className="bg-white shadow-xl rounded-xl border p-2">
         <CommonList
           title="💊 Pharmacy Billing List"

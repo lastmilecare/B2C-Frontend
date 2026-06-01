@@ -264,3 +264,13 @@ export const ROLE_ASSIGNMENT_MAP = {
 
   STAFF: [],
 };
+
+export const formatDateOnly = (date) => {
+  if (!date) return "";
+
+  return `${date.getFullYear()}-${String(
+    date.getMonth() + 1
+  ).padStart(2, "0")}-${String(
+    date.getDate()
+  ).padStart(2, "0")}`;
+};

@@ -9,6 +9,7 @@ const SearchableMultiSelect = ({
   maxSelection = 5,
   placeholder = "Search...",
   inputAction,
+  allowManualAdd = false,
 }) => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(search);
@@ -119,7 +120,7 @@ const SearchableMultiSelect = ({
   value={search}
   onChange={(e) => setSearch(e.target.value)}
   onKeyDown={(e) => {
-    if (e.key === "Enter") {
+    if (allowManualAdd && e.key === "Enter") {
       e.preventDefault();
       handleManualAdd();
     }
@@ -144,7 +145,7 @@ const SearchableMultiSelect = ({
       </li>
     ))}
 
-    {search.trim() && (
+    {allowManualAdd && search.trim() && (
       <li
         onClick={handleManualAdd}
         className="px-3 py-2 text-sky-600 text-sm hover:bg-sky-50 cursor-pointer border-t"
@@ -159,12 +160,14 @@ const SearchableMultiSelect = ({
       No results found
     </li>
 
-    <li
-      onClick={handleManualAdd}
-      className="px-3 py-2 text-sky-600 text-sm hover:bg-sky-50 cursor-pointer font-medium border-t"
-    >
-      Add "{search}" manually
-    </li>
+    {allowManualAdd && (
+  <li
+    onClick={handleManualAdd}
+    className="px-3 py-2 text-sky-600 text-sm hover:bg-sky-50 cursor-pointer font-medium border-t"
+  >
+    Add "{search}" manually
+  </li>
+)}
   </>
 )}
         </ul>

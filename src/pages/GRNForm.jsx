@@ -34,6 +34,7 @@ import StepProgress from "../components/StepProgress";
 import PageLayout from "../components/PageLayout";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { formatDateOnly } from "../utils/helper";
 const username = cookie.get("username");
 const userId = cookie.get("user_id");
 const GRNFormCopy = () => {
@@ -715,9 +716,7 @@ const GRNFormCopy = () => {
                       onChange={(date) => {
                         formik.setFieldValue(
                           "InvoiceDate",
-                          date
-                            ? date.toISOString().split("T")[0]
-                            : ""
+                          formatDateOnly(date)
                         );
                       }}
                       dateFormat="dd/MM/yyyy"
@@ -859,9 +858,7 @@ const GRNFormCopy = () => {
                       onChange={(date) => {
                         formik.setFieldValue(
                           "MenufacturingDate",
-                          date
-                            ? date.toISOString().split("T")[0]
-                            : ""
+                          formatDateOnly(date)
                         );
                       }}
                       dateFormat="dd/MM/yyyy"
@@ -891,9 +888,7 @@ const GRNFormCopy = () => {
                       onChange={(date) => {
                         formik.setFieldValue(
                           "ExpiryDate",
-                          date
-                            ? date.toISOString().split("T")[0]
-                            : ""
+                          formatDateOnly(date)
                         );
                       }}
                       dateFormat="dd/MM/yyyy"
