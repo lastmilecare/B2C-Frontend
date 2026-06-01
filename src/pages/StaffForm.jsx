@@ -514,6 +514,14 @@ const StaffForm = () => {
                     if (activeStep === 2) {
                       formik.setFieldValue("b2cRoleId", "");
                     }
+                    if (activeStep === 3) {
+                      formik.resetForm();
+                      setActiveStep(1);
+                      setEditUser(null);
+                      setShowPassword(false);
+                      setShowConfirmPassword(false);
+                      setIsSuperadmin(false);
+                    }
                   }}
                 >
                   <ArrowPathIcon className="w-5 h-5 inline mr-1" />

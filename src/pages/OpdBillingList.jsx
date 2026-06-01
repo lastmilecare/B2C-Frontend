@@ -365,7 +365,7 @@ const OpdBillingListCopy = () => {
     {
       name: "Address",
       title: "Address / District",
-      selector: (row) => safeString(row?.localAddressDistrict, "-"),
+      selector: (row) => safeString(row?.localAddress, "-"),
       width: "110px",
     },
     {
@@ -437,11 +437,13 @@ const OpdBillingListCopy = () => {
         ),
       width: "120px",
     },
-    {
+     {
       name: "Ref",
       title: "Referred By",
-      selector: (row) => safeString(row?.ReferTo, "-"),
-    },
+      selector: (row) => safeString(row?.refer_to, "-"),
+       width : "140px"
+     },
+   
     {
       name: "Coll By",
       title: "Collected By",
