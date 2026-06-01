@@ -17,7 +17,6 @@ import {
 import { cookie } from "../utils/cookie";
 import { healthAlert, healthAlerts } from "../utils/healthSwal";
 
-
 import AppCommonList from "../components/AppCommonList";
 import CopyFilterBar from "../components/Updates/Filter";
 
@@ -30,6 +29,7 @@ import {
   useGetCalendarDataQuery,
   useGetComboQuery,
   useLazyGetAttendanceExportQuery,
+  useGetAttendanceStaffQuery,
 } from "../redux/apiSlice";
 import { generateFileName, downloadBlob } from "../utils/helper";
 
@@ -40,7 +40,9 @@ const AttendancePage = () => {
   const [checkIn] = useCheckInMutation();
   const [checkOut] = useCheckOutMutation();
   const { data: User, isLoading: SupplierLoading } =
-    useGetComboQuery("b2c-users");
+    useGetAttendanceStaffQuery();
+  const [viewingEmployee, setViewingEmployee] = useState(null);
+  const UserOption = User?.data || [];
   const [tempFilters, setTempFilters] = useState({
     user: "",
     status: "",
@@ -59,15 +61,15 @@ const AttendancePage = () => {
     });
   const { refetch: refetchCalendar, data: calendarData = [] } =
     useGetCalendarDataQuery({
+      userId: viewingEmployee || null,
       month: viewConfig.month + 1,
       year: viewConfig.year,
     });
-  const [viewingEmployee, setViewingEmployee] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentEmpName, setCurrentEmpName] = useState(null);
   const [exportExcel] = useLazyGetAttendanceExportQuery();
-  const UserOptions = User
-    ? User.map((t) => ({ value: t.id, label: t.username }))
+  const UserOptions = UserOption
+    ? UserOption.map((t) => ({ value: t.id, label: t.name || t.username }))
     : [];
 
   const formatLocalDate = useCallback((dateObj) => {
@@ -154,6 +156,7 @@ const AttendancePage = () => {
 
   const getTileContent = useCallback(
     ({ date, view }) => {
+      debugger;
       if (view !== "month") return null;
 
       const dStr = formatLocalDate(date);
@@ -162,21 +165,21 @@ const AttendancePage = () => {
       if (!record) return null;
 
       const colorMap = {
-  PRESENT: "bg-green-500",
-  ABSENT: "bg-red-500",
-  HALF_DAY: "bg-orange-500",
-  HOLIDAY: "bg-blue-500",
-  WEEK_OFF: "bg-yellow-500",
-};
+        PRESENT: "bg-green-500",
+        ABSENT: "bg-red-500",
+        HALF_DAY: "bg-orange-500",
+        HOLIDAY: "bg-blue-500",
+        WEEK_OFF: "bg-yellow-500",
+      };
 
       return (
         <div className="flex justify-center mt-1">
           <div
-  title={record.status}
-  className={`w-2 h-2 rounded-full ${
-    colorMap[String(record.status).toUpperCase()] || "bg-gray-300"
-  }`}
-/>
+            title={record.status}
+            className={`w-2 h-2 rounded-full ${
+              colorMap[String(record.status).toUpperCase()] || "bg-gray-300"
+            }`}
+          />
         </div>
       );
     },
@@ -191,36 +194,38 @@ const AttendancePage = () => {
     });
   };
 
-  // const filteredRecords = useMemo(() => {
-  //   const todayStr = formatLocalDate(new Date());
-  //   const targetDate = appliedFilters.date || todayStr;
+  // const formatDateTime = (value) => {
+  //   if (!value) return "-";
 
-  //   return attendance.filter((item) => {
-  //     const matchDate = item.date === targetDate;
-  //     const matchName = appliedFilters.user
-  //       ? item.user_id === appliedFilters.user
-  //       : true;
-  //     const matchStatus = appliedFilters.status
-  //       ? item.status === appliedFilters.status
-  //       : true;
-  //     return matchDate && matchName && matchStatus;
+  //   const date = new Date(value);
+  //   if (isNaN(date.getTime())) return "-";
+
+  //   return date.toLocaleString("en-IN", {
+  //     year: "numeric",
+  //     month: "short",
+  //     day: "2-digit",
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //     hour12: true,
   //   });
-  // }, [appliedFilters, attendance, formatLocalDate]);
-
-  const formatDateTime = (value) => {
+  // };
+  const formatDateTime = (value, timezone = "Asia/Kolkata") => {
     if (!value) return "-";
 
     const date = new Date(value);
+
     if (isNaN(date.getTime())) return "-";
 
-    return date.toLocaleString("en-IN", {
+    return new Intl.DateTimeFormat("en-IN", {
+      timeZone: timezone,
       year: "numeric",
       month: "short",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
+      second: "2-digit",
       hour12: true,
-    });
+    }).format(date);
   };
 
   const formatMinutes = (minutes) => {
@@ -302,12 +307,21 @@ const AttendancePage = () => {
               className="bg-gray-50 border-none px-6 py-3 rounded-2xl text-xs font-black uppercase outline-none focus:ring-2 focus:ring-sky-400"
               value={viewConfig.year}
               onChange={(e) =>
-                setViewConfig({ ...viewConfig, year: parseInt(e.target.value) })
+                setViewConfig({
+                  ...viewConfig,
+                  year: Number(e.target.value),
+                })
               }
             >
-              <option value={2026}>2026</option>
-              <option value={2025}>2025</option>
-              <option value={2024}>2024</option>
+              {Array.from({ length: 10 }, (_, index) => {
+                const year = new Date().getFullYear() - index;
+
+                return (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>
@@ -467,7 +481,7 @@ const AttendancePage = () => {
           }}
           onExport={handleExport}
         />
-       <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-50 relative">
+        <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-50 relative">
           <AppCommonList
             title={
               appliedFilters.date

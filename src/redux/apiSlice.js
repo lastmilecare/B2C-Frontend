@@ -586,10 +586,10 @@ export const api = createApi({
       providesTags: ["Attendance"],
     }),
     getMonthlyStats: build.query({
-      query: ({ month, year }) => ({
+      query: ({ userId, month, year }) => ({
         url: `/attendance/stats`,
         method: "GET",
-        params: { month, year },
+        params: {userId, month, year },
       }),
       providesTags: ["Attendance"],
     }),
@@ -601,10 +601,10 @@ export const api = createApi({
       providesTags: ["Dashboard"],
     }),
     getCalendarData: build.query({
-      query: ({ month, year }) => ({
+      query: ({ userId, month, year }) => ({
         url: `/attendance/calendar`,
         method: "GET",
-        params: { month, year },
+        params: { userId, month, year },
       }),
     }),
     getAttendanceExport: build.query({
@@ -1510,13 +1510,13 @@ export const api = createApi({
     //   invalidatesTags: ["OrgProfile"],
     // }),
     updateOrgProfile: build.mutation({
-  query: ({ id, body }) => ({
-    url: `/organization-profile/${id}`,
-    method: "PUT",
-    data: body,
-  }),
-  invalidatesTags: ["OrgProfile"],
-}),
+      query: ({ id, body }) => ({
+        url: `/organization-profile/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+      invalidatesTags: ["OrgProfile"],
+    }),
     deleteOrgProfile: build.mutation({
       query: (id) => ({
         url: `/organization-profile/${id}`,
@@ -1536,6 +1536,14 @@ export const api = createApi({
         url: `/organization-profile/${id}`,
         method: "GET",
       }),
+    }),
+    getAttendanceStaff: build.query({
+      query: (params) => ({
+        url: `/attendance/users`,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Attendances"],
     }),
   }),
 });
@@ -1710,4 +1718,5 @@ export const {
   useDeleteOrgProfileMutation,
   useToggleOrgProfileStatusMutation,
   useGetOrgProfileByIdQuery,
+  useGetAttendanceStaffQuery,
 } = api;

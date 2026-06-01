@@ -3,7 +3,6 @@ import { useGetOrgProfilesQuery } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 
 const PrescriptionPrint = forwardRef(({ data }, ref) => {
-  debugger;
   const center_id = cookie.get("center_id");
   const page = 1;
   const limit = 10;
