@@ -18,7 +18,7 @@ export const RELATIONSHIP_OPTIONS = [
   "Other",
 ];
 export const TITLES = ["Mr", "Mrs", "Miss", "Dr", "Master", "Baby of", "Baby"];
-export const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
+export const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-", "N/A"];
 export const RESIDENTAL_STATUS = ["Local", "Outstation", "Migrant"];
 export const OCCUPATION_OPTIONS = [
   "Private Sector",
@@ -101,6 +101,8 @@ export const Referral_Options = [
   { label: "Mobilization", value: "Mobilization" },
   { label: "Digital Marketing", value: "Digital Marketing" },
   // { label: "Amp Family", value: "Amp Family" },
+  { label: "Canopy Outreach", value: "Canopy Outreach" },
+  { label: "B2B", value: "B2B" },
 ];
 
 export const PERMISSION_DESCRIPTION_OPTIONS = [

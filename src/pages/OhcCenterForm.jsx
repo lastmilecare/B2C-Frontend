@@ -17,17 +17,15 @@ import { useGetTenantsQuery, useCreateCenterMutation, useUpdateCenterMutation } 
 import { cookie } from "../utils/cookie";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { formatDateOnly } from "../utils/helper";
 const STEPS = [
   { id: 1, label: "Project Details", icon: ClipboardDocumentIcon },
   { id: 2, label: "Agency Details", icon: UserPlusIcon },
-  { id: 3, label: "Duration Details", icon: CheckCircleIcon },
-  { id: 4, label: "Confirm", icon: CheckCircleIcon },
+  { id: 3, label: "Duration & Confirm", icon: CheckCircleIcon },
 ];
 
 const ROLE_ADMIN = "LMC_ADMIN";
 
-const CenterForm = () => {
+const OhcCenterForm = () => {
   const [activeStep, setActiveStep] = useState(1);
   const navigate = useNavigate();
   const location = useLocation();
@@ -153,9 +151,10 @@ const CenterForm = () => {
             icon: "success",
           });
         }
-
-        navigate(`/center-list`);
-      } catch (err) {
+        navigate("/ohc-centers", {
+          state: { goToList: true }
+      });
+     } catch (err) {
         healthAlert({
           title: "Error",
           text:
@@ -213,47 +212,7 @@ const CenterForm = () => {
   };
 
   const prevStep = () => setActiveStep((p) => p - 1);
-  const handleReset = () => {
-    if (activeStep === 1) {
-      formik.setValues({
-        ...formik.values,
-        tenant_id: "",
-        project_name: "",
-        short_code: "",
-        project_district: "",
-        project_state: "",
-        project_address: "",
-      });
-    }
 
-    if (activeStep === 2) {
-      formik.setValues({
-        ...formik.values,
-        agency_name: "",
-        agency_district: "",
-        agency_address: "",
-        agency_state: "",
-        agency_spoc_name: "",
-        agency_spoc_email: "",
-        agency_spoc_contact_number: "",
-        agency_spoc_alternate_name: "",
-        agency_spoc_alternate_contact_number: "",
-      });
-    }
-
-    if (activeStep === 3) {
-      formik.setValues({
-        ...formik.values,
-        project_start_date: "",
-        project_end_date: "",
-      });
-    }
-
-    if (activeStep === 4) {
-      formik.resetForm();
-      setActiveStep(1);
-    }
-  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
       <div className="max-w-[1400px] mx-auto px-8">
@@ -261,7 +220,7 @@ const CenterForm = () => {
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <UsersIcon className="w-7 text-blue-600" />
-            {editData ? "Edit Center / Project" : "Add Center / Project"}
+            {editData ? "Edit Center / Project Ohc" : "Add Center / Project Ohc"}
           </h1>
         </div>
 
@@ -273,8 +232,8 @@ const CenterForm = () => {
                 key={step.id}
                 type="button"
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold ${activeStep === step.id
-                  ? "text-sky-600 border-b-2 border-sky-600"
-                  : "text-gray-400"
+                    ? "text-sky-600 border-b-2 border-sky-600"
+                    : "text-gray-400"
                   }`}
               >
                 <step.icon className="w-4 h-4" />
@@ -359,38 +318,21 @@ const CenterForm = () => {
                   label="Agency Name"
                   required
                   {...formik.getFieldProps("agency_name")}
-                   error={
-                    formik.touched.agency_name &&
-                    formik.errors.agency_name
-                  }
                 />
                 <Input
                   label="Agency District"
                   required
                   {...formik.getFieldProps("agency_district")}
-                  error={
-                    formik.touched.agency_district &&
-                    formik.errors.agency_district
-                  }
-                  
                 />
                 <Input
                   label="Agency State"
                   required
                   {...formik.getFieldProps("agency_state")}
-                  error={
-                    formik.touched.agency_state &&
-                    formik.errors.agency_state
-                  }
                 />
                 <Input
                   label="Agency Address"
                   required
                   {...formik.getFieldProps("agency_address")}
-                  error={
-                    formik.touched.agency_address &&
-                    formik.errors.agency_address
-                  }
                 />
 
                 <Input
@@ -401,24 +343,9 @@ const CenterForm = () => {
                   label="SPOC Email"
                   {...formik.getFieldProps("agency_spoc_email")}
                 />
-                {/* <Input
-                  label="SPOC Contact"
-                   inputMode="numeric"
-                      maxLength={10}
-
-                  {...formik.getFieldProps("agency_spoc_contact_number")}
-                /> */}
                 <Input
                   label="SPOC Contact"
-                  maxLength={10}
-                  value={formik.values.agency_spoc_contact_number}
-                  onChange={(e) => {
-                    const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
-                    formik.setFieldValue(
-                      "agency_spoc_contact_number",
-                      onlyNumbers
-                    );
-                  }}
+                  {...formik.getFieldProps("agency_spoc_contact_number")}
                 />
               </div>
             )}
@@ -450,7 +377,9 @@ const CenterForm = () => {
                     onChange={(date) => {
                       formik.setFieldValue(
                         "project_start_date",
-                        formatDateOnly(date)
+                        date
+                          ? date.toISOString().split("T")[0]
+                          : ""
                       );
                     }}
                     dateFormat="dd/MM/yyyy"
@@ -489,7 +418,9 @@ const CenterForm = () => {
                     onChange={(date) => {
                       formik.setFieldValue(
                         "project_end_date",
-                       formatDateOnly(date)
+                        date
+                          ? date.toISOString().split("T")[0]
+                          : ""
                       );
                     }}
                     dateFormat="dd/MM/yyyy"
@@ -506,66 +437,6 @@ const CenterForm = () => {
                 </div>
               </div>
             )}
-            {activeStep === 4 && (
-              <section>
-                <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-4">
-
-                  <h3 className="text-lg font-semibold text-sky-600">
-                    Confirm Center / Project Details
-                  </h3>
-
-                  <div className="border-b pb-4">
-                    <h4 className="font-semibold text-sky-700 mb-3">
-                      Project Details
-                    </h4>
-
-                    <div className="grid md:grid-cols-2 gap-3 text-sm">
-                      <p><b>Tenant:</b> {
-                        tenants.find(
-                          t => String(t.id) === String(formik.values.tenant_id)
-                        )?.name || "-"
-                      }</p>
-
-                      <p><b>Project Name:</b> {formik.values.project_name || "-"}</p>
-                      <p><b>Center ID:</b> {formik.values.short_code || "-"}</p>
-                      <p><b>District:</b> {formik.values.project_district || "-"}</p>
-                      <p><b>State:</b> {formik.values.project_state || "-"}</p>
-                      <p><b>Address:</b> {formik.values.project_address || "-"}</p>
-                    </div>
-                  </div>
-
-                  <div className="border-b pb-4">
-                    <h4 className="font-semibold text-sky-700 mb-3">
-                      Agency Details
-                    </h4>
-
-                    <div className="grid md:grid-cols-2 gap-3 text-sm">
-                      <p><b>Agency Name:</b> {formik.values.agency_name || "-"}</p>
-                      <p><b>Agency District:</b> {formik.values.agency_district || "-"}</p>
-                      <p><b>Agency State:</b> {formik.values.agency_state || "-"}</p>
-                      <p><b>Agency Address:</b> {formik.values.agency_address || "-"}</p>
-                      <p><b>SPOC Name:</b> {formik.values.agency_spoc_name || "-"}</p>
-                      <p><b>SPOC Email:</b> {formik.values.agency_spoc_email || "-"}</p>
-                      <p><b>SPOC Contact:</b> {formik.values.agency_spoc_contact_number || "-"}</p>
-                      <p><b>Alternate SPOC:</b> {formik.values.agency_spoc_alternate_name || "-"}</p>
-                      <p><b>Alternate Contact:</b> {formik.values.agency_spoc_alternate_contact_number || "-"}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold text-sky-700 mb-3">
-                      Duration Details
-                    </h4>
-
-                    <div className="grid md:grid-cols-2 gap-3 text-sm">
-                      <p><b>Start Date:</b> {formik.values.project_start_date || "-"}</p>
-                      <p><b>End Date:</b> {formik.values.project_end_date || "-"}</p>
-                    </div>
-                  </div>
-
-                </div>
-              </section>
-            )}
 
             {/* ACTIONS */}
             <div className="flex justify-between pt-6 border-t">
@@ -576,18 +447,14 @@ const CenterForm = () => {
                   </Button>
                 )}
 
-                <Button
-                  type="button"
-                  variant="gray"
-                  onClick={handleReset}
-                >
+                <Button type="button" variant="gray" onClick={formik.resetForm}>
                   <ArrowPathIcon className="w-4 mr-1" />
                   Reset
                 </Button>
               </div>
 
               <div>
-                {activeStep < 4 ? (
+                {activeStep < 3 ? (
                   <Button
                     type="button"
                     variant="sky"
@@ -616,4 +483,4 @@ const CenterForm = () => {
   );
 };
 
-export default CenterForm;
+export default OhcCenterForm;

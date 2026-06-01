@@ -326,6 +326,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Permissions
               </NavLink>
             )}
+            {can("create:resource") && (
             <NavLink
               to="/resource"
               className={subNavItem}
@@ -333,6 +334,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             >
               Resources
             </NavLink>
+            )}
           </MenuGroup>
         )}
         {can("read:center") && (
@@ -420,6 +422,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Patient Registration
               </NavLink>
             )}
+             {can("create:patient_examination_details_ohc") && (
             <NavLink
                 to="/patient-examination-details"
                 className={subNavItem}
@@ -427,13 +430,14 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Patient Examination Details
               </NavLink>
-            <NavLink
+             )}
+            {/* <NavLink
               to="/vitals"
               className={subNavItem}
               onClick={() => setIsOpen(false)}
             >
               Vitals Form
-            </NavLink>
+            </NavLink> */}
             {can("create:appointment_visit") && (
               <NavLink
                 to="/appointment"
@@ -454,7 +458,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
             )}
 
-            {can("create:clinical_examination") && (
+            {/* {can("create:clinical_examination") && (
               <NavLink
                 to="/clinical-examination"
                 className={subNavItem}
@@ -462,9 +466,9 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Clinical Examination
               </NavLink>
-            )}
+            )} */}
 
-            {can("create:laboratory_investigation") && (
+            {/* {can("create:laboratory_investigation") && (
               <NavLink
                 to="/laboratory-investigation"
                 className={subNavItem}
@@ -472,9 +476,9 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Lab Investigation
               </NavLink>
-            )}
+            )} */}
 
-            {can("create:radiology") && (
+            {/* {can("create:radiology") && (
               <NavLink
                 to="/radiology-screen"
                 className={subNavItem}
@@ -482,7 +486,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Radiology
               </NavLink>
-            )}
+            )} */}
 
             {can("create:doctor_assessment") && (
               <NavLink
@@ -503,6 +507,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Fitness Certificate
               </NavLink>
             )}
+            {can("create:ohc_staff_page") && (
              <NavLink
                 to="/staff-page-ohc"
                 className={subNavItem}
@@ -510,6 +515,16 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Add Staff 
               </NavLink>
+            )}
+              {can("create:ohc_center") && (
+              <NavLink
+                to="/ohc-centers"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Add Center
+              </NavLink>
+            )}
           </MenuGroup>
         )}
       </nav>

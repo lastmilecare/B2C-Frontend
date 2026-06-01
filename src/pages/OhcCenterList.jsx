@@ -10,7 +10,7 @@ import { healthAlert } from "../utils/healthSwal";
 import { useNavigate } from "react-router-dom";
 import CopyFilterBar from "../components/Updates/Filter";
 import { formatDate } from "../utils/helper";
-const CenterList = () => {
+const OhcCenterList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -107,7 +107,7 @@ const CenterList = () => {
       });
       return;
     }
-    navigate(`/centers/${row.id}`, {
+    navigate(`/ohc-centers/${row.id}`, {
       state: {
         editData: row,
       },
@@ -145,14 +145,6 @@ const CenterList = () => {
       selector: (_, x) => x + 1,
     },
     {
-      name: "Project Name",
-      selector: (row) => row.project_name,
-    },
-    {
-      name: "Project Address",
-      selector: (row) => row.project_address,
-    },
-    {
       name: "agency_name",
       selector: (row) => row.agency_name,
     },
@@ -170,6 +162,14 @@ const CenterList = () => {
       selector: (row) => row.agency_spoc_email,
     },
 
+    {
+      name: "Project Name",
+      selector: (row) => row.project_name,
+    },
+    {
+      name: "Project Address",
+      selector: (row) => row.project_address,
+    },
     {
       name: "Tenant Name",
       selector: (row) => tenantMap[row.tenant_id] || "N/A",
@@ -197,7 +197,7 @@ const CenterList = () => {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">Center List</h1>
+      <h1 className="text-2xl font-semibold mb-4">Ohc Center List</h1>
       <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
@@ -232,4 +232,4 @@ const CenterList = () => {
   );
 };
 
-export default CenterList;
+export default OhcCenterList;

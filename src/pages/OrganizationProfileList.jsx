@@ -23,6 +23,8 @@ const OrganizationProfileList = () => {
     tenant_id: "",
     center_id: "",
     display_name: "",
+    address: "",
+
   });
 
   const [filters, setFilters] = useState({});
@@ -88,6 +90,11 @@ const BASE_URL = import.meta.env.VITE_API_URL
       })),
     },
     {
+      label: "Address",
+      name: "address",
+      type: "text",
+    },
+    {
       label: "Display Name",
       name: "display_name",
       type: "text",
@@ -104,6 +111,7 @@ const BASE_URL = import.meta.env.VITE_API_URL
       tenant_id: "",
       center_id: "",
       display_name: "",
+      address: "",
     });
     setFilters({});
     setPage(1);
@@ -164,6 +172,10 @@ const BASE_URL = import.meta.env.VITE_API_URL
       selector: (row) =>
         row.center_id ? centerMap[row.center_id] || "N/A" : "All Centers",
     },
+   {
+  name: "Address",
+  selector: (row) => row.address || "N/A",
+},
     {
       name: "Display Name",
       selector: (row) => row.display_name,

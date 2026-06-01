@@ -32,6 +32,9 @@ import { useLocation } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import StepProgress from "../components/StepProgress";
 import PageLayout from "../components/PageLayout";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { formatDateOnly } from "../utils/helper";
 const username = cookie.get("username");
 const userId = cookie.get("user_id");
 const GRNFormCopy = () => {
@@ -98,7 +101,7 @@ const GRNFormCopy = () => {
       "Supplier is required"
     ),
 
-    
+
   });
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
 
@@ -285,12 +288,12 @@ const GRNFormCopy = () => {
       CGST: editData.CGST ?? 0,
       SGST: editData.SGST ?? 0,
       HSNCode: editData.HSNCode ?? "",
-HSNID:
-  editData.HSNID ||
-  hsnCodeOptions.find(
-    (h) => h.label === editData.HSNCode
-  )?.value ||
-  "",
+      HSNID:
+        editData.HSNID ||
+        hsnCodeOptions.find(
+          (h) => h.label === editData.HSNCode
+        )?.value ||
+        "",
       items: [],
     });
 
@@ -442,48 +445,48 @@ HSNID:
       "SGST",
     ];
     requiredFields.forEach((field) => {
-  formik.setFieldTouched(field, true, false);
+      formik.setFieldTouched(field, true, false);
 
-  if (!v[field]) {
-    formik.setFieldError(
-      field,
-      `${field} is required`
-    );
-  }
-});
+      if (!v[field]) {
+        formik.setFieldError(
+          field,
+          `${field} is required`
+        );
+      }
+    });
 
-const hasErrors = requiredFields.some((field) => {
-  return !v[field];
-});
+    const hasErrors = requiredFields.some((field) => {
+      return !v[field];
+    });
 
-if (hasErrors) {
-  healthAlerts.warning(
-    "Please fill all required item fields"
-  );
+    if (hasErrors) {
+      healthAlerts.warning(
+        "Please fill all required item fields"
+      );
 
-  return;
-}
+      return;
+    }
 
-if (
-  v.MenufacturingDate &&
-  v.ExpiryDate &&
-  new Date(v.MenufacturingDate) >
-    new Date(v.ExpiryDate)
-) {
+    if (
+      v.MenufacturingDate &&
+      v.ExpiryDate &&
+      new Date(v.MenufacturingDate) >
+      new Date(v.ExpiryDate)
+    ) {
 
-  formik.setFieldError(
-    "MenufacturingDate",
-    "Mfg Date cannot be greater than Expiry Date"
-  );
+      formik.setFieldError(
+        "MenufacturingDate",
+        "Mfg Date cannot be greater than Expiry Date"
+      );
 
-  formik.setFieldError(
-    "ExpiryDate",
-    "Expiry Date cannot be less than Mfg Date"
-  );
+      formik.setFieldError(
+        "ExpiryDate",
+        "Expiry Date cannot be less than Mfg Date"
+      );
 
-  return;
-}
-   
+      return;
+    }
+
     const recvQty = Number(v.RecvQty || 0);
     const qtyPerStrip = Number(v.NoQtyperStrip || 0);
     const cpPerStrip = Number(v.CP || 0);
@@ -522,13 +525,13 @@ if (
       ItemName: v.ItemName,
       BatchNo: v.BatchNo,
       HSNCode:
-  hsnCodeOptions.find(
-    (h) =>
-      h.value.toString() ===
-      v.HSNID.toString()
-  )?.label || "",
+        hsnCodeOptions.find(
+          (h) =>
+            h.value.toString() ===
+            v.HSNID.toString()
+        )?.label || "",
 
-HSNID: v.HSNID,
+      HSNID: v.HSNID,
       MenufacturingDate: v.MenufacturingDate,
       ExpiryDate: v.ExpiryDate,
       InvoiceDate: v.InvoiceDate,
@@ -556,28 +559,28 @@ HSNID: v.HSNID,
     };
 
     formik.setValues({
-  ...formik.values,
+      ...formik.values,
 
-  items: [...formik.values.items, newItem],
+      items: [...formik.values.items, newItem],
 
-  ItemName: "",
-  ItemTypeID: "",
-  ItemType: "",
-  BatchNo: "",
-  MenufacturingDate: "",
-  ExpiryDate: "",
-  NoStrip: "",
-  NoQtyperStrip: "",
-  RecvQty: "",
-  FreeRecvQty: "",
-  CP: "",
-  MRP: "",
-  DiscountPCperitem: "",
-  CGST: "",
-  SGST: "",
-  HSNCode: "",
-  HSNID: "",
-});
+      ItemName: "",
+      ItemTypeID: "",
+      ItemType: "",
+      BatchNo: "",
+      MenufacturingDate: "",
+      ExpiryDate: "",
+      NoStrip: "",
+      NoQtyperStrip: "",
+      RecvQty: "",
+      FreeRecvQty: "",
+      CP: "",
+      MRP: "",
+      DiscountPCperitem: "",
+      CGST: "",
+      SGST: "",
+      HSNCode: "",
+      HSNID: "",
+    });
     formik.setTouched({
       ...formik.touched,
 
@@ -633,7 +636,7 @@ HSNID: v.HSNID,
             <span className="bg-blue-100 p-2 rounded-xl">
               <ClipboardDocumentIcon className="w-6 text-blue-600" />
             </span>
-          {isEditMode ? "Edit Goods Received Note" : "Goods Received Note"}
+            {isEditMode ? "Edit Goods Received Note" : "Goods Received Note"}
           </h1>
 
           <div className="flex gap-2">
@@ -699,19 +702,35 @@ HSNID: v.HSNID,
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <Input
-                    type="date"
-                    label="Invoice Date"
-                    required
-                    disabled={isEditMode}
-                    error={
-                      formik.touched.InvoiceDate && formik.errors.InvoiceDate
-                    }
-                    {...formik.getFieldProps("InvoiceDate")}
-                    onClick={(e) =>
-                      e.target.showPicker && e.target.showPicker()
-                    }
-                  />
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700 mb-1">
+                      Invoice Date
+                    </label>
+
+                    <DatePicker
+                      selected={
+                        formik.values.InvoiceDate
+                          ? new Date(formik.values.InvoiceDate)
+                          : null
+                      }
+                      onChange={(date) => {
+                        formik.setFieldValue(
+                          "InvoiceDate",
+                          formatDateOnly(date)
+                        );
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText="DD/MM/YYYY"
+                      maxDate={new Date()}
+                      showMonthDropdown
+                      showYearDropdown
+                      scrollableYearDropdown
+                      yearDropdownItemNumber={100}
+                      wrapperClassName="w-full"
+                      className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
+    outline-none focus:ring-2 focus:ring-sky-400"
+                    />
+                  </div>
                   <Input
                     label="Invoice No"
                     required
@@ -825,26 +844,65 @@ HSNID: v.HSNID,
                     error={formik.touched.BatchNo && formik.errors.BatchNo}
                     {...formik.getFieldProps("BatchNo")}
                   />
-                  <Input
-                    type="date"
-                    label="Mfg Date"
-                    max={new Date().toISOString().split("T")[0]}
-                    required
-                    error={
-                      formik.touched.MenufacturingDate &&
-                      formik.errors.MenufacturingDate
-                    }
-                    {...formik.getFieldProps("MenufacturingDate")}
-                  />
-                  <Input
-                    type="date"
-                    label="Expiry Date"
-                    required
-                    error={
-                      formik.touched.ExpiryDate && formik.errors.ExpiryDate
-                    }
-                    {...formik.getFieldProps("ExpiryDate")}
-                  />
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700 mb-1">
+                      Mfg Date
+                    </label>
+
+                    <DatePicker
+                      selected={
+                        formik.values.MenufacturingDate
+                          ? new Date(formik.values.MenufacturingDate)
+                          : null
+                      }
+                      onChange={(date) => {
+                        formik.setFieldValue(
+                          "MenufacturingDate",
+                          formatDateOnly(date)
+                        );
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText="DD/MM/YYYY"
+                      maxDate={new Date()}
+                      showMonthDropdown
+                      showYearDropdown
+                      scrollableYearDropdown
+                      yearDropdownItemNumber={100}
+                      wrapperClassName="w-full"
+                      popperClassName="z-50"
+                      className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
+    outline-none focus:ring-2 focus:ring-sky-400"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700 mb-1">
+                      Expiry Date
+                    </label>
+
+                    <DatePicker
+                      selected={
+                        formik.values.ExpiryDate
+                          ? new Date(formik.values.ExpiryDate)
+                          : null
+                      }
+                      onChange={(date) => {
+                        formik.setFieldValue(
+                          "ExpiryDate",
+                          formatDateOnly(date)
+                        );
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText="DD/MM/YYYY"
+                      showMonthDropdown
+                      showYearDropdown
+                      scrollableYearDropdown
+                      yearDropdownItemNumber={100}
+                      wrapperClassName="w-full"
+                      popperClassName="z-50"
+                      className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
+    outline-none focus:ring-2 focus:ring-sky-400"
+                    />
+                  </div>
                   <NumericInput
                     label="No Unit / Strip"
                     required
@@ -1440,7 +1498,7 @@ HSNID: v.HSNID,
                 </Button>
               </div>
 
-              
+
               <div>
                 {activeStep < 3 ? (
                   <Button

@@ -282,7 +282,7 @@ const StaffForm = () => {
                   onBlur={formik.handleBlur}
                   name="phone"
                   error={formik.touched.phone && formik.errors.phone}
-                  {...formik.getFieldProps("phone")}
+                  
                 />
                 <Input
                   label="Email"

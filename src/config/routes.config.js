@@ -38,6 +38,7 @@ import CenterForm from "../pages/CenterForm";
 import CenterList from "../pages/CenterList";
 import StaffPage from "../pages/StaffPageOhc";
 import PatientExaminationPage from "../pages/PatientExaminationPage";
+import OhcCenterPage from "../pages/OhcCenterPage";
 import OrganizationProfileForm from "../pages/OrganizationProfileForm";
 import OrganizationProfileList from "../pages/OrganizationProfileList";
 export const ROUTES = [
@@ -433,31 +434,31 @@ export const ROUTES = [
   {
     path: "/resource",
     component: ResourcePage,
-    permission: null,
+    permission: "create:resource",
     label: "Resources",
     icon: "ShieldCheckIcon",
     group: "Administration",
     showInSidebar: true,
   },
-  {
-    path: "/vitals",
-    component: VitalsPage,
-    permission: null,
-    label: "Vitals",
-    icon: "ShieldCheckIcon",
-    group: "Clinical",
-    showInSidebar: true,
-  },
-  {
-    path: "/vitals/:id",
-    component: VitalsPage,
-    permission: null,
-    showInSidebar: false,
-  },
-  {
+//    {
+//     path: "/vitals",
+//     component: VitalsPage,
+//     permission: null,
+//     label: "Vitals",
+//     icon: "ShieldCheckIcon",
+//     group: "Clinical",
+//     showInSidebar: true,
+//   },
+//    {
+//   path: "/vitals/:id",
+//   component: VitalsPage,
+//   permission: null,
+//   showInSidebar: false,
+// },
+{
     path: "/items-master",
     component: ItemMaster,
-    permission: null,
+    permission: "create:item_master",
     label: "ItemMaster",
     icon: "ShieldCheckIcon",
     group: "Administration",
@@ -466,31 +467,40 @@ export const ROUTES = [
   {
     path: "/patient-examination-details",
     component: PatientExaminationPage,
-    permission: null,
+    permission: "create:patient_examination_details_ohc",
     label: "PatientExaminationDetails",
     icon: "ShieldCheckIcon",
     group: "Clinical",
     showInSidebar: true,
   },
   {
-    path: "/patient-examination-details/:id",
-    component: PatientExaminationPage,
-    permission: null,
-    showInSidebar: false,
-  },
+  path: "/patient-examination-details/:id",
+  component: PatientExaminationPage,
+  permission: "update:patient_examination_details_ohc",
+  showInSidebar: false,
+},
+   
   {
     path: "/staff-page-ohc",
     component: StaffPage,
-    permission: null,
+    permission: "create:ohc_staff_page",
     label: "Staff",
     icon: "UsersIcon",
     group: "Staff",
     showInSidebar: true,
   },
   {
-    path: "/staff-page-ohc/:id",
-    component: StaffPage,
-    permission: null,
+  path: "/staff-page-ohc/:id",
+  component: StaffPage,
+  permission: "update:ohc_staff_page",
+  showInSidebar: false,
+  
+},
+{
+    path: "/ohc-centers",
+    component: OhcCenterPage,
+    permission: "create:ohc_center",
+    label: "Centers",
     showInSidebar: false,
   },
   {
@@ -503,8 +513,23 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
+  path: "/ohc-centers/:id",
+  component: OhcCenterPage,
+  permission: "update:ohc_center",
+  showInSidebar: false,
+},
+ {
     path: "/organization-profiles-list",
     component: OrganizationProfileList,
+    permission: null,
+    label: "Organization Profiles",
+    icon: "BuildingOfficeIcon",
+    group: "Administration",
+    showInSidebar: true,
+  },
+  {
+    path: "/organization-profile/:id",
+    component: OrganizationProfileForm,
     permission: null,
     label: "Organization Profiles",
     icon: "BuildingOfficeIcon",

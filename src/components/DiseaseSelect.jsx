@@ -7,7 +7,7 @@ import { PlusIcon } from "@heroicons/react/24/outline";
 
 const maxDiseaseSelection = 5;
 
-const DiseaseSelect = ({ value = [], onChange, label }) => {
+const DiseaseSelect = ({ value = [], onChange, label, allowManualAdd = false,}) => {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const openCreateModal = () => {
@@ -38,6 +38,7 @@ const DiseaseSelect = ({ value = [], onChange, label }) => {
         value={value}
         onChange={onChange}
         placeholder="Search diseases..."
+        allowManualAdd={allowManualAdd}
         inputAction={
           <PlusIcon
             className="h-5 w-5 mt-2 cursor-pointer hover:bg-gray-100 p-0.5 rounded"

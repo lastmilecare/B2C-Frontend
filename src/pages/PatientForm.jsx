@@ -31,6 +31,8 @@ import { useLazySearchDiseasesQuery } from "../redux/apiSlice";
 import GlobalLoader from "../components/common/GlobalLoader";
 import { cookie } from "../utils/cookie";
 import { Referral_Options } from "../utils/constants";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const PatientRegistrationCopy = () => {
   const [searchDiseases] = useLazySearchDiseasesQuery();
@@ -219,6 +221,7 @@ const PatientRegistrationCopy = () => {
       }
     },
   });
+  
   useEffect(() => {
     if (!id) {
       formik.resetForm();
@@ -498,16 +501,70 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       error={formik.touched.name && formik.errors.name}
                     />
 
-                    <Input
-                      label="Date of Birth"
-                      type="date"
-                      {...formik.getFieldProps("dob")}
-                      onChange={handleDOBChange}
-                      max={new Date().toISOString().split("T")[0]}
-                      onClick={(e) =>
-                        e.target.showPicker && e.target.showPicker()
-                      }
-                    />
+                   <div className="flex flex-col">
+  <label className="text-sm font-medium text-gray-700 mb-1">
+    Date of Birth
+  </label>
+
+  <DatePicker
+  
+    selected={
+  formik.values.dob
+    ? new Date(formik.values.dob + "T00:00:00")
+    : null
+}
+    onChange={(date) => {
+      if (!date) {
+        formik.setFieldValue("dob", "");
+        formik.setFieldValue("age", "");
+        return;
+      }
+       
+
+const formattedDate = `${date.getFullYear()}-${String(
+  date.getMonth() + 1
+).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  formik.setFieldValue("dob", formattedDate);
+
+      const birth = new Date(date);
+      const today = new Date();
+
+      let years = today.getFullYear() - birth.getFullYear();
+      let months = today.getMonth() - birth.getMonth();
+      let days = today.getDate() - birth.getDate();
+
+      if (days < 0) {
+        months -= 1;
+        days += new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          0
+        ).getDate();
+      }
+
+      if (months < 0) {
+        years -= 1;
+        months += 12;
+      }
+
+      formik.setFieldValue(
+        "age",
+        `${years}y ${months}m ${days}d`
+      );
+    }}
+    dateFormat="dd/MM/yyyy"
+    placeholderText="DD/MM/YYYY"
+    maxDate={new Date()}
+    showMonthDropdown
+    showYearDropdown
+    scrollableYearDropdown
+    yearDropdownItemNumber={100}
+    wrapperClassName="w-full"
+    popperClassName="z-50"
+    className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
+    outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+  />
+</div>
 
                     <Input
                       label="Age"
