@@ -97,7 +97,6 @@ const FitnessCertificateList = () => {
       URL.revokeObjectURL(blobUrl); // cleanup
     } catch (err) {
       healthAlerts.error("Download failed");
-      console.error(err);
     }
   };
   const filtersConfig = [

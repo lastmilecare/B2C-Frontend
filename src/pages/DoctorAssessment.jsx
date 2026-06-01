@@ -88,7 +88,6 @@ const DoctorAssessment = () => {
         });
 
       } catch (err) {
-        console.error(err);
         healthAlerts.error("Save Failed");
       }
     },

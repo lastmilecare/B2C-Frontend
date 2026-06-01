@@ -41,7 +41,7 @@ const AttendancePage = () => {
   const [checkOut] = useCheckOutMutation();
   const { data: User, isLoading: SupplierLoading } =
     useGetAttendanceStaffQuery();
-  const [viewingEmployee, setViewingEmployee] = useState(null);
+  const [viewingEmployee, setViewingEmployee] = useState(0);
   const UserOption = User?.data || [];
   const [tempFilters, setTempFilters] = useState({
     user: "",
@@ -156,7 +156,6 @@ const AttendancePage = () => {
 
   const getTileContent = useCallback(
     ({ date, view }) => {
-      debugger;
       if (view !== "month") return null;
 
       const dStr = formatLocalDate(date);

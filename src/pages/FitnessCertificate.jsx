@@ -115,7 +115,7 @@ const isTemplateRoute =
 
       setPreviewHtml(html);
     } catch (err) {
-      console.error(err);
+      healthAlerts.error("Preview Generation Failed");
     }
   };
   useEffect(() => {

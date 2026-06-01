@@ -184,7 +184,6 @@ const formattedData = records.map((item) => ({
     await deleteDoctor(row.id).unwrap();
     healthAlerts.success("Deleted Successfully");
   } catch (err) {
-    console.error(err);
     healthAlerts.error("Delete Failed");
   }
 }}

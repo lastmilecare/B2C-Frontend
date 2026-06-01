@@ -39,7 +39,6 @@ const OrganizationProfileList = () => {
   const [toggleStatus] = useToggleOrgProfileStatusMutation();
 
   const profiles = data?.data || [];
-  console.log("Fetched Profiles:", data); // Debug log for fetched data
   const pagination = data?.pagination || {
     currentPage: page,
     totalRecords: 0,

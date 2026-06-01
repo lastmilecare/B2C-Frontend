@@ -143,7 +143,6 @@ const VitalsForm = () => {
     }
   });
   useEffect(() => {
-    console.log(editData);
     if (!editData?.data) return;
 
     const v = editData.data;

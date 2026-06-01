@@ -163,7 +163,6 @@ const AppointmentVisit = () => {
 
   });
   useEffect(() => {
-    console.log("EDIT DATA:", editData);
 
     if (!editData) return;
 
