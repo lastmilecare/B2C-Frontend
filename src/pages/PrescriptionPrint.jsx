@@ -1,6 +1,26 @@
 import React, { forwardRef } from "react";
+import { useGetOrgProfilesQuery } from "../redux/apiSlice";
+import { cookie } from "../utils/cookie";
 
 const PrescriptionPrint = forwardRef(({ data }, ref) => {
+  debugger;
+  const center_id = cookie.get("center_id");
+  const page = 1;
+  const limit = 10;
+  const filters = {
+    center_id: center_id,
+  };
+  const {
+    data: oragnisationData,
+    isLoading,
+    refetch,
+  } = useGetOrgProfilesQuery({
+    page,
+    limit,
+    ...filters,
+  });
+  const profiles = oragnisationData?.data || [];
+  const profile = profiles?.[0] || {};
   const followUpDate = data?.follow_up ? new Date(data.follow_up) : null;
   const today = new Date();
 
@@ -28,7 +48,7 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
   };
 
   const label = {
-    width: "120px", 
+    width: "120px",
     fontWeight: "bold",
     position: "relative",
   };
@@ -39,20 +59,31 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
   const colon = {
     marginRight: "8px",
   };
-const colon1 = {
+  const colon1 = {
     marginRight: "2px",
   };
   const rowBlock = {
     display: "grid",
-    gridTemplateColumns: "200px 15px 1fr", 
+    gridTemplateColumns: "200px 15px 1fr",
     alignItems: "start",
     marginTop: "12px",
   };
 
   const result = formatToIST(data?.addedDate);
 
-  const add = import.meta.env.VITE_CENTER_ADD;
-  const mobile = import.meta.env.VITE_CENTER_MOBILE;
+  const BASE_URL = import.meta.env.VITE_API_URL;
+  const mainlogo = profile?.logo
+    ? `${BASE_URL}${profile.logo}`
+    : "/images/LMC_logo.webp";
+
+  const secondaryLogo = profile?.secondary_logo
+    ? `${BASE_URL}${profile.secondary_logo}`
+    : null;
+  const address = profile?.address || "N/A";
+  const contact = profile?.mobile || "N/A";
+  if (isLoading && !profile?.id) {
+    return <div>Loading...</div>;
+  }
   return (
     <div
       ref={ref}
@@ -66,21 +97,47 @@ const colon1 = {
         lineHeight: "1.45",
       }}
     >
-      <img src="/images/LMC_logo.webp" alt="logo" />
+      <div className="flex justify-start mb-2">
+        <img
+          className="h-16 w-auto object-contain"
+          src="/images/LMC_logo.webp"
+          alt="logo"
+        />
+      </div>
       {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: "10px" }}>
-        <h2 style={{ color: "#00397A", margin: 0, fontWeight: "800" }}>
-          MEDI KAVACH
-        </h2>
-        <h3 style={{ color: "#4A6FA1", margin: 0, fontWeight: "600" }}>
+      <div className="text-center mb-4 border-b pb-4">
+        <div className="flex justify-center items-center gap-2 mb-2">
+          <img
+            src={mainlogo}
+            alt="organization logo"
+            className="h-16 w-auto object-contain"
+            onError={(e) => {
+              e.currentTarget.src = "/images/LMC_logo.webp";
+            }}
+          />
+
+          {secondaryLogo && (
+            <img
+              src={secondaryLogo}
+              alt="secondary logo"
+              className="h-16 w-auto object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          )}
+        </div>
+
+        <h2 className="text-[#4A6FA1] text-[15px] font-bold tracking-[0.25em]">
           HEALTH CENTRE
-        </h3>
-        <p style={{ fontSize: "11px", color: "#4A6FA1" }}>
-          {`Address: ${add ?? ""} • Phone: ${mobile ?? ""}`}
+        </h2>
+
+        <p className="text-[10px] text-[#4A6FA1] mt-1">
+          {address} • Contact: {contact}
         </p>
       </div>
 
-      <hr style={{ margin: "5px 0", borderColor: "#00397A" }} />
+      {/* <hr style={{ margin: "5px 0", borderColor: "#00397A" }} /> */}
 
       {/* Basic */}
       <div>

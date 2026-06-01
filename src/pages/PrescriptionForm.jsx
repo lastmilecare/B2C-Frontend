@@ -840,6 +840,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     type="text"
                     value={formik.values.dosage}
                     disabled={!formik.values.billno}
+                    required
                     onChange={(e) => {
                       const value = e.target.value.replace(/[^0-9]/g, "");
 
@@ -856,6 +857,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     placeholder="Instructions "
                     label="Instructions "
                     disabled={!formik.values.billno}
+                    required
                   />
                   <Select
                     label="Preferred Time "

@@ -1,9 +1,25 @@
-import React, { forwardRef, useEffect } from "react";
+import React, { forwardRef } from "react";
+import { useGetOrgProfilesQuery } from "../redux/apiSlice";
+import { cookie } from "../utils/cookie";
 
 const PrintOpdForm = forwardRef(({ data }, ref) => {
-  
-  const add = import.meta.env.VITE_CENTER_ADD;
-  const mobile = import.meta.env.VITE_CENTER_MOBILE;
+  const center_id = cookie.get("center_id");
+  const page = 1;
+  const limit = 10;
+  const filters = {
+    center_id: center_id,
+  };
+  const {
+    data: oragnisationData,
+    isLoading,
+    refetch,
+  } = useGetOrgProfilesQuery({
+    page,
+    limit,
+    ...filters,
+  });
+  const profiles = oragnisationData?.data || {};
+  const profile = profiles?.[0] || {};
   function formatToIST(dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -24,7 +40,7 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
   };
 
   const label = {
-    width: "120px", 
+    width: "120px",
     fontWeight: "bold",
     position: "relative",
   };
@@ -40,11 +56,23 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
   };
   const rowBlock = {
     display: "grid",
-    gridTemplateColumns: "200px 15px 1fr", 
+    gridTemplateColumns: "200px 15px 1fr",
     alignItems: "start",
     marginTop: "12px",
   };
+  const BASE_URL = import.meta.env.VITE_API_URL;
+  const mainlogo = profile?.logo
+    ? `${BASE_URL}${profile.logo}`
+    : "/images/LMC_logo.webp";
 
+  const secondaryLogo = profile?.secondary_logo
+    ? `${BASE_URL}${profile.secondary_logo}`
+    : null;
+  const address = profile?.address || "N/A";
+  const contact = profile?.mobile || "N/A";
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   return (
     <div
       ref={ref}
@@ -77,16 +105,42 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
         Last Mile Care Pvt Ltd
       </div>
 
-      <img src="/images/LMC_logo.webp" alt="logo" />
-      <div className="text-center mb-6 border-b pb-6 pt-4">
-        <h1 className="text-[#00397A] text-[32px] font-extrabold tracking-wide leading-none">
-          MEDI KAVACH
-        </h1>
-        <h2 className="text-[#4A6FA1] text-[13px] font-semibold tracking-[0.25em] mt-1">
+      <div className="flex justify-start mb-2">
+        <img
+          className="h-16 w-auto object-contain"
+          src="/images/LMC_logo.webp"
+          alt="logo"
+        />
+      </div>
+      <div className="text-center mb-4 border-b pb-4">
+        <div className="flex justify-center items-center gap-2 mb-2">
+          <img
+            src={mainlogo}
+            alt="organization logo"
+            className="h-16 w-auto object-contain"
+            onError={(e) => {
+              e.currentTarget.src = "/images/LMC_logo.webp";
+            }}
+          />
+
+          {secondaryLogo && (
+            <img
+              src={secondaryLogo}
+              alt="secondary logo"
+              className="h-16 w-auto object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          )}
+        </div>
+
+        <h2 className="text-[#4A6FA1] text-[15px] font-bold tracking-[0.25em]">
           HEALTH CENTRE
         </h2>
-        <p className="text-[10px] text-[#4A6FA1] mt-2">
-          {add || ""} • Contact: {mobile || ""}
+
+        <p className="text-[10px] text-[#4A6FA1] mt-1">
+          {address} • Contact: {contact}
         </p>
       </div>
 
