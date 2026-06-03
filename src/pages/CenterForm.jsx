@@ -547,8 +547,8 @@ const CenterForm = () => {
                       <p><b>SPOC Name:</b> {formik.values.agency_spoc_name || "-"}</p>
                       <p><b>SPOC Email:</b> {formik.values.agency_spoc_email || "-"}</p>
                       <p><b>SPOC Contact:</b> {formik.values.agency_spoc_contact_number || "-"}</p>
-                      <p><b>Alternate SPOC:</b> {formik.values.agency_spoc_alternate_name || "-"}</p>
-                      <p><b>Alternate Contact:</b> {formik.values.agency_spoc_alternate_contact_number || "-"}</p>
+                      {/* <p><b>Alternate SPOC:</b> {formik.values.agency_spoc_alternate_name || "-"}</p>
+                      <p><b>Alternate Contact:</b> {formik.values.agency_spoc_alternate_contact_number || "-"}</p> */}
                     </div>
                   </div>
 

@@ -220,7 +220,7 @@ export const ROUTES = [
   {
     path: "/opd-form/:ID",
     component: OpdFormCopy,
-    permission: "create:opd_form",
+    permission: "update:opd_form",
     showInSidebar: false,
   },
 
@@ -243,7 +243,7 @@ export const ROUTES = [
   {
     path: "/prescription-form/:id",
     component: PrescriptionFormCopy,
-    permission: "create:prescription_form",
+    permission: "update:prescription_form",
     showInSidebar: false,
   },
 

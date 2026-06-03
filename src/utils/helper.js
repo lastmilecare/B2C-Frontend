@@ -249,6 +249,9 @@ export const ROLE_ASSIGNMENT_MAP = {
     "VIEWER",
     "SUPPORT",
     "AUDITOR",
+    "DOCTOR",
+    "PHARMACY",
+    "NURSE"
   ],
 
   TENANT_ADMIN: [
@@ -256,10 +259,16 @@ export const ROLE_ASSIGNMENT_MAP = {
     "STAFF",
     "EDITOR",
     "VIEWER",
+    "DOCTOR",
+    "NURSE",
+    "PHARMACY"
   ],
 
   CENTER_ADMIN: [
     "STAFF",
+    "DOCTOR",
+    "NURSE",
+    "PHARMACY"
   ],
 
   STAFF: [],
