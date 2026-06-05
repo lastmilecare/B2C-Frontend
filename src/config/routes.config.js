@@ -41,6 +41,8 @@ import PatientExaminationPage from "../pages/PatientExaminationPage";
 import OhcCenterPage from "../pages/OhcCenterPage";
 import OrganizationProfileForm from "../pages/OrganizationProfileForm";
 import OrganizationProfileList from "../pages/OrganizationProfileList";
+import CampOpdForm from "../pages/CampOpd";
+import CampOpdBillingListCopy from "../pages/CampOpdBillingList";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -535,5 +537,29 @@ export const ROUTES = [
     icon: "BuildingOfficeIcon",
     group: "Administration",
     showInSidebar: true,
+  },
+  {
+    path: "/camp-opd-list",
+    component: CampOpdBillingListCopy,
+    permission: "read:camp_opd_list",
+    
+    label: " Camp OPD List",
+    icon: "ClipboardDocumentListIcon",
+    group: "OPD",
+    showInSidebar: true,
+  },
+  {
+    path: "/camp-opd-form",
+    component: CampOpdForm,
+    permission: "create:camp_opd_form",
+    
+    showInSidebar: false,
+  },
+  {
+    path: "/camp-opd-form/:ID",
+    component: CampOpdForm,
+    permission: "update:camp_opd_form",
+  
+    showInSidebar: false,
   },
 ];

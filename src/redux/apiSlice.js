@@ -1545,6 +1545,96 @@ export const api = createApi({
       }),
       providesTags: ["Attendances"],
     }),
+      getcampOpdBilling: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        contactNumber,
+        gender,
+        category,
+        startDate,
+        endDate,
+        external_id,
+        idProof_number,
+        bill_no,
+        department,
+        doctor,
+        payment_mode,
+        added_by,
+      } = {}) => ({
+        url: "/camp-opd-billing/view",
+        method: "get",
+        params: {
+          page,
+          limit,
+          name,
+          contactNumber,
+          gender,
+          category,
+          startDate,
+          endDate,
+          external_id,
+          idProof_number,
+          bill_no,
+          department,
+          doctor,
+          payment_mode,
+          added_by,
+        },
+      }),
+      providesTags: ["Bill"],
+    }),
+     
+    getcampOpdBillById: build.query({
+      query: (id) => ({
+        url: `/camp-opd-billing/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Bill"],
+    }),
+
+    createcampBill: build.mutation({
+      query: (billData) => ({
+        url: "/camp-opd-billing",
+        method: "POST",
+        data: billData,
+      }),
+      invalidatesTags: ["Bill"],
+    }),
+    updatecampBill: build.mutation({
+      query: ({ id, data }) => ({
+        url: `/camp-opd-billing/${id}`,
+        method: "PUT",
+        data: data,
+      }),
+      invalidatesTags: ["Bill"],
+    }),
+    deletecampOpdBill: build.mutation({
+      query: (id) => ({
+        url: `/camp-opd-billing/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Bill"],
+    }),
+     searchcampOpdBillNo: build.query({
+      query: (bill_no) => ({
+        url: "/camp-opd-billing",
+        method: "GET",
+        params: { bill_no },
+      }),
+    }),
+      exportcampOpdExcel: build.query({
+      query: (filters = {}) => ({
+        url: "/camp-opd-billing/opd-billing-export",
+        method: "GET",
+        params: filters,
+        responseType: "blob",
+      }),
+      // transformResponse: (response) => response,
+      keepUnusedDataFor: 0,
+    }),
+
   }),
 });
 
@@ -1719,4 +1809,12 @@ export const {
   useToggleOrgProfileStatusMutation,
   useGetOrgProfileByIdQuery,
   useGetAttendanceStaffQuery,
+  useGetcampOpdBillingQuery,
+  useCreatecampBillMutation,
+  useDeletecampOpdBillMutation,
+  useExportcampOpdExcelQuery,
+  useSearchcampOpdBillNoQuery,
+  useUpdatecampBillMutation,
+  useGetcampOpdBillByIdQuery,
+  useLazyExportcampOpdExcelQuery,
 } = api;
