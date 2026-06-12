@@ -2,7 +2,7 @@ import React, { forwardRef } from "react";
 import { cookie } from "../utils/cookie";
 import { cleanCurrency } from "../utils/helper";
 import { Picaso_Paymode_Options } from "../utils/constants";
-
+import { useGetOrgProfilesQuery } from "../redux/apiSlice";
 const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
   const username = cookie.get("username");
   const center_id = cookie.get("center_id");

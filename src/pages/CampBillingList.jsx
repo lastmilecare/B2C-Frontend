@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import CopyFilterBar from "../components/Updates/Filter";
 import {
-  useGetSalesStockDetailsQuery,
+  useGetSalesStockDetailscampQuery,
   useGetComboQuery,
   useGetMediceneListQuery,
   useGetPatientNameFromSalesQuery,
-
+  useSoftDeleteMedicinecampBillMutation,
+  useGetcampaddedByQuery,
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import useDebounce from "../hooks/useDebounce";
@@ -43,8 +44,12 @@ const CampBillingListCopy = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-
-  const { data: User, isLoading: SupplierLoading } = useGetComboQuery("users");
+const [softDeleteMedicineBill] = useSoftDeleteMedicinecampBillMutation();
+  const {
+   data: addedByResponse,
+   isLoading: collectedComboLoading,
+   refetch: refetchaddedBy,
+ } = useGetcampaddedByQuery();
   const [tempFilters, setTempFilters] = useState({
     CustommerName: "",
     BillNo: "",
@@ -54,14 +59,19 @@ const CampBillingListCopy = () => {
   });
   const [filters, setFilters] = useState({});
 
-  const { data, isLoading } = useGetSalesStockDetailsQuery({
+  const { data, isLoading, refetch } = useGetSalesStockDetailscampQuery({
     page,
     limit,
     ...filters,
-  });
-  const UserOptions = User
-    ? User.map((t) => ({ value: t.id, label: t.username }))
-    : [];
+  },
+  {
+    refetchOnMountOrArgChange: true,
+  }
+);
+
+  // const UserOptions = User
+  //   ? User.map((t) => ({ value: t.id, label: t.username }))
+  //   : [];
 
   const rawStock = data?.data || [];
 
@@ -107,14 +117,7 @@ const CampBillingListCopy = () => {
 
   const pagination = data?.pagination || {};
 
-  const userLookup = React.useMemo(() => {
-    if (!User?.length) return {};
-
-    return User.reduce((acc, user) => {
-      acc[String(user.id)] = user.username;
-      return acc;
-    }, {});
-  }, [User]);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -166,6 +169,7 @@ const CampBillingListCopy = () => {
     });
     setFilters({});
     setPage(1);
+    refetch();
   };
 
   const filtersConfig = [
@@ -188,7 +192,11 @@ const CampBillingListCopy = () => {
       label: "Added By",
       name: "AddedBy",
       type: "select",
-      options: UserOptions,
+      options:
+  addedByResponse?.data?.map((u) => ({
+    label: u.name,
+    value: u.id,
+  })) || [],
     },
     { label: "Date from", name: "startDate", type: "date" },
     { label: "Date to", name: "endDate", type: "date" },
@@ -300,20 +308,39 @@ const CampBillingListCopy = () => {
       hidden: true,
     },
   ];
+   const handleDelete = async (row) => {
+
+    try {
+      await softDeleteMedicineBill(row.ID).unwrap();
+      await refetch();
+      healthAlert({
+        title: "Success",
+        text: "Bill Deleted Successfully",
+        icon: "success",
+      });
+    } catch (err) {
+      healthAlert({
+        title: "Error",
+        text: err?.data?.message || "Delete failed",
+        icon: "error",
+      });
+    }
+  };
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: "Prescription",
   });
 
-  useEffect(() => {
-    if (printRow && printRef.current) {
-      handlePrint();
-
+   useEffect(() => {
+      if (!printRow) return;
+    
       setTimeout(() => {
-        setPrintRow(null);
+        
+        if (printRef.current) {
+          handlePrint();
+        }
       }, 300);
-    }
-  }, [printRow]);
+    }, [printRow]);
 
   const onPrint = (row) => {
     setPrintRow(row);
@@ -354,9 +381,10 @@ const CampBillingListCopy = () => {
           }}
           isLoading={isLoading}
           enableActions
-          actionButtons={["edit", "delete", "print"]}
+          actionButtons={[ "delete", "print"]}
            onEdit={(row) => navigate(`/camp-billing/${row.ID}`)}
           onPrint={onPrint}
+          onDelete={handleDelete}
         />
       </div>
 

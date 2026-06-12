@@ -7,6 +7,7 @@ import {
   useSearchUHIDQuery,
   useDeletecampOpdBillMutation,
   useLazyExportcampOpdExcelQuery,
+  useGetCollectedcampByQuery,
 } from "../redux/apiSlice";
 
 import PrintOpdForm from "./PrintOpdForm";
@@ -112,8 +113,13 @@ const CampOpdBillingList = () => {
     useGetComboQuery("department");
   const { data: paymode, isLoading: paymodeComboLoading } =
     useGetComboQuery("paymode");
-  const { data: collectedBy, isLoading: collectedComboLoading } =
-    useGetComboQuery("collectedBy");
+    const {
+    data: collectedByResponse,
+    isLoading: collectedComboLoading,
+    refetch: refetchCollectedBy,
+  } = useGetCollectedcampByQuery();
+  
+  const collectedBy = collectedByResponse?.data || [];
 
   const patients = data?.data || [];
   const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
@@ -210,6 +216,8 @@ const CampOpdBillingList = () => {
     setFilters({});
     setPage(1);
     setUhidSearch("");
+    refetchCollectedBy();
+     refetch();
   };
   const formatCurrency = (value) => {
     if (value === null || value === undefined || value === "") return `Rs.0.00`;
@@ -224,7 +232,7 @@ const CampOpdBillingList = () => {
     }
     const n = Number(v);
     if (!Number.isFinite(n)) return `Rs.0.00`;
-    return `Rs.${n.toFixed(0)}`;
+    return `${n.toFixed(0)}`;
   };
   const safeString = (v, fallback = "-") =>
     v === null || v === undefined || v === "" ? fallback : String(v);
@@ -383,39 +391,39 @@ const CampOpdBillingList = () => {
       width: "100px",
     },
     {
-      name: "Total.Due",
+      name: "Total.Due (Rs.)",
       title: "Total Previous Due Amount",
       selector: (row) => formatCurrency(calculateDue(patients, row.uhid)),
       sortable: true,
-      width: "70px",
+      width: "110px",
     },
     {
-      name: "Bill.Amt",
+      name: "Bill.Amt (Rs.)",
       title: "Bill Amount",
       selector: (row) => formatCurrency(row?.BillAmount ?? row?.PaidAmount),
       sortable: true,
-      width: "70px",
+      width: "100px",
     },
     {
-      name: "T.Amt",
+      name: "T.Amt (Rs.)",
       title: "Total Bill Amount",
       selector: (row) => formatCurrency(row?.TotalServiceAmount),
       sortable: true,
-      width: "70px",
+      width: "95px",
     },
     {
-      name: "P.Amt",
+      name: "P.Amt (Rs.)",
       title: "Paid Amount",
       selector: (row) => formatCurrency(row?.PaidAmount),
       sortable: true,
-      width: "70px",
+      width: "95px",
     },
     {
-      name: "Due.Amt",
+      name: "Due.Amt (Rs.)",
       title: "Due Amount",
       selector: (row) => formatCurrency(row?.DueAmount),
       sortable: true,
-      width: "70px",
+      width: "105px",
     },
     {
       name: "Pay.Mode",
@@ -493,14 +501,15 @@ const CampOpdBillingList = () => {
     documentTitle: "Invoice",
   });
 
-  useEffect(() => {
-    if (printRow1 && printRef1.current) {
-      handlePrint1();
-
-      setTimeout(() => {
-        setPrintRow1(null);
-      }, 300);
-    }
+   useEffect(() => {
+    if (!printRow1) return;
+  
+    setTimeout(() => {
+      
+      if (printRef1.current) {
+        handlePrint1();
+      }
+    }, 300);
   }, [printRow1]);
 
   const onPrintInvoice = (row) => {
@@ -541,7 +550,7 @@ const CampOpdBillingList = () => {
         }}
         enableActions
         isLoading={isLoading}
-        actionButtons={["edit", "delete", "print", "printCS"]}
+        actionButtons={[ "delete", "print", "printCS"]}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onPrintCS={onPrintCS}

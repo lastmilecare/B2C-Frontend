@@ -71,6 +71,7 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
   const address = profile?.address || "N/A";
   const contact = profile?.mobile || "N/A";
   if (isLoading) {
+     
     return <div>Loading...</div>;
   }
   return (

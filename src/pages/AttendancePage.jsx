@@ -465,8 +465,8 @@ const AttendancePage = () => {
               label: "Status Filter",
               type: "select",
               options: [
-                { label: "Present", value: "Present" },
-                { label: "Absent", value: "Absent" },
+                { label: "PRESENT", value: "PRESENT" },
+                { label: "ABSENT", value: "ABSENT" },
               ],
             },
             { name: "date", label: "Log Date Selection", type: "date" },

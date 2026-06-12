@@ -7,6 +7,7 @@ import {
   useSearchUHIDQuery,
   useDeleteOpdBillMutation,
   useLazyExportOpdExcelQuery,
+  useGetCollectedByQuery,
 } from "../redux/apiSlice";
 import PrintOpdForm from "./PrintOpdForm";
 import { useReactToPrint } from "react-to-print";
@@ -96,7 +97,7 @@ const OpdBillingListCopy = () => {
   const printRef = useRef();
   const printRef1 = useRef();
 
-  const { data, isLoading, isError, error } = useGetOpdBillingQuery(
+  const { data, isLoading, isError, error, refetch } = useGetOpdBillingQuery(
     {
       page,
       limit,
@@ -111,11 +112,17 @@ const OpdBillingListCopy = () => {
     useGetComboQuery("department");
   const { data: paymode, isLoading: paymodeComboLoading } =
     useGetComboQuery("paymode");
-  const { data: collectedBy, isLoading: collectedComboLoading } =
-    useGetComboQuery("collectedBy");
+  const {
+  data: collectedByResponse,
+  isLoading: collectedComboLoading,
+  refetch: refetchCollectedBy,
+} = useGetCollectedByQuery();
+
+const collectedBy = collectedByResponse?.data || [];
+
 
   const patients = data?.data || [];
-  const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
+  const pagination = data || { currentPage: page, totalRecords: 0 };
   const handleChange = (e) => {
     const { name, value } = e.target;
     let finalValue = value;
@@ -209,6 +216,8 @@ const OpdBillingListCopy = () => {
     setFilters({});
     setPage(1);
     setUhidSearch("");
+    refetchCollectedBy();
+     refetch();
   };
   const formatCurrency = (value) => {
     if (value === null || value === undefined || value === "") return `Rs.0.00`;
@@ -223,7 +232,7 @@ const OpdBillingListCopy = () => {
     }
     const n = Number(v);
     if (!Number.isFinite(n)) return `Rs.0.00`;
-    return `Rs.${n.toFixed(0)}`;
+    return `${n.toFixed(0)}`;
   };
   const safeString = (v, fallback = "-") =>
     v === null || v === undefined || v === "" ? fallback : String(v);
@@ -288,8 +297,12 @@ const OpdBillingListCopy = () => {
       label: "Collected By",
       name: "added_by",
       type: "select",
-      options:
-        collectedBy?.map((u) => ({ label: u.name, value: u.name })) || [],
+     options:
+  collectedBy?.map((u) => ({
+    id: u.id,
+    label: u.name,
+    value: u.name,
+  })) || [],
     },
 
     { label: "Mobile", name: "contactNumber", type: "text" },
@@ -382,39 +395,39 @@ const OpdBillingListCopy = () => {
       width: "100px",
     },
     {
-      name: "Total.Due",
+      name: "Total.Due (Rs.)",
       title: "Total Previous Due Amount",
       selector: (row) => formatCurrency(calculateDue(patients, row.uhid)),
       sortable: true,
-      width: "70px",
+      width: "110px",
     },
     {
-      name: "Bill.Amt",
+      name: "Bill.Amt (Rs.)",
       title: "Bill Amount",
       selector: (row) => formatCurrency(row?.BillAmount ?? row?.PaidAmount),
       sortable: true,
-      width: "70px",
+      width: "100px",
     },
     {
-      name: "T.Amt",
+      name: "T.Amt (Rs.)",
       title: "Total Bill Amount",
       selector: (row) => formatCurrency(row?.TotalServiceAmount),
       sortable: true,
-      width: "70px",
+      width: "95px",
     },
     {
-      name: "P.Amt",
+      name: "P.Amt (Rs.)",
       title: "Paid Amount",
       selector: (row) => formatCurrency(row?.PaidAmount),
       sortable: true,
-      width: "70px",
+      width: "95px",
     },
     {
-      name: "Due.Amt",
+      name: "Due.Amt (Rs.)",
       title: "Due Amount",
       selector: (row) => formatCurrency(row?.DueAmount),
       sortable: true,
-      width: "70px",
+      width: "105px",
     },
     {
       name: "Pay.Mode",
@@ -484,6 +497,7 @@ const OpdBillingListCopy = () => {
   }, [printRow]);
 
   const onPrintCS = (row) => {
+    
     setPrintRow(row);
   };
 
@@ -492,15 +506,17 @@ const OpdBillingListCopy = () => {
     documentTitle: "Invoice",
   });
 
+  
   useEffect(() => {
-    if (printRow1 && printRef1.current) {
-      handlePrint1();
+  if (!printRow1) return;
 
-      setTimeout(() => {
-        setPrintRow1(null);
-      }, 300);
+  setTimeout(() => {
+    
+    if (printRef1.current) {
+      handlePrint1();
     }
-  }, [printRow1]);
+  }, 300);
+}, [printRow1]);
 
   const onPrintInvoice = (row) => {
     setPrintRow1(row);
@@ -530,8 +546,8 @@ const OpdBillingListCopy = () => {
         title="💳 OPD Billing List"
         columns={columns}
         data={patients}
-        totalRows={pagination.totalRecords || 0}
-        currentPage={pagination.currentPage || page}
+        totalRows={pagination.total || 0}
+        currentPage={pagination.page || page}
         perPage={limit}
         onPageChange={(newPage) => setPage(newPage)}
         onPerPageChange={(newLimit) => {

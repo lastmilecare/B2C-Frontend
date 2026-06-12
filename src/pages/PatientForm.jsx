@@ -10,17 +10,16 @@ import {
   DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import {
-  RELATIONSHIP_OPTIONS,
   TITLES,
   BLOOD_GROUPS,
   RESIDENTAL_STATUS,
-  OCCUPATION_OPTIONS,
   IDENTIFICATION_TYPES,
 } from "../utils/constants";
 import {
   useRegisterPatientsMutation,
   useGetPatientByIdQuery,
   useUpdatePatientMutation,
+  useGetComboQuery,
 } from "../redux/apiSlice";
 import DiseaseSelect from "../components/DiseaseSelect";
 import { useLocationData } from "../services/locationApi";
@@ -33,6 +32,7 @@ import { cookie } from "../utils/cookie";
 import { Referral_Options } from "../utils/constants";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
 
 const PatientRegistrationCopy = () => {
   const [searchDiseases] = useLazySearchDiseasesQuery();
@@ -61,6 +61,11 @@ const PatientRegistrationCopy = () => {
   const [activeStep, setActiveStep] = useState(1);
   const isPageLoading = isLoading || isFetching;
   const isSubmitting = isCreating || isUpdating;
+  const { data: relationshipCombo = [] } =
+  useGetComboQuery("b2c-relationship");
+
+const { data: occupationCombo = [] } =
+  useGetComboQuery("b2c-occupation");
 
   const nextStep = async () => {
     const errors = await formik.validateForm();
@@ -264,7 +269,7 @@ const PatientRegistrationCopy = () => {
           dob: p.dateOfBirthOrAge?.split("T")[0] || "",
           age: p.age ? `${p.age}y ${p.imonth || 0}m ${p.idays || 0}d` : "",
           CO: p.co || "",
-          relationship: p.relationship || "",
+          // relationship: p.relationship || "",
           gender: p.gender || "",
           contactNumber: p.contactNumber || "",
           residentialstatus: p.residentialstatus || "",
@@ -272,7 +277,7 @@ const PatientRegistrationCopy = () => {
           country: String(p.country_id || ""),
           localAddressState: String(p.state_id || ""),
           localAddressDistrict: String(p.district_id || ""),
-          occupation: p.occupation || "",
+          // occupation: p.occupation || "",
           healthCardNumber: p.healthCardNumber || "",
           localAddress: p.localAddress || "",
           pin: p.pin || "",
@@ -285,6 +290,8 @@ const PatientRegistrationCopy = () => {
           idProof_name: p.idProof_name || "",
           employeeId: p.employeeId || "",
           ReferredBy: p.ReferredBy || "",
+          relationship: String(p.relationship || ""),
+occupation: String(p.occupation || ""),
         });
       };
 
@@ -327,11 +334,11 @@ const PatientRegistrationCopy = () => {
       state_id: Number(values.localAddressState),
       district_id: Number(values.localAddressDistrict),
       category: values.fincat,
-      occupation: values.occupation,
+      occupation: Number(values.occupation),
       residentialstatus: values.residentialstatus,
       title: values.title,
       co: values.CO,
-      relationship: values.relationship,
+      relationship: Number(values.relationship),
       employeeId: values.employeeId,
       ReferredBy: values.ReferredBy || "",
     };
@@ -585,9 +592,14 @@ const formattedDate = `${date.getFullYear()}-${String(
                       label="Relationship"
                     >
                       <option value="">Select</option>
-                      {RELATIONSHIP_OPTIONS.map((relation) => (
-                        <option key={relation}>{relation}</option>
-                      ))}
+                     {relationshipCombo?.map((relation) => (
+  <option
+    key={relation.ID}
+    value={relation.ID}
+  >
+    {relation.Code}
+  </option>
+))}
                     </Select>
 
                     <Select
@@ -732,9 +744,14 @@ const formattedDate = `${date.getFullYear()}-${String(
                       }
                     >
                       <option value="">Select</option>
-                      {OCCUPATION_OPTIONS.map((e) => (
-                        <option key={e}>{e}</option>
-                      ))}
+                     {occupationCombo?.map((e) => (
+  <option
+    key={e.OccupationID}
+    value={e.OccupationID}
+  >
+    {e.Descriptions}
+  </option>
+))}
                     </Select>
 
                     <Input
@@ -900,7 +917,11 @@ const formattedDate = `${date.getFullYear()}-${String(
                       </p> */}
 
                       <p>
-                        <b>Relationship:</b> {formik.values.relationship || "-"}
+                        <b>Relationship:</b> {
+  relationshipCombo?.find(
+    (r) => String(r.ID) === String(formik.values.relationship)
+  )?.code || "-"
+}
                       </p>
 
                       <p>
@@ -920,7 +941,11 @@ const formattedDate = `${date.getFullYear()}-${String(
                         </p>
 
                         <p>
-                          <b>Occupation:</b> {formik.values.occupation || "-"}
+                          <b>Occupation:</b>{
+  occupationCombo?.find(
+    (o) => String(o.OccupationID) === String(formik.values.occupation)
+  )?.Descriptions || "-"
+}
                         </p>
 
                         <p>

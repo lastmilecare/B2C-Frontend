@@ -6,6 +6,8 @@ import {
   useGetComboQuery,
   useGetMediceneListQuery,
   useGetPatientNameFromSalesQuery,
+  useSoftDeleteMedicineBillMutation,
+  useGetaddedByQuery,
 
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
@@ -43,8 +45,14 @@ const BillingListCopy = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-
-  const { data: User, isLoading: SupplierLoading } = useGetComboQuery("users");
+const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
+  const {
+   data: addedByResponse,
+   isLoading: collectedComboLoading,
+   refetch: refetchaddedBy,
+ } = useGetaddedByQuery();
+ 
+ const addedBy = addedByResponse?.data || [];
   const [tempFilters, setTempFilters] = useState({
     CustommerName: "",
     BillNo: "",
@@ -54,14 +62,12 @@ const BillingListCopy = () => {
   });
   const [filters, setFilters] = useState({});
 
-  const { data, isLoading } = useGetSalesStockDetailsQuery({
+  const { data, isLoading, refetch} = useGetSalesStockDetailsQuery({
     page,
     limit,
     ...filters,
   });
-  const UserOptions = User
-    ? User.map((t) => ({ value: t.id, label: t.username }))
-    : [];
+ 
 
   const rawStock = data?.data || [];
 
@@ -107,14 +113,7 @@ const BillingListCopy = () => {
 
   const pagination = data?.pagination || {};
 
-  const userLookup = React.useMemo(() => {
-    if (!User?.length) return {};
-
-    return User.reduce((acc, user) => {
-      acc[String(user.id)] = user.username;
-      return acc;
-    }, {});
-  }, [User]);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -166,6 +165,7 @@ const BillingListCopy = () => {
     });
     setFilters({});
     setPage(1);
+    refetch();
   };
 
   const filtersConfig = [
@@ -188,7 +188,11 @@ const BillingListCopy = () => {
       label: "Added By",
       name: "AddedBy",
       type: "select",
-      options: UserOptions,
+      options:
+      addedBy?.map((u) => ({
+    label: u.name,
+    value: u.id,
+  })) || [],
     },
     { label: "Date from", name: "startDate", type: "date" },
     { label: "Date to", name: "endDate", type: "date" },
@@ -300,22 +304,42 @@ const BillingListCopy = () => {
       hidden: true,
     },
   ];
+  const handleDelete = async (row) => {
+  try {
+    await softDeleteMedicineBill(row.ID).unwrap();
+    await refetch();
+    healthAlert({
+      title: "Success",
+      text: "Bill Deleted Successfully",
+      icon: "success",
+    });
+  } catch (err) {
+    healthAlert({
+      title: "Error",
+      text: err?.data?.message || "Delete failed",
+      icon: "error",
+    });
+  }
+};
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: "Prescription",
   });
 
-  useEffect(() => {
-    if (printRow && printRef.current) {
-      handlePrint();
 
-      setTimeout(() => {
-        setPrintRow(null);
-      }, 300);
-    }
+    useEffect(() => {
+    if (!printRow) return;
+  
+    setTimeout(() => {
+      
+      if (printRef.current) {
+        handlePrint();
+      }
+    }, 300);
   }, [printRow]);
 
   const onPrint = (row) => {
+    
     setPrintRow(row);
   };
   return (
@@ -357,6 +381,7 @@ const BillingListCopy = () => {
           actionButtons={["edit", "delete", "print"]}
           onEdit={(row) => navigate(`/billing/${row.ID}`)}
           onPrint={onPrint}
+          onDelete={handleDelete}
         />
       </div>
 

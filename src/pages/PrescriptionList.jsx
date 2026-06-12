@@ -292,15 +292,25 @@ const PrescriptionListCopy = () => {
     documentTitle: "Prescription",
   });
 
-  useEffect(() => {
-    if (printRow && printRef.current) {
-      handlePrint();
+  // useEffect(() => {
+  //   if (printRow && printRef.current) {
+  //     handlePrint();
 
+  //     setTimeout(() => {
+  //       setPrintRow(null);
+  //     }, 300);
+  //   }
+  // }, [printRow]);
+   useEffect(() => {
+      if (!printRow) return;
+    
       setTimeout(() => {
-        setPrintRow(null);
+        
+        if (printRef.current) {
+          handlePrint();
+        }
       }, 300);
-    }
-  }, [printRow]);
+    }, [printRow]);
 
   const onPrint = (row) => {
     setPrintRow(row);

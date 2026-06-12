@@ -189,7 +189,7 @@ const PrescriptionFormCopy = () => {
     const addedDate = formatISO(new Date());
 
     return {
-      consultingId: values.consultingId,
+      // consultingId: values.consultingId,
       picasoId: values.UHID,
       billNo: values.billno ? Number(values.billno) : null,
       patientName: values.Name,
@@ -227,7 +227,7 @@ const PrescriptionFormCopy = () => {
       modifiedBy: user_id,
       AdviceList: prescriptionList.map((item) => ({
         picasoId: values.UHID,
-        consultingId: values.consultingId,
+        // consultingId: values.consultingId,
         itemId: item.itemId || 0,
         item: item.medicine,
         dosage: item.dosage,
@@ -276,7 +276,7 @@ const PrescriptionFormCopy = () => {
       weight: "",
       dosageinstructions: "",
       preferredtime: "",
-      consultingId: "",
+      // consultingId: "",
       hospitalId: "",
       Remarks: "",
       ReferTo: "",
@@ -366,7 +366,7 @@ const PrescriptionFormCopy = () => {
       Mobile: patientData.Mobile || "",
       FinCategory: patientData.driverDetails[0]?.category || "",
       Age: patientData.driverDetails[0]?.age || "",
-      consultingId: patientData.ConsultantDoctorID || "",
+      // consultingId: patientData.ConsultantDoctorID || "",
       hospitalId: patientData.HospitalID,
       Remarks: patientData.Remarks,
       ReferTo: patientData.ReferTo,
@@ -418,7 +418,7 @@ const PrescriptionFormCopy = () => {
       Mobile: row.contactNo ?? "",
       FinCategory: row.patientType ?? "",
       Age: row.age ?? "",
-      consultingId: row.consultingId ?? "",
+      // consultingId: row.consultingId ?? "",
       hospitalId: row.hospitalId ?? "",
       Remarks: row.remarks ?? "",
       ReferTo: row.referrals ?? "",

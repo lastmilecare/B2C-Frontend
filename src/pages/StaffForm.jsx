@@ -78,6 +78,7 @@ const StaffForm = () => {
   );
   useEffect(() => {
     if (location.state?.editData) {
+      
       setEditUser(location.state.editData);
     }
   }, [location.state]);
@@ -102,13 +103,18 @@ const StaffForm = () => {
 
     b2cRoleId: Yup.string().required("Role is required"),
     center_id: Yup.string().test(
-      "center-validation",
-      "Center is required",
-      function (value) {
-        if (isSuperadmin) return true;
-        return !!value;
-      },
-    ),
+  "center-validation",
+  "Center is required",
+  function (value) {
+    if (isSuperadmin) return true;
+
+    if (editUser && editUser.center === null) {
+      return true;
+    }
+
+    return !!value;
+  },
+),
   });
   const formik = useFormik({
     enableReinitialize: true,
@@ -117,11 +123,11 @@ const StaffForm = () => {
       username: editUser?.username || "",
       email: editUser?.email || "",
       phone: editUser?.phone || "",
-      employeeNo: editUser?.employeeNo || "",
+      employeeNo: editUser?.employee_no || "",
       password: "",
       confirmPassword: "",
       b2cRoleId: editUser?.b2c_role_id || "",
-      center_id: editUser?.center_id || "",
+      center_id: editUser?.center?.id || "",
     },
     validationSchema,
 
@@ -197,6 +203,7 @@ const StaffForm = () => {
   };
 
   const prevStep = () => setActiveStep((prev) => prev - 1);
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -255,8 +262,11 @@ const StaffForm = () => {
                 />
                 <Select
                   label="Select Center"
-                  required={!isSuperadmin}
-                  disabled={isSuperadmin}
+                 required={
+  !isSuperadmin &&
+  !(editUser && editUser.center === null)
+}
+                  disabled={isSuperadmin || (editUser && editUser.center === null)}
                   error={formik.touched.center_id && formik.errors.center_id}
                   {...formik.getFieldProps("center_id")}
                 >

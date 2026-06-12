@@ -34,15 +34,15 @@ const CenterForm = () => {
   const editData = location.state?.editData;
   const role = cookie.get("role");
   const isAdmin = role === ROLE_ADMIN;
-  const cookieTenantId = cookie.get("tenant_id");
+  const cookieTenantId = cookie.get("tenantId");
   const userId = cookie.get("user_id");
-  const { data } = useGetTenantsQuery();
+  const { data, refetch, } = useGetTenantsQuery();
   const tenants = data?.data?.data || [];
   const [createCenter] = useCreateCenterMutation();
   const [updateCenter] = useUpdateCenterMutation();
   const formik = useFormik({
     initialValues: {
-      tenant_id: editData?.tenant_id || "",
+      tenant_id: editData?.tenant_id || (!isAdmin ? cookieTenantId : ""),
       project_name: editData?.project_name || "",
       short_code: editData?.short_code || "",
       project_district: editData?.project_district || "",
@@ -71,7 +71,9 @@ const CenterForm = () => {
     enableReinitialize: true,
 
     validationSchema: Yup.object({
-      tenant_id: Yup.string().required("Tenant is required"),
+      tenant_id: isAdmin
+        ? Yup.string().required("Tenant is required")
+        : Yup.string().nullable(),
       project_name: Yup.string().required("Project Name is required"),
       short_code: Yup.string()
         .required("Center ID is required")
@@ -84,9 +86,35 @@ const CenterForm = () => {
       agency_district: Yup.string().required("Agency District is required"),
       agency_address: Yup.string().required("Agency Address is required"),
       agency_state: Yup.string().required("Agency State is required"),
+//       project_end_date: Yup.string().test(
+//   "end-date-validation",
+//   "End Date cannot be before Start Date",
+//   function (value) {
+//     const { project_start_date } = this.parent;
+
+//     if (!project_start_date || !value) {
+//       return true; // dono me se koi empty hai to validation pass
+//     }
+
+//     return new Date(value) >= new Date(project_start_date);
+//   }
+// ),
 
       // project_start_date: Yup.string().required("Start Date is required"),
       // project_end_date: Yup.string().required("End Date is required"),
+      project_end_date: Yup.string().test(
+  "end-date-validation",
+  "End Date cannot be before Start Date",
+  function (value) {
+    const { project_start_date } = this.parent;
+
+    if (!project_start_date || !value) {
+      return true;
+    }
+
+    return new Date(value) >= new Date(project_start_date);
+  }
+),
     }),
 
 
@@ -95,8 +123,9 @@ const CenterForm = () => {
         const finalTenantId = isAdmin
           ? values.tenant_id
           : cookieTenantId;
-
+        
         const payload = {
+
           tenant_id: Number(finalTenantId),
 
           createdBy: Number(userId),
@@ -130,7 +159,7 @@ const CenterForm = () => {
           project_end_date:
             values.project_end_date || null,
         };
-
+        
         let result;
 
         if (editData?.id) {
@@ -138,6 +167,7 @@ const CenterForm = () => {
             id: editData.id,
             ...payload,
           }).unwrap();
+          await refetch();
 
           healthAlert({
             title: "Success",
@@ -146,7 +176,7 @@ const CenterForm = () => {
           });
         } else {
           result = await createCenter(payload).unwrap();
-
+          await refetch();
           healthAlert({
             title: "Success",
             text: "Center Created Successfully",
@@ -208,6 +238,12 @@ const CenterForm = () => {
       );
       return;
     }
+    if (
+  activeStep === 3 &&
+  formik.errors.project_end_date
+) {
+  return;
+}
 
     setActiveStep((p) => p + 1);
   };
@@ -250,9 +286,28 @@ const CenterForm = () => {
     }
 
     if (activeStep === 4) {
-      formik.resetForm();
-      setActiveStep(1);
-    }
+  formik.setValues({
+    tenant_id: !isAdmin ? cookieTenantId : "",
+    project_name: "",
+    short_code: "",
+    project_district: "",
+    project_state: "",
+    project_address: "",
+    agency_name: "",
+    agency_district: "",
+    agency_address: "",
+    agency_state: "",
+    agency_spoc_name: "",
+    agency_spoc_email: "",
+    agency_spoc_contact_number: "",
+    agency_spoc_alternate_name: "",
+    agency_spoc_alternate_contact_number: "",
+    project_start_date: "",
+    project_end_date: "",
+  });
+
+  setActiveStep(1);
+}
   };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -359,7 +414,7 @@ const CenterForm = () => {
                   label="Agency Name"
                   required
                   {...formik.getFieldProps("agency_name")}
-                   error={
+                  error={
                     formik.touched.agency_name &&
                     formik.errors.agency_name
                   }
@@ -372,7 +427,7 @@ const CenterForm = () => {
                     formik.touched.agency_district &&
                     formik.errors.agency_district
                   }
-                  
+
                 />
                 <Input
                   label="Agency State"
@@ -480,18 +535,38 @@ const CenterForm = () => {
                     End Date
                   </label>
 
-                  <DatePicker
-                    selected={
-                      formik.values.project_end_date
-                        ? new Date(formik.values.project_end_date)
-                        : null
-                    }
-                    onChange={(date) => {
-                      formik.setFieldValue(
-                        "project_end_date",
-                       formatDateOnly(date)
-                      );
-                    }}
+                 <DatePicker
+  selected={
+    formik.values.project_end_date
+      ? new Date(formik.values.project_end_date)
+      : null
+  }
+onChange={(date) => {
+  const start = formik.values.project_start_date;
+
+  if (start) {
+    const startDate = new Date(start);
+
+    if (date < startDate) {
+      formik.setFieldTouched("project_end_date", true);
+
+      formik.setFieldError(
+        "project_end_date",
+        "End Date cannot be before Start Date"
+      );
+
+      return;
+    }
+  }
+
+  formik.setFieldError("project_end_date", "");
+
+  formik.setFieldValue(
+    "project_end_date",
+    formatDateOnly(date)
+  );
+}}
+                    
                     dateFormat="dd/MM/yyyy"
                     placeholderText="DD/MM/YYYY"
                     showMonthDropdown
@@ -502,7 +577,14 @@ const CenterForm = () => {
                     popperClassName="z-[99999]"
                     className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
     outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+    
                   />
+                    {formik.touched.project_end_date &&
+    formik.errors.project_end_date && (
+      <p className="text-red-500 text-xs mt-1">
+        {formik.errors.project_end_date}
+      </p>
+    )}
                 </div>
               </div>
             )}
@@ -520,11 +602,14 @@ const CenterForm = () => {
                     </h4>
 
                     <div className="grid md:grid-cols-2 gap-3 text-sm">
-                      <p><b>Tenant:</b> {
-                        tenants.find(
-                          t => String(t.id) === String(formik.values.tenant_id)
-                        )?.name || "-"
-                      }</p>
+                      <p>
+                        <b>Tenant:</b>{" "}
+                        {tenants.find(
+                          (t) => String(t.id) === String(formik.values.tenant_id)
+                        )?.name ||
+                          cookie.get("tenant_name") ||
+                          "-"}
+                      </p>
 
                       <p><b>Project Name:</b> {formik.values.project_name || "-"}</p>
                       <p><b>Center ID:</b> {formik.values.short_code || "-"}</p>
