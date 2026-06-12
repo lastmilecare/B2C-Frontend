@@ -158,4 +158,17 @@ export const ROLES = [
     label: "AUDITOR",
     value: "AUDITOR",
   },
+  {
+    label: "DOCTOR",
+    value: "DOCTOR",
+  },
+  {
+    label: "NURSE",
+    value: "NURSE",
+  },
+  {
+    label: "PHARMACY",
+    value: "PHARMACY",
+  },
+
 ];

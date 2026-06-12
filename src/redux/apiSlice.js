@@ -578,13 +578,15 @@ export const api = createApi({
       invalidatesTags: ["Attendance", "Dashboard"],
     }),
     getAttendance: build.query({
-      query: (params) => ({
-        url: `/attendance`,
-        method: "GET",
-        params,
-      }),
-      providesTags: ["Attendance"],
-    }),
+  query: (params) => ({
+    url: `/attendance`,
+    method: "GET",
+    params,
+  }),
+  providesTags: ["Attendance"],
+
+  keepUnusedDataFor: 0,
+}),
     getMonthlyStats: build.query({
       query: ({ userId, month, year }) => ({
         url: `/attendance/stats`,
@@ -599,6 +601,7 @@ export const api = createApi({
         method: "GET",
       }),
       providesTags: ["Dashboard"],
+      keepUnusedDataFor: 0,
     }),
     getCalendarData: build.query({
       query: ({ userId, month, year }) => ({
@@ -1544,7 +1547,222 @@ export const api = createApi({
         params,
       }),
       providesTags: ["Attendances"],
+      keepUnusedDataFor: 0,
     }),
+      getcampOpdBilling: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        contactNumber,
+        gender,
+        category,
+        startDate,
+        endDate,
+        external_id,
+        idProof_number,
+        bill_no,
+        department,
+        doctor,
+        payment_mode,
+        added_by,
+      } = {}) => ({
+        url: "/camp-opd-billing/view",
+        method: "get",
+        params: {
+          page,
+          limit,
+          name,
+          contactNumber,
+          gender,
+          category,
+          startDate,
+          endDate,
+          external_id,
+          idProof_number,
+          bill_no,
+          department,
+          doctor,
+          payment_mode,
+          added_by,
+        },
+      }),
+      providesTags: ["Bill"],
+    }),
+     
+    getcampOpdBillById: build.query({
+      query: (id) => ({
+        url: `/camp-opd-billing/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Bill"],
+    }),
+
+    createcampBill: build.mutation({
+      query: (billData) => ({
+        url: "/camp-opd-billing",
+        method: "POST",
+        data: billData,
+      }),
+      invalidatesTags: ["Bill"],
+    }),
+    updatecampBill: build.mutation({
+      query: ({ id, data }) => ({
+        url: `/camp-opd-billing/${id}`,
+        method: "PUT",
+        data: data,
+      }),
+      invalidatesTags: ["Bill"],
+    }),
+    deletecampOpdBill: build.mutation({
+      query: (id) => ({
+        url: `/camp-opd-billing/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Bill"],
+    }),
+     searchcampOpdBillNo: build.query({
+      query: (bill_no) => ({
+        url: "/camp-opd-billing",
+        method: "GET",
+        params: { bill_no },
+      }),
+    }),
+      exportcampOpdExcel: build.query({
+      query: (filters = {}) => ({
+        url: "/camp-opd-billing/opd-billing-export",
+        method: "GET",
+        params: filters,
+        responseType: "blob",
+      }),
+      // transformResponse: (response) => response,
+      keepUnusedDataFor: 0,
+    }),
+     createMedicinecampBill: build.mutation({
+      query: (data) => ({
+        url: "/medicine-inventory/camp/bill",
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["Bill", "Inventory"],
+    }),
+    getMedicinecampBillById: build.query({
+      query: (id) => ({
+        url: `/medicine-inventory/camp/bill/${id}`,
+        method: "GET",
+      }),
+    }),
+    updateMedicinecampBill: build.mutation({
+      query: ({ id, data }) => ({
+        url: `/medicine-inventory/camp/bill/${id}`,
+        method: "PUT",
+        data,
+      }),
+      invalidatesTags: ["Bill", "Inventory"],
+    }),
+     getSalesStockDetailscamp: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        descriptions,
+        startDate,
+        endDate,
+        AddedBy,
+        CustommerName,
+        BillNo,
+      } = {}) => ({
+        url: "/medicine-inventory/stock/camp/view/sales",
+        method: "get",
+        params: {
+          page,
+          limit,
+          descriptions,
+          startDate,
+          endDate,
+          AddedBy,
+          CustommerName,
+          BillNo,
+        },
+      }),
+    }),
+    getPatientNameFromSalescamp: build.query({
+      query: (searchTerm) => ({
+        url: "/medicine-inventory/stock/view/sales/camp/patient-name",
+        method: "GET",
+        params: {
+          search: searchTerm,
+        },
+      }),
+    }),
+    softDeleteMedicineBill: build.mutation({
+  query: (id) => ({
+    url: `/medicine-inventory/bill/${id}/delete`,
+    method: "PATCH",
+  }),
+  invalidatesTags: ["Bill", "Inventory"],
+}),
+getCollectedBy: build.query({
+  query: () => ({
+    url: "/opd-billing/collected-by",
+    method: "GET",
+  }),
+}),
+getaddedBy: build.query({
+  query: () => ({
+    url: "/medicine-inventory/added-by",
+    method: "GET",
+  }),
+}),
+ softDeleteMedicinecampBill: build.mutation({
+  query: (id) => ({
+    url: `/medicine-inventory/camp/bill/${id}/delete`,
+    method: "PATCH",
+  }),
+  invalidatesTags: ["Bill", "Inventory"],
+}),
+getcampaddedBy: build.query({
+  query: () => ({
+    url: "/medicine-inventory/camp/added-by",
+    method: "GET",
+  }),
+}),
+getCollectedcampBy: build.query({
+  query: () => ({
+    url: "/camp-opd-billing/camp/collected-by",
+    method: "GET",
+  }),
+}),
+getAllSalesStockDetails: build.query({
+  query: ({
+    page = 1,
+    limit = 10,
+    descriptions,
+    startDate,
+    endDate,
+    AddedBy,
+    CustommerName,
+    BillNo,
+  } = {}) => ({
+    url: "/medicine-inventory/stock/view/all-sales",
+    method: "get",
+    params: {
+      page,
+      limit,
+      descriptions,
+      startDate,
+      endDate,
+      AddedBy,
+      CustommerName,
+      BillNo,
+    },
+  }),
+}),
+getSalesAddedBy: build.query({
+  query: () => ({
+    url: "/medicine-inventory/sales/added-by",
+    method: "GET",
+  }),
+}),
   }),
 });
 
@@ -1719,4 +1937,25 @@ export const {
   useToggleOrgProfileStatusMutation,
   useGetOrgProfileByIdQuery,
   useGetAttendanceStaffQuery,
+  useGetcampOpdBillingQuery,
+  useCreatecampBillMutation,
+  useDeletecampOpdBillMutation,
+  useExportcampOpdExcelQuery,
+  useSearchcampOpdBillNoQuery,
+  useUpdatecampBillMutation,
+  useGetcampOpdBillByIdQuery,
+  useLazyExportcampOpdExcelQuery,
+  useCreateMedicinecampBillMutation,
+  useUpdateMedicinecampBillMutation,
+  useGetMedicinecampBillByIdQuery,
+  useGetPatientNameFromSalescampQuery,
+  useGetSalesStockDetailscampQuery,
+  useSoftDeleteMedicineBillMutation,
+  useGetCollectedByQuery,
+  useGetaddedByQuery,
+  useSoftDeleteMedicinecampBillMutation,
+  useGetcampaddedByQuery,
+  useGetCollectedcampByQuery,
+  useGetAllSalesStockDetailsQuery,
+  useGetSalesAddedByQuery,
 } = api;

@@ -6,6 +6,8 @@ import {
   useGetComboQuery,
   useGetMediceneListQuery,
   useGetPatientNameFromSalesQuery,
+  useGetAllSalesStockDetailsQuery,
+  useGetSalesAddedByQuery
 } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +42,9 @@ const SalesRecordCopy = () => {
   const { data: itemType, isLoading: doctorsComboLoading } =
     useGetComboQuery("medicine-type");
 
-  const { data: User, isLoading: SupplierLoading } = useGetComboQuery("users");
+const {
+  data: addedByResponse,
+} = useGetSalesAddedByQuery();
   const [tempFilters, setTempFilters] = useState({
     CustommerName: "",
     descriptions: "",
@@ -50,14 +54,18 @@ const SalesRecordCopy = () => {
   });
   const [filters, setFilters] = useState({});
 
-  const { data, isLoading } = useGetSalesStockDetailsQuery({
+  const { data, isLoading } = useGetAllSalesStockDetailsQuery({
     page,
     limit,
     ...filters,
   });
-  const UserOptions = User
-    ? User.map((t) => ({ value: t.id, label: t.username }))
-    : [];
+const UserOptions =
+  addedByResponse?.data?.map(
+    (u) => ({
+      value: u.id,
+      label: u.name,
+    }),
+  ) || [];
 
   const rawStock = data?.data || [];
 
@@ -70,14 +78,22 @@ const SalesRecordCopy = () => {
 
   const pagination = data?.pagination || {};
 
-  const userLookup = React.useMemo(() => {
-    if (!User?.length) return {};
+  // const userLookup = React.useMemo(() => {
+  //   if (!User?.length) return {};
 
-    return User.reduce((acc, user) => {
-      acc[String(user.id)] = user.username;
-      return acc;
-    }, {});
-  }, [User]);
+  //   return User.reduce((acc, user) => {
+  //     acc[String(user.id)] = user.username;
+  //     return acc;
+  //   }, {});
+  // }, [User]);
+  const userLookup = React.useMemo(() => {
+  if (!addedByResponse?.data?.length) return {};
+
+  return addedByResponse.data.reduce((acc, user) => {
+    acc[String(user.id)] = user.name;
+    return acc;
+  }, {});
+}, [addedByResponse]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

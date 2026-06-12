@@ -202,7 +202,7 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
             </p>
             <p>
               <span className="font-semibold">Refer From:</span>{" "}
-              {data?.referFrom}
+              {data?.refer_to}
             </p>
             <p>
               <span className="font-semibold">Chief Complaint:</span>{" "}

@@ -149,11 +149,14 @@ outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky
               >
                 <option value="">Select</option>
 
-                {filter.options?.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
+               {filter.options?.map((opt, index) => (
+  <option
+    key={opt.id ?? opt.value ?? index}
+    value={opt.value}
+  >
+    {opt.label}
+  </option>
+))}
               </select>
             )}
 

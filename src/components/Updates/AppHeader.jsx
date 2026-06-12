@@ -6,8 +6,10 @@ import { logout } from "../../redux/authSlice";
 import { cookie } from "../../utils/cookie";
 import { 
   Bars3Icon, 
-  ArrowLeftStartOnRectangleIcon 
+  ArrowLeftStartOnRectangleIcon,
+  InformationCircleIcon 
 } from "@heroicons/react/24/outline";
+import HelpPdf from "../../assets/LMC B2C DOC.pdf";
 
 const AppHeader = ({ toggleSidebar }) => {
   const navigate = useNavigate();
@@ -75,6 +77,15 @@ const AppHeader = ({ toggleSidebar }) => {
       </div>
 
       <div className="flex items-center gap-5">
+        
+ <button
+  onClick={() => window.open(HelpPdf, "_blank")}
+  title="Help"
+  className="text-gray-500 hover:text-emerald-600 transition"
+>
+  <InformationCircleIcon className="w-6 h-6" />
+</button>
+        
         <div className="text-right hidden md:block">
           <p className="text-[10px] text-neutral-400 uppercase">Today</p>
           <p className="text-sm font-bold text-neutral-700">{today}</p>

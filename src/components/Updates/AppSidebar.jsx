@@ -36,6 +36,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     tenants: false,
     ohc: false,
     centers: false,
+    campopd: false,
   });
 
   const toggleSubMenu = (menu) => {
@@ -258,6 +259,30 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             </NavLink>
           </MenuGroup>
         )}
+{/* ── Camp Opd ──────────────────────────── */}
+         {can("read:camp_opd_form") && (
+          <MenuGroup menuKey="campopd" icon={BuildingOffice2Icon} label="Camp OPD">
+            {can("create:camp_opd_form") && (
+              <NavLink
+                to="/camp-opd-form"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+              Camp OPD Form
+              </NavLink>
+             )} 
+
+           {can("read:camp_opd_list") && ( 
+              <NavLink
+                to="/camp-opd-list"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+              Camp OPD List
+              </NavLink>
+             )} 
+          </MenuGroup>
+         )} 
 
         {/* ── Staff ────────────────────────────────────────── */}
         {can("read:staff_form") && (

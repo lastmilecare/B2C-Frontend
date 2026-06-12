@@ -127,6 +127,7 @@ const StaffList = () => {
   };
 
   const handleEdit = (row) => {
+   
     navigate(`/staff-form/${row.id}`, {
       state: { editData: row },
     });
