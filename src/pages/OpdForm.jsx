@@ -1,512 +1,512 @@
-  import React, { useState, useEffect, useRef } from "react";
-  import { Formik, useFormik } from "formik";
-  import * as Yup from "yup";
-  import {
-    ArrowPathIcon,
-    PrinterIcon,
-    CheckCircleIcon,
-    CreditCardIcon,
-    UserIcon,
-    ClipboardDocumentIcon,
-    DocumentCheckIcon,
-  } from "@heroicons/react/24/outline";
-  import ServiceSection from "../components/ServiceSection";
-  import DiseaseSelect from "../components/DiseaseSelect";
-  import useDebounce from "../hooks/useDebounce";
-  import { PAYMENT_TYPES } from "../utils/constants";
-  import {
-    useGetPatientsByUhidQuery,
-    useSearchUHIDQuery,
-    useGetComboQuery,
-    useCreateBillMutation,
-    useUpdateBillMutation,
-    useGetPatientDueQuery,
-    useGetServiceMastersQuery,
-    useGetOpdBillByIdQuery,
-  } from "../redux/apiSlice";
-  import { skipToken } from "@reduxjs/toolkit/query";
-  import { healthAlert } from "../utils/healthSwal";
-  import PrintOpdForm from "./PrintOpdForm";
-  import { useReactToPrint } from "react-to-print";
-  import { useLocation, useNavigate } from "react-router-dom";
-  import { useParams } from "react-router-dom";
-  import { Input, Select, Button, baseInput } from "../components/FormControls";
-  import { Picaso_Paymode_Options } from "../utils/constants";
-  import { cookie } from "../utils/cookie";
+import React, { useState, useEffect, useRef } from "react";
+import { Formik, useFormik } from "formik";
+import * as Yup from "yup";
+import {
+  ArrowPathIcon,
+  PrinterIcon,
+  CheckCircleIcon,
+  CreditCardIcon,
+  UserIcon,
+  ClipboardDocumentIcon,
+  DocumentCheckIcon,
+} from "@heroicons/react/24/outline";
+import ServiceSection from "../components/ServiceSection";
+import DiseaseSelect from "../components/DiseaseSelect";
+import useDebounce from "../hooks/useDebounce";
+import { PAYMENT_TYPES } from "../utils/constants";
+import {
+  useGetPatientsByUhidQuery,
+  useSearchUHIDQuery,
+  useGetComboQuery,
+  useCreateBillMutation,
+  useUpdateBillMutation,
+  useGetPatientDueQuery,
+  useGetServiceMastersQuery,
+  useGetOpdBillByIdQuery,
+} from "../redux/apiSlice";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { healthAlert } from "../utils/healthSwal";
+import PrintOpdForm from "./PrintOpdForm";
+import { useReactToPrint } from "react-to-print";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { Input, Select, Button, baseInput } from "../components/FormControls";
+import { Picaso_Paymode_Options } from "../utils/constants";
+import { cookie } from "../utils/cookie";
 
-  const OpdFormCopy = () => {
-    const userId = cookie.get("user_id");
-    const navigate = useNavigate();
-    const [activeStep, setActiveStep] = useState(1);
+const OpdFormCopy = () => {
+  const userId = cookie.get("user_id");
+  const navigate = useNavigate();
+  const [activeStep, setActiveStep] = useState(1);
 
-    const nextStep = async () => {
+  const nextStep = async () => {
 
-      const errors = await formik.validateForm();
+    const errors = await formik.validateForm();
 
-      if (
-        activeStep === 1 &&
-        (
-          errors.UHID ||
-          errors.Name ||
-          errors.Mobile ||
-          errors.Department ||
-          errors.Doctor
-        )
-      ) {
+    if (
+      activeStep === 1 &&
+      (
+        errors.UHID ||
+        errors.Name ||
+        errors.Mobile ||
+        errors.Department ||
+        errors.Doctor
+      )
+    ) {
+
+      formik.setTouched({
+        UHID: true,
+        Name: true,
+        Mobile: true,
+        Department: true,
+        Doctor: true,
+      });
+
+      return;
+    }
+
+    if (
+      activeStep === 2 &&
+      selectedServices.length === 0
+    ) {
+
+      healthAlert({
+        title: "Service Required",
+        text: "Please add at least one service",
+        icon: "warning",
+      });
+
+      return;
+    }
+
+
+    if (activeStep === 3) {
+
+      if (!formik.values.PayMode) {
 
         formik.setTouched({
-          UHID: true,
-          Name: true,
-          Mobile: true,
-          Department: true,
-          Doctor: true,
+          PayMode: true,
         });
 
-        return;
-      }
-
-      if (
-        activeStep === 2 &&
-        selectedServices.length === 0
-      ) {
-
         healthAlert({
-          title: "Service Required",
-          text: "Please add at least one service",
+          title: "Payment Mode Required",
+          text: "Please select payment mode",
           icon: "warning",
         });
 
         return;
       }
 
+      if (!formik.values.AdjustWithBalance) {
 
-      if (activeStep === 3) {
+        formik.setFieldTouched("AdjustWithBalance", true);
 
-    if (!formik.values.PayMode) {
+        healthAlert({
+          title: "Adjust With Balance Required",
+          text: "Please tick Adjust With Balance before continuing.",
+          icon: "warning",
+        });
 
-      formik.setTouched({
-        PayMode: true,
-      });
-
-      healthAlert({
-        title: "Payment Mode Required",
-        text: "Please select payment mode",
-        icon: "warning",
-      });
-
-      return;
+        return;
+      }
     }
+    setActiveStep((prev) => prev + 1);
+  };
 
-    if (!formik.values.AdjustWithBalance) {
+  const prevStep = () => setActiveStep((prev) => prev - 1);
+  const [isPaidManuallyEdited, setIsPaidManuallyEdited] = useState(false);
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [uhidSearch, setUhidSearch] = useState("");
+  const debouncedUhid = useDebounce(uhidSearch, 500);
+  const [selectedUhid, setSelectedUhid] = useState("");
+  const [suggestionsList, setSuggestionsList] = useState([]);
+  const { data: doctors, isLoading: doctorsComboLoading } =
+    useGetComboQuery("doctor");
 
-      formik.setFieldTouched("AdjustWithBalance", true);
+  const { data: department, isLoading: departmentComboLoading } =
+    useGetComboQuery("department");
+  const { data: collectedBy, isLoading: collectedComboLoading } =
+    useGetComboQuery("collectedBy");
+  const { data: paymode, isLoading: paymodeComboLoading } =
+    useGetComboQuery("paymode");
+  const location = useLocation();
+  const editData = location.state?.editData;
+  const { ID: billNo } = useParams();
+  const {
+    refetch,
+  } = useGetOpdBillByIdQuery(billNo, {
+    skip: !billNo,
+  });
+  const populatedUhidRef = useRef("");
 
-      healthAlert({
-        title: "Adjust With Balance Required",
-        text: "Please tick Adjust With Balance before continuing.",
-        icon: "warning",
-      });
+  const [printRow, setPrintRow] = useState(null);
+  const printRef = useRef();
+  useEffect(() => {
+    if (printRow && printRef.current) {
+      handlePrint();
 
-      return;
+      setTimeout(() => {
+        setPrintRow(null);
+      }, 300);
     }
-  }
-      setActiveStep((prev) => prev + 1);
-    };
+  }, [printRow]);
+  useEffect(() => {
+    if (billNo) {
+      refetch();
 
-    const prevStep = () => setActiveStep((prev) => prev - 1);
-    const [isPaidManuallyEdited, setIsPaidManuallyEdited] = useState(false);
-    const [selectedServices, setSelectedServices] = useState([]);
-    const [uhidSearch, setUhidSearch] = useState("");
-    const debouncedUhid = useDebounce(uhidSearch, 500);
-    const [selectedUhid, setSelectedUhid] = useState("");
-    const [suggestionsList, setSuggestionsList] = useState([]);
-    const { data: doctors, isLoading: doctorsComboLoading } =
-      useGetComboQuery("doctor");
-      
-    const { data: department, isLoading: departmentComboLoading } =
-      useGetComboQuery("department");
-    const { data: collectedBy, isLoading: collectedComboLoading } =
-      useGetComboQuery("collectedBy");
-    const { data: paymode, isLoading: paymodeComboLoading } =
-      useGetComboQuery("paymode");
-    const location = useLocation();
-    const editData = location.state?.editData;
-    const { ID: billNo } = useParams();
-    const {
-      refetch,
-    } = useGetOpdBillByIdQuery(billNo, {
-      skip: !billNo,
-    });
-    const populatedUhidRef = useRef("");
+    }
+  }, [billNo]);
 
-    const [printRow, setPrintRow] = useState(null);
-    const printRef = useRef();
-    useEffect(() => {
-      if (printRow && printRef.current) {
-        handlePrint();
+  const onPrintCS = (row) => {
+    setPrintRow(row);
+  };
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Opd",
+  });
+  // const [fetchDue] = useGetPatientDueQuery();
 
-        setTimeout(() => {
-          setPrintRow(null);
-        }, 300);
-      }
-    }, [printRow]);
-    useEffect(() => {
-      if (billNo) {
-        refetch();
-
-      }
-    }, [billNo]);
-
-    const onPrintCS = (row) => {
-      setPrintRow(row);
-    };
-    const handlePrint = useReactToPrint({
-      contentRef: printRef,
-      documentTitle: "Opd",
-    });
-    // const [fetchDue] = useGetPatientDueQuery();
-
-    const { data: patientData, isFetching } = useGetPatientsByUhidQuery(
-      selectedUhid && selectedUhid.trim() !== ""
-        ? { uhid: selectedUhid }
-        : skipToken,
-    );
-
-    const [createBill, { isLoading: isCreating, error: createError }] =
-      useCreateBillMutation();
-    const [updateBill] = useUpdateBillMutation();
-    const { data: suggestions = [] } = useSearchUHIDQuery(debouncedUhid, {
-      skip: debouncedUhid.length < 2,
-    });
-    const previousFetchDue = useGetPatientDueQuery(selectedUhid, {
-      skip: !selectedUhid || selectedUhid.trim() === "",
-    });
-
-    useEffect(() => {
-      if (!previousFetchDue?.data) return;
-
-      formik.setFieldValue(
-        "PreviousDue",
-        Number(previousFetchDue.data.PreviousDue || 0),
-      );
-    }, [previousFetchDue.data]);
-
-    useEffect(() => {
-      if (selectedUhid) return;
-      if (uhidSearch.length < 2) return;
-      const isSame =
-        suggestionsList.length === suggestions.length &&
-        suggestionsList.every(
-          (x, i) => x.external_id === suggestions[i].external_id,
-        );
-
-      if (!isSame) {
-        setSuggestionsList(suggestions);
-      }
-    }, [suggestions, selectedUhid, uhidSearch]);
-    const { data: allServices = [] } = useGetServiceMastersQuery("");
-    useEffect(() => {
-      if (editData && department && doctors && paymode) {
-        setUhidSearch(editData.uhid || "");
-        // setIsPaidManuallyEdited(true);
-        setSelectedUhid(editData.uhid || "");
-        populatedUhidRef.current = editData.uhid || "";
-        const deptObj = department.find(
-          (d) => d.name === editData.department_name,
-        );
-        const docObj = doctors.find(
-          (d) => (d.name || d.doctor_name) === editData.doctor_name,
-        );
-      const mode = editData.payment_mode
-    ?.toString()
-    .toLowerCase()
-    .trim();
-
-  const payObj = Picaso_Paymode_Options.find(
-    (p) =>
-      p.name?.toLowerCase().trim() === mode
+  const { data: patientData, isFetching } = useGetPatientsByUhidQuery(
+    selectedUhid && selectedUhid.trim() !== ""
+      ? { uhid: selectedUhid }
+      : skipToken,
   );
 
-        formik.setValues({
-          ...formik.initialValues,
-          UHID: editData.uhid || "",
-          Name: editData.patient_name || "",
-          Mobile: editData.contactNumber || "",
-          Gender: editData.gender || "",
-          Age: editData.age || "",
-          Department: deptObj ? deptObj.id : 0,
-          Doctor: docObj ? docObj.id : 0,
-          ReferBy: editData.ReferTo || "",
-          FinCategory: editData.patient_type || "",
-          TotalAmount: editData.TotalServiceAmount || 0,
-          PaidAmount: editData.PaidAmount || 0,
-          DueAmount: editData.DueAmount || 0,
-          PayMode: payObj ? payObj.id : "",
-          CashAmount: editData.CashAmount || 0,
-          CardAmount: editData.CardAmount || 0,
-          // VisitType: editData.VisitType || "N/A",
-          ChiefComplaint: editData.complaint
-            ? editData.complaint.split(",").map((c) => ({ name: c.trim() }))
+  const [createBill, { isLoading: isCreating, error: createError }] =
+    useCreateBillMutation();
+  const [updateBill] = useUpdateBillMutation();
+  const { data: suggestions = [] } = useSearchUHIDQuery(debouncedUhid, {
+    skip: debouncedUhid.length < 2,
+  });
+  const previousFetchDue = useGetPatientDueQuery(selectedUhid, {
+    skip: !selectedUhid || selectedUhid.trim() === "",
+  });
 
-            : [],
-        });
-        if (editData.opd_billing_data) {
-          const mapped = editData.opd_billing_data.map((s) => {
-            const found = allServices.find(
-              (x) => x.ServiceName === s.ServiceName,
-            );
+  useEffect(() => {
+    if (!previousFetchDue?.data) return;
 
-            return {
-              id: found?.ID || 0,
-              type: found?.ServiceType || "General",
-              name: s.ServiceName,
-              price: s.ServiceAmount,
-              quantity: s.Qty || 1,
-              HospitalID: found?.HospitalID || 1,
-              ServiceTypeID: found?.ServiceTypeID || 1,
-            };
-          });
-          setSelectedServices(mapped);
-        }
-      }
-    }, [editData, department, doctors, paymode, allServices]);
+    formik.setFieldValue(
+      "PreviousDue",
+      Number(previousFetchDue.data.PreviousDue || 0),
+    );
+  }, [previousFetchDue.data]);
 
-    const parseDOB = (raw) => {
-      if (!raw) return "";
-
-      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-        return raw;
-      }
-
-      if (/^\d{2}-\d{2}-\d{4}$/.test(raw)) {
-        const [dd, mm, yyyy] = raw.split("-");
-        return `${yyyy}-${mm}-${dd}`;
-      }
-
-      return "";
-    };
-
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth();
-    const buildPayload = (values) => {
-      const pData = patientData || editData;
-      if (!pData || !selectedServices.length) return null;
-      const finalAmount = selectedServices.reduce(
-        (sum, s) =>
-          sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
-        0,
+  useEffect(() => {
+    if (selectedUhid) return;
+    if (uhidSearch.length < 2) return;
+    const isSame =
+      suggestionsList.length === suggestions.length &&
+      suggestionsList.every(
+        (x, i) => x.external_id === suggestions[i].external_id,
       );
-      const chiefComplaintStr =
-        Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
-          ? values.ChiefComplaint.map((e) => e.name).join(", ")
-          : "";
-      const header = {
-        PatientID: pData.PatientID || pData.id,
-        PicasoNo: values.UHID,
-        Mobile: values.Mobile,
-        ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
-        PatientType: values.FinCategory == "BPL" ? 1 : 2,
-        PaidAmount: Number(values.PaidAmount || 0),
-        CashAmount: Number(values.CashAmount || 0),
-        CardAmount: Number(values.CardAmount || 0),
-        PayMode: Number(values.PayMode),
-        DueAmount: Number(values.DueAmount || 0),
 
-        AddedBy: userId,
-        DepartmentID: values.Department,
-        ConsultantDoctorID: Number(values.Doctor),
-        DoctorId: Number(values.Doctor),
-        TotalServiceAmount: finalAmount,
-        HospitalID: selectedServices[0]?.HospitalID || 1,
-        FinancialYearID: currentYear,
+    if (!isSame) {
+      setSuggestionsList(suggestions);
+    }
+  }, [suggestions, selectedUhid, uhidSearch]);
+  const { data: allServices = [] } = useGetServiceMastersQuery("");
+  useEffect(() => {
+    if (editData && department && doctors && paymode) {
+      setUhidSearch(editData.uhid || "");
+      // setIsPaidManuallyEdited(true);
+      setSelectedUhid(editData.uhid || "");
+      populatedUhidRef.current = editData.uhid || "";
+      const deptObj = department.find(
+        (d) => d.name === editData.department_name,
+      );
+     
+  const doctorObj =
+  doctors?.find((d) => d.id === editData.DoctorId) ||
+  doctors?.find((d) => d.id === Number(editData.DoctorId)) ||
+  doctors?.find(
+    (d) =>
+      (d.name || d.doctor_name)?.trim().toLowerCase() ===
+      editData.doctor_name?.trim().toLowerCase()
+  );
 
-        CenterID: userId,
-        ReferTo: Number(values.ReferBy || 0),
-        IsActive: true,
-        complaint: chiefComplaintStr,
-      };
+const referObj =
+  doctors?.find((d) => d.id === editData.ReferTo) ||
+  doctors?.find((d) => d.id === Number(editData.ReferTo)) ||
+  doctors?.find(
+    (d) =>
+      (d.name || d.doctor_name)?.trim().toLowerCase() ===
+      editData.refer_to?.trim().toLowerCase()
+  );
 
-      const details = selectedServices.map((s) => ({
-        ServiceTypeID: s.ServiceTypeID || 1,
-        ServiceID: Number(s.id),
-        ServiceName: s.name,
-        ServiceAmount: Number(s.price),
-        Qty: Number(s.quantity || 1),
-        HospitalID: Number(s.HospitalID),
-        FinancialYearID: currentYear,
-        PatientID: pData.PatientID || pData.id,
-        NetServiceAmount: Number(s.quantity * s.price),
-        PicasoNo: values.UHID || pData.external_id,
-        HospitalCharge: 0,
-        DoctorCharge: 0,
-        Discount: 0,
-        Isdiscount: false,
-        DiscountBy: 0,
-        DoctorID: Number(values.Doctor),
+      const mode = editData.payment_mode
+        ?.toString()
+        .toLowerCase()
+        .trim();
 
-        AddedBy: userId,
-        MonthID: currentMonth,
-        IsActive: true,
-      }));
+      const payObj = Picaso_Paymode_Options.find(
+        (p) =>
+          p.name?.toLowerCase().trim() === mode
+      );
 
-      return { header, details };
+      formik.setValues({
+        
+        ...formik.initialValues,
+        UHID: editData.uhid || "",
+        Name: editData.patient_name || "",
+        Mobile: editData.contactNumber || "",
+        Gender: editData.gender || "",
+        Age: editData.age || "",
+        Department: deptObj ? deptObj.id : 0,
+    Doctor: doctorObj?.id || "",      
+      ReferBy: referObj?.id || "",
+        FinCategory: editData.patient_type || "",
+        TotalAmount: editData.TotalServiceAmount || 0,
+        PaidAmount: editData.PaidAmount || 0,
+        DueAmount: editData.DueAmount || 0,
+        PayMode: payObj ? payObj.id : "",
+        CashAmount: editData.CashAmount || 0,
+        CardAmount: editData.CardAmount || 0,
+        // VisitType: editData.VisitType || "N/A",
+        ChiefComplaint: editData.complaint
+          ? editData.complaint.split(",").map((c) => ({ name: c.trim() }))
+
+          : [],
+      });
+      if (editData.opd_billing_data) {
+        const mapped = editData.opd_billing_data.map((s) => {
+          const found = allServices.find(
+            (x) => x.ServiceName === s.ServiceName,
+          );
+
+          return {
+            id: found?.ID || 0,
+            type: found?.ServiceType || "General",
+            name: s.ServiceName,
+            price: s.ServiceAmount,
+            quantity: s.Qty || 1,
+            HospitalID: found?.HospitalID || 1,
+            ServiceTypeID: found?.ServiceTypeID || 1,
+          };
+        });
+        setSelectedServices(mapped);
+      }
+    }
+  }, [editData, department, doctors, paymode, allServices]);
+
+  const parseDOB = (raw) => {
+    if (!raw) return "";
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return raw;
+    }
+
+    if (/^\d{2}-\d{2}-\d{4}$/.test(raw)) {
+      const [dd, mm, yyyy] = raw.split("-");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    return "";
+  };
+
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  const buildPayload = (values) => {
+    const pData = patientData || editData;
+    if (!pData || !selectedServices.length) return null;
+    const finalAmount = selectedServices.reduce(
+      (sum, s) =>
+        sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
+      0,
+    );
+    const chiefComplaintStr =
+      Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
+        ? values.ChiefComplaint.map((e) => e.name).join(", ")
+        : "";
+    //      const referDoctorName =
+    // doctors?.find((d) => d.id == values.ReferBy)?.name ||
+    // doctors?.find((d) => d.id == values.ReferBy)?.doctor_name ||
+    // "";
+    const header = {
+      PatientID: pData.PatientID || pData.id,
+      PicasoNo: values.UHID,
+      Mobile: values.Mobile,
+      ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
+      PatientType: values.FinCategory == "BPL" ? 1 : 2,
+      PaidAmount: Number(values.PaidAmount || 0),
+      CashAmount: Number(values.CashAmount || 0),
+      CardAmount: Number(values.CardAmount || 0),
+      PayMode: Number(values.PayMode),
+      DueAmount: Number(values.DueAmount || 0),
+
+      AddedBy: userId,
+      DepartmentID: values.Department,
+      ConsultantDoctorID: Number(values.Doctor),
+      DoctorId: Number(values.Doctor),
+      TotalServiceAmount: finalAmount,
+      HospitalID: selectedServices[0]?.HospitalID || 1,
+      FinancialYearID: currentYear,
+
+      CenterID: userId,
+      ReferTo: Number(values.ReferBy) || null,
+      IsActive: true,
+      complaint: chiefComplaintStr,
     };
 
-    const formik = useFormik({
-      initialValues: {
-        UHID: "",
-        CenterName: "",
-        diseases: [],
-        Name: "",
-        Mobile: "",
-        Gender: "",
-        Age: "",
-        DOB: "",
-        Department: 0,
-        Doctor: 0,
-        FinCategory: "",
-        ReferBy: "",
-        // VisitType: "",
-        LastVisitDate: "",
-        Quantity: 1,
-        ServiceName: "",
-        PreviousDue: 0,
-        TotalAmount: 0,
-        PaidAmount: 0,
-        CreditBalance: 0,
-        AdjustWithBalance: false,
+    const details = selectedServices.map((s) => ({
+      ServiceTypeID: s.ServiceTypeID || 1,
+      ServiceID: Number(s.id),
+      ServiceName: s.name,
+      ServiceAmount: Number(s.price),
+      Qty: Number(s.quantity || 1),
+      HospitalID: Number(s.HospitalID),
+      FinancialYearID: currentYear,
+      PatientID: pData.PatientID || pData.id,
+      NetServiceAmount: Number(s.quantity * s.price),
+      PicasoNo: values.UHID || pData.external_id,
+      HospitalCharge: 0,
+      DoctorCharge: 0,
+      Discount: 0,
+      Isdiscount: false,
+      DiscountBy: 0,
+      DoctorID: Number(values.Doctor),
 
-        DueAmount: 0,
-        PayMode: "",
-        CashAmount: 0,
-        CardAmount: 0,
-      },
-      validationSchema: Yup.object({
-        UHID: Yup.string().required("UHID is required"),
-        Name: Yup.string().required("Name is required"),
-        Mobile: Yup.string()
-          .matches(/^[0-9]{10}$/, "Must be 10 digits")
-          .required("Mobile is required"),
+      AddedBy: userId,
+      MonthID: currentMonth,
+      IsActive: true,
+    }));
 
-        Department: Yup.number()
-          .min(1, "Department is required")
-          .required("Department is required"),
+    return { header, details };
+  };
 
-        Doctor: Yup.number()
-          .min(1, "Consulting doctor is required")
-          .required("Consulting doctor is required"),
-        PayMode: Yup.string().required("Payment Mode is required"),
-      }),
+  const formik = useFormik({
+    initialValues: {
+      UHID: "",
+      CenterName: "",
+      diseases: [],
+      Name: "",
+      Mobile: "",
+      Gender: "",
+      Age: "",
+      DOB: "",
+      Department: 0,
+      Doctor: 0,
+      FinCategory: "",
+      ReferBy: "",
+      // VisitType: "",
+      LastVisitDate: "",
+      Quantity: 1,
+      ServiceName: "",
+      PreviousDue: 0,
+      TotalAmount: 0,
+      PaidAmount: 0,
+      CreditBalance: 0,
+      AdjustWithBalance: false,
 
-      onSubmit: async (values) => {
-        if (!values.PayMode || values.PayMode === "") {
+      DueAmount: 0,
+      PayMode: "",
+      CashAmount: 0,
+      CardAmount: 0,
+    },
+    validationSchema: Yup.object({
+      UHID: Yup.string().required("UHID is required"),
+      Name: Yup.string().required("Name is required"),
+      Mobile: Yup.string()
+        .matches(/^[0-9]{10}$/, "Must be 10 digits")
+        .required("Mobile is required"),
+
+      Department: Yup.number()
+        .min(1, "Department is required")
+        .required("Department is required"),
+
+      Doctor: Yup.number()
+        .min(1, "Consulting doctor is required")
+        .required("Consulting doctor is required"),
+      PayMode: Yup.string().required("Payment Mode is required"),
+    }),
+
+    onSubmit: async (values) => {
+      if (!values.PayMode || values.PayMode === "") {
+        healthAlert({
+          title: "Payment Mode Required",
+          text: "Please select a Payment Mode before saving the bill.",
+          icon: "warning",
+          confirmButtonColor: "#0ea5e9",
+        });
+        return;
+      }
+      try {
+        const payload = buildPayload(values);
+        if (!payload) {
           healthAlert({
-            title: "Payment Mode Required",
-            text: "Please select a Payment Mode before saving the bill.",
-            icon: "warning",
-            confirmButtonColor: "#0ea5e9",
+            title: "OPD Billing",
+            text: "Service or Patient detail missing please verify before proceeding.",
+            icon: "error",
           });
           return;
         }
-        try {
-          const payload = buildPayload(values);
-          if (!payload) {
-            healthAlert({
-              title: "OPD Billing",
-              text: "Service or Patient detail missing please verify before proceeding.",
-              icon: "error",
-            });
-            return;
-          }
-          if (editData && billNo) {
-            await updateBill({
-              id: Number(billNo),
-              data: payload,
-            }).unwrap();
-          } else {
-            await createBill(payload).unwrap();
-          }
-          healthAlert({
-            title: "OPD Billing",
-            text: editData ? "Updated Successfully" : "Saved Successfully",
-            icon: "success",
-          });
-          handleFormReset();
-          navigate("/opd-list");
-        } catch (err) {
-          healthAlert({
-            title: "OPD Billing",
-            text: err?.data?.message,
-            icon: "error",
-          });
+        if (editData && billNo) {
+          await updateBill({
+            id: Number(billNo),
+            data: payload,
+          }).unwrap();
+        } else {
+          await createBill(payload).unwrap();
         }
-      },
-    });
-    const handleFormReset = () => {
-      formik.resetForm();
-      setSelectedServices([]);
-      setUhidSearch("");
-      setSelectedUhid("");
-      setSuggestionsList([]);
-      populatedUhidRef.current = "";
-      setIsPaidManuallyEdited(false);
-      
+        healthAlert({
+          title: "OPD Billing",
+          text: editData ? "Updated Successfully" : "Saved Successfully",
+          icon: "success",
+        });
+        handleFormReset();
+        navigate("/opd-list");
+      } catch (err) {
+        healthAlert({
+          title: "OPD Billing",
+          text: err?.data?.message,
+          icon: "error",
+        });
+      }
+    },
+  });
+  const handleFormReset = () => {
+    formik.resetForm();
+    setSelectedServices([]);
+    setUhidSearch("");
+    setSelectedUhid("");
+    setSuggestionsList([]);
+    populatedUhidRef.current = "";
+    setIsPaidManuallyEdited(false);
+
+  };
+
+  useEffect(() => {
+    if (Object.keys(formik.errors).length > 0) {
+    }
+  }, [formik.errors]);
+
+  useEffect(() => {
+    if (!patientData) return;
+    if (patientData.external_id !== selectedUhid) return;
+    if (populatedUhidRef.current === selectedUhid) return;
+    populatedUhidRef.current = selectedUhid;
+    const updates = {
+      UHID: patientData.external_id,
+      Name: patientData.name || "",
+      Gender: patientData.gender || "",
+      Mobile: patientData.contactNumber || "",
+      FinCategory: patientData.category || "",
+      LastVisitDate: patientData.createdAt
+        ? new Date(patientData.createdAt).toISOString().split("T")[0]
+        : "",
+      PreviousDue: previousFetchDue?.data?.PreviousDue || 0,
+      // VisitType: patientData?.VisitType || "N/A"
     };
 
-    useEffect(() => {
-      if (Object.keys(formik.errors).length > 0) {
-      }
-    }, [formik.errors]);
+    if (patientData.dateOfBirthOrAge) {
+      const dobValue = parseDOB(patientData.dateOfBirthOrAge);
+      updates.DOB = dobValue;
 
-    useEffect(() => {
-      if (!patientData) return;
-      if (patientData.external_id !== selectedUhid) return;
-      if (populatedUhidRef.current === selectedUhid) return;
-      populatedUhidRef.current = selectedUhid;
-      const updates = {
-        UHID: patientData.external_id,
-        Name: patientData.name || "",
-        Gender: patientData.gender || "",
-        Mobile: patientData.contactNumber || "",
-        FinCategory: patientData.category || "",
-        LastVisitDate: patientData.createdAt
-          ? new Date(patientData.createdAt).toISOString().split("T")[0]
-          : "",
-        PreviousDue: previousFetchDue?.data?.PreviousDue || 0,
-        // VisitType: patientData?.VisitType || "N/A"
-      };
-
-      if (patientData.dateOfBirthOrAge) {
-        const dobValue = parseDOB(patientData.dateOfBirthOrAge);
-        updates.DOB = dobValue;
-
-        const dob = new Date(dobValue);
-        const today = new Date();
-        let years = today.getFullYear() - dob.getFullYear();
-        let months = today.getMonth() - dob.getMonth();
-        let days = today.getDate() - dob.getDate();
-
-        if (days < 0) {
-          months -= 1;
-          days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-        }
-        if (months < 0) {
-          years -= 1;
-          months += 12;
-        }
-
-        updates.Age = `${years}y ${months}m ${days}d`;
-      }
-      formik.setValues({ ...formik.values, ...updates }, false);
-    }, [patientData, selectedUhid]);
-
-    const handleDOBChange = (e) => {
-      formik.handleChange(e);
-      const dob = new Date(e.target.value);
+      const dob = new Date(dobValue);
       const today = new Date();
       let years = today.getFullYear() - dob.getFullYear();
       let months = today.getMonth() - dob.getMonth();
       let days = today.getDate() - dob.getDate();
+
       if (days < 0) {
         months -= 1;
         days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
@@ -515,223 +515,244 @@
         years -= 1;
         months += 12;
       }
-      const ageString = `${years}y ${months}m ${days}d`;
-      formik.setFieldValue("Age", ageString);
-    };
 
-    // Future logic for the calcuation of due
-    // useEffect(() => {
-    //   const total = Number(formik.values.TotalAmount) || 0;
-    //   const paid = Number(formik.values.PaidAmount) || 0;
-    //   const due = total - paid;
-    //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
-    // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
+      updates.Age = `${years}y ${months}m ${days}d`;
+    }
+    formik.setValues({ ...formik.values, ...updates }, false);
+  }, [patientData, selectedUhid]);
 
-    useEffect(() => {
-      const total = Number(formik.values.TotalAmount) || 0;
-      const paid = Number(formik.values.PaidAmount) || 0;
-      const credit = Number(formik.values.CreditBalance) || 0;
-      const isAdjusting = formik.values.AdjustWithBalance;
-      if (isAdjusting) {
-        let due = total - paid - credit;
-        if (due < 0) due = 0;
-        formik.setFieldValue("DueAmount", due.toFixed(2));
-        const amountBeingPaid = paid.toString();
-        if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
+  const handleDOBChange = (e) => {
+    formik.handleChange(e);
+    const dob = new Date(e.target.value);
+    const today = new Date();
+    let years = today.getFullYear() - dob.getFullYear();
+    let months = today.getMonth() - dob.getMonth();
+    let days = today.getDate() - dob.getDate();
+    if (days < 0) {
+      months -= 1;
+      days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    }
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+    const ageString = `${years}y ${months}m ${days}d`;
+    formik.setFieldValue("Age", ageString);
+  };
 
-  // Cash Payment
-  formik.setFieldValue("CashAmount", amountBeingPaid);
-  formik.setFieldValue("CardAmount", "0");
+  // Future logic for the calcuation of due
+  // useEffect(() => {
+  //   const total = Number(formik.values.TotalAmount) || 0;
+  //   const paid = Number(formik.values.PaidAmount) || 0;
+  //   const due = total - paid;
+  //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
+  // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
 
-} else if (formik.values.PayMode === "3") {
+  useEffect(() => {
+    const total = Number(formik.values.TotalAmount) || 0;
+    const paid = Number(formik.values.PaidAmount) || 0;
+    const credit = Number(formik.values.CreditBalance) || 0;
+    const isAdjusting = formik.values.AdjustWithBalance;
+    if (isAdjusting) {
+      let due = total - paid - credit;
+      if (due < 0) due = 0;
+      formik.setFieldValue("DueAmount", due.toFixed(2));
+      const amountBeingPaid = paid.toString();
+      if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
 
-  // Cash/Online Payment
-  // user manually fill karega
-  // kuch auto set nahi hoga
+        // Cash Payment
+        formik.setFieldValue("CashAmount", amountBeingPaid);
+        formik.setFieldValue("CardAmount", "0");
 
-} else {
+      } else if (formik.values.PayMode === "3") {
 
-  // Card / UPI / Online
-  formik.setFieldValue("CardAmount", amountBeingPaid);
-  formik.setFieldValue("CashAmount", "0");
-}
+        // Cash/Online Payment
+        // user manually fill karega
+        // kuch auto set nahi hoga
+
       } else {
-        formik.setFieldValue("DueAmount", "0.00");
-        const amountBeingPaid = paid.toString();
-        if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
 
-  // Cash Payment
-  formik.setFieldValue("CashAmount", amountBeingPaid);
-  formik.setFieldValue("CardAmount", "0");
-
-} else if (formik.values.PayMode === "3") {
-
-  // Cash/Online Payment
-  // user manually fill karega
-  // kuch auto set nahi hoga
-
-} else {
-
-  // Card / UPI / Online
-  formik.setFieldValue("CardAmount", amountBeingPaid);
-  formik.setFieldValue("CashAmount", "0");
-}
+        // Card / UPI / Online
+        formik.setFieldValue("CardAmount", amountBeingPaid);
+        formik.setFieldValue("CashAmount", "0");
       }
-    }, [
-      formik.values.AdjustWithBalance,
-      formik.values.TotalAmount,
-      formik.values.PaidAmount,
-      formik.values.CreditBalance,
-      formik.values.PayMode,
-    ]);
+    } else {
+      formik.setFieldValue("DueAmount", "0.00");
+      const amountBeingPaid = paid.toString();
+      if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
 
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-center mb-10">
-            <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
-              <span className="bg-blue-100 p-2 rounded-xl">
-                <CreditCardIcon className="w-6 text-blue-600" />
-              </span>
+        // Cash Payment
+        formik.setFieldValue("CashAmount", amountBeingPaid);
+        formik.setFieldValue("CardAmount", "0");
+
+      } else if (formik.values.PayMode === "3") {
+
+        // Cash/Online Payment
+        // user manually fill karega
+        // kuch auto set nahi hoga
+
+      } else {
+
+        // Card / UPI / Online
+        formik.setFieldValue("CardAmount", amountBeingPaid);
+        formik.setFieldValue("CashAmount", "0");
+      }
+    }
+  }, [
+    formik.values.AdjustWithBalance,
+    formik.values.TotalAmount,
+    formik.values.PaidAmount,
+    formik.values.CreditBalance,
+    formik.values.PayMode,
+  ]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-10">
+          <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+            <span className="bg-blue-100 p-2 rounded-xl">
+              <CreditCardIcon className="w-6 text-blue-600" />
+            </span>
 
 
-              {editData ? "Edit OPD Billing" : "OPD Billing"}
-            </h1>
+            {editData ? "Edit OPD Billing" : "OPD Billing"}
+          </h1>
 
-            <div className="flex gap-2">
-              {[1, 2, 3, 4].map((s) => (
-                <div
-                  key={s}
-                  className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                    }`}
-                />
-              ))}
-            </div>
+          <div className="flex gap-2">
+            {[1, 2, 3, 4].map((s) => (
+              <div
+                key={s}
+                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                  }`}
+              />
+            ))}
           </div>
-          <div className="bg-white rounded-3xl shadow-xl shadow-blue-100 border border-gray-100 overflow-hidden">
-            <div className="flex border-b">
-              {[
-                { id: 1, label: "Patient", icon: UserIcon },
-                { id: 2, label: "Services", icon: ClipboardDocumentIcon },
-                { id: 3, label: "Billing", icon: CreditCardIcon },
-                { id: 4, label: "Confirm", icon: DocumentCheckIcon },
-              ].map((step) => (
-                <button
-                  key={step.id}
-                  type="button"
-                  disabled
-                  onClick={() => setActiveStep(step.id)}
-                  className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold 
+        </div>
+        <div className="bg-white rounded-3xl shadow-xl shadow-blue-100 border border-gray-100 overflow-hidden">
+          <div className="flex border-b">
+            {[
+              { id: 1, label: "Patient", icon: UserIcon },
+              { id: 2, label: "Services", icon: ClipboardDocumentIcon },
+              { id: 3, label: "Billing", icon: CreditCardIcon },
+              { id: 4, label: "Confirm", icon: DocumentCheckIcon },
+            ].map((step) => (
+              <button
+                key={step.id}
+                type="button"
+                disabled
+                onClick={() => setActiveStep(step.id)}
+                className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold 
                                       ${activeStep === step.id
-                      ? "bg-white text-sky-600 shadow"
-                      : "text-gray-400"
-                    }`}
-                >
-                  <step.icon className="w-4 h-4" />
-
-                  {step.label}
-                </button>
-              ))}
-            </div>
-            <div className="p-10">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                }}
-                className="space-y-5"
+                    ? "bg-white text-sky-600 shadow"
+                    : "text-gray-400"
+                  }`}
               >
-                {activeStep === 1 && (
-                  <section>
-                    <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-                      <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
-                      Patient Details
-                    </h3>
+                <step.icon className="w-4 h-4" />
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div className="relative">
+                {step.label}
+              </button>
+            ))}
+          </div>
+          <div className="p-10">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+              }}
+              className="space-y-5"
+            >
+              {activeStep === 1 && (
+                <section>
+                  <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                    Patient Details
+                  </h3>
 
-
-                        <Input
-                          label="UHID"
-                          required
-                          type="text"
-                          placeholder="Search UHID (e.g., LMC-123)"
-                          value={uhidSearch || formik.values.UHID}
-                          readOnly={!!editData}
-                          className={editData ? "bg-sky-50 cursor-not-allowed" : ""}
-                          onBlur={() => formik.setFieldTouched("UHID", true)}
-                          onChange={(e) => {
-                            const val = e.target.value.toUpperCase();
-
-                            setUhidSearch(val);
-                            setSelectedUhid("");
-
-                            formik.setFieldValue("UHID", "");
-                            setSuggestionsList([]);
-
-                            populatedUhidRef.current = "";
-                          }}
-                          error={formik.touched.UHID && formik.errors.UHID}
-                          autoComplete="off"
-                        />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="relative">
 
 
-                        {suggestionsList.length > 0 && uhidSearch.length >= 2 && (
-                          <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
-                            {suggestionsList.map((item) => (
-                              <li
-                                key={item.external_id}
-                                onClick={() => {
-                                  setSelectedUhid(item.external_id);
-                                  formik.setFieldValue("UHID", item.external_id);
-                                  setUhidSearch(item.external_id);
-                                  setSuggestionsList([]);
-                                }}
-                                className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
-                              >
-                                {item.external_id}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-
-                      <DiseaseSelect
-                        label="Complaint"
-                        value={formik.values.ChiefComplaint}
-                        onChange={(selected) =>
-                          formik.setFieldValue("ChiefComplaint", selected)
-                        }
+                      <Input
+                        label="UHID"
                         required
-                        allowManualAdd={true}
+                        type="text"
+                        placeholder="Search UHID (e.g., LMC-123)"
+                        value={uhidSearch || formik.values.UHID}
+                        readOnly={!!editData}
+                        className={editData ? "bg-sky-50 cursor-not-allowed" : ""}
+                        onBlur={() => formik.setFieldTouched("UHID", true)}
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase();
+
+                          setUhidSearch(val);
+                          setSelectedUhid("");
+
+                          formik.setFieldValue("UHID", "");
+                          setSuggestionsList([]);
+
+                          populatedUhidRef.current = "";
+                        }}
+                        error={formik.touched.UHID && formik.errors.UHID}
+                        autoComplete="off"
                       />
 
-                      <Input
-                        label="Name"
-                        {...formik.getFieldProps("Name")}
-                        readOnly
-                        className="bg-sky-50 cursor-not-allowed"
-                      />
-                      <Input
-                        label={
-                          <span>
-                            Mobile <span className="text-red-500">*</span>
-                          </span>
-                        }
-                        {...formik.getFieldProps("Mobile")}
-                        readOnly
-                        className="bg-sky-50 cursor-not-allowed"
-                        error={formik.touched.Mobile && formik.errors.Mobile}
-                      />
 
-                      <Input
-                        label="Gender"
-                        {...formik.getFieldProps("Gender")}
-                        readOnly
-                        className="bg-sky-50 cursor-not-allowed"
-                      ></Input>
+                      {suggestionsList.length > 0 && uhidSearch.length >= 2 && (
+                        <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                          {suggestionsList.map((item) => (
+                            <li
+                              key={item.external_id}
+                              onClick={() => {
+                                setSelectedUhid(item.external_id);
+                                formik.setFieldValue("UHID", item.external_id);
+                                setUhidSearch(item.external_id);
+                                setSuggestionsList([]);
+                              }}
+                              className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
+                            >
+                              {item.external_id}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
 
-                      {/* <Input
+                    <DiseaseSelect
+                      label="Complaint"
+                      value={formik.values.ChiefComplaint}
+                      onChange={(selected) =>
+                        formik.setFieldValue("ChiefComplaint", selected)
+                      }
+                      required
+                      allowManualAdd={true}
+                    />
+
+                    <Input
+                      label="Name"
+                      {...formik.getFieldProps("Name")}
+                      readOnly
+                      className="bg-sky-50 cursor-not-allowed"
+                    />
+                    <Input
+                      label={
+                        <span>
+                          Mobile <span className="text-red-500">*</span>
+                        </span>
+                      }
+                      {...formik.getFieldProps("Mobile")}
+                      readOnly
+                      className="bg-sky-50 cursor-not-allowed"
+                      error={formik.touched.Mobile && formik.errors.Mobile}
+                    />
+
+                    <Input
+                      label="Gender"
+                      {...formik.getFieldProps("Gender")}
+                      readOnly
+                      className="bg-sky-50 cursor-not-allowed"
+                    ></Input>
+
+                    {/* <Input
                                               label="Date of Birth"
                                               type="date"
                                               {...formik.getFieldProps("DOB")}
@@ -740,69 +761,69 @@
                                               onChange={handleDOBChange}
                                               max={new Date().toISOString().split("T")[0]}
                                           /> */}
-                      <Input
-                        label="Age"
-                        {...formik.getFieldProps("Age")}
-                        readOnly
-                        className="bg-sky-50 cursor-not-allowed"
-                      />
+                    <Input
+                      label="Age"
+                      {...formik.getFieldProps("Age")}
+                      readOnly
+                      className="bg-sky-50 cursor-not-allowed"
+                    />
 
-                      <Select
-                        {...formik.getFieldProps("Department")}
-                        label={
-                          <span>
-                            Department <span className="text-red-500">*</span>
-                          </span>
-                        }
-                        error={
-                          formik.touched.Department && formik.errors.Department
-                        }
-                      >
-                        <option value="">Select Department</option>
-                        {department?.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name}
-                          </option>
-                        ))}
-                      </Select>
+                    <Select
+                      {...formik.getFieldProps("Department")}
+                      label={
+                        <span>
+                          Department <span className="text-red-500">*</span>
+                        </span>
+                      }
+                      error={
+                        formik.touched.Department && formik.errors.Department
+                      }
+                    >
+                      <option value="">Select Department</option>
+                      {department?.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </Select>
 
-                      <Select
-                        {...formik.getFieldProps("Doctor")}
-                        label={
-                          <span>
-                            Doctor <span className="text-red-500">*</span>
-                          </span>
-                        }
-                        error={formik.touched.Doctor && formik.errors.Doctor}
-                      >
-                        <option value="">Consulting Doctor</option>
-                        {doctors?.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name || d.doctor_name}
-                          </option>
-                        ))}
-                      </Select>
+                    <Select
+                      {...formik.getFieldProps("Doctor")}
+                      label={
+                        <span>
+                          Doctor <span className="text-red-500">*</span>
+                        </span>
+                      }
+                      error={formik.touched.Doctor && formik.errors.Doctor}
+                    >
+                      <option value="">Consulting Doctor</option>
+                      {doctors?.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name || d.doctor_name}
+                        </option>
+                      ))}
+                    </Select>
 
-                      <Input
-                        {...formik.getFieldProps("FinCategory")}
-                        className="bg-sky-50 cursor-not-allowed"
-                        label="Category"
-                        readOnly
-                      ></Input>
+                    <Input
+                      {...formik.getFieldProps("FinCategory")}
+                      className="bg-sky-50 cursor-not-allowed"
+                      label="Category"
+                      readOnly
+                    ></Input>
 
-                      <Select
-                        {...formik.getFieldProps("ReferBy")}
-                        label="Refer By"
-                      >
-                        <option value="">Refer By</option>
-                        {collectedBy?.map((u) => (
-                          <option key={u.id} value={u.id}>
-                            {u.name}
-                          </option>
-                        ))}
-                      </Select>
+                    <Select
+                      {...formik.getFieldProps("ReferBy")}
+                      label="Refer To"
+                    >
+                      <option value="">Refer To</option>
+                      {doctors?.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name || d.doctor_name}
+                        </option>
+                      ))}
+                    </Select>
 
-                      {/* <Input
+                    {/* <Input
                 label="Visit Type"
                 {...formik.getFieldProps("VisitType")}
                 className="bg-gray-100 cursor-not-allowed"
@@ -810,7 +831,7 @@
               >
               </Input> */}
 
-                      {/* <Input
+                    {/* <Input
                                               label="Last Visit Date"
                                               type="date"
                                               {...formik.getFieldProps("LastVisitDate")}
@@ -818,592 +839,595 @@
                                               className="bg-sky-50 cursor-not-allowed"
                                               readOnly
                                           /> */}
-                    </div>
-                  </section>
-                )}
-                {activeStep === 2 && (
-                  <section>
-                    <ServiceSection
-                      selectedServices={selectedServices}
-                      setSelectedServices={setSelectedServices}
-                      department={formik.values.Department}
-                      consultingDoctor={formik.values.Doctor}
-                      payMode={formik.values.PayMode}
-                      setBillingTotals={(total) => {
-                        const amount = Number(total || 0);
-                        formik.setFieldValue("TotalAmount", amount);
-                        if (!editData && !isPaidManuallyEdited) {
-                          formik.setFieldValue("PaidAmount", amount);
-                          // if (
-                          //   formik.values.PayMode === "1" ||
-                          //   formik.values.PayMode === ""
-                          // ) {
-                          //   formik.setFieldValue("CashAmount", amount);
-                          //   formik.setFieldValue("CardAmount", 0);
-                          // } else {
-                          //   formik.setFieldValue("CardAmount", amount);
-                          //   formik.setFieldValue("CashAmount", 0);
-                          // }
-                          if (
-  formik.values.PayMode === "1" ||
-  formik.values.PayMode === ""
-) {
+                  </div>
+                </section>
+              )}
+              {activeStep === 2 && (
+                <section>
+                  <ServiceSection
+                    selectedServices={selectedServices}
+                    setSelectedServices={setSelectedServices}
+                    department={formik.values.Department}
+                    consultingDoctor={formik.values.Doctor}
+                    payMode={formik.values.PayMode}
+                    setBillingTotals={(total) => {
+                      const amount = Number(total || 0);
+                      formik.setFieldValue("TotalAmount", amount);
+                      if (!editData && !isPaidManuallyEdited) {
+                        formik.setFieldValue("PaidAmount", amount);
+                        // if (
+                        //   formik.values.PayMode === "1" ||
+                        //   formik.values.PayMode === ""
+                        // ) {
+                        //   formik.setFieldValue("CashAmount", amount);
+                        //   formik.setFieldValue("CardAmount", 0);
+                        // } else {
+                        //   formik.setFieldValue("CardAmount", amount);
+                        //   formik.setFieldValue("CashAmount", 0);
+                        // }
+                        if (
+                          formik.values.PayMode === "1" ||
+                          formik.values.PayMode === ""
+                        ) {
 
-  // Cash
-  formik.setFieldValue("CashAmount", amount);
-  formik.setFieldValue("CardAmount", 0);
+                          // Cash
+                          formik.setFieldValue("CashAmount", amount);
+                          formik.setFieldValue("CardAmount", 0);
 
-} else if (formik.values.PayMode === "3") {
+                        } else if (formik.values.PayMode === "3") {
 
-  // Cash/Online
-  // manual entry
-  formik.setFieldValue("CashAmount", 0);
-  formik.setFieldValue("CardAmount", 0);
+                          // Cash/Online
+                          // manual entry
+                          formik.setFieldValue("CashAmount", 0);
+                          formik.setFieldValue("CardAmount", 0);
 
-} else {
+                        } else {
 
-  // Card / UPI
-  formik.setFieldValue("CardAmount", amount);
-  formik.setFieldValue("CashAmount", 0);
-}
+                          // Card / UPI
+                          formik.setFieldValue("CardAmount", amount);
+                          formik.setFieldValue("CashAmount", 0);
                         }
+                      }
 
-//                         const currentPaid = Number(formik.values.PaidAmount || 0);
-// const oldTotal = Number(formik.values.TotalAmount || 0);
+                      //                         const currentPaid = Number(formik.values.PaidAmount || 0);
+                      // const oldTotal = Number(formik.values.TotalAmount || 0);
 
-// if (!isPaidManuallyEdited) {
-//   let updatedPaid = currentPaid;
+                      // if (!isPaidManuallyEdited) {
+                      //   let updatedPaid = currentPaid;
 
-//   
-//   if (currentPaid > amount) {
-//     updatedPaid = amount;
-//   }
+                      //   
+                      //   if (currentPaid > amount) {
+                      //     updatedPaid = amount;
+                      //   }
 
-//  if (!editData && currentPaid === 0) {
-//   updatedPaid = amount;
-// }
+                      //  if (!editData && currentPaid === 0) {
+                      //   updatedPaid = amount;
+                      // }
 
-//   formik.setFieldValue("PaidAmount", updatedPaid);
+                      //   formik.setFieldValue("PaidAmount", updatedPaid);
 
-//   if (
-//     formik.values.PayMode === "1" ||
-//     formik.values.PayMode === ""
-//   ) {
-//     formik.setFieldValue("CashAmount", updatedPaid);
-//     formik.setFieldValue("CardAmount", 0);
-//   } else {
-//     formik.setFieldValue("CardAmount", updatedPaid);
-//     formik.setFieldValue("CashAmount", 0);
-//   }
-// }
+                      //   if (
+                      //     formik.values.PayMode === "1" ||
+                      //     formik.values.PayMode === ""
+                      //   ) {
+                      //     formik.setFieldValue("CashAmount", updatedPaid);
+                      //     formik.setFieldValue("CardAmount", 0);
+                      //   } else {
+                      //     formik.setFieldValue("CardAmount", updatedPaid);
+                      //     formik.setFieldValue("CashAmount", 0);
+                      //   }
+                      // }
+                    }}
+                  />
+                </section>
+              )}
+
+              {activeStep === 3 && (
+                <section>
+                  <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                    Billing Details
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <Input
+                      {...formik.getFieldProps("PreviousDue")}
+                      placeholder="Previous Due Amount"
+                      className="bg-sky-50 cursor-not-allowed"
+                      disabled
+                      label="Previous Due"
+                    />
+                    <Input
+                      {...formik.getFieldProps("TotalAmount")}
+                      placeholder="Total Amount"
+                      className="bg-sky-50 cursor-not-allowed"
+                      disabled
+                      label="Total Amount"
+                    />
+                    <Input
+                      label="Paid Amount"
+                      inputMode="numeric"
+                      type="text"
+                      value={formik.values.PaidAmount}
+                      onChange={(e) => {
+                        const onlyNumbers = e.target.value.replace(
+                          /[^0-9]/g,
+                          "",
+                        );
+                        setIsPaidManuallyEdited(true);
+                        formik.setFieldValue(
+                          "PaidAmount",
+                          Number(onlyNumbers || 0),
+                        );
                       }}
                     />
-                  </section>
-                )}
+                    <Input
+                      label="Credit Balance"
+                      inputMode="numeric"
+                      type="text"
+                      value={formik.values.CreditBalance}
+                      disabled
+                      className="bg-sky-50 cursor-not-allowed"
+                      onChange={(e) => {
+                        const onlyNumbers = e.target.value.replace(
+                          /[^0-9]/g,
+                          "",
+                        );
+                        formik.setFieldValue(
+                          "CreditBalance",
+                          Number(onlyNumbers || 0),
+                        );
+                      }}
+                    />
 
-                {activeStep === 3 && (
-                  <section>
-                    <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-                      <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
-                      Billing Details
-                    </h3>
+                    <label className="flex items-center gap-2 text-gray-700 text-sm mt-2">
+                      <input
+                        type="checkbox"
+                        {...formik.getFieldProps("AdjustWithBalance")}
+                        checked={formik.values.AdjustWithBalance}
+                        // disabled
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <Input
-                        {...formik.getFieldProps("PreviousDue")}
-                        placeholder="Previous Due Amount"
-                        className="bg-sky-50 cursor-not-allowed"
-                        disabled
-                        label="Previous Due"
+                        // className="bg-gray-100 cursor-not-allowed"
+                        className="cursor-pointer h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                       />
-                      <Input
-                        {...formik.getFieldProps("TotalAmount")}
-                        placeholder="Total Amount"
-                        className="bg-sky-50 cursor-not-allowed"
-                        disabled
-                        label="Total Amount"
-                      />
-                      <Input
-                        label="Paid Amount"
-                        inputMode="numeric"
-                        type="text"
-                        value={formik.values.PaidAmount}
-                        onChange={(e) => {
-                          const onlyNumbers = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          setIsPaidManuallyEdited(true);
-                          formik.setFieldValue(
-                            "PaidAmount",
-                            Number(onlyNumbers || 0),
-                          );
-                        }}
-                      />
-                      <Input
-                        label="Credit Balance"
-                        inputMode="numeric"
-                        type="text"
-                        value={formik.values.CreditBalance}
-                        disabled
-                        className="bg-sky-50 cursor-not-allowed"
-                        onChange={(e) => {
-                          const onlyNumbers = e.target.value.replace(
-                            /[^0-9]/g,
-                            "",
-                          );
-                          formik.setFieldValue(
-                            "CreditBalance",
-                            Number(onlyNumbers || 0),
-                          );
-                        }}
-                      />
-
-                      <label className="flex items-center gap-2 text-gray-700 text-sm mt-2">
-                        <input
-                          type="checkbox"
-                          {...formik.getFieldProps("AdjustWithBalance")}
-                          checked={formik.values.AdjustWithBalance}
-                          // disabled
-
-                          // className="bg-gray-100 cursor-not-allowed"
-                          className="cursor-pointer h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                        />
-                        Adjust with Balance
-                      </label>
-
-                      <Input
-                        {...formik.getFieldProps("DueAmount")}
-                        placeholder="Due Amount"
-                        className="bg-sky-50 cursor-not-allowed"
-                        disabled
-                        label="Due Amount"
-                      />
-
-                      <Select
-                        {...formik.getFieldProps("PayMode")}
-                        label="Payment Mode"
-                        required
-                        error={formik.touched.PayMode && formik.errors.PayMode}
-                        onChange={(e) => {
-                          const mode = e.target.value;
-                          formik.setFieldValue("PayMode", mode);
-
-                          const currentPaid = formik.values.PaidAmount;
-
-                          // if (mode === "1") {
-                          //   formik.setFieldValue("CashAmount", currentPaid);
-                          //   formik.setFieldValue("CardAmount", "0");
-                          // } else {
-                          //   formik.setFieldValue("CardAmount", currentPaid);
-                          //   formik.setFieldValue("CashAmount", "0");
-                          // }
-                          if (mode === "1") {
-
-  // Cash
-  formik.setFieldValue("CashAmount", currentPaid);
-  formik.setFieldValue("CardAmount", "0");
-
-} else if (mode === "3") {
-
-  // Cash/Online
-  formik.setFieldValue("CashAmount", "");
-  formik.setFieldValue("CardAmount", "");
-
-} else {
-
-  // Card / UPI
-  formik.setFieldValue("CardAmount", currentPaid);
-  formik.setFieldValue("CashAmount", "0");
-}
-                        }}
-                      >
-                        <option value="">Select Pay Mode</option>
-                        {Picaso_Paymode_Options.map((mode) => (
-                          <option key={mode.id} value={mode.id}>
-                            {mode.name}
-                          </option>
-                        ))}
-                      </Select>
-
-                     <Input
-  {...formik.getFieldProps("CashAmount")}
-  placeholder="Cash Amount"
-  label="Cash Amount"
-  readOnly={formik.values.PayMode !== "3"}
-  className={
-    formik.values.PayMode === "3"
-      ? ""
-      : "bg-sky-50 cursor-not-allowed"
-  }
-  onChange={(e) => {
-    const value = Number(e.target.value || 0);
-
-    formik.setFieldValue("CashAmount", value);
-
-    if (formik.values.PayMode === "3") {
-      formik.setFieldValue(
-        "PaidAmount",
-        value + Number(formik.values.CardAmount || 0)
-      );
-    }
-  }}
-/>
-
-                     <Input
-  {...formik.getFieldProps("CardAmount")}
-  placeholder="Card / Online / UPI Amount"
-  label="Card / Online / UPI Amount"
-  readOnly={formik.values.PayMode !== "3"}
-  className={
-    formik.values.PayMode === "3"
-      ? ""
-      : "bg-sky-50 cursor-not-allowed"
-  }
-  onChange={(e) => {
-    const value = Number(e.target.value || 0);
-
-    formik.setFieldValue("CardAmount", value);
-
-    if (formik.values.PayMode === "3") {
-      formik.setFieldValue(
-        "PaidAmount",
-        value + Number(formik.values.CashAmount || 0)
-      );
-    }
-  }}
-/>
-                    </div>
-                  </section>
-                )}
-                {activeStep === 4 && (
-                  <>
-                    <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-5">
-                      <h3 className="text-lg font-semibold text-sky-600">
-                        Confirm OPD Billing
-                      </h3>
-
-
-                      <div>
-                        <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
-                          Patient Details
-                        </h4>
-
-                        <div className="grid md:grid-cols-2 gap-3 text-sm">
-                          <p>
-                            <b>UHID:</b> {formik.values.UHID}
-                          </p>
-
-                          <p>
-                            <b>Name:</b> {formik.values.Name}
-                          </p>
-
-                          <p>
-                            <b>Mobile:</b> {formik.values.Mobile}
-                          </p>
-
-                          <p>
-                            <b>Gender:</b> {formik.values.Gender}
-                          </p>
-
-                          <p>
-                            <b>Age:</b> {formik.values.Age}
-                          </p>
-
-                          <p>
-                            <b>Category:</b> {formik.values.FinCategory}
-                          </p>
-
-                          <p>
-                            <b>Department:</b>{" "}
-                            {
-                              department?.find(
-                                (d) => d.id == formik.values.Department
-                              )?.name
-                            }
-                          </p>
-
-                          <p>
-                            <b>Doctor:</b>{" "}
-                            {
-                              doctors?.find(
-                                (d) => d.id == formik.values.Doctor
-                              )?.name ||
-                              doctors?.find(
-                                (d) => d.id == formik.values.Doctor
-                              )?.doctor_name
-                            }
-                          </p>
-
-                          <p>
-                            <b>Refer By:</b>{" "}
-                            {
-                              collectedBy?.find(
-                                (u) => u.id == formik.values.ReferBy
-                              )?.name || "-"
-                            }
-                          </p>
-
-                          <p>
-                            <b>Previous Due:</b>{" "}
-                            Rs.{formik.values.PreviousDue}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
-                          Complaints
-                        </h4>
-
-                        {formik.values.ChiefComplaint?.length > 0 ? (
-                          <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-                            {formik.values.ChiefComplaint.map((c, idx) => (
-                              <li key={idx}>{c.name}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-sm text-gray-500">
-                            No complaints added
-                          </p>
-                        )}
-                      </div>
-
-
-                      <div>
-                        <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
-                          Services Availed ({selectedServices.length})
-                        </h4>
-
-                        {selectedServices.length > 0 ? (
-                          <div className="overflow-x-auto rounded-xl border border-blue-100">
-                            <table className="min-w-full text-sm">
-                              <thead className="bg-blue-100 text-slate-700">
-                                <tr>
-                                  <th className="px-3 py-2 text-left">
-                                    Service
-                                  </th>
-
-                                  <th className="px-3 py-2 text-center">
-                                    Qty
-                                  </th>
-
-                                  <th className="px-3 py-2 text-right">
-                                    Price
-                                  </th>
-
-                                  <th className="px-3 py-2 text-right">
-                                    Total
-                                  </th>
-                                </tr>
-                              </thead>
-
-                              <tbody>
-                                {selectedServices.map((service, idx) => (
-                                  <tr
-                                    key={idx}
-                                    className="border-t border-blue-50"
-                                  >
-                                    <td className="px-3 py-2">
-                                      {service.name}
-                                    </td>
-
-                                    <td className="px-3 py-2 text-center">
-                                      {service.quantity || 1}
-                                    </td>
-
-                                    <td className="px-3 py-2 text-right">
-                                      Rs.{service.price}
-                                    </td>
-
-                                    <td className="px-3 py-2 text-right font-medium">
-                                      Rs.
-                                      {(service.price || 0) *
-                                        (service.quantity || 1)}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-500">
-                            No services selected
-                          </p>
-                        )}
-                      </div>
-
-
-                      <div>
-                        <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
-                          Billing Details
-                        </h4>
-
-                        <div className="grid md:grid-cols-2 gap-3 text-sm">
-                          <p>
-                            <b>Total Amount:</b> Rs.
-                            {formik.values.TotalAmount}
-                          </p>
-
-                          <p>
-                            <b>Paid Amount:</b> Rs.
-                            {formik.values.PaidAmount}
-                          </p>
-
-                          <p>
-                            <b>Due Amount:</b> Rs.
-                            {formik.values.DueAmount}
-                          </p>
-
-                          <p>
-                            <b>Cash Amount:</b> Rs.
-                            {formik.values.CashAmount}
-                          </p>
-
-                          <p>
-                            <b>Card / Online Amount:</b> Rs.
-                            {formik.values.CardAmount}
-                          </p>
-
-                          <p>
-                            <b>Payment Mode:</b>{" "}
-                            {
-                              Picaso_Paymode_Options.find(
-                                (p) => p.id == formik.values.PayMode
-                              )?.name
-                            }
-                          </p>
-
-                          <p>
-                            <b>Adjust With Balance:</b>{" "}
-                            {formik.values.AdjustWithBalance
-                              ? "Yes"
-                              : "No"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-                <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
-                  <div className="flex gap-2">
-                    {activeStep > 1 && (
-                      <Button type="button" variant="gray" onClick={prevStep}>
-                        Back
-                      </Button>
-                    )}
-
-
-                    <Button
-                      type="button"
-                      variant="gray"
-                      onClick={() => {
-
-
-                        if (activeStep === 1) {
-                          formik.setValues({
-                            ...formik.values,
-                            UHID: "",
-                            Name: "",
-                            Mobile: "",
-                            Gender: "",
-                            Age: "",
-                            Department: "",
-                            Doctor: "",
-                            FinCategory: "",
-                            ReferBy: "",
-                            ChiefComplaint: [],
-                          });
-
-                          setUhidSearch("");
-                          setSelectedUhid("");
-                          setSuggestionsList([]);
-
-                          populatedUhidRef.current = "";
-                        }
-
-
-                        if (activeStep === 2) {
-                          setSelectedServices([]);
-
-                          formik.setValues({
-                            ...formik.values,
-                            TotalAmount: 0,
-                            PaidAmount: 0,
-                            DueAmount: 0,
-                            CashAmount: 0,
-                            CardAmount: 0,
-                          });
-                        }
-
-
-                        if (activeStep === 3) {
-                          formik.setValues({
-                            ...formik.values,
-                            PreviousDue: 0,
-                            PaidAmount: 0,
-                            CreditBalance: 0,
-                            AdjustWithBalance: false,
-                            DueAmount: 0,
-                            PayMode: "",
-                            CashAmount: 0,
-                            CardAmount: 0,
-                          });
-
-                          setIsPaidManuallyEdited(false);
-                        }
-
-                        if (activeStep === 4) {
-                          formik.resetForm();
-
-                          setSelectedServices([]);
-                          setUhidSearch("");
-                          setSelectedUhid("");
-                          setSuggestionsList([]);
-
-                          populatedUhidRef.current = "";
-
-                          setIsPaidManuallyEdited(false);
-                          setActiveStep(1);
-
+                      Adjust with Balance
+                    </label>
+
+                    <Input
+                      {...formik.getFieldProps("DueAmount")}
+                      placeholder="Due Amount"
+                      className="bg-sky-50 cursor-not-allowed"
+                      disabled
+                      label="Due Amount"
+                    />
+
+                    <Select
+                      {...formik.getFieldProps("PayMode")}
+                      label="Payment Mode"
+                      required
+                      error={formik.touched.PayMode && formik.errors.PayMode}
+                      onChange={(e) => {
+                        const mode = e.target.value;
+                        formik.setFieldValue("PayMode", mode);
+
+                        const currentPaid = formik.values.PaidAmount;
+
+                        // if (mode === "1") {
+                        //   formik.setFieldValue("CashAmount", currentPaid);
+                        //   formik.setFieldValue("CardAmount", "0");
+                        // } else {
+                        //   formik.setFieldValue("CardAmount", currentPaid);
+                        //   formik.setFieldValue("CashAmount", "0");
+                        // }
+                        if (mode === "1") {
+
+                          // Cash
+                          formik.setFieldValue("CashAmount", currentPaid);
+                          formik.setFieldValue("CardAmount", "0");
+
+                        } else if (mode === "3") {
+
+                          // Cash/Online
+                          formik.setFieldValue("CashAmount", "");
+                          formik.setFieldValue("CardAmount", "");
+
+                        } else {
+
+                          // Card / UPI
+                          formik.setFieldValue("CardAmount", currentPaid);
+                          formik.setFieldValue("CashAmount", "0");
                         }
                       }}
                     >
-                      <ArrowPathIcon className="w-5 h-5 inline mr-1" />
-                      Reset
-                    </Button>
+                      <option value="">Select Pay Mode</option>
+                      {Picaso_Paymode_Options.map((mode) => (
+                        <option key={mode.id} value={mode.id}>
+                          {mode.name}
+                        </option>
+                      ))}
+                    </Select>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        onPrintCS({
-                          ...formik.values,
-                          services: selectedServices,
-                        })
+                    <Input
+                      {...formik.getFieldProps("CashAmount")}
+                      placeholder="Cash Amount"
+                      label="Cash Amount"
+                      readOnly={formik.values.PayMode !== "3"}
+                      className={
+                        formik.values.PayMode === "3"
+                          ? ""
+                          : "bg-sky-50 cursor-not-allowed"
                       }
-                    >
-                      <PrinterIcon className="w-5 h-5 inline mr-1" />
-                      Print CS
-                    </Button>
-                  </div>
+                      onChange={(e) => {
+                        const value = Number(e.target.value || 0);
 
-                  {activeStep < 4 ? (
-                    <Button type="button" variant="sky" onClick={nextStep}>
-                      Continue
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="sky"
-                      onClick={formik.handleSubmit}
-                    >
-                      <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-                      {editData ? "Update" : "Save"}
+                        formik.setFieldValue("CashAmount", value);
+
+                        if (formik.values.PayMode === "3") {
+                          formik.setFieldValue(
+                            "PaidAmount",
+                            value + Number(formik.values.CardAmount || 0)
+                          );
+                        }
+                      }}
+                    />
+
+                    <Input
+                      {...formik.getFieldProps("CardAmount")}
+                      placeholder="Card / Online / UPI Amount"
+                      label="Card / Online / UPI Amount"
+                      readOnly={formik.values.PayMode !== "3"}
+                      className={
+                        formik.values.PayMode === "3"
+                          ? ""
+                          : "bg-sky-50 cursor-not-allowed"
+                      }
+                      onChange={(e) => {
+                        const value = Number(e.target.value || 0);
+
+                        formik.setFieldValue("CardAmount", value);
+
+                        if (formik.values.PayMode === "3") {
+                          formik.setFieldValue(
+                            "PaidAmount",
+                            value + Number(formik.values.CashAmount || 0)
+                          );
+                        }
+                      }}
+                    />
+                  </div>
+                </section>
+              )}
+              {activeStep === 4 && (
+                <>
+                  <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-5">
+                    <h3 className="text-lg font-semibold text-sky-600">
+                      Confirm OPD Billing
+                    </h3>
+
+
+                    <div>
+                      <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
+                        Patient Details
+                      </h4>
+
+                      <div className="grid md:grid-cols-2 gap-3 text-sm">
+                        <p>
+                          <b>UHID:</b> {formik.values.UHID}
+                        </p>
+
+                        <p>
+                          <b>Name:</b> {formik.values.Name}
+                        </p>
+
+                        <p>
+                          <b>Mobile:</b> {formik.values.Mobile}
+                        </p>
+
+                        <p>
+                          <b>Gender:</b> {formik.values.Gender}
+                        </p>
+
+                        <p>
+                          <b>Age:</b> {formik.values.Age}
+                        </p>
+
+                        <p>
+                          <b>Category:</b> {formik.values.FinCategory}
+                        </p>
+
+                        <p>
+                          <b>Department:</b>{" "}
+                          {
+                            department?.find(
+                              (d) => d.id == formik.values.Department
+                            )?.name
+                          }
+                        </p>
+
+                        <p>
+                          <b>Doctor:</b>{" "}
+                          {
+                            doctors?.find(
+                              (d) => d.id == formik.values.Doctor
+                            )?.name ||
+                            doctors?.find(
+                              (d) => d.id == formik.values.Doctor
+                            )?.doctor_name
+                          }
+                        </p>
+
+                        <p>
+                          <b>Refer To:</b>{" "}
+                        {
+                            doctors?.find(
+                              (d) => d.id == formik.values.ReferBy
+                            )?.name ||
+                            doctors?.find(
+                              (d) => d.id == formik.values.ReferBy
+                            )?.doctor_name
+                          }
+                        </p>
+
+                        <p>
+                          <b>Previous Due:</b>{" "}
+                          Rs.{formik.values.PreviousDue}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
+                        Complaints
+                      </h4>
+
+                      {formik.values.ChiefComplaint?.length > 0 ? (
+                        <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                          {formik.values.ChiefComplaint.map((c, idx) => (
+                            <li key={idx}>{c.name}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          No complaints added
+                        </p>
+                      )}
+                    </div>
+
+
+                    <div>
+                      <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
+                        Services Availed ({selectedServices.length})
+                      </h4>
+
+                      {selectedServices.length > 0 ? (
+                        <div className="overflow-x-auto rounded-xl border border-blue-100">
+                          <table className="min-w-full text-sm">
+                            <thead className="bg-blue-100 text-slate-700">
+                              <tr>
+                                <th className="px-3 py-2 text-left">
+                                  Service
+                                </th>
+
+                                <th className="px-3 py-2 text-center">
+                                  Qty
+                                </th>
+
+                                <th className="px-3 py-2 text-right">
+                                  Price
+                                </th>
+
+                                <th className="px-3 py-2 text-right">
+                                  Total
+                                </th>
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                              {selectedServices.map((service, idx) => (
+                                <tr
+                                  key={idx}
+                                  className="border-t border-blue-50"
+                                >
+                                  <td className="px-3 py-2">
+                                    {service.name}
+                                  </td>
+
+                                  <td className="px-3 py-2 text-center">
+                                    {service.quantity || 1}
+                                  </td>
+
+                                  <td className="px-3 py-2 text-right">
+                                    Rs.{service.price}
+                                  </td>
+
+                                  <td className="px-3 py-2 text-right font-medium">
+                                    Rs.
+                                    {(service.price || 0) *
+                                      (service.quantity || 1)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          No services selected
+                        </p>
+                      )}
+                    </div>
+
+
+                    <div>
+                      <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
+                        Billing Details
+                      </h4>
+
+                      <div className="grid md:grid-cols-2 gap-3 text-sm">
+                        <p>
+                          <b>Total Amount:</b> Rs.
+                          {formik.values.TotalAmount}
+                        </p>
+
+                        <p>
+                          <b>Paid Amount:</b> Rs.
+                          {formik.values.PaidAmount}
+                        </p>
+
+                        <p>
+                          <b>Due Amount:</b> Rs.
+                          {formik.values.DueAmount}
+                        </p>
+
+                        <p>
+                          <b>Cash Amount:</b> Rs.
+                          {formik.values.CashAmount}
+                        </p>
+
+                        <p>
+                          <b>Card / Online Amount:</b> Rs.
+                          {formik.values.CardAmount}
+                        </p>
+
+                        <p>
+                          <b>Payment Mode:</b>{" "}
+                          {
+                            Picaso_Paymode_Options.find(
+                              (p) => p.id == formik.values.PayMode
+                            )?.name
+                          }
+                        </p>
+
+                        <p>
+                          <b>Adjust With Balance:</b>{" "}
+                          {formik.values.AdjustWithBalance
+                            ? "Yes"
+                            : "No"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
+                <div className="flex gap-2">
+                  {activeStep > 1 && (
+                    <Button type="button" variant="gray" onClick={prevStep}>
+                      Back
                     </Button>
                   )}
+
+
+                  <Button
+                    type="button"
+                    variant="gray"
+                    onClick={() => {
+
+
+                      if (activeStep === 1) {
+                        formik.setValues({
+                          ...formik.values,
+                          UHID: "",
+                          Name: "",
+                          Mobile: "",
+                          Gender: "",
+                          Age: "",
+                          Department: "",
+                          Doctor: "",
+                          FinCategory: "",
+                          ReferBy: "",
+                          ChiefComplaint: [],
+                        });
+
+                        setUhidSearch("");
+                        setSelectedUhid("");
+                        setSuggestionsList([]);
+
+                        populatedUhidRef.current = "";
+                      }
+
+
+                      if (activeStep === 2) {
+                        setSelectedServices([]);
+
+                        formik.setValues({
+                          ...formik.values,
+                          TotalAmount: 0,
+                          PaidAmount: 0,
+                          DueAmount: 0,
+                          CashAmount: 0,
+                          CardAmount: 0,
+                        });
+                      }
+
+
+                      if (activeStep === 3) {
+                        formik.setValues({
+                          ...formik.values,
+                          PreviousDue: 0,
+                          PaidAmount: 0,
+                          CreditBalance: 0,
+                          AdjustWithBalance: false,
+                          DueAmount: 0,
+                          PayMode: "",
+                          CashAmount: 0,
+                          CardAmount: 0,
+                        });
+
+                        setIsPaidManuallyEdited(false);
+                      }
+
+                      if (activeStep === 4) {
+                        formik.resetForm();
+
+                        setSelectedServices([]);
+                        setUhidSearch("");
+                        setSelectedUhid("");
+                        setSuggestionsList([]);
+
+                        populatedUhidRef.current = "";
+
+                        setIsPaidManuallyEdited(false);
+                        setActiveStep(1);
+
+                      }
+                    }}
+                  >
+                    <ArrowPathIcon className="w-5 h-5 inline mr-1" />
+                    Reset
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      onPrintCS({
+                        ...formik.values,
+                        services: selectedServices,
+                      })
+                    }
+                  >
+                    <PrinterIcon className="w-5 h-5 inline mr-1" />
+                    Print CS
+                  </Button>
                 </div>
-                {/* <Button type="submit" variant="sky">
+
+                {activeStep < 4 ? (
+                  <Button type="button" variant="sky" onClick={nextStep}>
+                    Continue
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="sky"
+                    onClick={formik.handleSubmit}
+                  >
+                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+                    {editData ? "Update" : "Save"}
+                  </Button>
+                )}
+              </div>
+              {/* <Button type="submit" variant="sky">
               <CheckCircleIcon className="w-5 h-5 inline mr-1" /> {editData ? "Update" : "Save"}
             </Button>
             <Button type="button" variant="gray" onClick={handleFormReset}>
@@ -1413,19 +1437,19 @@
               Print CS
             </Button>
           </div> */}
-              </form>
-            </div>
+            </form>
           </div>
-
-          {printRow && (
-            <div style={{ display: "none" }}>
-              <PrintOpdForm ref={printRef} data={printRow} />
-            </div>
-          )}
         </div>
-      </div>
-    );
-  };
 
-  export default OpdFormCopy;
+        {printRow && (
+          <div style={{ display: "none" }}>
+            <PrintOpdForm ref={printRef} data={printRow} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default OpdFormCopy;
 

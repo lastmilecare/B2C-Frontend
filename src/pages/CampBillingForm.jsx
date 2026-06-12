@@ -12,14 +12,15 @@ import {
 } from "@heroicons/react/24/outline";
 import {
   useLazyGetBillingByBillNoQuery,
-  useCreateMedicineBillMutation,
   useGetComboQuery,
   useGetOpdBillByIdQuery,
   useSearchOpdBillNoQuery,
   useGetMediceneListQuery,
   useGetStockDetailsQuery,
-  useGetMedicineBillByIdQuery,
-  useUpdateMedicineBillMutation,
+  
+  useCreateMedicinecampBillMutation,
+  useUpdateMedicinecampBillMutation,
+  useGetMedicinecampBillByIdQuery,
 } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
@@ -82,7 +83,7 @@ const CampBillingFormCopy = ({ refetchList }) => {
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const { id } = useParams();
   const populatedUhidRef = useRef("");
-  const { data: billData } = useGetMedicineBillByIdQuery(id, {
+  const { data: billData } = useGetMedicinecampBillByIdQuery(id, {
     skip: !id,
   });
 
@@ -98,8 +99,8 @@ const CampBillingFormCopy = ({ refetchList }) => {
     skip: debouncedUhid.length < 1 || id,
   });
   const { data: paymodes } = useGetComboQuery("paymode");
-  const [createMedicineBill] = useCreateMedicineBillMutation();
-  const [updateMedicineBill] = useUpdateMedicineBillMutation();
+  const [createMedicineBill] = useCreateMedicinecampBillMutation();
+  const [updateMedicineBill] = useUpdateMedicinecampBillMutation();
   const [triggerGetBillDetails] = useLazyGetBillingByBillNoQuery();
   const { data: stockDetails } = useGetStockDetailsQuery(
     selectedMedicine ? { ItemID: String(selectedMedicine.id) } : skipToken,

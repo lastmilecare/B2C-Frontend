@@ -64,7 +64,9 @@ const AttendancePage = () => {
       userId: viewingEmployee || null,
       month: viewConfig.month + 1,
       year: viewConfig.year,
+      
     });
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentEmpName, setCurrentEmpName] = useState(null);
   const [exportExcel] = useLazyGetAttendanceExportQuery();
@@ -463,8 +465,8 @@ const AttendancePage = () => {
               label: "Status Filter",
               type: "select",
               options: [
-                { label: "Present", value: "Present" },
-                { label: "Absent", value: "Absent" },
+                { label: "PRESENT", value: "PRESENT" },
+                { label: "ABSENT", value: "ABSENT" },
               ],
             },
             { name: "date", label: "Log Date Selection", type: "date" },
@@ -544,6 +546,7 @@ const AttendancePage = () => {
       </div>
     );
   }
+
   return (
     <div className="p-8 space-y-8 animate-in zoom-in-95 duration-700">
       <div className="bg-gradient-to-r from-emerald-600 via-emerald-450 to-emerald-600 px-10 py-6 rounded-[2.5rem] text-white shadow-3xl relative overflow-hidden group">

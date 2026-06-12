@@ -74,37 +74,47 @@ const BillingFormCopy = ({ refetchList }) => {
   const debouncedUhid = useDebounce(billSearch, 500);
   const debouncedMedicine = useDebounce(medicineSearch, 500);
   const [selectedBill, setSelectedBill] = useState("");
-  const { data: patientData } = useGetOpdBillByIdQuery(
+  const { data: patientData, refetch: refetchPatientData, } = useGetOpdBillByIdQuery(
     selectedBill ? String(selectedBill) : skipToken,
   );
   const [selectedMedicine, setSelectedMedicine] = useState("");
+  const [medicineSelectionCount, setMedicineSelectionCount] = useState(0);
   const [suggestionsList, setSuggestionsList] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const { id } = useParams();
   const populatedUhidRef = useRef("");
-  const { data: billData } = useGetMedicineBillByIdQuery(id, {
+  const { data: billData,  refetch: refetchBillData, } = useGetMedicineBillByIdQuery(id, {
     skip: !id,
   });
 
-  const { data: medicineResponse } = useGetMediceneListQuery(
-    { searchTerm: debouncedMedicine || skipToken },
-    { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
-  );
+ const {
+  data: medicineResponse,
+  refetch: refetchMedicineList,
+} = useGetMediceneListQuery(
+  { searchTerm: debouncedMedicine || skipToken },
+  { skip: !debouncedMedicine || debouncedMedicine.length < 2 }
+);
   const medicineList = React.useMemo(
     () => medicineResponse?.data || [],
     [medicineResponse],
   );
-  const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedUhid, {
+  const { data: suggestions = [],
+    refetch: refetchBillSearch,
+   } = useSearchOpdBillNoQuery(debouncedUhid, {
     skip: debouncedUhid.length < 1 || id,
   });
-  const { data: paymodes } = useGetComboQuery("paymode");
+  const { data: paymodes, refetch: refetchPaymode, } = useGetComboQuery("paymode");
   const [createMedicineBill] = useCreateMedicineBillMutation();
   const [updateMedicineBill] = useUpdateMedicineBillMutation();
   const [triggerGetBillDetails] = useLazyGetBillingByBillNoQuery();
-  const { data: stockDetails } = useGetStockDetailsQuery(
-    selectedMedicine ? { ItemID: String(selectedMedicine.id) } : skipToken,
-    { skip: !selectedMedicine },
-  );
+const {
+  data: stockDetails,
+  refetch: refetchStock,
+} = useGetStockDetailsQuery(
+  selectedMedicine
+    ? { ItemID: String(selectedMedicine.id) }
+    : skipToken
+);
   // const [isEditMedicineLoaded, setIsEditMedicineLoaded] = useState(false);
   const billingItemValues = [];
   useEffect(() => {
@@ -377,19 +387,40 @@ const BillingFormCopy = ({ refetchList }) => {
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
 
-  useEffect(() => {
-    const updates = {
-      cgst: stockDetails?.data[0]?.CGST || 0,
-      sgst: stockDetails?.data[0]?.SGST || 0,
-      discountPercent: cleanCurrency(
-        stockDetails?.data[0]?.DiscountPCperitem || 0,
-      ),
-      mrp: cleanCurrency(stockDetails?.data[0]?.MRPU || 0),
-      cp: cleanCurrency(stockDetails?.data[0]?.CPU || 0),
-    };
-    formik.setValues({ ...formik.values, ...updates }, false);
-  }, [stockDetails]);
+//   useEffect(() => {
 
+//     const updates = {
+//       cgst: stockDetails?.data[0]?.CGST || 0,
+//       sgst: stockDetails?.data[0]?.SGST || 0,
+//       discountPercent: cleanCurrency(
+//         stockDetails?.data[0]?.DiscountPCperitem || 0,
+//       ),
+//       mrp: cleanCurrency(stockDetails?.data[0]?.MRPU || 0),
+//       cp: cleanCurrency(stockDetails?.data[0]?.CPU || 0),
+//     };
+//     formik.setValues({ ...formik.values, ...updates }, false);
+//   }, [stockDetails]);
+useEffect(() => {
+  if (!stockDetails?.data?.length) return;
+
+  const updates = {
+    cgst: stockDetails.data[0].CGST || 0,
+    sgst: stockDetails.data[0].SGST || 0,
+    discountPercent: cleanCurrency(
+      stockDetails.data[0].DiscountPCperitem || 0
+    ),
+    mrp: cleanCurrency(stockDetails.data[0].MRPU || 0),
+    cp: cleanCurrency(stockDetails.data[0].CPU || 0),
+  };
+
+  formik.setValues(
+    {
+      ...formik.values,
+      ...updates,
+    },
+    false
+  );
+}, [stockDetails, medicineSelectionCount]);
   const handleBillSelect = async (billNo) => {
     setBillSearch(billNo);
     const res = await triggerGetBillDetails(billNo).unwrap();
@@ -517,6 +548,11 @@ const BillingFormCopy = ({ refetchList }) => {
 
     formik.setFieldValue("dueAmount", (total - paid).toFixed(2));
   }, [formik.values.paidAmount, formik.values.totalAmount]);
+  useEffect(() => {
+  if (selectedMedicine?.id) {
+    refetchStock();
+  }
+}, [selectedMedicine?.id]);
 
   return (
     <FormikProvider value={formik}>
@@ -738,20 +774,19 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                           {medicineSuggestions.map((item) => (
                             <li
                               key={item.id}
-                              onClick={() => {
-                                setSelectedMedicine(item);
-                                setMedicineSearch(item.descriptions);
-                                formik.setFieldValue(
-                                  "medicine",
-                                  item.descriptions,
-                                );
-                                formik.setFieldValue("medicineId", item.id);
-                                formik.setFieldValue(
-                                  "typemedicine",
-                                  item.itemType?.Descriptions || "",
-                                );
-                                setMedicineSuggestions([]);
-                              }}
+                            
+                         onClick={() => {
+  setSelectedMedicine(item);
+
+  setMedicineSelectionCount((prev) => prev + 1);
+
+  setMedicineSearch(item.descriptions);
+
+  formik.setFieldValue("medicine", item.descriptions);
+
+  setMedicineSuggestions([]);
+}}
+
                               className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
                             >
                               {item.descriptions}
@@ -1297,6 +1332,12 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         setMedicineSearch("");
                         setSelectedMedicine(null);
                         setMedicineSuggestions([]);
+                        refetchMedicineList();
+                        refetchStock();
+                        refetchBillSearch();
+                        refetchPatientData();
+                        refetchBillData();
+                        refetchPaymode();
                       }
 
 

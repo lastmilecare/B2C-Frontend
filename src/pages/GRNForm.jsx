@@ -873,6 +873,11 @@ const GRNFormCopy = () => {
                       className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
     outline-none focus:ring-2 focus:ring-sky-400"
                     />
+                    {formik.errors.MenufacturingDate && (
+  <p className="text-red-500 text-xs mt-1">
+    {formik.errors.MenufacturingDate}
+  </p>
+)}
                   </div>
                   <div className="flex flex-col">
                     <label className="text-sm font-medium text-gray-700 mb-1">
@@ -902,6 +907,11 @@ const GRNFormCopy = () => {
                       className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
     outline-none focus:ring-2 focus:ring-sky-400"
                     />
+                    {formik.errors.ExpiryDate && (
+  <p className="text-red-500 text-xs mt-1">
+    {formik.errors.ExpiryDate}
+  </p>
+)}
                   </div>
                   <NumericInput
                     label="No Unit / Strip"
