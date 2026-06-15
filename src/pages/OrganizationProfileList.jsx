@@ -47,7 +47,8 @@ const OrganizationProfileList = () => {
   // ---------------- Tenants ----------------
   const { data: tenantsData } = useGetAllTenantsQuery();
   const tenants = tenantsData?.data?.data || [];
-const BASE_URL = import.meta.env.VITE_API_URL
+// const BASE_URL = import.meta.env.VITE_API_URL
+const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/+$/, '');
   const tenantMap = useMemo(() => {
     const map = {};
     tenants.forEach((t) => {
@@ -155,7 +156,7 @@ const BASE_URL = import.meta.env.VITE_API_URL
       });
     }
   };
-
+console.log("Imga",BASE_URL)
   // ---------------- Columns ----------------
   const columns = [
     {

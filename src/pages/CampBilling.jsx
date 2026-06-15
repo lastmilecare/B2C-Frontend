@@ -13,15 +13,21 @@ const CampBillingCopy = () => {
 
   const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState(
-  id ? "billing" : "history"
-);
+  const [activeTab, setActiveTab] = useState("billing");
 
   useEffect(() => {
-    if (id) {
-      setActiveTab("billing");
-    } else if (location.state?.goToList) {
+  //   if (id) {
+  //     setActiveTab("billing");
+  //   } else if (location.state?.goToList) {
+  //     setActiveTab("history");
+  //   }
+  // }, [id, location.state]);
+   if (location.state?.goToList) {
       setActiveTab("history");
+    }
+
+    else if (id) {
+      setActiveTab("billing");
     }
   }, [id, location.state]);
 
@@ -39,7 +45,7 @@ const CampBillingCopy = () => {
             }`}
           >
             <ClipboardDocumentIcon className="w-4 h-4" />
-            Billing Form
+           Camp Billing Form
           </button>
 
           <button
@@ -52,7 +58,7 @@ const CampBillingCopy = () => {
             }`}
           >
             <CreditCardIcon className="w-4 h-4" />
-            Billing List
+           Camp Billing List
           </button>
         </div>
       </div>

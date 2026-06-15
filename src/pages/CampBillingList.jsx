@@ -262,6 +262,7 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicinecampBillMutation();
     },
     {
       name: "Gross Amount (Rs.)",
+      width: "70px",
       cell: (row) => (
         <span className="font-semibold text-blue-600">
           {parseCurrency(row.GrossAmount).toFixed(2)}
@@ -288,7 +289,7 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicinecampBillMutation();
    
       {
                       name: "Added On",
-                    
+                    width: "95px",
                       cell: (row) => (
                         <div className="flex flex-col text-xs">
                           <span className="font-medium text-slate-700">

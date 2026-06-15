@@ -166,7 +166,8 @@ const PrescriptionListCopy = () => {
     {
       name: "Patient",
       center: true,
-      minWidth: "50px",
+      // minWidth: "50px",
+      width: "170px",
 
       cell: (row) => (
         <div className="flex items-center gap-3">
@@ -190,7 +191,8 @@ const PrescriptionListCopy = () => {
     },
     {
       name: "Age",
-      center: true,
+      // center: true,
+      width: "100px",
       cell: (row) => (
         <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
           {`${row.age ? `${row.age} yrs` : "N/A"}`}
@@ -200,6 +202,7 @@ const PrescriptionListCopy = () => {
     {
       name: "Gender",
       center: true,
+       width: "100px",
       cell: (row) => {
         const gender = row.gender?.toLowerCase();
 
@@ -222,6 +225,7 @@ const PrescriptionListCopy = () => {
     },
     {
       name: "Phone",
+       width: "100px",
       center: true,
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNo, "-"),
@@ -232,6 +236,7 @@ const PrescriptionListCopy = () => {
       {
               name: "Added On",
               center: true,
+               width: "100px",
               cell: (row) => (
                 <div className="flex flex-col text-xs">
                   <span className="font-medium text-slate-700">
@@ -247,6 +252,7 @@ const PrescriptionListCopy = () => {
     {
       name: "Status",
       center: true,
+       width: "100px",
       cell: (row) => {
         const active = row.isActive;
 
@@ -301,20 +307,30 @@ const PrescriptionListCopy = () => {
   //     }, 300);
   //   }
   // }, [printRow]);
-   useEffect(() => {
-      if (!printRow) return;
+  //  useEffect(() => {
+  //     if (!printRow) return;
     
-      setTimeout(() => {
+  //     setTimeout(() => {
         
-        if (printRef.current) {
-          handlePrint();
-        }
-      }, 300);
-    }, [printRow]);
+  //       if (printRef.current) {
+  //         handlePrint();
+  //       }
+  //     }, 300);
+  //   }, [printRow]);
 
   const onPrint = (row) => {
-    setPrintRow(row);
-  };
+  setPrintRow(null);
+
+  setTimeout(() => {
+    setPrintRow({ ...row });
+
+    setTimeout(() => {
+      if (printRef.current) {
+        handlePrint();
+      }
+    }, 300);
+  }, 50);
+};
 
   return (
     <div className="max-w-7xl mx-auto">
