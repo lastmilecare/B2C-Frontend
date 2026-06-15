@@ -8,7 +8,6 @@ import {
   useGetPatientNameFromSalesQuery,
   useSoftDeleteMedicineBillMutation,
   useGetaddedByQuery,
-
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import useDebounce from "../hooks/useDebounce";
@@ -18,10 +17,8 @@ import { healthAlert } from "../utils/healthSwal";
 import PharmaBillPrint from "./PharmaBillPrint";
 import { useReactToPrint } from "react-to-print";
 import Avatar from "../components/common/Avatar";
-import {
-  formatDate,
-  formatTime,
-} from "../utils/helper";
+import { formatDate, formatTime } from "../utils/helper";
+import { Picaso_Paymode_Options } from "../utils/constants";
 const username = cookie.get("username");
 
 const BillingListCopy = () => {
@@ -33,7 +30,7 @@ const BillingListCopy = () => {
   const debouncedMedicine = useDebounce(searchTerms.descriptions, 500);
   const debouncedPatient = useDebounce(searchTerms.CustommerName, 500);
   const { data: medicineSuggestions = [] } = useGetMediceneListQuery(
-     { searchTerm: debouncedMedicine || skipToken },
+    { searchTerm: debouncedMedicine || skipToken },
     { skip: debouncedMedicine.length < 2 },
   );
   const [printRow, setPrintRow] = useState(null);
@@ -45,14 +42,14 @@ const BillingListCopy = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
+  const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
   const {
-   data: addedByResponse,
-   isLoading: collectedComboLoading,
-   refetch: refetchaddedBy,
- } = useGetaddedByQuery();
- 
- const addedBy = addedByResponse?.data || [];
+    data: addedByResponse,
+    isLoading: collectedComboLoading,
+    refetch: refetchaddedBy,
+  } = useGetaddedByQuery();
+
+  const addedBy = addedByResponse?.data || [];
   const [tempFilters, setTempFilters] = useState({
     CustommerName: "",
     BillNo: "",
@@ -62,12 +59,11 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
   });
   const [filters, setFilters] = useState({});
 
-  const { data, isLoading, refetch} = useGetSalesStockDetailsQuery({
+  const { data, isLoading, refetch } = useGetSalesStockDetailsQuery({
     page,
     limit,
     ...filters,
   });
- 
 
   const rawStock = data?.data || [];
 
@@ -112,8 +108,6 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
   });
 
   const pagination = data?.pagination || {};
-
-  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -189,10 +183,10 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
       name: "AddedBy",
       type: "select",
       options:
-      addedBy?.map((u) => ({
-    label: u.name,
-    value: u.id,
-  })) || [],
+        addedBy?.map((u) => ({
+          label: u.name,
+          value: u.id,
+        })) || [],
     },
     { label: "Date from", name: "startDate", type: "date" },
     { label: "Date to", name: "endDate", type: "date" },
@@ -219,7 +213,11 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
       cell: (row) => (
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Avatar name={row.CustommerName} gender={row.gender} age={row.age}  />
+            <Avatar
+              name={row.CustommerName}
+              gender={row.gender}
+              age={row.age}
+            />
 
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
           </div>
@@ -281,23 +279,27 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
         parseCurrency(row.DueAmount || 0),
       width: "80px",
     },
-   
-      {
-                      name: "Added On",
-                    
-                      cell: (row) => (
-                        <div className="flex flex-col text-xs">
-                          <span className="font-medium text-slate-700">
-                           {formatDate(row.AddedDate)}
-                          </span>
-                
-                          <span className="text-slate-400">
-                           {formatTime(row.AddedDate)}
-                          </span>
-                        </div>
-                      ),
-                    },
-    
+    {
+      name: "Payment Type",
+      selector: (row) =>
+        Picaso_Paymode_Options.find((option) => option.id == row.PayMode)?.name || "N/A",
+      width: "80px",
+    },
+
+    {
+      name: "Added On",
+
+      cell: (row) => (
+        <div className="flex flex-col text-xs">
+          <span className="font-medium text-slate-700">
+            {formatDate(row.AddedDate)}
+          </span>
+
+          <span className="text-slate-400">{formatTime(row.AddedDate)}</span>
+        </div>
+      ),
+    },
+
     {
       name: "id",
       selector: (row) => row.ID,
@@ -305,33 +307,31 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
     },
   ];
   const handleDelete = async (row) => {
-  try {
-    await softDeleteMedicineBill(row.ID).unwrap();
-    await refetch();
-    healthAlert({
-      title: "Success",
-      text: "Bill Deleted Successfully",
-      icon: "success",
-    });
-  } catch (err) {
-    healthAlert({
-      title: "Error",
-      text: err?.data?.message || "Delete failed",
-      icon: "error",
-    });
-  }
-};
+    try {
+      await softDeleteMedicineBill(row.ID).unwrap();
+      await refetch();
+      healthAlert({
+        title: "Success",
+        text: "Bill Deleted Successfully",
+        icon: "success",
+      });
+    } catch (err) {
+      healthAlert({
+        title: "Error",
+        text: err?.data?.message || "Delete failed",
+        icon: "error",
+      });
+    }
+  };
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: "Prescription",
   });
 
-
-    useEffect(() => {
+  useEffect(() => {
     if (!printRow) return;
-  
+
     setTimeout(() => {
-      
       if (printRef.current) {
         handlePrint();
       }
@@ -339,29 +339,28 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
   }, [printRow]);
 
   const onPrint = (row) => {
-    
     setPrintRow(row);
   };
   return (
     <div className="p-2 space-y-4">
       {/* <div className="bg-white/80 backdrop-blur-lg shadow rounded-xl p-4 border overflow-visible relative z-10"> */}
-        <CopyFilterBar
-          filtersConfig={filtersConfig}
-          tempFilters={tempFilters}
-          onChange={handleChange}
-          onApply={handleApplyFilters}
-          onReset={handleResetFilters}
-          suggestionsMap={{
-            descriptions: medicineSuggestions?.data || [],
-            CustommerName: patientSuggestions?.data || [],
-          }}
-          onSelectSuggestion={(fieldName, value) => {
-            setTempFilters((prev) => ({
-              ...prev,
-              [fieldName]: value,
-            }));
-          }}
-        />
+      <CopyFilterBar
+        filtersConfig={filtersConfig}
+        tempFilters={tempFilters}
+        onChange={handleChange}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+        suggestionsMap={{
+          descriptions: medicineSuggestions?.data || [],
+          CustommerName: patientSuggestions?.data || [],
+        }}
+        onSelectSuggestion={(fieldName, value) => {
+          setTempFilters((prev) => ({
+            ...prev,
+            [fieldName]: value,
+          }));
+        }}
+      />
       {/* </div> */}
       <div className="bg-white shadow-xl rounded-xl border p-2">
         <CommonList
