@@ -486,6 +486,40 @@ const GRNFormCopy = () => {
 
       return;
     }
+    // Expired medicine check
+if (
+  v.ExpiryDate &&
+  new Date(v.ExpiryDate) < new Date(new Date().toDateString())
+) {
+  formik.setFieldError(
+    "ExpiryDate",
+    "Expired medicine cannot be added"
+  );
+
+  healthAlerts.warning(
+    "Expired medicine cannot be added"
+  );
+
+  return;
+}
+// CP should not be greater than MRP
+if (Number(v.CP) > Number(v.MRP)) {
+  formik.setFieldError(
+    "CP",
+    "CP cannot be greater than MRP"
+  );
+
+  formik.setFieldError(
+    "MRP",
+    "MRP must be greater than or equal to CP"
+  );
+
+  healthAlerts.warning(
+    "CP cannot be greater than MRP"
+  );
+
+  return;
+}
 
     const recvQty = Number(v.RecvQty || 0);
     const qtyPerStrip = Number(v.NoQtyperStrip || 0);

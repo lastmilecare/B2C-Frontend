@@ -501,20 +501,21 @@ const CampOpdBillingList = () => {
     documentTitle: "Invoice",
   });
 
-   useEffect(() => {
-    if (!printRow1) return;
   
+
+  const onPrintInvoice = (row) => {
+  setPrintRow1(null);
+
+  setTimeout(() => {
+    setPrintRow1({ ...row });
+
     setTimeout(() => {
-      
       if (printRef1.current) {
         handlePrint1();
       }
     }, 300);
-  }, [printRow1]);
-
-  const onPrintInvoice = (row) => {
-    setPrintRow1(row);
-  };
+  }, 50);
+};
 
   return (
     <div className="p-0">
@@ -562,7 +563,13 @@ const CampOpdBillingList = () => {
         </div>
       )}
       {printRow1 && (
-        <div style={{ display: "none" }}>
+         <div
+  style={{
+    position: "absolute",
+    left: "-99999px",
+    top: 0,
+  }}
+>
           <InvoiceTemplate ref={printRef1} data={printRow1} />
         </div>
       )}

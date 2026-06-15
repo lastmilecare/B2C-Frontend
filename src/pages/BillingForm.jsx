@@ -1150,42 +1150,42 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     </p>
 
                     <p>
-                      <b>Gross Amount:</b> ?{" "}
+                      <b>Gross Amount:</b> {" "}
                       {formik.values.grossAmount || 0}
                     </p>
 
                     <p>
-                      <b>Discount:</b> ?{" "}
+                      <b>Discount:</b> {" "}
                       {formik.values.totalDiscount || 0}
                     </p>
 
                     <p>
-                      <b>CGST:</b> ?{" "}
+                      <b>CGST:</b> {" "}
                       {formik.values.cgstAmount || 0}
                     </p>
 
                     <p>
-                      <b>SGST:</b> ?{" "}
+                      <b>SGST:</b> {" "}
                       {formik.values.sgstAmount || 0}
                     </p>
 
                     <p>
-                      <b>Taxable Amount:</b> ?{" "}
+                      <b>Taxable Amount:</b> {" "}
                       {formik.values.taxableAmount || 0}
                     </p>
 
                     <p>
-                      <b>Paid Amount:</b> ?{" "}
+                      <b>Paid Amount:</b> {" "}
                       {formik.values.paidAmount || 0}
                     </p>
 
                     <p>
-                      <b>Due Amount:</b> ?{" "}
+                      <b>Due Amount:</b> {" "}
                       {formik.values.dueAmount || 0}
                     </p>
 
                     <p className="text-emerald-600 font-semibold">
-                      <b>Final Amount:</b> ?{" "}
+                      <b>Final Amount:</b> {" "}
                       {formik.values.totalAmount || 0}
                     </p>
 
@@ -1253,11 +1253,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                 </td>
 
                                 <td className="px-3 py-2 text-right">
-                                  ? {item.saleRate || 0}
+                                 {item.saleRate || 0}
                                 </td>
 
                                 <td className="px-3 py-2 text-right font-semibold">
-                                  ? {item.total || 0}
+                                   {item.total || 0}
                                 </td>
                               </tr>
                             ))}

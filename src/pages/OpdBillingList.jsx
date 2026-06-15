@@ -502,25 +502,24 @@ const collectedBy = collectedByResponse?.data || [];
   };
 
   const handlePrint1 = useReactToPrint({
-    contentRef: printRef1,
-    documentTitle: "Invoice",
-  });
-
+  contentRef: printRef1,
+  documentTitle: "Invoice",
   
-  useEffect(() => {
-  if (!printRow1) return;
+});
+
+const onPrintInvoice = (row) => {
+  setPrintRow1(null);
 
   setTimeout(() => {
-    
-    if (printRef1.current) {
-      handlePrint1();
-    }
-  }, 300);
-}, [printRow1]);
+    setPrintRow1({ ...row });
 
-  const onPrintInvoice = (row) => {
-    setPrintRow1(row);
-  };
+    setTimeout(() => {
+      if (printRef1.current) {
+        handlePrint1();
+      }
+    }, 300);
+  }, 50);
+};
 
   return (
     <div className="p-0">
@@ -568,7 +567,13 @@ const collectedBy = collectedByResponse?.data || [];
         </div>
       )}
       {printRow1 && (
-        <div style={{ display: "none" }}>
+       <div
+  style={{
+    position: "absolute",
+    left: "-99999px",
+    top: 0,
+  }}
+>
           <InvoiceTemplate ref={printRef1} data={printRow1} />
         </div>
       )}
