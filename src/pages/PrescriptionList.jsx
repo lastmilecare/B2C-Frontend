@@ -161,13 +161,13 @@ const PrescriptionListCopy = () => {
       title: "Bill Number",
       selector: (row) => safeString(row?.billNo, "-"),
       sortable: true,
-      width: "110px",
+      width: "150px",
     },
     {
       name: "Patient",
       center: true,
-      // minWidth: "50px",
-      width: "170px",
+      minWidth: "50px",
+      width: "270px",
 
       cell: (row) => (
         <div className="flex items-center gap-3">
@@ -191,8 +191,8 @@ const PrescriptionListCopy = () => {
     },
     {
       name: "Age",
-      // center: true,
-      width: "100px",
+      center: true,
+      width: "130px",
       cell: (row) => (
         <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
           {`${row.age ? `${row.age} yrs` : "N/A"}`}
@@ -202,7 +202,7 @@ const PrescriptionListCopy = () => {
     {
       name: "Gender",
       center: true,
-       width: "100px",
+       width: "130px",
       cell: (row) => {
         const gender = row.gender?.toLowerCase();
 
@@ -225,7 +225,7 @@ const PrescriptionListCopy = () => {
     },
     {
       name: "Phone",
-       width: "100px",
+       width: "130px",
       center: true,
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNo, "-"),
@@ -236,7 +236,7 @@ const PrescriptionListCopy = () => {
       {
               name: "Added On",
               center: true,
-               width: "100px",
+               width: "120px",
               cell: (row) => (
                 <div className="flex flex-col text-xs">
                   <span className="font-medium text-slate-700">
