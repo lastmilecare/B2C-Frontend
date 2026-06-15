@@ -239,6 +239,7 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
     },
     {
       name: "Qty",
+      width: "70px",
       cell: (row) => (
         <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
           {row.TotalQty}
@@ -258,6 +259,7 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
     },
     {
       name: "Gross Amount (Rs.)",
+      width: "90px",
       cell: (row) => (
         <span className="font-semibold text-blue-600">
           {parseCurrency(row.GrossAmount).toFixed(2)}
@@ -284,6 +286,7 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicineBillMutation();
    
       {
                       name: "Added On",
+                      width: "105px",
                     
                       cell: (row) => (
                         <div className="flex flex-col text-xs">
