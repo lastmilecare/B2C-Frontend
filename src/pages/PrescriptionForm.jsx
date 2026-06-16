@@ -8,7 +8,7 @@ import {
   CreditCardIcon,
   DocumentCheckIcon,
   BeakerIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import DiseaseSelect from "../components/DiseaseSelect";
 import useDebounce from "../hooks/useDebounce";
@@ -51,14 +51,8 @@ const PrescriptionFormCopy = () => {
 
     if (
       activeStep === 1 &&
-      (
-        errors.billno ||
-        errors.UHID ||
-        errors.Name ||
-        errors.Mobile
-      )
+      (errors.billno || errors.UHID || errors.Name || errors.Mobile)
     ) {
-
       formik.setTouched({
         billno: true,
         UHID: true,
@@ -194,7 +188,7 @@ const PrescriptionFormCopy = () => {
       billNo: values.billno ? Number(values.billno) : null,
       patientName: values.Name,
       contactNo: values.Mobile,
-      age: values.Age ? Number(values.Age) : null,
+      age: values.Age,
       gender: values.Gender,
       patientType: values.FinCategory,
       bpSystolic: values.bpsystolic ? Number(values.bpsystolic) : null,
@@ -358,14 +352,17 @@ const PrescriptionFormCopy = () => {
     if (patientData.ID !== selectedBill) return;
     if (populatedUhidRef.current === selectedBill) return;
     populatedUhidRef.current = selectedBill;
-
+    let years = patientData.driverDetails[0]?.iage || 0;
+    let months = patientData.driverDetails[0]?.imonths || 0;
+    let days = patientData.driverDetails[0]?.idays || 0;
+    const finalAge = `${years}y ${months}m ${days}d`;
     const updates = {
       UHID: patientData.PicasoNo || "",
       Name: patientData.driverDetails[0]?.name || "",
       Gender: patientData.driverDetails[0].gender || "",
       Mobile: patientData.Mobile || "",
       FinCategory: patientData.driverDetails[0]?.category || "",
-      Age: patientData.driverDetails[0]?.age || "",
+      Age: finalAge,
       consultingId: patientData.ConsultantDoctorID || "",
       hospitalId: patientData.HospitalID,
       Remarks: patientData.Remarks,
@@ -510,7 +507,8 @@ const PrescriptionFormCopy = () => {
             {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full transition-all duration-300 ${activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
+                className={`h-2 w-12 rounded-full transition-all duration-300 ${
+                  activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
                   }`}
               />
             ))}
@@ -560,7 +558,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div className="relative">
-                   
                     <Input
                       label="Bill No"
                       required
@@ -916,7 +913,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                             <th className="px-4 py-3 text-left">Medicine</th>
                             <th className="px-4 py-3 text-left">Type</th>
                             <th className="px-4 py-3 text-left">Dosage</th>
-                            <th className="px-4 py-3 text-left">Instructions</th>
+                            <th className="px-4 py-3 text-left">
+                              Instructions
+                            </th>
                             <th className="px-4 py-3 text-left">Time</th>
                             <th className="px-4 py-3 text-left">Days</th>
                             <th className="px-4 py-3 text-center">Delete</th>
@@ -1028,7 +1027,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 </div>
 
                 <div className="border-t pt-4 space-y-4 text-sm">
-
                   <div>
                     <h4 className="font-semibold text-slate-700 mb-2">
                       Prescription Details
@@ -1088,17 +1086,12 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
                           <tbody>
                             {prescriptionList.map((item, idx) => (
-                              <tr
-                                key={idx}
-                                className="border-t border-sky-50"
-                              >
+                              <tr key={idx} className="border-t border-sky-50">
                                 <td className="px-3 py-2 font-medium">
                                   {item.medicine}
                                 </td>
 
-                                <td className="px-3 py-2">
-                                  {item.type}
-                                </td>
+                                <td className="px-3 py-2">{item.type}</td>
 
                                 <td className="px-3 py-2 text-center">
                                   {item.dosage}
@@ -1117,9 +1110,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         </table>
                       </div>
                     ) : (
-                      <p className="text-gray-500">
-                        No medicines added
-                      </p>
+                      <p className="text-gray-500">No medicines added</p>
                     )}
                   </div>
                 </div>

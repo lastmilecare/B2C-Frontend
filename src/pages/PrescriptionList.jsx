@@ -14,10 +14,7 @@ import useDebounce from "../hooks/useDebounce";
 import { healthAlerts, healthAlert } from "../utils/healthSwal";
 import { generateFileName, downloadBlob } from "../utils/helper";
 import Avatar from "../components/common/Avatar";
-import {
-  formatDate,
-  formatTime,
-} from "../utils/helper";
+import { formatDate, formatTime } from "../utils/helper";
 const PrescriptionListCopy = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
   const [page, setPage] = useState(1);
@@ -161,13 +158,12 @@ const PrescriptionListCopy = () => {
       title: "Bill Number",
       selector: (row) => safeString(row?.billNo, "-"),
       sortable: true,
-      width: "150px",
+      width: "110px",
     },
     {
       name: "Patient",
       center: true,
       minWidth: "50px",
-      width: "270px",
 
       cell: (row) => (
         <div className="flex items-center gap-3">
@@ -192,17 +188,15 @@ const PrescriptionListCopy = () => {
     {
       name: "Age",
       center: true,
-      width: "130px",
       cell: (row) => (
         <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-          {`${row.age ? `${row.age} yrs` : "N/A"}`}
+          {`${row.age ? `${row.age}` : "N/A"}`}
         </span>
       ),
     },
     {
       name: "Gender",
       center: true,
-       width: "130px",
       cell: (row) => {
         const gender = row.gender?.toLowerCase();
 
@@ -225,34 +219,29 @@ const PrescriptionListCopy = () => {
     },
     {
       name: "Phone",
-       width: "130px",
       center: true,
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNo, "-"),
 
       grow: 1,
     },
-    
-      {
-              name: "Added On",
-              center: true,
-               width: "120px",
-              cell: (row) => (
-                <div className="flex flex-col text-xs">
-                  <span className="font-medium text-slate-700">
-                   {formatDate(row.addedDate)}
-                  </span>
-        
-                  <span className="text-slate-400">
-                   {formatTime(row.addedDate)}
-                  </span>
-                </div>
-              ),
-            },
+
+    {
+      name: "Added On",
+      center: true,
+      cell: (row) => (
+        <div className="flex flex-col text-xs">
+          <span className="font-medium text-slate-700">
+            {formatDate(row.addedDate)}
+          </span>
+
+          <span className="text-slate-400">{formatTime(row.addedDate)}</span>
+        </div>
+      ),
+    },
     {
       name: "Status",
       center: true,
-       width: "100px",
       cell: (row) => {
         const active = row.isActive;
 
@@ -298,40 +287,19 @@ const PrescriptionListCopy = () => {
     documentTitle: "Prescription",
   });
 
-  // useEffect(() => {
-  //   if (printRow && printRef.current) {
-  //     handlePrint();
-
-  //     setTimeout(() => {
-  //       setPrintRow(null);
-  //     }, 300);
-  //   }
-  // }, [printRow]);
-  //  useEffect(() => {
-  //     if (!printRow) return;
-    
-  //     setTimeout(() => {
-        
-  //       if (printRef.current) {
-  //         handlePrint();
-  //       }
-  //     }, 300);
-  //   }, [printRow]);
-
   const onPrint = (row) => {
-     
-  setPrintRow(null);
-
-  setTimeout(() => {
-    setPrintRow({ ...row });
+    setPrintRow(null);
 
     setTimeout(() => {
-      if (printRef.current) {
-        handlePrint();
-      }
-    }, 300);
-  }, 50);
-};
+      setPrintRow({ ...row });
+
+      setTimeout(() => {
+        if (printRef.current) {
+          handlePrint();
+        }
+      }, 300);
+    }, 50);
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -373,12 +341,9 @@ const PrescriptionListCopy = () => {
         onDelete={handleDelete}
         onPrint={onPrint}
       />
-      
       {printRow && (
-        
         <div style={{ display: "none" }}>
-          <PrescriptionPrint ref={printRef} data={printRow}
-           />
+          <PrescriptionPrint ref={printRef} data={printRow} />
         </div>
       )}
     </div>

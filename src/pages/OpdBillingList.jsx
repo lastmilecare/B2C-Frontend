@@ -16,10 +16,7 @@ import { healthAlert } from "../utils/healthSwal";
 import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { generateFileName, downloadBlob } from "../utils/helper";
-import {
-  formatDate,
-  formatTime,
-} from "../utils/helper";
+import { formatDate, formatTime } from "../utils/helper";
 const OpdBillingListCopy = () => {
   const [exportExcel] = useLazyExportOpdExcelQuery();
 
@@ -113,13 +110,12 @@ const OpdBillingListCopy = () => {
   const { data: paymode, isLoading: paymodeComboLoading } =
     useGetComboQuery("paymode");
   const {
-  data: collectedByResponse,
-  isLoading: collectedComboLoading,
-  refetch: refetchCollectedBy,
-} = useGetCollectedByQuery();
+    data: collectedByResponse,
+    isLoading: collectedComboLoading,
+    refetch: refetchCollectedBy,
+  } = useGetCollectedByQuery();
 
-const collectedBy = collectedByResponse?.data || [];
-
+  const collectedBy = collectedByResponse?.data || [];
 
   const patients = data?.data || [];
   const pagination = data || { currentPage: page, totalRecords: 0 };
@@ -217,7 +213,7 @@ const collectedBy = collectedByResponse?.data || [];
     setPage(1);
     setUhidSearch("");
     refetchCollectedBy();
-     refetch();
+    refetch();
   };
   const formatCurrency = (value) => {
     if (value === null || value === undefined || value === "") return `Rs.0.00`;
@@ -297,12 +293,12 @@ const collectedBy = collectedByResponse?.data || [];
       label: "Collected By",
       name: "added_by",
       type: "select",
-     options:
-  collectedBy?.map((u) => ({
-    id: u.id,
-    label: u.name,
-    value: u.name,
-  })) || [],
+      options:
+        collectedBy?.map((u) => ({
+          id: u.id,
+          label: u.name,
+          value: u.name,
+        })) || [],
     },
 
     { label: "Mobile", name: "contactNumber", type: "text" },
@@ -336,7 +332,7 @@ const collectedBy = collectedByResponse?.data || [];
       sortable: true,
     },
     {
-      name: "B.No",
+      name: "Bill No",
       title: "Bill Number",
       selector: (row) => safeString(row?.bill_no, "-"),
       sortable: true,
@@ -442,7 +438,7 @@ const collectedBy = collectedByResponse?.data || [];
       width: "100px",
     },
     {
-      name: "Srvc",
+      name: "Service",
       title: "Service Name",
       selector: (row) =>
         safeString(
@@ -450,35 +446,31 @@ const collectedBy = collectedByResponse?.data || [];
         ),
       width: "120px",
     },
-     {
+    {
       name: "Ref",
       title: "Referred By",
       selector: (row) => safeString(row?.refer_to, "-"),
-       width : "140px"
-     },
-   
+      width: "140px",
+    },
+
     {
-      name: "Coll By",
+      name: "Collected By",
       title: "Collected By",
       selector: (row) => safeString(row?.added_by, "-"),
       width: "120px",
     },
-   
-      {
-              name: "Bill.Date",
-        width: "140px",
-              cell: (row) => (
-                <div className="flex flex-col text-xs">
-                  <span className="font-medium text-slate-700">
-                   {formatDate(row.AddedDate)}
-                  </span>
-        
-                  {/* <span className="text-slate-400">
-                   {formatTime(row.AddedDate)}
-                  </span> */}
-                </div>
-              ),
-            },
+
+    {
+      name: "Bill.Date",
+      width: "140px",
+      cell: (row) => (
+        <div className="flex flex-col text-xs">
+          <span className="font-medium text-slate-700">
+            {formatDate(row.AddedDate)}
+          </span>
+        </div>
+      ),
+    },
   ];
 
   const handlePrint = useReactToPrint({
@@ -497,29 +489,27 @@ const collectedBy = collectedByResponse?.data || [];
   }, [printRow]);
 
   const onPrintCS = (row) => {
-    
     setPrintRow(row);
   };
 
   const handlePrint1 = useReactToPrint({
-  contentRef: printRef1,
-  documentTitle: "Invoice",
-  
-});
+    contentRef: printRef1,
+    documentTitle: "Invoice",
+  });
 
-const onPrintInvoice = (row) => {
-  setPrintRow1(null);
-
-  setTimeout(() => {
-    setPrintRow1({ ...row });
+  const onPrintInvoice = (row) => {
+    setPrintRow1(null);
 
     setTimeout(() => {
-      if (printRef1.current) {
-        handlePrint1();
-      }
-    }, 300);
-  }, 50);
-};
+      setPrintRow1({ ...row });
+
+      setTimeout(() => {
+        if (printRef1.current) {
+          handlePrint1();
+        }
+      }, 300);
+    }, 50);
+  };
 
   return (
     <div className="p-0">
@@ -567,13 +557,13 @@ const onPrintInvoice = (row) => {
         </div>
       )}
       {printRow1 && (
-       <div
-  style={{
-    position: "absolute",
-    left: "-99999px",
-    top: 0,
-  }}
->
+        <div
+          style={{
+            position: "absolute",
+            left: "-99999px",
+            top: 0,
+          }}
+        >
           <InvoiceTemplate ref={printRef1} data={printRow1} />
         </div>
       )}
