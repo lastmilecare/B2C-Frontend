@@ -115,6 +115,25 @@ const StaffForm = () => {
     return !!value;
   },
 ),
+qualification: Yup.string().when("b2cRoleId", {
+  is: (value) => {
+    const role = filteredRoles.find(
+      (r) => String(r.id) === String(value)
+    );
+    return role?.name?.toLowerCase() === "doctor";
+  },
+  then: (schema) => schema.required("Qualification is required"),
+}),
+
+registration_number: Yup.string().when("b2cRoleId", {
+  is: (value) => {
+    const role = filteredRoles.find(
+      (r) => String(r.id) === String(value)
+    );
+    return role?.name?.toLowerCase() === "doctor";
+  },
+  then: (schema) => schema.required("Registration Number is required"),
+}),
   });
   const formik = useFormik({
     enableReinitialize: true,
@@ -128,6 +147,11 @@ const StaffForm = () => {
       confirmPassword: "",
       b2cRoleId: editUser?.b2c_role_id || "",
       center_id: editUser?.center?.id || "",
+       qualification:
+    editUser?.doctor?.qualification || "",
+
+  registration_number:
+    editUser?.doctor?.registration_number || "",
     },
     validationSchema,
 
@@ -435,6 +459,31 @@ const StaffForm = () => {
                         </option>
                       ))}
                     </Select>
+                    {filteredRoles.find(
+  (r) => String(r.id) === String(formik.values.b2cRoleId)
+)?.name?.toLowerCase() === "doctor" && (
+  <>
+    <Input
+      label="Qualification"
+      required
+      error={
+        formik.touched.qualification &&
+        formik.errors.qualification
+      }
+      {...formik.getFieldProps("qualification")}
+    />
+
+    <Input
+      label="Registration Number"
+      required
+      error={
+        formik.touched.registration_number &&
+        formik.errors.registration_number
+      }
+      {...formik.getFieldProps("registration_number")}
+    />
+  </>
+)}
                   </div>
 
                   {formik.values.b2cRoleId && (
@@ -493,6 +542,20 @@ const StaffForm = () => {
                     (r) => String(r.id) === String(formik.values.center_id),
                   )?.project_name || "N/A"}
                 </p>
+                {roles.find(
+  (r) => String(r.id) === String(formik.values.b2cRoleId)
+)?.name?.toLowerCase() === "doctor" && (
+  <>
+    <p>
+      <b>Qualification:</b> {formik.values.qualification}
+    </p>
+
+    <p>
+      <b>Registration Number:</b>{" "}
+      {formik.values.registration_number}
+    </p>
+  </>
+)}
               </div>
             )}
 

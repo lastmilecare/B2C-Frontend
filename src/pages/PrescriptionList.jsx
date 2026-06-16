@@ -319,6 +319,7 @@ const PrescriptionListCopy = () => {
   //   }, [printRow]);
 
   const onPrint = (row) => {
+     
   setPrintRow(null);
 
   setTimeout(() => {
@@ -372,9 +373,12 @@ const PrescriptionListCopy = () => {
         onDelete={handleDelete}
         onPrint={onPrint}
       />
+      
       {printRow && (
+        
         <div style={{ display: "none" }}>
-          <PrescriptionPrint ref={printRef} data={printRow} />
+          <PrescriptionPrint ref={printRef} data={printRow}
+           />
         </div>
       )}
     </div>

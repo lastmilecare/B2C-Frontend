@@ -38,7 +38,7 @@ const OpdFormCopy = () => {
   const userId = cookie.get("user_id");
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(1);
-
+  const [editDataLoaded, setEditDataLoaded] = useState(false);
   const nextStep = async () => {
     const errors = await formik.validateForm();
 
@@ -191,6 +191,8 @@ const OpdFormCopy = () => {
   }, [suggestions, selectedUhid, uhidSearch]);
   const { data: allServices = [] } = useGetServiceMastersQuery("");
   useEffect(() => {
+   
+
     if (editData && department && doctors && paymode) {
       setUhidSearch(editData.uhid || "");
       // setIsPaidManuallyEdited(true);
@@ -223,6 +225,14 @@ const OpdFormCopy = () => {
       const payObj = Picaso_Paymode_Options.find(
         (p) => p.name?.toLowerCase().trim() === mode,
       );
+     const complaintData = editData.complaint
+  ? editData.complaint.split(",").map((c, index) => ({
+      id: index + 1,
+      name: c.trim(),
+    }))
+  : [];
+
+
 
       formik.setValues({
         ...formik.initialValues,
@@ -242,10 +252,10 @@ const OpdFormCopy = () => {
         CashAmount: editData.CashAmount || 0,
         CardAmount: editData.CardAmount || 0,
         // VisitType: editData.VisitType || "N/A",
-        ChiefComplaint: editData.complaint
-          ? editData.complaint.split(",").map((c) => ({ name: c.trim() }))
-          : [],
+       ChiefComplaint: complaintData,
+          
       });
+      setEditDataLoaded(true);
       if (editData.opd_billing_data) {
         const mapped = editData.opd_billing_data.map((s) => {
           const found = allServices.find(
@@ -528,6 +538,9 @@ const OpdFormCopy = () => {
   // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
 
   useEffect(() => {
+    if (editData && !editDataLoaded) {
+    return;
+  }
     const total = Number(formik.values.TotalAmount) || 0;
     const paid = Number(formik.values.PaidAmount) || 0;
     const credit = Number(formik.values.CreditBalance) || 0;
@@ -1381,3 +1394,4 @@ const OpdFormCopy = () => {
 };
 
 export default OpdFormCopy;
+
