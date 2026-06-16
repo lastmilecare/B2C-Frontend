@@ -40,20 +40,16 @@ const OpdFormCopy = () => {
   const [activeStep, setActiveStep] = useState(1);
 
   const nextStep = async () => {
-
     const errors = await formik.validateForm();
 
     if (
       activeStep === 1 &&
-      (
-        errors.UHID ||
+      (errors.UHID ||
         errors.Name ||
         errors.Mobile ||
         errors.Department ||
-        errors.Doctor
-      )
+        errors.Doctor)
     ) {
-
       formik.setTouched({
         UHID: true,
         Name: true,
@@ -65,11 +61,7 @@ const OpdFormCopy = () => {
       return;
     }
 
-    if (
-      activeStep === 2 &&
-      selectedServices.length === 0
-    ) {
-
+    if (activeStep === 2 && selectedServices.length === 0) {
       healthAlert({
         title: "Service Required",
         text: "Please add at least one service",
@@ -79,11 +71,8 @@ const OpdFormCopy = () => {
       return;
     }
 
-
     if (activeStep === 3) {
-
       if (!formik.values.PayMode) {
-
         formik.setTouched({
           PayMode: true,
         });
@@ -98,7 +87,6 @@ const OpdFormCopy = () => {
       }
 
       if (!formik.values.AdjustWithBalance) {
-
         formik.setFieldTouched("AdjustWithBalance", true);
 
         healthAlert({
@@ -132,9 +120,7 @@ const OpdFormCopy = () => {
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
-  const {
-    refetch,
-  } = useGetOpdBillByIdQuery(billNo, {
+  const { refetch } = useGetOpdBillByIdQuery(billNo, {
     skip: !billNo,
   });
   const populatedUhidRef = useRef("");
@@ -153,7 +139,6 @@ const OpdFormCopy = () => {
   useEffect(() => {
     if (billNo) {
       refetch();
-
     }
   }, [billNo]);
 
@@ -214,37 +199,32 @@ const OpdFormCopy = () => {
       const deptObj = department.find(
         (d) => d.name === editData.department_name,
       );
-     
-  const doctorObj =
-  doctors?.find((d) => d.id === editData.DoctorId) ||
-  doctors?.find((d) => d.id === Number(editData.DoctorId)) ||
-  doctors?.find(
-    (d) =>
-      (d.name || d.doctor_name)?.trim().toLowerCase() ===
-      editData.doctor_name?.trim().toLowerCase()
-  );
 
-const referObj =
-  doctors?.find((d) => d.id === editData.ReferTo) ||
-  doctors?.find((d) => d.id === Number(editData.ReferTo)) ||
-  doctors?.find(
-    (d) =>
-      (d.name || d.doctor_name)?.trim().toLowerCase() ===
-      editData.refer_to?.trim().toLowerCase()
-  );
+      const doctorObj =
+        doctors?.find((d) => d.id === editData.DoctorId) ||
+        doctors?.find((d) => d.id === Number(editData.DoctorId)) ||
+        doctors?.find(
+          (d) =>
+            (d.name || d.doctor_name)?.trim().toLowerCase() ===
+            editData.doctor_name?.trim().toLowerCase(),
+        );
 
-      const mode = editData.payment_mode
-        ?.toString()
-        .toLowerCase()
-        .trim();
+      const referObj =
+        doctors?.find((d) => d.id === editData.ReferTo) ||
+        doctors?.find((d) => d.id === Number(editData.ReferTo)) ||
+        doctors?.find(
+          (d) =>
+            (d.name || d.doctor_name)?.trim().toLowerCase() ===
+            editData.refer_to?.trim().toLowerCase(),
+        );
+
+      const mode = editData.payment_mode?.toString().toLowerCase().trim();
 
       const payObj = Picaso_Paymode_Options.find(
-        (p) =>
-          p.name?.toLowerCase().trim() === mode
+        (p) => p.name?.toLowerCase().trim() === mode,
       );
 
       formik.setValues({
-        
         ...formik.initialValues,
         UHID: editData.uhid || "",
         Name: editData.patient_name || "",
@@ -252,8 +232,8 @@ const referObj =
         Gender: editData.gender || "",
         Age: editData.age || "",
         Department: deptObj ? deptObj.id : 0,
-    Doctor: doctorObj?.id || "",      
-      ReferBy: referObj?.id || "",
+        Doctor: doctorObj?.id || "",
+        ReferBy: referObj?.id || "",
         FinCategory: editData.patient_type || "",
         TotalAmount: editData.TotalServiceAmount || 0,
         PaidAmount: editData.PaidAmount || 0,
@@ -264,7 +244,6 @@ const referObj =
         // VisitType: editData.VisitType || "N/A",
         ChiefComplaint: editData.complaint
           ? editData.complaint.split(",").map((c) => ({ name: c.trim() }))
-
           : [],
       });
       if (editData.opd_billing_data) {
@@ -332,7 +311,6 @@ const referObj =
       CardAmount: Number(values.CardAmount || 0),
       PayMode: Number(values.PayMode),
       DueAmount: Number(values.DueAmount || 0),
-
       AddedBy: userId,
       DepartmentID: values.Department,
       ConsultantDoctorID: Number(values.Doctor),
@@ -340,7 +318,6 @@ const referObj =
       TotalServiceAmount: finalAmount,
       HospitalID: selectedServices[0]?.HospitalID || 1,
       FinancialYearID: currentYear,
-
       CenterID: userId,
       ReferTo: Number(values.ReferBy) || null,
       IsActive: true,
@@ -364,7 +341,6 @@ const referObj =
       Isdiscount: false,
       DiscountBy: 0,
       DoctorID: Number(values.Doctor),
-
       AddedBy: userId,
       MonthID: currentMonth,
       IsActive: true,
@@ -471,7 +447,6 @@ const referObj =
     setSuggestionsList([]);
     populatedUhidRef.current = "";
     setIsPaidManuallyEdited(false);
-
   };
 
   useEffect(() => {
@@ -498,6 +473,7 @@ const referObj =
     };
 
     if (patientData.dateOfBirthOrAge) {
+      /*
       const dobValue = parseDOB(patientData.dateOfBirthOrAge);
       updates.DOB = dobValue;
 
@@ -515,7 +491,10 @@ const referObj =
         years -= 1;
         months += 12;
       }
-
+   */
+      let years = patientData.iage || 0;
+      let months = patientData.imonths || 0;
+      let days = patientData.idays || 0;
       updates.Age = `${years}y ${months}m ${days}d`;
     }
     formik.setValues({ ...formik.values, ...updates }, false);
@@ -559,19 +538,14 @@ const referObj =
       formik.setFieldValue("DueAmount", due.toFixed(2));
       const amountBeingPaid = paid.toString();
       if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
-
         // Cash Payment
         formik.setFieldValue("CashAmount", amountBeingPaid);
         formik.setFieldValue("CardAmount", "0");
-
       } else if (formik.values.PayMode === "3") {
-
         // Cash/Online Payment
         // user manually fill karega
         // kuch auto set nahi hoga
-
       } else {
-
         // Card / UPI / Online
         formik.setFieldValue("CardAmount", amountBeingPaid);
         formik.setFieldValue("CashAmount", "0");
@@ -580,19 +554,14 @@ const referObj =
       formik.setFieldValue("DueAmount", "0.00");
       const amountBeingPaid = paid.toString();
       if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
-
         // Cash Payment
         formik.setFieldValue("CashAmount", amountBeingPaid);
         formik.setFieldValue("CardAmount", "0");
-
       } else if (formik.values.PayMode === "3") {
-
         // Cash/Online Payment
         // user manually fill karega
         // kuch auto set nahi hoga
-
       } else {
-
         // Card / UPI / Online
         formik.setFieldValue("CardAmount", amountBeingPaid);
         formik.setFieldValue("CashAmount", "0");
@@ -615,7 +584,6 @@ const referObj =
               <CreditCardIcon className="w-6 text-blue-600" />
             </span>
 
-
             {editData ? "Edit OPD Billing" : "OPD Billing"}
           </h1>
 
@@ -623,8 +591,9 @@ const referObj =
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                  }`}
+                className={`h-2 w-12 rounded-full ${
+                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                }`}
               />
             ))}
           </div>
@@ -643,10 +612,11 @@ const referObj =
                 disabled
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold 
-                                      ${activeStep === step.id
-                    ? "bg-white text-sky-600 shadow"
-                    : "text-gray-400"
-                  }`}
+                                      ${
+                                        activeStep === step.id
+                                          ? "bg-white text-sky-600 shadow"
+                                          : "text-gray-400"
+                                      }`}
               >
                 <step.icon className="w-4 h-4" />
 
@@ -670,8 +640,6 @@ const referObj =
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="relative">
-
-
                       <Input
                         label="UHID"
                         required
@@ -679,7 +647,9 @@ const referObj =
                         placeholder="Search UHID (e.g., LMC-123)"
                         value={uhidSearch || formik.values.UHID}
                         readOnly={!!editData}
-                        className={editData ? "bg-sky-50 cursor-not-allowed" : ""}
+                        className={
+                          editData ? "bg-sky-50 cursor-not-allowed" : ""
+                        }
                         onBlur={() => formik.setFieldTouched("UHID", true)}
                         onChange={(e) => {
                           const val = e.target.value.toUpperCase();
@@ -695,7 +665,6 @@ const referObj =
                         error={formik.touched.UHID && formik.errors.UHID}
                         autoComplete="off"
                       />
-
 
                       {suggestionsList.length > 0 && uhidSearch.length >= 2 && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
@@ -869,20 +838,15 @@ const referObj =
                           formik.values.PayMode === "1" ||
                           formik.values.PayMode === ""
                         ) {
-
                           // Cash
                           formik.setFieldValue("CashAmount", amount);
                           formik.setFieldValue("CardAmount", 0);
-
                         } else if (formik.values.PayMode === "3") {
-
                           // Cash/Online
                           // manual entry
                           formik.setFieldValue("CashAmount", 0);
                           formik.setFieldValue("CardAmount", 0);
-
                         } else {
-
                           // Card / UPI
                           formik.setFieldValue("CardAmount", amount);
                           formik.setFieldValue("CashAmount", 0);
@@ -895,7 +859,7 @@ const referObj =
                       // if (!isPaidManuallyEdited) {
                       //   let updatedPaid = currentPaid;
 
-                      //   
+                      //
                       //   if (currentPaid > amount) {
                       //     updatedPaid = amount;
                       //   }
@@ -1020,19 +984,14 @@ const referObj =
                         //   formik.setFieldValue("CashAmount", "0");
                         // }
                         if (mode === "1") {
-
                           // Cash
                           formik.setFieldValue("CashAmount", currentPaid);
                           formik.setFieldValue("CardAmount", "0");
-
                         } else if (mode === "3") {
-
                           // Cash/Online
                           formik.setFieldValue("CashAmount", "");
                           formik.setFieldValue("CardAmount", "");
-
                         } else {
-
                           // Card / UPI
                           formik.setFieldValue("CardAmount", currentPaid);
                           formik.setFieldValue("CashAmount", "0");
@@ -1065,7 +1024,7 @@ const referObj =
                         if (formik.values.PayMode === "3") {
                           formik.setFieldValue(
                             "PaidAmount",
-                            value + Number(formik.values.CardAmount || 0)
+                            value + Number(formik.values.CardAmount || 0),
                           );
                         }
                       }}
@@ -1089,7 +1048,7 @@ const referObj =
                         if (formik.values.PayMode === "3") {
                           formik.setFieldValue(
                             "PaidAmount",
-                            value + Number(formik.values.CashAmount || 0)
+                            value + Number(formik.values.CashAmount || 0),
                           );
                         }
                       }}
@@ -1103,7 +1062,6 @@ const referObj =
                     <h3 className="text-lg font-semibold text-sky-600">
                       Confirm OPD Billing
                     </h3>
-
 
                     <div>
                       <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
@@ -1139,38 +1097,29 @@ const referObj =
                           <b>Department:</b>{" "}
                           {
                             department?.find(
-                              (d) => d.id == formik.values.Department
+                              (d) => d.id == formik.values.Department,
                             )?.name
                           }
                         </p>
 
                         <p>
                           <b>Doctor:</b>{" "}
-                          {
-                            doctors?.find(
-                              (d) => d.id == formik.values.Doctor
-                            )?.name ||
-                            doctors?.find(
-                              (d) => d.id == formik.values.Doctor
-                            )?.doctor_name
-                          }
+                          {doctors?.find((d) => d.id == formik.values.Doctor)
+                            ?.name ||
+                            doctors?.find((d) => d.id == formik.values.Doctor)
+                              ?.doctor_name}
                         </p>
 
                         <p>
                           <b>Refer To:</b>{" "}
-                        {
-                            doctors?.find(
-                              (d) => d.id == formik.values.ReferBy
-                            )?.name ||
-                            doctors?.find(
-                              (d) => d.id == formik.values.ReferBy
-                            )?.doctor_name
-                          }
+                          {doctors?.find((d) => d.id == formik.values.ReferBy)
+                            ?.name ||
+                            doctors?.find((d) => d.id == formik.values.ReferBy)
+                              ?.doctor_name}
                         </p>
 
                         <p>
-                          <b>Previous Due:</b>{" "}
-                          Rs.{formik.values.PreviousDue}
+                          <b>Previous Due:</b> Rs.{formik.values.PreviousDue}
                         </p>
                       </div>
                     </div>
@@ -1193,7 +1142,6 @@ const referObj =
                       )}
                     </div>
 
-
                     <div>
                       <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
                         Services Availed ({selectedServices.length})
@@ -1204,21 +1152,13 @@ const referObj =
                           <table className="min-w-full text-sm">
                             <thead className="bg-blue-100 text-slate-700">
                               <tr>
-                                <th className="px-3 py-2 text-left">
-                                  Service
-                                </th>
+                                <th className="px-3 py-2 text-left">Service</th>
 
-                                <th className="px-3 py-2 text-center">
-                                  Qty
-                                </th>
+                                <th className="px-3 py-2 text-center">Qty</th>
 
-                                <th className="px-3 py-2 text-right">
-                                  Price
-                                </th>
+                                <th className="px-3 py-2 text-right">Price</th>
 
-                                <th className="px-3 py-2 text-right">
-                                  Total
-                                </th>
+                                <th className="px-3 py-2 text-right">Total</th>
                               </tr>
                             </thead>
 
@@ -1228,9 +1168,7 @@ const referObj =
                                   key={idx}
                                   className="border-t border-blue-50"
                                 >
-                                  <td className="px-3 py-2">
-                                    {service.name}
-                                  </td>
+                                  <td className="px-3 py-2">{service.name}</td>
 
                                   <td className="px-3 py-2 text-center">
                                     {service.quantity || 1}
@@ -1256,7 +1194,6 @@ const referObj =
                         </p>
                       )}
                     </div>
-
 
                     <div>
                       <h4 className="font-semibold text-slate-700 mb-3 border-b pb-2">
@@ -1293,16 +1230,14 @@ const referObj =
                           <b>Payment Mode:</b>{" "}
                           {
                             Picaso_Paymode_Options.find(
-                              (p) => p.id == formik.values.PayMode
+                              (p) => p.id == formik.values.PayMode,
                             )?.name
                           }
                         </p>
 
                         <p>
                           <b>Adjust With Balance:</b>{" "}
-                          {formik.values.AdjustWithBalance
-                            ? "Yes"
-                            : "No"}
+                          {formik.values.AdjustWithBalance ? "Yes" : "No"}
                         </p>
                       </div>
                     </div>
@@ -1317,13 +1252,10 @@ const referObj =
                     </Button>
                   )}
 
-
                   <Button
                     type="button"
                     variant="gray"
                     onClick={() => {
-
-
                       if (activeStep === 1) {
                         formik.setValues({
                           ...formik.values,
@@ -1346,7 +1278,6 @@ const referObj =
                         populatedUhidRef.current = "";
                       }
 
-
                       if (activeStep === 2) {
                         setSelectedServices([]);
 
@@ -1359,7 +1290,6 @@ const referObj =
                           CardAmount: 0,
                         });
                       }
-
 
                       if (activeStep === 3) {
                         formik.setValues({
@@ -1389,7 +1319,6 @@ const referObj =
 
                         setIsPaidManuallyEdited(false);
                         setActiveStep(1);
-
                       }
                     }}
                   >
@@ -1452,4 +1381,3 @@ const referObj =
 };
 
 export default OpdFormCopy;
-
