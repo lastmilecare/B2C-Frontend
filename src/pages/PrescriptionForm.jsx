@@ -25,7 +25,7 @@ import PrescriptionPrint from "./PrescriptionPrint";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import {
-  PILL_CONSUMPTION_TIMES,
+  
   MEDICINE_FREQUENCIES,
 } from "../utils/constants";
 import { useCreatePrescriptionMutation } from "../redux/apiSlice";
@@ -189,7 +189,7 @@ const PrescriptionFormCopy = () => {
     const addedDate = formatISO(new Date());
 
     return {
-      // consultingId: values.consultingId,
+      consultingId: values.consultingId,
       picasoId: values.UHID,
       billNo: values.billno ? Number(values.billno) : null,
       patientName: values.Name,
@@ -227,7 +227,7 @@ const PrescriptionFormCopy = () => {
       modifiedBy: user_id,
       AdviceList: prescriptionList.map((item) => ({
         picasoId: values.UHID,
-        // consultingId: values.consultingId,
+        consultingId: values.consultingId,
         itemId: item.itemId || 0,
         item: item.medicine,
         dosage: item.dosage,
@@ -254,7 +254,7 @@ const PrescriptionFormCopy = () => {
       DOB: "",
       FinCategory: "",
       billno: "",
-      Quantity: 1,
+      Quantity: "",
       medicine: "",
       typemedicine: "",
       dosage: "",
@@ -276,7 +276,7 @@ const PrescriptionFormCopy = () => {
       weight: "",
       dosageinstructions: "",
       preferredtime: "",
-      // consultingId: "",
+      consultingId: "",
       hospitalId: "",
       Remarks: "",
       ReferTo: "",
@@ -366,7 +366,7 @@ const PrescriptionFormCopy = () => {
       Mobile: patientData.Mobile || "",
       FinCategory: patientData.driverDetails[0]?.category || "",
       Age: patientData.driverDetails[0]?.age || "",
-      // consultingId: patientData.ConsultantDoctorID || "",
+      consultingId: patientData.ConsultantDoctorID || "",
       hospitalId: patientData.HospitalID,
       Remarks: patientData.Remarks,
       ReferTo: patientData.ReferTo,
@@ -418,7 +418,7 @@ const PrescriptionFormCopy = () => {
       Mobile: row.contactNo ?? "",
       FinCategory: row.patientType ?? "",
       Age: row.age ?? "",
-      // consultingId: row.consultingId ?? "",
+      consultingId: row.consultingId ?? "",
       hospitalId: row.hospitalId ?? "",
       Remarks: row.remarks ?? "",
       ReferTo: row.referrals ?? "",
@@ -456,7 +456,7 @@ const PrescriptionFormCopy = () => {
     if (
       !medicine ||
       !typemedicine ||
-      !dosage ||
+      // !dosage ||
       !dosageinstructions ||
       !preferredtime ||
       !duration
@@ -835,23 +835,16 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     className="bg-sky-50 cursor-not-allowed"
                   />
                   <Input
-                    label="Quantity"
-                    inputMode="numeric"
-                    type="text"
-                    value={formik.values.dosage}
-                    disabled={!formik.values.billno}
-                    required
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, "");
-
-                      if (value === "" || Number(value) <= 0) {
-                        formik.setFieldValue("dosage", "");
-                        return;
-                      }
-
-                      formik.setFieldValue("dosage", value);
-                    }}
-                  />
+  label="Quantity"
+  inputMode="numeric"
+  type="text"
+  value={formik.values.dosage}
+  disabled={!formik.values.billno}
+  onChange={(e) => {
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    formik.setFieldValue("dosage", value);
+  }}
+/>
                   <Input
                     {...formik.getFieldProps("dosageinstructions")}
                     placeholder="Instructions "
@@ -859,25 +852,15 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     disabled={!formik.values.billno}
                     required
                   />
-                  <Select
-                    label="Preferred Time "
-                    required
-                    value={formik.values.preferredtime}
-                    onChange={(e) =>
-                      formik.setFieldValue("preferredtime", e.target.value)
-                    }
-                    error={
-                      formik.touched.preferredtime &&
-                      formik.errors.preferredtime
-                    }
-                  >
-                    <option value="">Select Time</option>
-                    {PILL_CONSUMPTION_TIMES.map((time) => (
-                      <option key={time.value} value={time.value}>
-                        {time.label}
-                      </option>
-                    ))}
-                  </Select>
+                <Input
+  label="Preferred Time (Morning/Evening/Night)"
+  placeholder="Enter Preferred Time"
+  value={formik.values.preferredtime}
+  disabled={!formik.values.billno}
+  onChange={(e) =>
+    formik.setFieldValue("preferredtime", e.target.value)
+  }
+/>
 
                   {/* <Input
               label="Duration (in days) *"

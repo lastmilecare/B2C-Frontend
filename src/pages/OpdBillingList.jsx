@@ -346,13 +346,13 @@ const collectedBy = collectedByResponse?.data || [];
       name: "Center",
       title: "Centre Name",
       selector: (row) => safeString(row?.center_name, "-"),
-      width: "70px",
+      width: "140px",
     },
     {
       name: "UHID",
       title: "Unique Health ID",
       selector: (row) => safeString(row?.uhid, "-"),
-      width: "115px",
+      width: "135px",
       sortable: true,
     },
     {

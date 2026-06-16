@@ -47,6 +47,8 @@ const SearchableMultiSelect = ({
   };
 
   const handleRemove = (id) => {
+ 
+
     onChange(value.filter((v) => v.id !== id));
   };
   const handleManualAdd = () => {

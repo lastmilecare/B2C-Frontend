@@ -267,7 +267,12 @@ const { data: occupationCombo = [] } =
           title: p.title || "",
           name: p.name || "",
           dob: p.dateOfBirthOrAge?.split("T")[0] || "",
-          age: p.age ? `${p.age}y ${p.imonth || 0}m ${p.idays || 0}d` : "",
+          age:
+  (Number(p.age) > 0 ||
+    Number(p.imonth) > 0 ||
+    Number(p.idays) > 0)
+    ? `${p.age || 0}y ${p.imonth || 0}m ${p.idays || 0}d`
+    : "",
           CO: p.co || "",
           // relationship: p.relationship || "",
           gender: p.gender || "",
@@ -917,12 +922,12 @@ const formattedDate = `${date.getFullYear()}-${String(
                       </p> */}
 
                       <p>
-                        <b>Relationship:</b> {
-  relationshipCombo?.find(
-    (r) => String(r.ID) === String(formik.values.relationship)
-  )?.code || "-"
-}
-                      </p>
+  <b>Relationship:</b> {
+    relationshipCombo?.find(
+      (r) => String(r.ID) === String(formik.values.relationship)
+    )?.Code || "-"
+  }
+</p>
 
                       <p>
                         <b>Employee ID:</b> {formik.values.employeeId || "-"}
