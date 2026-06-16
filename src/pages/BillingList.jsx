@@ -237,6 +237,7 @@ const BillingListCopy = () => {
     },
     {
       name: "Qty",
+      width: "70px",
       cell: (row) => (
         <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
           {row.TotalQty}
@@ -256,6 +257,7 @@ const BillingListCopy = () => {
     },
     {
       name: "Gross Amount (Rs.)",
+      width: "90px",
       cell: (row) => (
         <span className="font-semibold text-blue-600">
           {parseCurrency(row.GrossAmount).toFixed(2)}
@@ -286,19 +288,22 @@ const BillingListCopy = () => {
       width: "80px",
     },
 
-    {
-      name: "Added On",
-
-      cell: (row) => (
-        <div className="flex flex-col text-xs">
-          <span className="font-medium text-slate-700">
-            {formatDate(row.AddedDate)}
-          </span>
-
-          <span className="text-slate-400">{formatTime(row.AddedDate)}</span>
-        </div>
-      ),
-    },
+     {
+                      name: "Added On",
+                      width: "105px",
+                    
+                      cell: (row) => (
+                        <div className="flex flex-col text-xs">
+                          <span className="font-medium text-slate-700">
+                           {formatDate(row.AddedDate)}
+                          </span>
+                
+                          <span className="text-slate-400">
+                           {formatTime(row.AddedDate)}
+                          </span>
+                        </div>
+                      ),
+                    },
 
     {
       name: "id",
@@ -417,3 +422,4 @@ const BillingListCopy = () => {
 };
 
 export default BillingListCopy;
+

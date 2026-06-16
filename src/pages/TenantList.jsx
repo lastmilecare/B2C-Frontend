@@ -36,7 +36,7 @@ const TenantList = () => {
   const [toggleStatus] = useToggleTenantStatusMutation();
   const tenants = data?.data?.data || [];
 
-  const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
+  const pagination = data?.data?.pagination?.pagination || { currentPage: page, totalRecords: 0 };
   const filtersConfig = [
     { label: "Name", name: "name", type: "text" },
     {

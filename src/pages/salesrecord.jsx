@@ -187,7 +187,7 @@ const UserOptions =
     { name: "Bill No", selector: (row) => row.BillNo, width: "120px" },
     {
       name: "Patient",
-      width: "240px",
+      width: "250px",
       cell: (row) => (
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -206,6 +206,8 @@ const UserOptions =
     },
     {
       name: "Uhid",
+      width: "180px",
+      center: true,
       cell: (row) => {
         return (
           <span className=" text-xs px-2 py-1 rounded font-semibold">
@@ -216,6 +218,7 @@ const UserOptions =
     },
     {
       name: "Category",
+      width:"78px",
       cell: (row) => {
         const category = row.PatientType || "N/A";
 
