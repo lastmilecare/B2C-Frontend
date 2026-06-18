@@ -37,6 +37,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     ohc: false,
     centers: false,
     campopd: false,
+    Revenue: false,
   });
 
   const toggleSubMenu = (menu) => {
@@ -283,6 +284,32 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
              )} 
           </MenuGroup>
          )} 
+
+         {/*----- Revenue--------*/}
+
+           {can("read:pharmacy_revenue") && (
+          <MenuGroup menuKey="Revenue" icon={BuildingOffice2Icon} label="Revenue">
+            {can("read:pharmacy_revenue") && (
+              <NavLink
+                to="/pharmacy-revenue"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+              Pharmacy Revenue
+              </NavLink>
+              )}  
+
+            {can("read:spectacle_revenue") && (  
+              <NavLink
+                to="/spectacle-revenue"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+              Spectacle Revenue
+              </NavLink>
+             )}  
+          </MenuGroup>
+          )}  
 
         {/* ── Staff ────────────────────────────────────────── */}
         {can("read:staff_form") && (

@@ -1763,6 +1763,106 @@ getSalesAddedBy: build.query({
     method: "GET",
   }),
 }),
+getPharmacyRevenue: build.query({
+  query: ({
+    page = 1,
+    limit = 10,
+    startDate,
+    endDate,
+  } = {}) => ({
+    url: "/pharmacy-revenue/view",
+    method: "GET",
+    params: {
+      page,
+      limit,
+      startDate,
+      endDate,
+    },
+  }),
+}),
+
+createPharmacyRevenue: build.mutation({
+  query: (body) => ({
+    url: "/pharmacy-revenue",
+    method: "POST",
+    data: body,
+  }),
+}),
+
+updatePharmacyRevenue: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/pharmacy-revenue/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
+deletePharmacyRevenue: build.mutation({
+  query: (id) => ({
+    url: `/pharmacy-revenue/${id}`,
+    method: "DELETE",
+  }),
+}),
+
+exportPharmacyRevenue: build.query({
+  query: (filters = {}) => ({
+    url: "/pharmacy-revenue/export",
+    method: "GET",
+    params: filters,
+    responseType: "blob",
+  }),
+  keepUnusedDataFor: 0,
+}),
+getSpectacleRevenue: build.query({
+  query: ({
+    page = 1,
+    limit = 10,
+    startDate,
+    endDate,
+  } = {}) => ({
+    url: "/spectacle-revenue/view",
+    method: "GET",
+    params: {
+      page,
+      limit,
+      startDate,
+      endDate,
+    },
+  }),
+}),
+
+createSpectacleRevenue: build.mutation({
+  query: (body) => ({
+    url: "/spectacle-revenue",
+    method: "POST",
+    data: body,
+  }),
+}),
+
+updateSpectacleRevenue: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/spectacle-revenue/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+}),
+
+deleteSpectacleRevenue: build.mutation({
+  query: (id) => ({
+    url: `/spectacle-revenue/${id}`,
+    method: "DELETE",
+  }),
+}),
+
+exportSpectacleRevenue: build.query({
+  query: (filters = {}) => ({
+    url: "/spectacle-revenue/export",
+    method: "GET",
+    params: filters,
+    responseType: "blob",
+  }),
+  keepUnusedDataFor: 0,
+}),
   }),
 });
 
@@ -1958,4 +2058,14 @@ export const {
   useGetCollectedcampByQuery,
   useGetAllSalesStockDetailsQuery,
   useGetSalesAddedByQuery,
+   useGetPharmacyRevenueQuery,
+  useCreatePharmacyRevenueMutation,
+  useUpdatePharmacyRevenueMutation,
+  useDeletePharmacyRevenueMutation,
+  useLazyExportPharmacyRevenueQuery,
+  useGetSpectacleRevenueQuery,
+  useCreateSpectacleRevenueMutation,
+  useUpdateSpectacleRevenueMutation,
+  useDeleteSpectacleRevenueMutation,
+  useLazyExportSpectacleRevenueQuery
 } = api;

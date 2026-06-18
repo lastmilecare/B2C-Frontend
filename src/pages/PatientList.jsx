@@ -177,7 +177,7 @@ const PatientListCopy = () => {
      width: "300px",
   minWidth: "300px",
   maxWidth: "300px",
-      center: true,
+      // center: true,
       cell: (row) => (
         <div className="flex items-center gap-3">
           <div className="relative">
