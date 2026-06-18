@@ -7,7 +7,9 @@ import { Picaso_Paymode_Options } from "../utils/constants";
 import { healthAlert } from "../utils/healthSwal";
 
 import {
-
+//   useGetPharmacyRevenueQuery,
+//   useDeletePharmacyRevenueMutation,
+//   useLazyExportPharmacyRevenueQuery,
 useGetSpectacleRevenueQuery,
 useDeleteSpectacleRevenueMutation,
 useLazyExportSpectacleRevenueQuery
@@ -25,7 +27,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
   const [deleteRevenue] = useDeleteSpectacleRevenueMutation();
   const [triggerExport] = useLazyExportSpectacleRevenueQuery();
 
-  const { data, isLoading, refetch } = useGetSpectacleRevenueQuery({
+  const { data, isLoading, refetch } = useGetPharmacyRevenueQuery({
     page,
     limit,
     startDate: filters.startDate,
@@ -35,7 +37,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
   const revenues = data?.data || [];
   const totalRows = data?.total || 0;
 
-
+  // ─── Filter Handlers ───────────────────────────────────────────────────────
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -53,7 +55,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
     setPage(1);
   };
 
-  
+  // ─── Edit Handler (lift state to parent) ───────────────────────────────────
 
   const handleEdit = useCallback(
     (row) => {
@@ -63,7 +65,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
     [onEdit]
   );
 
- ─
+  // ─── Delete Handler ────────────────────────────────────────────────────────
 
   const handleDelete = async (row) => {
     try {
@@ -83,7 +85,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
     }
   };
 
-
+  // ─── Export Handler ────────────────────────────────────────────────────────
 
   const handleExport = async () => {
     try {
@@ -108,7 +110,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
     }
   };
 
-
+  // ─── Totals ────────────────────────────────────────────────────────────────
 
   const totalRevenue = useMemo(
     () => revenues.reduce((sum, row) => sum + Number(row.RevenueAmount || 0), 0),
@@ -122,7 +124,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
 
   const grandTotal = totalRevenue + totalDue;
 
-
+  // ─── Columns ───────────────────────────────────────────────────────────────
 
   const columns = [
     {
@@ -156,11 +158,11 @@ const SpectacleRevenueList = ({ onEdit }) => {
     },
   ];
 
-
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-5">
-      
+      {/* FILTERS */}
       <CopyFilterBar
         filtersConfig={[
           { label: "Date From", name: "startDate", type: "date" },
@@ -173,7 +175,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
         onExport={handleExport}
       />
 
-      
+      {/* LIST */}
       <CommonList
         title="💰 Spectacle Revenue List"
         columns={columns}
@@ -193,7 +195,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
         isLoading={isLoading}
       />
 
-      
+      {/* TOTALS */}
       <section className="border rounded-xl bg-emerald-50 px-6 py-4 shadow-sm">
         <div className="flex flex-wrap justify-between items-center gap-3 text-sm">
           <div>
