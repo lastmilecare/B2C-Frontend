@@ -141,7 +141,7 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
                 <td className="border p-2 w-28 font-semibold">Gender :</td>
                 <td className="border p-2">{data?.gender}</td>
                 <td className="border p-2 w-28 font-semibold">Consultant :</td>
-                <td className="border p-2">Dr. {data?.doctor_name}</td>
+                <td className="border p-2">{data?.doctor_name}</td>
               </tr>
               <tr>
                 <td className="border p-2 w-28 font-semibold">Address :</td>
