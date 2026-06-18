@@ -60,7 +60,7 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
     alignItems: "start",
     marginTop: "12px",
   };
-  const BASE_URL = import.meta.env.VITE_API_URL;
+  const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/+$/, '');
   const mainlogo = profile?.logo
     ? `${BASE_URL}${profile.logo}`
     : "/images/LMC_logo.webp";

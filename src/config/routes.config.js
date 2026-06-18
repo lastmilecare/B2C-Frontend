@@ -43,6 +43,8 @@ import OrganizationProfileForm from "../pages/OrganizationProfileForm";
 import OrganizationProfileList from "../pages/OrganizationProfileList";
 import CampOpdForm from "../pages/CampOpd";
 import CampOpdBillingListCopy from "../pages/CampOpdBillingList";
+import Revenue from "../pages/Revenue";
+import SpectacleRevenue from "../pages/SpectacleRevenue";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -561,5 +563,25 @@ export const ROUTES = [
     permission: "update:camp_opd_form",
   
     showInSidebar: false,
+  },
+  {
+    path: "/pharmacy-revenue",
+    component: Revenue,
+    permission: "create:pharmacy_revenue",
+    
+    label: " Revenue",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+   {
+    path: "/spectacle-revenue",
+    component: SpectacleRevenue,
+    permission: "create:spectacle_revenue",
+    
+    label: " Revenue",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
   },
 ];

@@ -853,6 +853,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
   label="Preferred Time (Morning/Evening/Night)"
   placeholder="Enter Preferred Time"
   value={formik.values.preferredtime}
+  required
   disabled={!formik.values.billno}
   onChange={(e) =>
     formik.setFieldValue("preferredtime", e.target.value)
