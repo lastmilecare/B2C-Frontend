@@ -7,9 +7,6 @@ import { Picaso_Paymode_Options } from "../utils/constants";
 import { healthAlert } from "../utils/healthSwal";
 
 import {
-//   useGetPharmacyRevenueQuery,
-//   useDeletePharmacyRevenueMutation,
-//   useLazyExportPharmacyRevenueQuery,
 useGetSpectacleRevenueQuery,
 useDeleteSpectacleRevenueMutation,
 useLazyExportSpectacleRevenueQuery
@@ -27,7 +24,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
   const [deleteRevenue] = useDeleteSpectacleRevenueMutation();
   const [triggerExport] = useLazyExportSpectacleRevenueQuery();
 
-  const { data, isLoading, refetch } = useGetPharmacyRevenueQuery({
+  const { data, isLoading, refetch } = useGetSpectacleRevenueQuery({
     page,
     limit,
     startDate: filters.startDate,
@@ -127,6 +124,11 @@ const SpectacleRevenueList = ({ onEdit }) => {
   // ─── Columns ───────────────────────────────────────────────────────────────
 
   const columns = [
+    {
+      name:"Sno",
+      selector:(row, index) => (page - 1) * limit + index + 1,
+      width:"80px"
+    },
     {
       name: "Revenue ID",
       selector: (row) => row.RevenueID,

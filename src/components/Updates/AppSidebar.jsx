@@ -15,6 +15,9 @@ import {
   BuildingLibraryIcon,
   KeyIcon,
   HeartIcon,
+  BanknotesIcon,
+  MapPinIcon,
+  DocumentTextIcon
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
 
@@ -156,7 +159,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
 
         {/* ── OPD ─────────────────────────────────────────── */}
         {can("read:opd_form") && (
-          <MenuGroup menuKey="opd" icon={BuildingOffice2Icon} label="OPD">
+          <MenuGroup menuKey="opd" icon={ClipboardDocumentListIcon} label="OPD">
             {can("create:opd_form") && (
               <NavLink
                 to="/opd-form"
@@ -183,7 +186,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         {can("read:prescription_form") && (
           <MenuGroup
             menuKey="prescription"
-            icon={ClipboardDocumentListIcon}
+            icon={DocumentTextIcon}
             label="Prescription"
           >
             {can("create:prescription_form") && (
@@ -288,7 +291,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
          {/*----- Revenue--------*/}
 
            {can("read:pharmacy_revenue") && (
-          <MenuGroup menuKey="Revenue" icon={BuildingOffice2Icon} label="Revenue">
+          <MenuGroup menuKey="Revenue" icon={BanknotesIcon} label="Revenue">
             {can("read:pharmacy_revenue") && (
               <NavLink
                 to="/pharmacy-revenue"
@@ -392,7 +395,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         {can("read:center") && (
           <MenuGroup
             menuKey="centers"
-            icon={BuildingLibraryIcon}
+            icon={MapPinIcon}
             label="Centers"
           >
             {can("create:center") && (
@@ -417,8 +420,8 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         {can("read:tenant") && (
           <MenuGroup
             menuKey="tenants"
-            icon={BuildingLibraryIcon}
-            label="Tenants"
+            icon={BuildingOffice2Icon }
+            label="Tenants (Corporate)"
           >
             {can("create:tenant") && (
               <NavLink

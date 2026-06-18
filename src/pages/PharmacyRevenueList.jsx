@@ -125,6 +125,11 @@ const PharmacyRevenueList = ({ onEdit }) => {
 
   const columns = [
     {
+      name:"Sno",
+      selector:(row, index) => (page - 1) * limit + index + 1,
+      width:"80px"
+    },
+    {
       name: "Revenue ID",
       selector: (row) => row.RevenueID,
       width: "120px",
