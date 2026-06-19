@@ -118,21 +118,33 @@ const StaffForm = () => {
 qualification: Yup.string().when("b2cRoleId", {
   is: (value) => {
     const role = filteredRoles.find(
-      (r) => String(r.id) === String(value)
+      (r) => String(r.id) === String(value),
     );
+
     return role?.name?.toLowerCase() === "doctor";
   },
-  then: (schema) => schema.required("Qualification is required"),
+
+  then: (schema) =>
+    schema.required("Qualification is required"),
+
+  otherwise: (schema) => schema.notRequired(),
 }),
 
 registration_number: Yup.string().when("b2cRoleId", {
   is: (value) => {
     const role = filteredRoles.find(
-      (r) => String(r.id) === String(value)
+      (r) => String(r.id) === String(value),
     );
+
     return role?.name?.toLowerCase() === "doctor";
   },
-  then: (schema) => schema.required("Registration Number is required"),
+
+  then: (schema) =>
+    schema.required(
+      "Registration Number is required",
+    ),
+
+  otherwise: (schema) => schema.notRequired(),
 }),
   });
   const formik = useFormik({
@@ -204,10 +216,33 @@ registration_number: Yup.string().when("b2cRoleId", {
   const nextStep = async () => {
     const errors = await formik.validateForm();
 
-    const stepFields = {
-      1: ["name", "email", "phone", "password", "confirmPassword"],
-      2: ["b2cRoleId"],
-    };
+   const selectedRole = filteredRoles.find(
+  (r) =>
+    String(r.id) ===
+    String(formik.values.b2cRoleId),
+);
+
+const isDoctor =
+  selectedRole?.name?.toLowerCase() ===
+  "doctor";
+
+const stepFields = {
+  1: [
+    "name",
+    "email",
+    "phone",
+    "password",
+    "confirmPassword",
+  ],
+
+  2: isDoctor
+    ? [
+        "b2cRoleId",
+        "qualification",
+        "registration_number",
+      ]
+    : ["b2cRoleId"],
+};
 
     const currentFields = stepFields[activeStep] || [];
 

@@ -96,6 +96,7 @@ const CommonList = ({
         padding: "4px",
       },
     },
+    
   };
 
   const visibleColumns = useMemo(

@@ -62,10 +62,10 @@ const PatientRegistrationCopy = () => {
   const isPageLoading = isLoading || isFetching;
   const isSubmitting = isCreating || isUpdating;
   const { data: relationshipCombo = [] } =
-  useGetComboQuery("b2c-relationship");
+    useGetComboQuery("b2c-relationship");
 
-const { data: occupationCombo = [] } =
-  useGetComboQuery("b2c-occupation");
+  const { data: occupationCombo = [] } =
+    useGetComboQuery("b2c-occupation");
 
   const nextStep = async () => {
     const errors = await formik.validateForm();
@@ -89,6 +89,7 @@ const { data: occupationCombo = [] } =
       (
         errors.country ||
         errors.localAddressState ||
+        errors.localAddress ||
         errors.fincat ||
         errors.ReferredBy ||
         errors.occupation ||
@@ -102,6 +103,7 @@ const { data: occupationCombo = [] } =
         ReferredBy: true,
         occupation: true,
         pin: true,
+        localAddress: true,
       });
 
       return;
@@ -151,7 +153,7 @@ const { data: occupationCombo = [] } =
       emergencyContactNumber: "",
       blood_group: "",
       diseases: [],
-      creditamount: "",
+      // creditamount: "",
       idProof_number: "",
       idProof_name: "",
       employeeId: 0,
@@ -184,6 +186,9 @@ const { data: occupationCombo = [] } =
         then: (schema) =>
           schema.required("Identification Number is required"),
       }),
+      localAddress: Yup.string().required(
+        "Local Address is required"
+      ),
     }),
 
     onSubmit: async (values) => {
@@ -226,7 +231,7 @@ const { data: occupationCombo = [] } =
       }
     },
   });
-  
+
   useEffect(() => {
     if (!id) {
       formik.resetForm();
@@ -268,11 +273,11 @@ const { data: occupationCombo = [] } =
           name: p.name || "",
           dob: p.dateOfBirthOrAge?.split("T")[0] || "",
           age:
-  (Number(p.age) > 0 ||
-    Number(p.imonth) > 0 ||
-    Number(p.idays) > 0)
-    ? `${p.age || 0}y ${p.imonth || 0}m ${p.idays || 0}d`
-    : "",
+            (Number(p.age) > 0 ||
+              Number(p.imonth) > 0 ||
+              Number(p.idays) > 0)
+              ? `${p.age || 0}y ${p.imonth || 0}m ${p.idays || 0}d`
+              : "",
           CO: p.co || "",
           // relationship: p.relationship || "",
           gender: p.gender || "",
@@ -290,13 +295,13 @@ const { data: occupationCombo = [] } =
           emergencyContactNumber: p.emergencyContactNumber || "",
           blood_group: p.blood_group || "",
           diseases: formattedDiseases,
-          creditamount: p.creditamount || 0,
+          // creditamount: p.creditamount || 0,
           idProof_number: p.idProof_number || "",
           idProof_name: p.idProof_name || "",
           employeeId: p.employeeId || "",
           ReferredBy: p.ReferredBy || "",
           relationship: String(p.relationship || ""),
-occupation: String(p.occupation || ""),
+          occupation: String(p.occupation || ""),
         });
       };
 
@@ -513,70 +518,70 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       error={formik.touched.name && formik.errors.name}
                     />
 
-                   <div className="flex flex-col">
-  <label className="text-sm font-medium text-gray-700 mb-1">
-    Date of Birth
-  </label>
+                    <div className="flex flex-col">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        Date of Birth
+                      </label>
 
-  <DatePicker
-  
-    selected={
-  formik.values.dob
-    ? new Date(formik.values.dob + "T00:00:00")
-    : null
-}
-    onChange={(date) => {
-      if (!date) {
-        formik.setFieldValue("dob", "");
-        formik.setFieldValue("age", "");
-        return;
-      }
-       
+                      <DatePicker
 
-const formattedDate = `${date.getFullYear()}-${String(
-  date.getMonth() + 1
-).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-  formik.setFieldValue("dob", formattedDate);
+                        selected={
+                          formik.values.dob
+                            ? new Date(formik.values.dob + "T00:00:00")
+                            : null
+                        }
+                        onChange={(date) => {
+                          if (!date) {
+                            formik.setFieldValue("dob", "");
+                            formik.setFieldValue("age", "");
+                            return;
+                          }
 
-      const birth = new Date(date);
-      const today = new Date();
 
-      let years = today.getFullYear() - birth.getFullYear();
-      let months = today.getMonth() - birth.getMonth();
-      let days = today.getDate() - birth.getDate();
+                          const formattedDate = `${date.getFullYear()}-${String(
+                            date.getMonth() + 1
+                          ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+                          formik.setFieldValue("dob", formattedDate);
 
-      if (days < 0) {
-        months -= 1;
-        days += new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          0
-        ).getDate();
-      }
+                          const birth = new Date(date);
+                          const today = new Date();
 
-      if (months < 0) {
-        years -= 1;
-        months += 12;
-      }
+                          let years = today.getFullYear() - birth.getFullYear();
+                          let months = today.getMonth() - birth.getMonth();
+                          let days = today.getDate() - birth.getDate();
 
-      formik.setFieldValue(
-        "age",
-        `${years}y ${months}m ${days}d`
-      );
-    }}
-    dateFormat="dd/MM/yyyy"
-    placeholderText="DD/MM/YYYY"
-    maxDate={new Date()}
-    showMonthDropdown
-    showYearDropdown
-    scrollableYearDropdown
-    yearDropdownItemNumber={100}
-    wrapperClassName="w-full"
-    popperClassName="z-50"
-    className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
+                          if (days < 0) {
+                            months -= 1;
+                            days += new Date(
+                              today.getFullYear(),
+                              today.getMonth(),
+                              0
+                            ).getDate();
+                          }
+
+                          if (months < 0) {
+                            years -= 1;
+                            months += 12;
+                          }
+
+                          formik.setFieldValue(
+                            "age",
+                            `${years}y ${months}m ${days}d`
+                          );
+                        }}
+                        dateFormat="dd/MM/yyyy"
+                        placeholderText="DD/MM/YYYY"
+                        maxDate={new Date()}
+                        showMonthDropdown
+                        showYearDropdown
+                        scrollableYearDropdown
+                        yearDropdownItemNumber={100}
+                        wrapperClassName="w-full"
+                        popperClassName="z-50"
+                        className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
     outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
-  />
-</div>
+                      />
+                    </div>
 
                     <Input
                       label="Age"
@@ -597,14 +602,14 @@ const formattedDate = `${date.getFullYear()}-${String(
                       label="Relationship"
                     >
                       <option value="">Select</option>
-                     {relationshipCombo?.map((relation) => (
-  <option
-    key={relation.ID}
-    value={relation.ID}
-  >
-    {relation.Code}
-  </option>
-))}
+                      {relationshipCombo?.map((relation) => (
+                        <option
+                          key={relation.ID}
+                          value={relation.ID}
+                        >
+                          {relation.Code}
+                        </option>
+                      ))}
                     </Select>
 
                     <Select
@@ -749,14 +754,14 @@ const formattedDate = `${date.getFullYear()}-${String(
                       }
                     >
                       <option value="">Select</option>
-                     {occupationCombo?.map((e) => (
-  <option
-    key={e.OccupationID}
-    value={e.OccupationID}
-  >
-    {e.Descriptions}
-  </option>
-))}
+                      {occupationCombo?.map((e) => (
+                        <option
+                          key={e.OccupationID}
+                          value={e.OccupationID}
+                        >
+                          {e.Descriptions}
+                        </option>
+                      ))}
                     </Select>
 
                     <Input
@@ -768,6 +773,11 @@ const formattedDate = `${date.getFullYear()}-${String(
                     <Input
                       {...formik.getFieldProps("localAddress")}
                       label="Local Address"
+                      required
+                      error={
+                        formik.touched.localAddress &&
+                        formik.errors.localAddress
+                      }
                     />
                     <Input
                       label="Pin Code"
@@ -867,17 +877,17 @@ const formattedDate = `${date.getFullYear()}-${String(
                     </Select>
 
                     {formik.values.idProof_name && (
-                     <Input
-  label="Identification Number"
-  required
-  value={formik.values.idProof_number}
-  onChange={formik.handleChange}
-  name="idProof_number"
-  error={
-    formik.touched.idProof_number &&
-    formik.errors.idProof_number
-  }
-/>
+                      <Input
+                        label="Identification Number"
+                        required
+                        value={formik.values.idProof_number}
+                        onChange={formik.handleChange}
+                        name="idProof_number"
+                        error={
+                          formik.touched.idProof_number &&
+                          formik.errors.idProof_number
+                        }
+                      />
                     )}
                   </div>
                 </section>
@@ -922,12 +932,12 @@ const formattedDate = `${date.getFullYear()}-${String(
                       </p> */}
 
                       <p>
-  <b>Relationship:</b> {
-    relationshipCombo?.find(
-      (r) => String(r.ID) === String(formik.values.relationship)
-    )?.Code || "-"
-  }
-</p>
+                        <b>Relationship:</b> {
+                          relationshipCombo?.find(
+                            (r) => String(r.ID) === String(formik.values.relationship)
+                          )?.Code || "-"
+                        }
+                      </p>
 
                       <p>
                         <b>Employee ID:</b> {formik.values.employeeId || "-"}
@@ -947,10 +957,10 @@ const formattedDate = `${date.getFullYear()}-${String(
 
                         <p>
                           <b>Occupation:</b>{
-  occupationCombo?.find(
-    (o) => String(o.OccupationID) === String(formik.values.occupation)
-  )?.Descriptions || "-"
-}
+                            occupationCombo?.find(
+                              (o) => String(o.OccupationID) === String(formik.values.occupation)
+                            )?.Descriptions || "-"
+                          }
                         </p>
 
                         <p>
@@ -1038,14 +1048,14 @@ const formattedDate = `${date.getFullYear()}-${String(
                       </p>
                     </div>
 
-
+{/* 
                     <div className="border-t pt-3 text-sm">
                       <p>
 
                         <b>Credit Amount:</b>{" "}
                         {formik.values.creditamount || 0}
                       </p>
-                    </div>
+                    </div> */}
                   </div>
                 </section>
               )}
