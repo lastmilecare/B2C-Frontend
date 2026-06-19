@@ -588,3 +588,4 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
 };
 
 export default AppSidebar;
+
