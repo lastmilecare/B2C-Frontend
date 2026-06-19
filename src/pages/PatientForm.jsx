@@ -153,7 +153,7 @@ const PatientRegistrationCopy = () => {
       emergencyContactNumber: "",
       blood_group: "",
       diseases: [],
-      creditamount: "",
+      // creditamount: "",
       idProof_number: "",
       idProof_name: "",
       employeeId: 0,
@@ -295,7 +295,7 @@ const PatientRegistrationCopy = () => {
           emergencyContactNumber: p.emergencyContactNumber || "",
           blood_group: p.blood_group || "",
           diseases: formattedDiseases,
-          creditamount: p.creditamount || 0,
+          // creditamount: p.creditamount || 0,
           idProof_number: p.idProof_number || "",
           idProof_name: p.idProof_name || "",
           employeeId: p.employeeId || "",
@@ -1048,14 +1048,14 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </p>
                     </div>
 
-
+{/* 
                     <div className="border-t pt-3 text-sm">
                       <p>
 
                         <b>Credit Amount:</b>{" "}
                         {formik.values.creditamount || 0}
                       </p>
-                    </div>
+                    </div> */}
                   </div>
                 </section>
               )}
