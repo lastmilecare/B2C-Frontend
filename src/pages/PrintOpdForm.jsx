@@ -60,7 +60,8 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
     alignItems: "start",
     marginTop: "12px",
   };
-  const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/+$/, '');
+  const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
+
   const mainlogo = profile?.logo
     ? `${BASE_URL}${profile.logo}`
     : "/images/LMC_logo.webp";
@@ -71,7 +72,6 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
   const address = profile?.address || "N/A";
   const contact = profile?.mobile || "N/A";
   if (isLoading) {
-     
     return <div>Loading...</div>;
   }
   return (
