@@ -280,6 +280,16 @@ const StockDetailsCopy = () => {
       ),
     },
     {
+      name: "Free Qty",
+      width: "110px",
+      center: true,
+      cell: (row) => (
+        <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
+          {row.FreeRecvQty}
+        </span>
+      ),
+    },
+    {
       name: "Sales Qty",
       selector: (row) => row.RecvQty - row.BalQty,
       width: "120px",
@@ -289,7 +299,7 @@ const StockDetailsCopy = () => {
       width: "110px",
       center: true,
       cell: (row) => {
-        const qty = row.BalQty;
+        const qty = (row.RecvQty+row.FreeRecvQty - row.IssueQty);
 
         return (
           <span
@@ -604,6 +614,13 @@ const StockDetailsCopy = () => {
       },
     );
   }, [Stock]);
+  const remainingCost = Number(summary.totalRemainingCostPrice || 0);
+
+const displayRemainingCost =
+  remainingCost < 0 ? 0 : remainingCost;
+
+const extraProfit =
+  remainingCost < 0 ? Math.abs(remainingCost) : 0;
   return (
     <div className="p-0">
       <CopyFilterBar
@@ -663,16 +680,12 @@ const StockDetailsCopy = () => {
             </span>
           </span>
 
-          <span>
-            Total Remaining Cost Price : Rs.{" "}
-            <span className="font-semibold">
-              {parseCurrency(
-                summary.totalRemainingCostPrice
-                  ? summary.totalRemainingCostPrice.toFixed(2)
-                  : 0,
-              )}
-            </span>
-          </span>
+         <span>
+  Total Remaining Cost Price : Rs.{" "}
+  <span className="font-semibold">
+    {parseCurrency(displayRemainingCost.toFixed(2))}
+  </span>
+</span>
 
           <span>
             Total Sales Amount : Rs.{" "}
@@ -714,6 +727,12 @@ const StockDetailsCopy = () => {
             Low Stock :{" "}
             <span className="font-semibold">{summary.lowStock}</span>
           </span>
+          <span>
+  Extra Profit : Rs.{" "}
+  <span className="font-semibold text-green-700">
+    {parseCurrency(extraProfit.toFixed(2))}
+  </span>
+</span>
         </div>
       </section>
     </div>
