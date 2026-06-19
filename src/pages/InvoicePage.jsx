@@ -36,7 +36,7 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
         hour12: true,
       })
     : "";
-  const BASE_URL = import.meta.env.VITE_API_URL;
+  const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
   const mainlogo = profile?.logo
     ? `${BASE_URL}${profile.logo}`
     : "/images/LMC_logo.webp";

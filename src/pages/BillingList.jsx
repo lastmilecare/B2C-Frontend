@@ -284,26 +284,25 @@ const BillingListCopy = () => {
     {
       name: "Payment Type",
       selector: (row) =>
-        Picaso_Paymode_Options.find((option) => option.id == row.PayMode)?.name || "N/A",
+        Picaso_Paymode_Options.find((option) => option.id == row.PayMode)
+          ?.name || "N/A",
       width: "80px",
     },
 
-     {
-                      name: "Added On",
-                      width: "105px",
-                    
-                      cell: (row) => (
-                        <div className="flex flex-col text-xs">
-                          <span className="font-medium text-slate-700">
-                           {formatDate(row.AddedDate)}
-                          </span>
-                
-                          <span className="text-slate-400">
-                           {formatTime(row.AddedDate)}
-                          </span>
-                        </div>
-                      ),
-                    },
+    {
+      name: "Added On",
+      width: "105px",
+
+      cell: (row) => (
+        <div className="flex flex-col text-xs">
+          <span className="font-medium text-slate-700">
+            {formatDate(row.AddedDate)}
+          </span>
+
+          <span className="text-slate-400">{formatTime(row.AddedDate)}</span>
+        </div>
+      ),
+    },
 
     {
       name: "id",
@@ -422,4 +421,3 @@ const BillingListCopy = () => {
 };
 
 export default BillingListCopy;
-
