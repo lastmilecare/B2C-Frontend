@@ -24,10 +24,7 @@ import { healthAlert, healthAlerts } from "../utils/healthSwal";
 import PrescriptionPrint from "./PrescriptionPrint";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import {
-  
-  MEDICINE_FREQUENCIES,
-} from "../utils/constants";
+import { MEDICINE_FREQUENCIES } from "../utils/constants";
 import { useCreatePrescriptionMutation } from "../redux/apiSlice";
 import { formatISO } from "date-fns";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
@@ -104,6 +101,7 @@ const PrescriptionFormCopy = () => {
   const { id } = useParams();
   const location = useLocation();
   const { data: diseaseSearchResponse } = useGetComboQuery("diseases-byname");
+  const { data: medicineTypeResponse } = useGetComboQuery("medicine-type");
   const row = location.state?.row ?? null;
   const diseaseOptions = React.useMemo(
     () => diseaseSearchResponse || [],
@@ -381,14 +379,14 @@ const PrescriptionFormCopy = () => {
 
     const mappedAdviceList = Array.isArray(row.adviceList)
       ? row.adviceList.map((item) => ({
-        itemId: item.itemId,
-        medicine: item.item,
-        type: item.typeOfMedicine,
-        dosage: item.dosage,
-         instructions: item.remarks || "",
-        preferredTime: item.pillsConsumption,
-        duration: item.duration,
-      }))
+          itemId: item.itemId,
+          medicine: item.item,
+          type: item.typeOfMedicine,
+          dosage: item.dosage,
+          instructions: item.remarks || "",
+          preferredTime: item.pillsConsumption,
+          duration: item.duration,
+        }))
       : [];
 
     if (prescriptionList.length === 0) {
@@ -509,7 +507,7 @@ const PrescriptionFormCopy = () => {
                 key={s}
                 className={`h-2 w-12 rounded-full transition-all duration-300 ${
                   activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
-                  }`}
+                }`}
               />
             ))}
           </div>
@@ -827,21 +825,24 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   <Input
                     {...formik.getFieldProps("typemedicine")}
                     placeholder="Type of Medicine"
-                    label="Type of Medicine"
-                    readOnly
-                    className="bg-sky-50 cursor-not-allowed"
+                    label={
+                      <span>
+                        Type of Medicine <span className="text-red-500">*</span>
+                      </span>
+                    }
+                    // className="bg-sky-50 cursor-not-allowed"
                   />
                   <Input
-  label="Quantity"
-  inputMode="numeric"
-  type="text"
-  value={formik.values.dosage}
-  disabled={!formik.values.billno}
-  onChange={(e) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-    formik.setFieldValue("dosage", value);
-  }}
-/>
+                    label="Quantity"
+                    inputMode="numeric"
+                    type="text"
+                    value={formik.values.dosage}
+                    disabled={!formik.values.billno}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, "");
+                      formik.setFieldValue("dosage", value);
+                    }}
+                  />
                   <Input
                     {...formik.getFieldProps("dosageinstructions")}
                     placeholder="Instructions "
@@ -849,16 +850,16 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     disabled={!formik.values.billno}
                     required
                   />
-                <Input
-  label="Preferred Time (Morning/Evening/Night)"
-  placeholder="Enter Preferred Time"
-  value={formik.values.preferredtime}
-  required
-  disabled={!formik.values.billno}
-  onChange={(e) =>
-    formik.setFieldValue("preferredtime", e.target.value)
-  }
-/>
+                  <Input
+                    label="Preferred Time (Morning/Evening/Night)"
+                    placeholder="Enter Preferred Time"
+                    value={formik.values.preferredtime}
+                    required
+                    disabled={!formik.values.billno}
+                    onChange={(e) =>
+                      formik.setFieldValue("preferredtime", e.target.value)
+                    }
+                  />
 
                   {/* <Input
               label="Duration (in days) *"
@@ -889,13 +890,13 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 </div>
                 <div className="mt-3">
                   <Button
-  type="button"
-  onClick={handleAddPrescription}
-  className="mt-4 flex items-center gap-1"
->
-  <PlusIcon className="w-4 h-4" />
-  Add Medicine
-</Button>
+                    type="button"
+                    onClick={handleAddPrescription}
+                    className="mt-4 flex items-center gap-1"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    Add Medicine
+                  </Button>
                 </div>
 
                 {prescriptionList.length > 0 && (
@@ -936,8 +937,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                               <td className="px-4 py-3">{item.type}</td>
                               <td className="px-4 py-3">{item.dosage}</td>
                               <td className="px-4 py-3">
-  {item.instructions || "-"}
-</td>
+                                {item.instructions || "-"}
+                              </td>
                               <td className="px-4 py-3">
                                 {item.preferredTime || "-"}
                               </td>
@@ -1073,8 +1074,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                             <tr>
                               <th className="px-3 py-2 text-left">Medicine</th>
                               <th className="px-3 py-2 text-left">Type</th>
+                              <th className="px-3 py-2 text-left">
+                                Instructions
+                              </th>
                               <th className="px-3 py-2 text-center">
-                                Quantity
+                                Quantity/Dosage
                               </th>
                               <th className="px-3 py-2 text-left">
                                 Preferred Time
@@ -1093,7 +1097,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                 </td>
 
                                 <td className="px-3 py-2">{item.type}</td>
-
+                                <td className="px-3 py-2">
+                                  {item.instructions}
+                                </td>
                                 <td className="px-3 py-2 text-center">
                                   {item.dosage}
                                 </td>
@@ -1218,9 +1224,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       id && row
                         ? row
                         : buildPrescriptionPayload(
-                          formik.values,
-                          prescriptionList,
-                        );
+                            formik.values,
+                            prescriptionList,
+                          );
 
                     onPrintCS(dataToPrint);
                   }}
@@ -1241,8 +1247,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
               ) : (
                 <div className="flex gap-2">
                   <Button type="submit" variant="sky" disabled={isLoading}>
-                     <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-                    { id ? "Update" : "Save"}
+                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+                    {id ? "Update" : "Save"}
                   </Button>
                 </div>
               )}
