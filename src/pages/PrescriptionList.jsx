@@ -100,7 +100,17 @@ const PrescriptionListCopy = () => {
       healthAlerts.warning("Start date cannot be after end date.");
       return;
     }
-    setFilters(tempFilters);
+    // setFilters(tempFilters);
+    const cleanedFilters = Object.fromEntries(
+  Object.entries(tempFilters).filter(
+    ([_, value]) =>
+      value !== "" &&
+      value !== null &&
+      value !== undefined
+  )
+);
+
+setFilters(cleanedFilters);
     setPage(1);
   };
 
@@ -163,7 +173,8 @@ const PrescriptionListCopy = () => {
     {
       name: "Patient",
       center: true,
-      minWidth: "50px",
+      // minWidth: "50px",
+      width: "250px",
 
       cell: (row) => (
         <div className="flex items-center gap-3">
