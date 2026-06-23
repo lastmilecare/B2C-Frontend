@@ -75,10 +75,10 @@ const PrescriptionFormCopy = () => {
         return;
       }
     }
-   if (activeStep === 3 && !can("update:prescription_form")) {
-  await formik.submitForm();
-  return;
-}
+    if (activeStep === 3 && !can("update:prescription_form")) {
+      await formik.submitForm();
+      return;
+    }
     if (activeStep === 4) {
       if (prescriptionList.length === 0) {
         healthAlerts.warning("Please add at least one medicine");
@@ -239,10 +239,10 @@ const PrescriptionFormCopy = () => {
     };
   };
   const { permissions } = useSelector((state) => state.auth);
-const can = (permission) => {
-  if (!permission) return true;
-  return permissions?.includes(permission) ?? false;
-};
+  const can = (permission) => {
+    if (!permission) return true;
+    return permissions?.includes(permission) ?? false;
+  };
   const formik = useFormik({
     initialValues: {
       UHID: "",
@@ -332,15 +332,15 @@ const can = (permission) => {
       //   return;
       // }
       if (can("update:prescription_form") && prescriptionList.length === 0) {
-  healthAlerts.warning("Please add at least one medicine");
-  return;
-}
+        healthAlerts.warning("Please add at least one medicine");
+        return;
+      }
 
       // const payload = buildPrescriptionPayload(values, prescriptionList);
       const payload = buildPrescriptionPayload(
-  values,
-  can("update:prescription_form") ? prescriptionList : []
-);
+        values,
+        can("update:prescription_form") ? prescriptionList : [],
+      );
 
       try {
         if (id) {
@@ -470,7 +470,7 @@ const can = (permission) => {
       !typemedicine ||
       // !dosage ||
       !dosageinstructions ||
-      !preferredtime 
+      !preferredtime
       // !duration
     ) {
       healthAlerts.warning("Please fill all mandatory medicine fields");
@@ -778,19 +778,17 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     label="History"
                   />
                 </div>
-               {!can("update:prescription_form") && (
-      <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-amber-800">
-            ⚠️ You don't have permission to add medicines.
-          </p>
-        
-        </div>
-       
-      </div>
-    )}
-  </section>
-)}
+                {!can("update:prescription_form") && (
+                  <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-amber-800">
+                        ⚠️ You don't have permission to add medicines.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
             {activeStep === 4 && (
               <section>
                 <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -901,7 +899,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
             /> */}
                   <Select
                     label="Duration (in days)"
-                    
                     value={formik.values.duration}
                     onChange={(e) =>
                       formik.setFieldValue("duration", e.target.value)
@@ -1280,25 +1277,30 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   </Button>
                 </div>
               )} */}
-             {activeStep < 5 ? (
-  activeStep === 3 && !can("update:prescription_form") ? (
-    <Button type="button" variant="sky" disabled={isLoading} onClick={() => formik.submitForm()}>
-      <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-      {id ? "Update" : "Save"} Prescription
-    </Button>
-  ) : (
-    <Button type="button" variant="sky" onClick={nextStep}>
-      Continue
-    </Button>
-  )
-) : (
-  <div className="flex gap-2">
-    <Button type="submit" variant="sky" disabled={isLoading}>
-      <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-      {id ? "Update" : "Save"}
-    </Button>
-  </div>
-)}
+              {activeStep < 5 ? (
+                activeStep === 3 && !can("update:prescription_form") ? (
+                  <Button
+                    type="button"
+                    variant="sky"
+                    disabled={isLoading}
+                    onClick={() => formik.submitForm()}
+                  >
+                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+                    {id ? "Update" : "Save"} Prescription
+                  </Button>
+                ) : (
+                  <Button type="button" variant="sky" onClick={nextStep}>
+                    Continue
+                  </Button>
+                )
+              ) : (
+                <div className="flex gap-2">
+                  <Button type="submit" variant="sky" disabled={isLoading}>
+                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+                    {id ? "Update" : "Save"}
+                  </Button>
+                </div>
+              )}
             </div>
           </form>
         </div>

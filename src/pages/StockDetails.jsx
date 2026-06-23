@@ -291,7 +291,7 @@ const StockDetailsCopy = () => {
     },
     {
       name: "Sales Qty",
-      selector: (row) => row.RecvQty - row.BalQty,
+      selector: (row) => (row.RecvQty + row.FreeRecvQty - row.BalQty),
       width: "120px",
     },
     {
@@ -299,7 +299,7 @@ const StockDetailsCopy = () => {
       width: "110px",
       center: true,
       cell: (row) => {
-        const qty = (row.RecvQty+row.FreeRecvQty - row.IssueQty);
+        const qty = (row.RecvQty + row.FreeRecvQty - row.IssueQty);
 
         return (
           <span

@@ -390,6 +390,7 @@ export const api = createApi({
         method: "POST",
         data: PrescriptionData,
       }),
+      invalidatesTags: ["Prescription"],
     }),
     updatePrescription: build.mutation({
       query: ({ id, ...body }) => ({
@@ -397,6 +398,7 @@ export const api = createApi({
         method: "PUT",
         data: body,
       }),
+      invalidatesTags: ["Prescription"],
     }),
     togglePrescriptionStatus: build.mutation({
       query: (id) => ({
@@ -578,20 +580,20 @@ export const api = createApi({
       invalidatesTags: ["Attendance", "Dashboard"],
     }),
     getAttendance: build.query({
-  query: (params) => ({
-    url: `/attendance`,
-    method: "GET",
-    params,
-  }),
-  providesTags: ["Attendance"],
+      query: (params) => ({
+        url: `/attendance`,
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Attendance"],
 
-  keepUnusedDataFor: 0,
-}),
+      keepUnusedDataFor: 0,
+    }),
     getMonthlyStats: build.query({
       query: ({ userId, month, year }) => ({
         url: `/attendance/stats`,
         method: "GET",
-        params: {userId, month, year },
+        params: { userId, month, year },
       }),
       providesTags: ["Attendance"],
     }),
@@ -1549,7 +1551,7 @@ export const api = createApi({
       providesTags: ["Attendances"],
       keepUnusedDataFor: 0,
     }),
-      getcampOpdBilling: build.query({
+    getcampOpdBilling: build.query({
       query: ({
         page = 1,
         limit = 10,
@@ -1589,7 +1591,7 @@ export const api = createApi({
       }),
       providesTags: ["Bill"],
     }),
-     
+
     getcampOpdBillById: build.query({
       query: (id) => ({
         url: `/camp-opd-billing/${id}`,
@@ -1621,14 +1623,14 @@ export const api = createApi({
       }),
       invalidatesTags: ["Bill"],
     }),
-     searchcampOpdBillNo: build.query({
+    searchcampOpdBillNo: build.query({
       query: (bill_no) => ({
         url: "/camp-opd-billing",
         method: "GET",
         params: { bill_no },
       }),
     }),
-      exportcampOpdExcel: build.query({
+    exportcampOpdExcel: build.query({
       query: (filters = {}) => ({
         url: "/camp-opd-billing/opd-billing-export",
         method: "GET",
@@ -1638,7 +1640,7 @@ export const api = createApi({
       // transformResponse: (response) => response,
       keepUnusedDataFor: 0,
     }),
-     createMedicinecampBill: build.mutation({
+    createMedicinecampBill: build.mutation({
       query: (data) => ({
         url: "/medicine-inventory/camp/bill",
         method: "POST",
@@ -1660,7 +1662,7 @@ export const api = createApi({
       }),
       invalidatesTags: ["Bill", "Inventory"],
     }),
-     getSalesStockDetailscamp: build.query({
+    getSalesStockDetailscamp: build.query({
       query: ({
         page = 1,
         limit = 10,
@@ -1695,174 +1697,164 @@ export const api = createApi({
       }),
     }),
     softDeleteMedicineBill: build.mutation({
-  query: (id) => ({
-    url: `/medicine-inventory/bill/${id}/delete`,
-    method: "PATCH",
-  }),
-  invalidatesTags: ["Bill", "Inventory"],
-}),
-getCollectedBy: build.query({
-  query: () => ({
-    url: "/opd-billing/collected-by",
-    method: "GET",
-  }),
-}),
-getaddedBy: build.query({
-  query: () => ({
-    url: "/medicine-inventory/added-by",
-    method: "GET",
-  }),
-}),
- softDeleteMedicinecampBill: build.mutation({
-  query: (id) => ({
-    url: `/medicine-inventory/camp/bill/${id}/delete`,
-    method: "PATCH",
-  }),
-  invalidatesTags: ["Bill", "Inventory"],
-}),
-getcampaddedBy: build.query({
-  query: () => ({
-    url: "/medicine-inventory/camp/added-by",
-    method: "GET",
-  }),
-}),
-getCollectedcampBy: build.query({
-  query: () => ({
-    url: "/camp-opd-billing/camp/collected-by",
-    method: "GET",
-  }),
-}),
-getAllSalesStockDetails: build.query({
-  query: ({
-    page = 1,
-    limit = 10,
-    descriptions,
-    startDate,
-    endDate,
-    AddedBy,
-    CustommerName,
-    BillNo,
-  } = {}) => ({
-    url: "/medicine-inventory/stock/view/all-sales",
-    method: "get",
-    params: {
-      page,
-      limit,
-      descriptions,
-      startDate,
-      endDate,
-      AddedBy,
-      CustommerName,
-      BillNo,
-    },
-  }),
-}),
-getSalesAddedBy: build.query({
-  query: () => ({
-    url: "/medicine-inventory/sales/added-by",
-    method: "GET",
-  }),
-}),
-getPharmacyRevenue: build.query({
-  query: ({
-    page = 1,
-    limit = 10,
-    startDate,
-    endDate,
-  } = {}) => ({
-    url: "/pharmacy-revenue/view",
-    method: "GET",
-    params: {
-      page,
-      limit,
-      startDate,
-      endDate,
-    },
-  }),
-}),
+      query: (id) => ({
+        url: `/medicine-inventory/bill/${id}/delete`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Bill", "Inventory"],
+    }),
+    getCollectedBy: build.query({
+      query: () => ({
+        url: "/opd-billing/collected-by",
+        method: "GET",
+      }),
+    }),
+    getaddedBy: build.query({
+      query: () => ({
+        url: "/medicine-inventory/added-by",
+        method: "GET",
+      }),
+    }),
+    softDeleteMedicinecampBill: build.mutation({
+      query: (id) => ({
+        url: `/medicine-inventory/camp/bill/${id}/delete`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Bill", "Inventory"],
+    }),
+    getcampaddedBy: build.query({
+      query: () => ({
+        url: "/medicine-inventory/camp/added-by",
+        method: "GET",
+      }),
+    }),
+    getCollectedcampBy: build.query({
+      query: () => ({
+        url: "/camp-opd-billing/camp/collected-by",
+        method: "GET",
+      }),
+    }),
+    getAllSalesStockDetails: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        descriptions,
+        startDate,
+        endDate,
+        AddedBy,
+        CustommerName,
+        BillNo,
+      } = {}) => ({
+        url: "/medicine-inventory/stock/view/all-sales",
+        method: "get",
+        params: {
+          page,
+          limit,
+          descriptions,
+          startDate,
+          endDate,
+          AddedBy,
+          CustommerName,
+          BillNo,
+        },
+      }),
+    }),
+    getSalesAddedBy: build.query({
+      query: () => ({
+        url: "/medicine-inventory/sales/added-by",
+        method: "GET",
+      }),
+    }),
+    getPharmacyRevenue: build.query({
+      query: ({ page = 1, limit = 10, startDate, endDate } = {}) => ({
+        url: "/pharmacy-revenue/view",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          startDate,
+          endDate,
+        },
+      }),
+    }),
 
-createPharmacyRevenue: build.mutation({
-  query: (body) => ({
-    url: "/pharmacy-revenue",
-    method: "POST",
-    data: body,
-  }),
-}),
+    createPharmacyRevenue: build.mutation({
+      query: (body) => ({
+        url: "/pharmacy-revenue",
+        method: "POST",
+        data: body,
+      }),
+    }),
 
-updatePharmacyRevenue: build.mutation({
-  query: ({ id, body }) => ({
-    url: `/pharmacy-revenue/${id}`,
-    method: "PUT",
-    data: body,
-  }),
-}),
+    updatePharmacyRevenue: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/pharmacy-revenue/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+    }),
 
-deletePharmacyRevenue: build.mutation({
-  query: (id) => ({
-    url: `/pharmacy-revenue/${id}`,
-    method: "DELETE",
-  }),
-}),
+    deletePharmacyRevenue: build.mutation({
+      query: (id) => ({
+        url: `/pharmacy-revenue/${id}`,
+        method: "DELETE",
+      }),
+    }),
 
-exportPharmacyRevenue: build.query({
-  query: (filters = {}) => ({
-    url: "/pharmacy-revenue/export",
-    method: "GET",
-    params: filters,
-    responseType: "blob",
-  }),
-  keepUnusedDataFor: 0,
-}),
-getSpectacleRevenue: build.query({
-  query: ({
-    page = 1,
-    limit = 10,
-    startDate,
-    endDate,
-  } = {}) => ({
-    url: "/spectacle-revenue/view",
-    method: "GET",
-    params: {
-      page,
-      limit,
-      startDate,
-      endDate,
-    },
-  }),
-}),
+    exportPharmacyRevenue: build.query({
+      query: (filters = {}) => ({
+        url: "/pharmacy-revenue/export",
+        method: "GET",
+        params: filters,
+        responseType: "blob",
+      }),
+      keepUnusedDataFor: 0,
+    }),
+    getSpectacleRevenue: build.query({
+      query: ({ page = 1, limit = 10, startDate, endDate } = {}) => ({
+        url: "/spectacle-revenue/view",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          startDate,
+          endDate,
+        },
+      }),
+    }),
 
-createSpectacleRevenue: build.mutation({
-  query: (body) => ({
-    url: "/spectacle-revenue",
-    method: "POST",
-    data: body,
-  }),
-}),
+    createSpectacleRevenue: build.mutation({
+      query: (body) => ({
+        url: "/spectacle-revenue",
+        method: "POST",
+        data: body,
+      }),
+    }),
 
-updateSpectacleRevenue: build.mutation({
-  query: ({ id, body }) => ({
-    url: `/spectacle-revenue/${id}`,
-    method: "PUT",
-    data: body,
-  }),
-}),
+    updateSpectacleRevenue: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/spectacle-revenue/${id}`,
+        method: "PUT",
+        data: body,
+      }),
+    }),
 
-deleteSpectacleRevenue: build.mutation({
-  query: (id) => ({
-    url: `/spectacle-revenue/${id}`,
-    method: "DELETE",
-  }),
-}),
+    deleteSpectacleRevenue: build.mutation({
+      query: (id) => ({
+        url: `/spectacle-revenue/${id}`,
+        method: "DELETE",
+      }),
+    }),
 
-exportSpectacleRevenue: build.query({
-  query: (filters = {}) => ({
-    url: "/spectacle-revenue/export",
-    method: "GET",
-    params: filters,
-    responseType: "blob",
-  }),
-  keepUnusedDataFor: 0,
-}),
+    exportSpectacleRevenue: build.query({
+      query: (filters = {}) => ({
+        url: "/spectacle-revenue/export",
+        method: "GET",
+        params: filters,
+        responseType: "blob",
+      }),
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -2058,7 +2050,7 @@ export const {
   useGetCollectedcampByQuery,
   useGetAllSalesStockDetailsQuery,
   useGetSalesAddedByQuery,
-   useGetPharmacyRevenueQuery,
+  useGetPharmacyRevenueQuery,
   useCreatePharmacyRevenueMutation,
   useUpdatePharmacyRevenueMutation,
   useDeletePharmacyRevenueMutation,
@@ -2067,5 +2059,5 @@ export const {
   useCreateSpectacleRevenueMutation,
   useUpdateSpectacleRevenueMutation,
   useDeleteSpectacleRevenueMutation,
-  useLazyExportSpectacleRevenueQuery
+  useLazyExportSpectacleRevenueQuery,
 } = api;
