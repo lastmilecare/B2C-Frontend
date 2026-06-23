@@ -252,6 +252,7 @@ const GRNFormCopy = () => {
   });
   useEffect(() => {
     if (!editData) return;
+
     const cleanNumber = (val) => {
       if (!val) return 0;
       return Number(String(val).replace(/[$,]/g, ""));
@@ -277,7 +278,12 @@ const GRNFormCopy = () => {
       NoStrip: editData.NoStrip ?? 0,
       NoQtyperStrip: editData.NoQtyperStrip ?? 0,
       RecvQty: editData.RecvQty ?? 0,
-      FreeRecvQty: editData.FreeRecvQty ?? 0,
+      // FreeRecvQty: editData.FreeRecvQty ?? 0,
+      FreeRecvQty:
+        editData.NoQtyperStrip > 0
+          ? Number(editData.FreeRecvQty || 0) /
+          Number(editData.NoQtyperStrip)
+          : 0,
 
       CP: cleanNumber(editData.CP),
       MRP: cleanNumber(editData.MRP),
@@ -295,6 +301,7 @@ const GRNFormCopy = () => {
         )?.value ||
         "",
       items: [],
+      IssueQty: editData.IssueQty ?? 0
     });
 
     setMedicineSearch(editData.ItemName ?? "");
