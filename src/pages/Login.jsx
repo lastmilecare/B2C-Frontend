@@ -23,13 +23,17 @@ const Login = () => {
       // navigate("/");
       const role = data?.data?.role;
       const tenantType = data?.data?.tenantType;
+      let redirectPath = "/dashboard";
+
       if (role === "LMC_ADMIN") {
-        navigate("/dashboard");
+        redirectPath = "/dashboard";
       } else if (tenantType === "ohc") {
-        navigate("/ohc-dashboard");
+        redirectPath = "/ohc-dashboard";
       } else if (tenantType === "company") {
-        navigate("/dashboard");
+        redirectPath = "/dashboard";
       }
+
+      window.location.href = redirectPath;
     } catch (error) {
       healthAlert({
         icon: "error",
