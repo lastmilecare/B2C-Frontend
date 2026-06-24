@@ -146,7 +146,7 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
               <tr>
                 <td className="border p-2 w-28 font-semibold">Address :</td>
                 <td className="border p-2" colSpan={3}>
-                  {data?.localAddressDistrict}
+                  {data?.localAddress}
                 </td>
               </tr>
             </tbody>

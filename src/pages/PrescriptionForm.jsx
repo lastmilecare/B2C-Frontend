@@ -778,17 +778,19 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     label="History"
                   />
                 </div>
-                {!can("update:prescription_form") && (
-                  <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-amber-800">
-                        ⚠️ You don't have permission to add medicines.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </section>
-            )}
+               {!can("update:prescription_form") && (
+      <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-amber-800">
+           ⚠️ Medicine can only be added by a doctor.
+          </p>
+        
+        </div>
+       
+      </div>
+    )}
+  </section>
+)}
             {activeStep === 4 && (
               <section>
                 <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
