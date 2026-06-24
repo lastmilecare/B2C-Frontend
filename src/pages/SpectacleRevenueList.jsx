@@ -11,6 +11,7 @@ useGetSpectacleRevenueQuery,
 useDeleteSpectacleRevenueMutation,
 useLazyExportSpectacleRevenueQuery
 } from "../redux/apiSlice";
+import { formatDate } from "../utils/helper";
 
 const SpectacleRevenueList = ({ onEdit }) => {
   const [page, setPage] = useState(1);
@@ -134,10 +135,14 @@ const SpectacleRevenueList = ({ onEdit }) => {
       selector: (row) => row.RevenueID,
       width: "120px",
     },
-    {
-      name: "Revenue Date",
-      selector: (row) => new Date(row.RevenueDate).toLocaleDateString(),
-    },
+     {
+          name: "Revenue Date",
+          selector: (row) => <div className="flex flex-col text-xs">
+                  <span className="font-medium text-slate-700">
+                   {formatDate(row.RevenueDate)}
+                  </span>
+                  </div>
+        },
     {
       name: "Payment Mode",
       selector: (row) =>
