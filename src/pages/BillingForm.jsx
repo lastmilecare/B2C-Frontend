@@ -83,38 +83,38 @@ const BillingFormCopy = ({ refetchList }) => {
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const { id } = useParams();
   const populatedUhidRef = useRef("");
-  const { data: billData,  refetch: refetchBillData, } = useGetMedicineBillByIdQuery(id, {
+  const { data: billData, refetch: refetchBillData, } = useGetMedicineBillByIdQuery(id, {
     skip: !id,
   });
 
- const {
-  data: medicineResponse,
-  refetch: refetchMedicineList,
-} = useGetMediceneListQuery(
-  { searchTerm: debouncedMedicine || skipToken },
-  { skip: !debouncedMedicine || debouncedMedicine.length < 2 }
-);
+  const {
+    data: medicineResponse,
+    refetch: refetchMedicineList,
+  } = useGetMediceneListQuery(
+    { searchTerm: debouncedMedicine || skipToken },
+    { skip: !debouncedMedicine || debouncedMedicine.length < 2 }
+  );
   const medicineList = React.useMemo(
     () => medicineResponse?.data || [],
     [medicineResponse],
   );
   const { data: suggestions = [],
     refetch: refetchBillSearch,
-   } = useSearchOpdBillNoQuery(debouncedUhid, {
+  } = useSearchOpdBillNoQuery(debouncedUhid, {
     skip: debouncedUhid.length < 1 || id,
   });
   const { data: paymodes, refetch: refetchPaymode, } = useGetComboQuery("paymode");
   const [createMedicineBill] = useCreateMedicineBillMutation();
   const [updateMedicineBill] = useUpdateMedicineBillMutation();
   const [triggerGetBillDetails] = useLazyGetBillingByBillNoQuery();
-const {
-  data: stockDetails,
-  refetch: refetchStock,
-} = useGetStockDetailsQuery(
-  selectedMedicine
-    ? { ItemID: String(selectedMedicine.id) }
-    : skipToken
-);
+  const {
+    data: stockDetails,
+    refetch: refetchStock,
+  } = useGetStockDetailsQuery(
+    selectedMedicine
+      ? { ItemID: String(selectedMedicine.id) }
+      : skipToken
+  );
   // const [isEditMedicineLoaded, setIsEditMedicineLoaded] = useState(false);
   const billingItemValues = [];
   useEffect(() => {
@@ -325,6 +325,7 @@ const {
       })) || [];
 
     const firstItem = mappedItems[0];
+   
 
     formik.setValues({
       ...formik.values,
@@ -353,7 +354,9 @@ const {
       sgstAmount: Number(header.SGSTAmount || 0),
       grossAmount: Number(header.GrossAmount || 0),
       taxableAmount: Number(header.TaxableAmount || 0),
-      payMode: header.PayMode || "",
+      payMode: String(header.PayMode || ""),
+      cashAmount: Number(header.CashAmount || 0),
+      cardAmount: Number(header.CardAmount || 0),
 
       items: mappedItems,
     });
@@ -387,40 +390,41 @@ const {
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
 
-//   useEffect(() => {
+  //   useEffect(() => {
 
-//     const updates = {
-//       cgst: stockDetails?.data[0]?.CGST || 0,
-//       sgst: stockDetails?.data[0]?.SGST || 0,
-//       discountPercent: cleanCurrency(
-//         stockDetails?.data[0]?.DiscountPCperitem || 0,
-//       ),
-//       mrp: cleanCurrency(stockDetails?.data[0]?.MRPU || 0),
-//       cp: cleanCurrency(stockDetails?.data[0]?.CPU || 0),
-//     };
-//     formik.setValues({ ...formik.values, ...updates }, false);
-//   }, [stockDetails]);
-useEffect(() => {
-  if (!stockDetails?.data?.length) return;
+  //     const updates = {
+  //       cgst: stockDetails?.data[0]?.CGST || 0,
+  //       sgst: stockDetails?.data[0]?.SGST || 0,
+  //       discountPercent: cleanCurrency(
+  //         stockDetails?.data[0]?.DiscountPCperitem || 0,
+  //       ),
+  //       mrp: cleanCurrency(stockDetails?.data[0]?.MRPU || 0),
+  //       cp: cleanCurrency(stockDetails?.data[0]?.CPU || 0),
+  //     };
+  //     formik.setValues({ ...formik.values, ...updates }, false);
+  //   }, [stockDetails]);
+  useEffect(() => {
+    if (!stockDetails?.data?.length) return;
 
-  const updates = {
-    cgst: stockDetails.data[0].CGST || 0,
-    sgst: stockDetails.data[0].SGST || 0,
-    discountPercent: cleanCurrency(
-      stockDetails.data[0].DiscountPCperitem || 0
-    ),
-    mrp: cleanCurrency(stockDetails.data[0].MRPU || 0),
-    cp: cleanCurrency(stockDetails.data[0].CPU || 0),
-  };
+    const updates = {
+      cgst: stockDetails.data[0].CGST || 0,
+      sgst: stockDetails.data[0].SGST || 0,
+      discountPercent: cleanCurrency(
+        stockDetails.data[0].DiscountPCperitem || 0
+      ),
+      mrp: cleanCurrency(stockDetails.data[0].MRPU || 0),
+      cp: cleanCurrency(stockDetails.data[0].CPU || 0),
+    };
 
-  formik.setValues(
-    {
-      ...formik.values,
-      ...updates,
-    },
-    false
-  );
-}, [stockDetails, medicineSelectionCount]);
+    formik.setValues(
+      {
+        ...formik.values,
+        ...updates,
+      },
+      false
+    );
+  }, [stockDetails, medicineSelectionCount]);
+  
   const handleBillSelect = async (billNo) => {
     setBillSearch(billNo);
     const res = await triggerGetBillDetails(billNo).unwrap();
@@ -548,11 +552,38 @@ useEffect(() => {
 
     formik.setFieldValue("dueAmount", (total - paid).toFixed(2));
   }, [formik.values.paidAmount, formik.values.totalAmount]);
-  useEffect(() => {
-  if (selectedMedicine?.id) {
-    refetchStock();
+useEffect(() => {
+
+  const paid = Number(formik.values.paidAmount || 0);
+
+  if (formik.values.payMode === "1" || formik.values.payMode === "") {
+
+    formik.setFieldValue("cashAmount", paid);
+    formik.setFieldValue("cardAmount", 0);
+
   }
-}, [selectedMedicine?.id]);
+
+  else if (formik.values.payMode === "3") {
+
+  }
+
+  else {
+
+    formik.setFieldValue("cashAmount", 0);
+    formik.setFieldValue("cardAmount", paid);
+
+  }
+
+}, [
+  formik.values.payMode,
+  formik.values.paidAmount
+]);
+  useEffect(() => {
+    if (selectedMedicine?.id) {
+      refetchStock();
+    }
+  }, [selectedMedicine?.id]);
+ 
 
   return (
     <FormikProvider value={formik}>
@@ -774,18 +805,18 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                           {medicineSuggestions.map((item) => (
                             <li
                               key={item.id}
-                            
-                         onClick={() => {
-  setSelectedMedicine(item);
 
-  setMedicineSelectionCount((prev) => prev + 1);
+                              onClick={() => {
+                                setSelectedMedicine(item);
 
-  setMedicineSearch(item.descriptions);
+                                setMedicineSelectionCount((prev) => prev + 1);
 
-  formik.setFieldValue("medicine", item.descriptions);
+                                setMedicineSearch(item.descriptions);
 
-  setMedicineSuggestions([]);
-}}
+                                formik.setFieldValue("medicine", item.descriptions);
+
+                                setMedicineSuggestions([]);
+                              }}
 
                               className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
                             >
@@ -955,8 +986,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
                                     <td className="px-3 py-3 text-center text-red-500 text-xs">
                                       {item.expDate
-  ? new Date(item.expDate).toLocaleDateString("en-GB")
-  : "-"}
+                                        ? new Date(item.expDate).toLocaleDateString("en-GB")
+                                        : "-"}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">
@@ -1040,19 +1071,55 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         value={formik.values.totalAmount}
                         readOnly
                       />
-                      <Select
+                        <Select
                         label="Pay Mode"
                         required
+                        value={formik.values.payMode}
                         error={formik.touched.payMode && formik.errors.payMode}
-                        {...formik.getFieldProps("payMode")}
+                        onChange={(e) => {
+
+                          const mode = e.target.value;
+
+                          formik.setFieldValue("payMode", mode);
+
+                          const paid = Number(formik.values.paidAmount || 0);
+
+                          if (mode === "1") {
+
+                            formik.setFieldValue("cashAmount", paid);
+                            formik.setFieldValue("cardAmount", 0);
+
+                          }
+
+                          else if (mode === "3") {
+
+                            formik.setFieldValue("cashAmount", "");
+                            formik.setFieldValue("cardAmount", "");
+
+                          }
+
+                          else {
+
+                            formik.setFieldValue("cashAmount", 0);
+                            formik.setFieldValue("cardAmount", paid);
+
+                          }
+
+                        }}
                       >
-                        <option value="">-- Select --</option>
+
+                        <option value="">Select</option>
+
                         {Picaso_Paymode_Options.map((m) => (
+
                           <option key={m.id} value={m.id}>
                             {m.name}
                           </option>
+
                         ))}
+
                       </Select>
+
                     </div>
                     <div className="space-y-1">
                       <Input
@@ -1066,8 +1133,90 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         readOnly
                       />
                       <Input
+
                         label="Paid Amount"
-                        {...formik.getFieldProps("paidAmount")}
+
+                        value={formik.values.paidAmount}
+
+                        onChange={(e) => {
+
+                          const paid = Number(
+                            e.target.value || 0
+                          );
+
+                          formik.setFieldValue(
+                            "paidAmount",
+                            paid
+                          );
+
+                          if (
+
+                            formik.values.payMode === "1"
+
+                            ||
+
+                            formik.values.payMode === ""
+
+                          ) {
+
+                            formik.setFieldValue(
+                              "cashAmount",
+                              paid
+                            );
+
+                            formik.setFieldValue(
+                              "cardAmount",
+                              0
+                            );
+
+                          }
+
+                          else if (
+
+                            formik.values.payMode === "3"
+
+                          ) {
+                          }
+
+                          else {
+
+                            formik.setFieldValue(
+                              "cashAmount",
+                              0
+                            );
+
+                            formik.setFieldValue(
+                              "cardAmount",
+                              paid
+                            );
+
+                          }
+
+                        }}
+                      />
+                        <Input
+                        label="Cash Amount"
+                        value={formik.values.cashAmount}
+                        readOnly={formik.values.payMode !== "3"}
+                        onChange={(e) => {
+
+                          const value = e.target.value;
+
+if (/^\d*\.?\d{0,2}$/.test(value)) {
+    formik.setFieldValue("cashAmount", value);
+}
+
+                          if (formik.values.payMode === "3") {
+
+                         formik.setFieldValue(
+    "paidAmount",
+    Number(value || 0) +
+    Number(formik.values.cardAmount || 0)
+);
+
+                          }
+
+                        }}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1085,6 +1234,30 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         label="Due Amount"
                         value={formik.values.dueAmount}
                         readOnly
+                      />
+                       <Input
+                        label="Card / Online Amount"
+                        value={formik.values.cardAmount}
+                        readOnly={formik.values.payMode !== "3"}
+                        onChange={(e) => {
+
+                          const value = e.target.value;
+
+if (/^\d*\.?\d{0,2}$/.test(value)) {
+    formik.setFieldValue("cardAmount", value);
+}
+
+                          if (formik.values.payMode === "3") {
+
+                           formik.setFieldValue(
+    "paidAmount",
+    Number(value || 0) +
+    Number(formik.values.cashAmount || 0)
+);
+
+                          }
+
+                        }}
                       />
                     </div>
                   </div>
@@ -1253,11 +1426,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                 </td>
 
                                 <td className="px-3 py-2 text-right">
-                                 {item.saleRate || 0}
+                                  {item.saleRate || 0}
                                 </td>
 
                                 <td className="px-3 py-2 text-right font-semibold">
-                                   {item.total || 0}
+                                  {item.total || 0}
                                 </td>
                               </tr>
                             ))}

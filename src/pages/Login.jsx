@@ -18,6 +18,7 @@ const Login = () => {
 
   const onLoginFinish = async (values) => {
     try {
+      values.email = values.email?.trim();
       const data = await login(values).unwrap();
       dispatch(setCredentials(data));
       // navigate("/");

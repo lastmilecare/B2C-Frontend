@@ -236,6 +236,14 @@ setFilters(cleanedFilters);
 
       grow: 1,
     },
+   {
+  name: "Address",
+  title: "Address",
+  selector: (row) => row.address || "-",
+  grow: 2,
+  wrap: true,
+} ,
+    
 
     {
       name: "Added On",

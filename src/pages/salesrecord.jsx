@@ -488,7 +488,7 @@ const UserOptions =
               <p className="text-[11px] text-gray-500">Total Amount</p>
 
               <p className="text-sm font-bold text-emerald-700">
-                {parseCurrency(totalAmount)}
+                {parseCurrency(totalAmount).toFixed(2)}
               </p>
             </div>
           </div>
@@ -573,7 +573,7 @@ const UserOptions =
                 <td></td>
 
                 <td className="px-4 py-3 text-right font-bold text-emerald-700">
-                  {parseCurrency(totalAmount)}
+                  {parseCurrency(totalAmount).toFixed(2)}
                 </td>
               </tr>
             </tfoot>
