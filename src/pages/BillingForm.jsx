@@ -1132,68 +1132,31 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         value={formik.values.grossAmount}
                         readOnly
                       />
-                      <Input
+                    <Input
+  label="Paid Amount"
+  value={formik.values.paidAmount}
+  onChange={(e) => {
+    const value = e.target.value;
 
-                        label="Paid Amount"
+   
+    if (!/^\d*\.?\d{0,2}$/.test(value)) return;
 
-                        value={formik.values.paidAmount}
+    formik.setFieldValue("paidAmount", value);
 
-                        onChange={(e) => {
+    const paid = Number(value || 0);
 
-                          const paid = Number(
-                            e.target.value || 0
-                          );
+    if (formik.values.payMode === "1" || formik.values.payMode === "") {
+      formik.setFieldValue("cashAmount", paid);
+      formik.setFieldValue("cardAmount", 0);
+    } else if (formik.values.payMode === "3") {
+      
+    } else {
+      formik.setFieldValue("cashAmount", 0);
+      formik.setFieldValue("cardAmount", paid);
+    }
+  }}
+/>
 
-                          formik.setFieldValue(
-                            "paidAmount",
-                            paid
-                          );
-
-                          if (
-
-                            formik.values.payMode === "1"
-
-                            ||
-
-                            formik.values.payMode === ""
-
-                          ) {
-
-                            formik.setFieldValue(
-                              "cashAmount",
-                              paid
-                            );
-
-                            formik.setFieldValue(
-                              "cardAmount",
-                              0
-                            );
-
-                          }
-
-                          else if (
-
-                            formik.values.payMode === "3"
-
-                          ) {
-                          }
-
-                          else {
-
-                            formik.setFieldValue(
-                              "cashAmount",
-                              0
-                            );
-
-                            formik.setFieldValue(
-                              "cardAmount",
-                              paid
-                            );
-
-                          }
-
-                        }}
-                      />
                         <Input
                         label="Cash Amount"
                         value={formik.values.cashAmount}
