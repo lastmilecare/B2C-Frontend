@@ -92,8 +92,8 @@ const PatientRegistrationCopy = () => {
         errors.localAddress ||
         errors.fincat ||
         errors.ReferredBy ||
-        errors.occupation ||
-        errors.pin
+        errors.occupation 
+        // errors.pin
       )
     ) {
       formik.setTouched({
@@ -102,7 +102,7 @@ const PatientRegistrationCopy = () => {
         fincat: true,
         ReferredBy: true,
         occupation: true,
-        pin: true,
+        // pin: true,
         localAddress: true,
       });
 
@@ -174,7 +174,7 @@ const PatientRegistrationCopy = () => {
       CO: Yup.string().required("Co is required"),
       // employeeId: Yup.string().required("EmployeeId is required")
       pin: Yup.string()
-        .required("Pin Code is required")
+       
         .matches(/^[0-9]{6}$/, "Pin Code must be 6 digits"),
       ReferredBy: Yup.string().required("Referred By is required"),
       idProof_name: Yup.string().required(
@@ -783,14 +783,14 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       label="Pin Code"
                       type="tel"
                       inputMode="numeric"
-                      required
+                      // required
                       maxLength={6}
                       value={formik.values.pin}
                       onChange={(e) => {
                         const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
                         formik.setFieldValue("pin", onlyNumbers);
                       }}
-                      error={formik.touched.pin && formik.errors.pin}
+                      // error={formik.touched.pin && formik.errors.pin}
                     />
                     <Select
                       {...formik.getFieldProps("ReferredBy")}
