@@ -263,6 +263,7 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
             ["Paid Amount (Rs.)", cleanCurrency(header.PaidAmount)],
             ["Due Amount (Rs.)", cleanCurrency(header.DueAmount)],
             ["Cash Amount (Rs.)", cleanCurrency(header.CashAmount)],
+            ["Card/Online Amount (Rs.)", cleanCurrency(header.CardAmount)],
           ].map(([label, value]) => (
             <div
               key={label}

@@ -344,7 +344,9 @@ const CampBillingFormCopy = ({ refetchList }) => {
       sgstAmount: Number(header.SGSTAmount || 0),
       grossAmount: Number(header.GrossAmount || 0),
       taxableAmount: Number(header.TaxableAmount || 0),
-      payMode: header.PayMode || "",
+      payMode: String(header.PayMode || ""),
+      cashAmount: Number(header.CashAmount || 0),
+      cardAmount: Number(header.CardAmount || 0),
 
       items: mappedItems,
     });
@@ -390,6 +392,7 @@ const CampBillingFormCopy = ({ refetchList }) => {
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [stockDetails]);
+
 
   const handleBillSelect = async (billNo) => {
     setBillSearch(billNo);
@@ -518,7 +521,37 @@ const CampBillingFormCopy = ({ refetchList }) => {
 
     formik.setFieldValue("dueAmount", (total - paid).toFixed(2));
   }, [formik.values.paidAmount, formik.values.totalAmount]);
+useEffect(() => {
 
+  const paid = Number(formik.values.paidAmount || 0);
+
+  if (formik.values.payMode === "1" || formik.values.payMode === "") {
+
+    formik.setFieldValue("cashAmount", paid);
+    formik.setFieldValue("cardAmount", 0);
+
+  }
+
+  else if (formik.values.payMode === "3") {
+
+  }
+
+  else {
+
+    formik.setFieldValue("cashAmount", 0);
+    formik.setFieldValue("cardAmount", paid);
+
+  }
+
+}, [
+  formik.values.payMode,
+  formik.values.paidAmount
+]);
+  // useEffect(() => {
+  //   if (selectedMedicine?.id) {
+  //     refetchStock();
+  //   }
+  // }, [selectedMedicine?.id]);
   return (
     <FormikProvider value={formik}>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -1009,15 +1042,50 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       <Select
                         label="Pay Mode"
                         required
+                        value={formik.values.payMode}
                         error={formik.touched.payMode && formik.errors.payMode}
-                        {...formik.getFieldProps("payMode")}
+                        onChange={(e) => {
+
+                          const mode = e.target.value;
+
+                          formik.setFieldValue("payMode", mode);
+
+                          const paid = Number(formik.values.paidAmount || 0);
+
+                          if (mode === "1") {
+
+                            formik.setFieldValue("cashAmount", paid);
+                            formik.setFieldValue("cardAmount", 0);
+
+                          }
+
+                          else if (mode === "3") {
+
+                            formik.setFieldValue("cashAmount", "");
+                            formik.setFieldValue("cardAmount", "");
+
+                          }
+
+                          else {
+
+                            formik.setFieldValue("cashAmount", 0);
+                            formik.setFieldValue("cardAmount", paid);
+
+                          }
+
+                        }}
                       >
-                        <option value="">-- Select --</option>
+
+                        <option value="">Select</option>
+
                         {Picaso_Paymode_Options.map((m) => (
+
                           <option key={m.id} value={m.id}>
                             {m.name}
                           </option>
+
                         ))}
+
                       </Select>
                     </div>
                     <div className="space-y-1">
@@ -1032,8 +1100,90 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         readOnly
                       />
                       <Input
+
                         label="Paid Amount"
-                        {...formik.getFieldProps("paidAmount")}
+
+                        value={formik.values.paidAmount}
+
+                        onChange={(e) => {
+
+                          const paid = Number(
+                            e.target.value || 0
+                          );
+
+                          formik.setFieldValue(
+                            "paidAmount",
+                            paid
+                          );
+
+                          if (
+
+                            formik.values.payMode === "1"
+
+                            ||
+
+                            formik.values.payMode === ""
+
+                          ) {
+
+                            formik.setFieldValue(
+                              "cashAmount",
+                              paid
+                            );
+
+                            formik.setFieldValue(
+                              "cardAmount",
+                              0
+                            );
+
+                          }
+
+                          else if (
+
+                            formik.values.payMode === "3"
+
+                          ) {
+                          }
+
+                          else {
+
+                            formik.setFieldValue(
+                              "cashAmount",
+                              0
+                            );
+
+                            formik.setFieldValue(
+                              "cardAmount",
+                              paid
+                            );
+
+                          }
+
+                        }}
+                      />
+                       <Input
+                        label="Cash Amount"
+                        value={formik.values.cashAmount}
+                        readOnly={formik.values.payMode !== "3"}
+                        onChange={(e) => {
+
+                          const value = e.target.value;
+
+if (/^\d*\.?\d{0,2}$/.test(value)) {
+    formik.setFieldValue("cashAmount", value);
+}
+
+                          if (formik.values.payMode === "3") {
+
+                         formik.setFieldValue(
+    "paidAmount",
+    Number(value || 0) +
+    Number(formik.values.cardAmount || 0)
+);
+
+                          }
+
+                        }}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1051,6 +1201,30 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         label="Due Amount"
                         value={formik.values.dueAmount}
                         readOnly
+                      />
+                       <Input
+                        label="Card / Online Amount"
+                        value={formik.values.cardAmount}
+                        readOnly={formik.values.payMode !== "3"}
+                        onChange={(e) => {
+
+                          const value = e.target.value;
+
+if (/^\d*\.?\d{0,2}$/.test(value)) {
+    formik.setFieldValue("cardAmount", value);
+}
+
+                          if (formik.values.payMode === "3") {
+
+                           formik.setFieldValue(
+    "paidAmount",
+    Number(value || 0) +
+    Number(formik.values.cashAmount || 0)
+);
+
+                          }
+
+                        }}
                       />
                     </div>
                   </div>
