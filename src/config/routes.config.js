@@ -45,6 +45,8 @@ import CampOpdForm from "../pages/CampOpd";
 import CampOpdBillingListCopy from "../pages/CampOpdBillingList";
 import Revenue from "../pages/Revenue";
 import SpectacleRevenue from "../pages/SpectacleRevenue";
+import OpdohcPage from "../pages/Opdohcpage";
+import TestPackagePage from "../pages/Testpackagepage";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -582,6 +584,26 @@ export const ROUTES = [
     label: " Revenue",
     icon: "ClipboardDocumentListIcon",
     group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/opd-ohc",
+    component: OpdohcPage,
+    // permission: "read:opd_list",
+    permission: null,
+    label: "OPD OHC",
+    icon: "ClipboardDocumentListIcon",
+    group: "OPD_OHC",
+    showInSidebar: true,
+  },
+  {
+    path: "/test-packages-ohc",
+    component: TestPackagePage,
+    // permission: "read:opd_list",
+    permission: null,
+    label: "Test packages OHC",
+    icon: "ClipboardDocumentListIcon",
+    group: "Test_Packages",
     showInSidebar: true,
   },
 ];

@@ -5,10 +5,13 @@ const safeFixed = (value) => Number(value || 0).toFixed(2);
 
 const InvoiceTemplate = forwardRef(({ data }, ref) => {
   const center_id = cookie.get("center_id");
+const tenant_id = cookie.get("tenantId");
+
   const page = 1;
   const limit = 10;
   const filters = {
     center_id: center_id,
+    tenant_id: tenant_id
   };
   const {
     data: oragnisationData,
@@ -78,13 +81,21 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
         Last Mile Care Pvt Ltd
       </div>
 
-      <div className="flex justify-start mb-2">
-        <img
-          className="h-16 w-auto object-contain"
-          src="/images/LMC_logo.webp"
-          alt="logo"
-        />
-      </div>
+       <div className="flex justify-between items-center mb-3">
+ 
+  <img
+    className="h-16 w-auto object-contain"
+    src="/images/LMC_1care_logo.webp"
+    alt="1Care Logo"
+  />
+
+ 
+  <img
+    className="h-16 w-auto object-contain"
+    src="/images/LMC_mainlogo.webp"
+    alt="LMC Logo"
+  />
+</div>
       <div className="relative z-10">
         <div className="text-center mb-4 border-b pb-4">
           <div className="flex justify-center items-center gap-2 mb-2">

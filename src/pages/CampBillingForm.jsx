@@ -1203,7 +1203,7 @@ if (/^\d*\.?\d{0,2}$/.test(value)) {
                         readOnly
                       />
                        <Input
-                        label="Card / Online Amount"
+                        label="Card / Online Amount / Cost Free"
                         value={formik.values.cardAmount}
                         readOnly={formik.values.payMode !== "3"}
                         onChange={(e) => {

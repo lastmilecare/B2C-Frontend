@@ -474,16 +474,32 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                Patient Registration
+                Worker Registration
               </NavLink>
             )}
+            {/* {can("create:ohc_patient_registration") && ( */}
+              <NavLink
+                to="/opd-ohc"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                OPD Health Checkup 
+              </NavLink>
+            {/* )} */}
+            <NavLink
+                to="/test-packages-ohc"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Test Package Management
+              </NavLink>
              {can("create:patient_examination_details_ohc") && (
             <NavLink
                 to="/patient-examination-details"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                Patient Examination Details
+                Worker Health Checkup
               </NavLink>
              )}
             {/* <NavLink
@@ -493,7 +509,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             >
               Vitals Form
             </NavLink> */}
-            {can("create:appointment_visit") && (
+            {/* {can("create:appointment_visit") && (
               <NavLink
                 to="/appointment"
                 className={subNavItem}
@@ -501,7 +517,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Appointment
               </NavLink>
-            )}
+            )} */}
 
             {can("create:medical_history") && (
               <NavLink

@@ -40,7 +40,7 @@ const PatientPage = () => {
             }`}
           >
             <ClipboardDocumentIcon className="w-4 h-4" />
-            Patient Form
+            Worker Form
           </button>
 
          
@@ -54,7 +54,7 @@ const PatientPage = () => {
             }`}
           >
             <CreditCardIcon className="w-4 h-4" />
-            Patient List
+            Worker List
           </button>
 
         </div>

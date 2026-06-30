@@ -4,20 +4,18 @@ import { cookie } from "../utils/cookie";
 
 const PrintOpdForm = forwardRef(({ data }, ref) => {
   const center_id = cookie.get("center_id");
-  const page = 1;
-  const limit = 10;
-  const filters = {
-    center_id: center_id,
-  };
-  const {
-    data: oragnisationData,
-    isLoading,
-    refetch,
-  } = useGetOrgProfilesQuery({
-    page,
-    limit,
-    ...filters,
-  });
+const tenant_id = cookie.get("tenantId");
+
+const {
+  data: oragnisationData,
+  isLoading,
+  refetch
+} = useGetOrgProfilesQuery({
+  page: 1,
+  limit: 10,
+  tenant_id,
+  center_id,
+});
   const profiles = oragnisationData?.data || {};
   const profile = profiles?.[0] || {};
   function formatToIST(dateString) {
@@ -106,13 +104,21 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
         Last Mile Care Pvt Ltd
       </div>
 
-      <div className="flex justify-start mb-2">
-        <img
-          className="h-16 w-auto object-contain"
-          src="/images/LMC_logo.webp"
-          alt="logo"
-        />
-      </div>
+       <div className="flex justify-between items-center mb-3">
+ 
+  <img
+    className="h-16 w-auto object-contain"
+    src="/images/LMC_1care_logo.webp"
+    alt="1Care Logo"
+  />
+
+ 
+  <img
+    className="h-16 w-auto object-contain"
+    src="/images/LMC_mainlogo.webp"
+    alt="LMC Logo"
+  />
+</div>
       <div className="text-center mb-4 border-b pb-4">
         <div className="flex justify-center items-center gap-2 mb-2">
           <img

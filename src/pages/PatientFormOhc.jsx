@@ -30,7 +30,8 @@ import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { useLazySearchDiseasesQuery } from "../redux/apiSlice";
 import GlobalLoader from "../components/common/GlobalLoader";
 import { cookie } from "../utils/cookie";
-import { Referral_Options } from "../utils/constants";
+import { Referral_Options, DEPARTMENT_OPTIONS,
+  DESIGNATION_OPTIONS, } from "../utils/constants";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -67,7 +68,7 @@ const PatientRegistrationOhc = () => {
 
     if (
       activeStep === 1 &&
-      (errors.title || errors.name || errors.contactNumber || errors.CO || errors.gender || errors.employeeId)
+      (errors.title || errors.name || errors.contactNumber || errors.CO || errors.gender || errors.employeeId || errors.occupation )
     ) {
       formik.setTouched({
         title: true,
@@ -75,7 +76,9 @@ const PatientRegistrationOhc = () => {
         contactNumber: true,
         CO: true,
         gender: true,
-        employeeId: true
+        employeeId: true,
+        occupation: true,
+
       });
       return;
     }
@@ -86,8 +89,8 @@ const PatientRegistrationOhc = () => {
         errors.country ||
         errors.localAddressState ||
         errors.fincat ||
-        errors.ReferredBy ||
-        errors.occupation ||
+        // errors.ReferredBy ||
+        
         errors.pin
       )
     ) {
@@ -95,8 +98,8 @@ const PatientRegistrationOhc = () => {
         country: true,
         localAddressState: true,
         fincat: true,
-        ReferredBy: true,
-        occupation: true,
+        // ReferredBy: true,
+        
         pin: true,
       });
 
@@ -151,7 +154,10 @@ const PatientRegistrationOhc = () => {
       idProof_number: "",
       idProof_name: "",
       employeeId: "",
-      ReferredBy: "",
+      // ReferredBy: "",
+      permanentAddress: "",
+      department: "",
+designation: "",
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
@@ -170,7 +176,7 @@ const PatientRegistrationOhc = () => {
       pin: Yup.string()
         .required("Pin Code is required")
         .matches(/^[0-9]{6}$/, "Pin Code must be 6 digits"),
-      ReferredBy: Yup.string().required("Referred By is required"),
+      // ReferredBy: Yup.string().required("Referred By is required"),
       idProof_name: Yup.string().required(
         "Identification Type is required"
       ),
@@ -180,6 +186,8 @@ const PatientRegistrationOhc = () => {
         then: (schema) =>
           schema.required("Identification Number is required"),
       }),
+      department: Yup.string().required("Department is required"),
+designation: Yup.string().required("Designation is required"),
     }),
 
     onSubmit: async (values) => {
@@ -199,9 +207,9 @@ const PatientRegistrationOhc = () => {
             "Patient Updated Successfully",
             "Patient Updated",
           );
-        navigate("/PatientRegistrationOhc", {
-        state: { goToList: true }
-      });
+          navigate("/PatientRegistrationOhc", {
+            state: { goToList: true }
+          });
 
         } else {
           const value = await createPatient(payload).unwrap();
@@ -211,9 +219,9 @@ const PatientRegistrationOhc = () => {
               "Patient Saved",
             );
             handleReset();
-           navigate("/PatientRegistrationOhc", {
-        state: { goToList: true }
-      });
+            navigate("/PatientRegistrationOhc", {
+              state: { goToList: true }
+            });
 
           } else {
             healthAlerts.error(
@@ -228,7 +236,7 @@ const PatientRegistrationOhc = () => {
       }
     },
   });
-  
+
   useEffect(() => {
     if (!id) {
       formik.resetForm();
@@ -291,7 +299,10 @@ const PatientRegistrationOhc = () => {
           idProof_number: p.idProof_number || "",
           idProof_name: p.idProof_name || "",
           employeeId: p.employeeId || "",
-          ReferredBy: p.ReferredBy || "",
+          // ReferredBy: p.ReferredBy || "",
+          permanentAddress: p.permanentAddress || "",
+           department: p.department || "",
+  designation: p.designation || "",
         });
       };
 
@@ -340,7 +351,10 @@ const PatientRegistrationOhc = () => {
       co: values.CO,
       relationship: values.relationship,
       employeeId: values.employeeId,
-      ReferredBy: values.ReferredBy || "",
+      // ReferredBy: values.ReferredBy || "",
+      permanentAddress: values.permanentAddress,
+       department: values.department,
+  designation: values.designation,
     };
 
     if (!isEdit) {
@@ -363,6 +377,9 @@ const PatientRegistrationOhc = () => {
         gender: "",
         contactNumber: "",
         employeeId: "",
+        occupation: "",
+        department: "",
+  designation: "",
       });
     }
 
@@ -374,11 +391,12 @@ const PatientRegistrationOhc = () => {
         country: "",
         localAddressState: "",
         localAddressDistrict: "",
-        occupation: "",
+        
         healthCardNumber: "",
         localAddress: "",
         pin: "",
-        ReferredBy: "",
+        permanentAddress: "",
+        // ReferredBy: "",
       });
 
       setCountryId("");
@@ -438,7 +456,7 @@ const PatientRegistrationOhc = () => {
               <UserIcon className="w-6 text-blue-600" />
             </span>
 
-            {isEdit ? "Edit Patient" : "Patient Registration"}
+            {isEdit ? "Edit Worker Details" : "Worker Registration"}
           </h1>
 
           <div className="flex gap-2">
@@ -508,70 +526,70 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       error={formik.touched.name && formik.errors.name}
                     />
 
-                   <div className="flex flex-col">
-  <label className="text-sm font-medium text-gray-700 mb-1">
-    Date of Birth
-  </label>
+                    <div className="flex flex-col">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        Date of Birth
+                      </label>
 
-  <DatePicker
-  
-    selected={
-  formik.values.dob
-    ? new Date(formik.values.dob + "T00:00:00")
-    : null
-}
-    onChange={(date) => {
-      if (!date) {
-        formik.setFieldValue("dob", "");
-        formik.setFieldValue("age", "");
-        return;
-      }
-       
+                      <DatePicker
 
-const formattedDate = `${date.getFullYear()}-${String(
-  date.getMonth() + 1
-).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-  formik.setFieldValue("dob", formattedDate);
+                        selected={
+                          formik.values.dob
+                            ? new Date(formik.values.dob + "T00:00:00")
+                            : null
+                        }
+                        onChange={(date) => {
+                          if (!date) {
+                            formik.setFieldValue("dob", "");
+                            formik.setFieldValue("age", "");
+                            return;
+                          }
 
-      const birth = new Date(date);
-      const today = new Date();
 
-      let years = today.getFullYear() - birth.getFullYear();
-      let months = today.getMonth() - birth.getMonth();
-      let days = today.getDate() - birth.getDate();
+                          const formattedDate = `${date.getFullYear()}-${String(
+                            date.getMonth() + 1
+                          ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+                          formik.setFieldValue("dob", formattedDate);
 
-      if (days < 0) {
-        months -= 1;
-        days += new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          0
-        ).getDate();
-      }
+                          const birth = new Date(date);
+                          const today = new Date();
 
-      if (months < 0) {
-        years -= 1;
-        months += 12;
-      }
+                          let years = today.getFullYear() - birth.getFullYear();
+                          let months = today.getMonth() - birth.getMonth();
+                          let days = today.getDate() - birth.getDate();
 
-      formik.setFieldValue(
-        "age",
-        `${years}y ${months}m ${days}d`
-      );
-    }}
-    dateFormat="dd/MM/yyyy"
-    placeholderText="DD/MM/YYYY"
-    maxDate={new Date()}
-    showMonthDropdown
-    showYearDropdown
-    scrollableYearDropdown
-    yearDropdownItemNumber={100}
-    wrapperClassName="w-full"
-    popperClassName="z-50"
-    className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
+                          if (days < 0) {
+                            months -= 1;
+                            days += new Date(
+                              today.getFullYear(),
+                              today.getMonth(),
+                              0
+                            ).getDate();
+                          }
+
+                          if (months < 0) {
+                            years -= 1;
+                            months += 12;
+                          }
+
+                          formik.setFieldValue(
+                            "age",
+                            `${years}y ${months}m ${days}d`
+                          );
+                        }}
+                        dateFormat="dd/MM/yyyy"
+                        placeholderText="DD/MM/YYYY"
+                        maxDate={new Date()}
+                        showMonthDropdown
+                        showYearDropdown
+                        scrollableYearDropdown
+                        yearDropdownItemNumber={100}
+                        wrapperClassName="w-full"
+                        popperClassName="z-50"
+                        className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
     outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
-  />
-</div>
+                      />
+                    </div>
 
                     <Input
                       label="Age"
@@ -630,9 +648,49 @@ const formattedDate = `${date.getFullYear()}-${String(
                     <Input
                       {...formik.getFieldProps("employeeId")}
                       label="Employee Id"
-                    required
-                    error={formik.touched.employeeId && formik.errors.employeeId}
+                      required
+                      error={formik.touched.employeeId && formik.errors.employeeId}
                     />
+                      <Select
+                      {...formik.getFieldProps("occupation")}
+                      label="Occupation"
+                      required
+                      error={
+                        formik.touched.occupation && formik.errors.occupation
+                      }
+                    >
+                      <option value="">Select</option>
+                      {OCCUPATION_OPTIONS.map((e) => (
+                        <option key={e}>{e}</option>
+                      ))}
+                    </Select>
+                    <Select
+  {...formik.getFieldProps("department")}
+  label="Department"
+  required
+  error={formik.touched.department && formik.errors.department}
+>
+  <option value="">Select</option>
+  {DEPARTMENT_OPTIONS.map((item) => (
+    <option key={item} value={item}>
+      {item}
+    </option>
+  ))}
+</Select>
+
+<Select
+  {...formik.getFieldProps("designation")}
+  label="Designation"
+  required
+  error={formik.touched.designation && formik.errors.designation}
+>
+  <option value="">Select</option>
+  {DESIGNATION_OPTIONS.map((item) => (
+    <option key={item} value={item}>
+      {item}
+    </option>
+  ))}
+</Select>
                   </div>
                 </section>
               )}
@@ -730,19 +788,7 @@ const formattedDate = `${date.getFullYear()}-${String(
                       ))}
                     </Select>
 
-                    <Select
-                      {...formik.getFieldProps("occupation")}
-                      label="Occupation"
-                      required
-                      error={
-                        formik.touched.occupation && formik.errors.occupation
-                      }
-                    >
-                      <option value="">Select</option>
-                      {OCCUPATION_OPTIONS.map((e) => (
-                        <option key={e}>{e}</option>
-                      ))}
-                    </Select>
+                  
 
                     <Input
                       label="Health Card Number"
@@ -753,6 +799,10 @@ const formattedDate = `${date.getFullYear()}-${String(
                     <Input
                       {...formik.getFieldProps("localAddress")}
                       label="Local Address"
+                    />
+                    <Input
+                      {...formik.getFieldProps("permanentAddress")}
+                      label="Permanent Address"
                     />
                     <Input
                       label="Pin Code"
@@ -767,7 +817,7 @@ const formattedDate = `${date.getFullYear()}-${String(
                       }}
                       error={formik.touched.pin && formik.errors.pin}
                     />
-                    <Select
+                    {/* <Select
                       {...formik.getFieldProps("ReferredBy")}
                       label="Referred By"
                       required
@@ -781,7 +831,7 @@ const formattedDate = `${date.getFullYear()}-${String(
                           {option}
                         </option>
                       ))}
-                    </Select>
+                    </Select> */}
                   </div>
                 </section>
               )}
@@ -852,17 +902,17 @@ const formattedDate = `${date.getFullYear()}-${String(
                     </Select>
 
                     {formik.values.idProof_name && (
-                     <Input
-  label="Identification Number"
-  required
-  value={formik.values.idProof_number}
-  onChange={formik.handleChange}
-  name="idProof_number"
-  error={
-    formik.touched.idProof_number &&
-    formik.errors.idProof_number
-  }
-/>
+                      <Input
+                        label="Identification Number"
+                        required
+                        value={formik.values.idProof_number}
+                        onChange={formik.handleChange}
+                        name="idProof_number"
+                        error={
+                          formik.touched.idProof_number &&
+                          formik.errors.idProof_number
+                        }
+                      />
                     )}
                   </div>
                 </section>
@@ -917,6 +967,13 @@ const formattedDate = `${date.getFullYear()}-${String(
                       <p>
                         <b>Category:</b> {formik.values.fincat || "-"}
                       </p>
+                      <p>
+  <b>Department:</b> {formik.values.department || "-"}
+</p>
+
+<p>
+  <b>Designation:</b> {formik.values.designation || "-"}
+</p>
                     </div>
 
                     <div className="border-t pt-3 text-sm">
@@ -964,15 +1021,18 @@ const formattedDate = `${date.getFullYear()}-${String(
                           {formik.values.healthCardNumber || "-"}
                         </p>
 
-                        <p>
+                        {/* <p>
                           <b>Referred By:</b> {formik.values.ReferredBy || "-"}
-                        </p>
+                        </p> */}
                       </div>
 
                       <div className="mt-3">
                         <p>
                           <b>Address:</b> {formik.values.localAddress || "-"}
                         </p>
+                        <p>
+  <b>Permanent Address:</b> {formik.values.permanentAddress || "-"}
+</p>
                       </div>
                     </div>
 
