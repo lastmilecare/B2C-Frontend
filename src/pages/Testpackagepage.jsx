@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import TestPackageForm from "./TestPackageForm";
-import TestPackageList from "./TestPackageList";
+import TestPackageForm from "./Testpackageform";
+import TestPackageList from "./Testpackagelist";
 import {
   BeakerIcon,
   ClipboardDocumentListIcon,
