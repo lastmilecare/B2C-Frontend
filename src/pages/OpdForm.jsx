@@ -1045,8 +1045,8 @@ const OpdFormCopy = () => {
 
                     <Input
                       {...formik.getFieldProps("CardAmount")}
-                      placeholder="Card / Online / UPI Amount"
-                      label="Card / Online / UPI Amount"
+                      placeholder="Card / Online / UPI Amount / Cost Free"
+                      label="Card / Online / UPI Amount / Cost Free"
                       readOnly={formik.values.PayMode !== "3"}
                       className={
                         formik.values.PayMode === "3"

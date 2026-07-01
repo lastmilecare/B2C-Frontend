@@ -172,3 +172,76 @@ export const ROLES = [
   },
 
 ];
+export const DEPARTMENT_OPTIONS = [
+  "Administration",
+  "Accounts",
+  "HR",
+  "Production",
+  "Quality",
+  "Maintenance",
+  "Safety",
+  "IT",
+  "Purchase",
+  "Store",
+  "Security",
+  "Housekeeping",
+  "Medical",
+];
+
+export const DESIGNATION_OPTIONS = [
+  "Manager",
+  "Assistant Manager",
+  "Supervisor",
+  "Executive",
+  "Senior Executive",
+  "Officer",
+  "Engineer",
+  "Technician",
+  "Operator",
+  "Helper",
+  "Worker",
+  "Staff",
+];
+
+export const BLOOD_TESTS = [
+  { id: "b1", name: "Hemoglobin", category: "Blood" },
+  { id: "b2", name: "CBC (Complete Blood Count)", category: "Blood" },
+  { id: "b3", name: "Blood Sugar (Fasting)", category: "Blood" },
+  { id: "b4", name: "Blood Sugar (PP)", category: "Blood" },
+  { id: "b5", name: "HbA1c", category: "Blood" },
+  { id: "b6", name: "Urine Analysis", category: "Blood" },
+  { id: "b7", name: "Lipid Profile", category: "Blood" },
+  { id: "b8", name: "LFT (Liver Function Test)", category: "Blood" },
+  { id: "b9", name: "KFT (Kidney Function Test)", category: "Blood" },
+  { id: "b10", name: "Thyroid (TSH)", category: "Blood" },
+  { id: "b11", name: "Serum Electrolytes", category: "Blood" },
+  { id: "b12", name: "VDRL", category: "Blood" },
+];
+
+export const RADIOLOGY_TESTS = [
+  { id: "r1", name: "Chest X-ray", category: "Radiology" },
+  { id: "r2", name: "ECG (Electrocardiogram)", category: "Radiology" },
+  { id: "r3", name: "Audiometry", category: "Radiology" },
+  { id: "r4", name: "Spirometry", category: "Radiology" },
+  { id: "r5", name: "Vision Test", category: "Radiology" },
+  { id: "r6", name: "USG Abdomen", category: "Radiology" },
+  { id: "r7", name: "MRI Brain", category: "Radiology" },
+  { id: "r8", name: "2D Echo", category: "Radiology" },
+];
+
+export const PACKAGE_LEVELS = [
+  { value: "BASIC", label: "Basic" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "ADVANCED", label: "Advanced" },
+];
+
+// ─── Local storage key for static persistence ────────────────────────────────
+export const PACKAGES_STORAGE_KEY = "ohc_test_packages";
+
+export const getStoredPackages = () => {
+  try {
+    return JSON.parse(localStorage.getItem(PACKAGES_STORAGE_KEY)) || [];
+  } catch {
+    return [];
+  }
+};
