@@ -17,7 +17,10 @@ const ResourcePage = () => {
   useEffect(() => {
     if (location.state?.goToList) {
       setActiveTab("list");
-    } else if (id) {
+    } else if (location.state?.goToForm){
+      setActiveTab("form");
+    }
+     else if (id) {
       setActiveTab("form");
     }
   }, [id, location.state]);

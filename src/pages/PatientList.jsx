@@ -343,6 +343,9 @@ const PatientListCopy = () => {
           navigate(`/patient-registration/${row.id}`);
         }}
         onDelete={handleDelete}
+         enableAdd
+  addButtonText="Add"
+  onAdd={() => navigate("/patient-registration")}
       />
     </div>
   );

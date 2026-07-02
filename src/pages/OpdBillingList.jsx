@@ -550,6 +550,9 @@ const OpdBillingListCopy = () => {
         onDelete={handleDelete}
         onPrintCS={onPrintCS}
         onPrint={onPrintInvoice}
+          enableAdd
+  addButtonText="Add"
+  onAdd={() => navigate("/opd-form")}
       />
       {printRow && (
         <div style={{ display: "none" }}>

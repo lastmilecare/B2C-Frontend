@@ -16,14 +16,12 @@ const CampBillingCopy = () => {
   const [activeTab, setActiveTab] = useState("billing");
 
   useEffect(() => {
-  //   if (id) {
-  //     setActiveTab("billing");
-  //   } else if (location.state?.goToList) {
-  //     setActiveTab("history");
-  //   }
-  // }, [id, location.state]);
+
    if (location.state?.goToList) {
       setActiveTab("history");
+    }
+    else if (location.state?.goToForm){
+      setActiveTab("billing");
     }
 
     else if (id) {

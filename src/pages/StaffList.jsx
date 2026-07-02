@@ -249,6 +249,9 @@ const StaffList = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         loadingId={loadingId}
+        enableAdd
+  addButtonText="Add"
+  onAdd={() => navigate("/staff-form")}
       />
     </div>
   );

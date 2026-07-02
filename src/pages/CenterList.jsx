@@ -175,19 +175,18 @@ const CenterList = () => {
       selector: (row) => tenantMap[row.tenant_id] || "N/A",
     },
     {
-  name: "Created At",
-  selector: (row) =>
-    formatDate(row.createdAt),
-},
+      name: "Created At",
+      selector: (row) =>
+        formatDate(row.createdAt),
+    },
     {
       name: "Status",
       cell: (row) => (
         <span
-          className={`px-2 py-1 text-xs rounded ${
-            row.status
+          className={`px-2 py-1 text-xs rounded ${row.status
               ? "bg-green-100 text-green-700"
               : "bg-red-100 text-red-600"
-          }`}
+            }`}
         >
           {row.status ? "Active" : "Inactive"}
         </span>
@@ -227,6 +226,10 @@ const CenterList = () => {
         actionButtons={["edit", "delete"]}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        enableAdd
+        addButtonText="Add"
+        onAdd={() => navigate("/opd-form")}
+
       />
     </div>
   );

@@ -12,6 +12,7 @@ import {
   formatDate,
   formatTime,
 } from "../utils/helper";
+import { useNavigate } from "react-router-dom";
 
 const PermissionList = () => {
   const [page, setPage] = useState(1);
@@ -23,7 +24,7 @@ const PermissionList = () => {
     endDate: "",
   });
   const [filters, setFilters] = useState({});
-
+  const navigate = useNavigate();
   const { data, isLoading, isFetching } = useGetPermissionsQuery({
     page,
     limit,
@@ -276,6 +277,15 @@ const PermissionList = () => {
           onDelete={handleDelete}
           enableActions={true}
           actionButtons={["delete"]}
+          enableAdd
+          addButtonText="Add"
+          onAdd={() =>
+            navigate("/permissions", {
+              state: {
+                goToForm: true,
+              },
+            })
+          }
         />
       </div>
     </div>

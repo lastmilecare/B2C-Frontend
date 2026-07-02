@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PharmacyRevenueForm from "./PharmacyRevenue";
 import PharmacyRevenueList from "./PharmacyRevenueList";
+import { useLocation } from "react-router-dom";
 
 import {
   ClipboardDocumentIcon,
@@ -12,6 +13,7 @@ const Revenue = () => {
   const [editingId, setEditingId] = useState(null);
   const [editRow, setEditRow] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const location = useLocation();
 
  
   const handleEdit = (row) => {
@@ -34,6 +36,15 @@ const Revenue = () => {
     setEditingId(null);
     setEditRow(null);
   };
+  useEffect(() => {
+  if (location.state?.goToList) {
+    setActiveTab("list");
+  } else if (location.state?.goToForm) {
+    setActiveTab("form");
+    setEditingId(null);
+    setEditRow(null);
+  }
+}, [location.state]);
 
   return (
     <div className="max-w-[1400px] mx-auto mt-4">

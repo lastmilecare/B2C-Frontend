@@ -4,6 +4,7 @@ import DataTable from "react-data-table-component";
 import {
   EllipsisVerticalIcon,
   ArrowDownTrayIcon,
+   PlusIcon,
 } from "@heroicons/react/24/outline";
 import { healthAlert } from "../utils/healthSwal";
 import GlobalLoader from "./common/GlobalLoader";
@@ -32,6 +33,10 @@ const CommonList = ({
   actionButtons = [],
   expandableRows = false,
   expandableRowsComponent = null,
+  enableAdd = false,
+  addButtonText = "Add",
+  onAdd = () => {},
+
 }) => {
   const [tempFilters, setTempFilters] = useState({});
   const [openMenuRow, setOpenMenuRow] = useState(null);
@@ -169,19 +174,33 @@ const filteredActionButtons = isAdmin
   ]);
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-3 border border-gray-100">
-      <div className="flex flex-wrap justify-between items-center mb-3 gap-2">
-        <h2 className="text-base font-semibold text-sky-700">{title}</h2>
-        {enableExport && (
-          <button
-            onClick={onExport}
-            className="inline-flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs"
-          >
-            <ArrowDownTrayIcon className="w-4 h-4" />
-            Export
-          </button>
-        )}
-      </div>
+    <div className="bg-white shadow-md rounded-xl p-3 border border-gray-100">   
+  <div className="flex items-center justify-between mb-3">
+  <h2 className="text-base font-semibold text-sky-700">
+    {title}
+  </h2>
+
+  {enableAdd && (
+    <button
+      onClick={onAdd}
+      className="inline-flex items-center gap-1 bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
+    >
+      <PlusIcon className="w-4 h-4" />
+      {addButtonText}
+    </button>
+  )}
+</div>
+ <div className="flex flex-wrap justify-between items-center mb-3 gap-2">
+  {enableExport && (
+    <button
+      onClick={onExport}
+      className="inline-flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs"
+    >
+      <ArrowDownTrayIcon className="w-4 h-4" />
+      Export
+    </button>
+  )}
+</div>
 
       {filtersConfig.length > 0 && (
         <div className="w-full bg-sky-50 p-3 rounded-lg border border-sky-100 mb-3">
@@ -255,8 +274,10 @@ const filteredActionButtons = isAdmin
                 <ArrowDownTrayIcon className="w-4 h-4" />
                 Export
               </button>
+              
             )}
           </div>
+
         </div>
       )}
 

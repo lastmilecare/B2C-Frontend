@@ -203,6 +203,15 @@ const ResourceList = () => {
         enableActions={true}
         actionButtons={["delete"]}
         onDelete={(row) => handleDelete(row)}
+         enableAdd
+          addButtonText="Add"
+          onAdd={() =>
+            navigate("/resource", {
+              state: {
+                goToForm: true,
+              },
+            })
+          }
       />
     </div>
   );

@@ -5,7 +5,7 @@ import CopyFilterBar from "../components/Updates/Filter";
 
 import { Picaso_Paymode_Options } from "../utils/constants";
 import { healthAlert } from "../utils/healthSwal";
-
+import { useNavigate } from "react-router-dom";
 import {
 useGetSpectacleRevenueQuery,
 useDeleteSpectacleRevenueMutation,
@@ -34,6 +34,7 @@ const SpectacleRevenueList = ({ onEdit }) => {
 
   const revenues = data?.data || [];
   const totalRows = data?.total || 0;
+  const navigate = useNavigate();
 
   // ─── Filter Handlers ───────────────────────────────────────────────────────
 
@@ -200,6 +201,15 @@ const SpectacleRevenueList = ({ onEdit }) => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         isLoading={isLoading}
+         enableAdd
+  addButtonText="Add"
+  onAdd={() =>
+    navigate("/spectacle-revenue", {
+      state: {
+        goToForm: true,
+      },
+    })
+  }
       />
 
       {/* TOTALS */}

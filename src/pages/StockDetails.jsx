@@ -658,6 +658,15 @@ const extraProfit =
             state: { editData: row },
           });
         }}
+        enableAdd
+        addButtonText="Add"
+        onAdd={() =>
+          navigate("/purchased-entry", {
+            state: {
+              goToGRN: true,
+            },
+          })
+        }
       />
 
       <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-4 shadow-sm">
