@@ -385,6 +385,15 @@ const BillingListCopy = () => {
           onEdit={(row) => navigate(`/billing/${row.ID}`)}
           onPrint={onPrint}
           onDelete={handleDelete}
+          enableAdd
+          addButtonText="Add"
+          onAdd={() =>
+            navigate("/billing", {
+              state: {
+                goToForm: true,
+              },
+            })
+          }
         />
       </div>
 

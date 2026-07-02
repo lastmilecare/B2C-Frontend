@@ -197,6 +197,9 @@ const TenantList = () => {
         actionButtons={["edit", "delete"]}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        enableAdd
+  addButtonText="Add"
+  onAdd={() => navigate("/tenants")}
       />
     </div>
   );

@@ -12,6 +12,7 @@ import {
   formatDate,
   formatTime,
 } from "../utils/helper";
+import { useNavigate } from "react-router-dom";
 const RoleList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -22,7 +23,7 @@ const RoleList = () => {
     endDate: "",
   });
   const [filters, setFilters] = useState({});
-
+  const navigate = useNavigate();
   const { data, isLoading, isFetching, refetch } = useGetRolesQuery({
     page,
     limit,
@@ -216,6 +217,15 @@ const columns = [
           enableActions={true}
           actionButtons={["delete"]}
           onDelete={(row) => handleDelete(row)}
+          enableAdd
+          addButtonText="Add"
+          onAdd={() =>
+            navigate("/roles", {
+              state: {
+                goToForm: true,
+              },
+            })
+          }
         />
       </div>
     </div>

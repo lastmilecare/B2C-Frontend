@@ -386,6 +386,15 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicinecampBillMutation();
            onEdit={(row) => navigate(`/camp-billing/${row.ID}`)}
           onPrint={onPrint}
           onDelete={handleDelete}
+           enableAdd
+  addButtonText="Add"
+  onAdd={() =>
+  navigate("/camp-billing", {
+    state: {
+      goToForm: true,
+    },
+  })
+}
         />
       </div>
 

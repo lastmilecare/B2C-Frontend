@@ -252,6 +252,9 @@ console.log("Imga",BASE_URL)
         onEdit={handleEdit}
         onDelete={handleDelete}
         onToggle={handleToggle}
+        enableAdd
+  addButtonText="Add"
+  onAdd={() => navigate("/organization-profile")}
       />
     </div>
   );

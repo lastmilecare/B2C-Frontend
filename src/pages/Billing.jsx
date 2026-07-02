@@ -17,7 +17,9 @@ const BillingCopy = () => {
     if (location.state?.goToList) {
       setActiveTab("history");
     }
-
+    else if (location.state?.goToForm) {
+  setActiveTab("billing");
+}
     else if (id) {
       setActiveTab("billing");
     }

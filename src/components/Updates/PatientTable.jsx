@@ -19,7 +19,10 @@ const PatientTable = ({
  onEdit,
  onDelete,
  onPrint,
- onPrintCS
+ onPrintCS,
+ enableAdd = false,
+  addButtonText = "Add",
+  onAdd = () => {},
 }) => {
     const role = cookie.get("role");
   const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
@@ -48,6 +51,9 @@ const PatientTable = ({
     onDelete={onDelete}
     onPrint={onPrint}
     onPrintCS={onPrintCS}
+     enableAdd={enableAdd}
+  addButtonText={addButtonText}
+  onAdd={onAdd}
    />
 
   </div>

@@ -15,6 +15,7 @@ import {
   formatDate,
   
 } from "../utils/helper";
+import { useNavigate } from "react-router-dom";
 
 const PharmacyRevenueList = ({ onEdit }) => {
   const [page, setPage] = useState(1);
@@ -27,6 +28,7 @@ const PharmacyRevenueList = ({ onEdit }) => {
 
   const [deleteRevenue] = useDeletePharmacyRevenueMutation();
   const [triggerExport] = useLazyExportPharmacyRevenueQuery();
+  const navigate = useNavigate();
 
   const { data, isLoading, refetch } = useGetPharmacyRevenueQuery({
     page,
@@ -203,6 +205,15 @@ const PharmacyRevenueList = ({ onEdit }) => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         isLoading={isLoading}
+          enableAdd
+  addButtonText="Add"
+  onAdd={() =>
+    navigate("/pharmacy-revenue", {
+      state: {
+        goToForm: true,
+      },
+    })
+  }
       />
 
       

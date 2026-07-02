@@ -359,6 +359,9 @@ setFilters(cleanedFilters);
         onEdit={handleEdit}
         onDelete={handleDelete}
         onPrint={onPrint}
+         enableAdd
+  addButtonText="Add"
+  onAdd={() => navigate("/prescription-form")}
       />
       {printRow && (
         <div style={{ display: "none" }}>

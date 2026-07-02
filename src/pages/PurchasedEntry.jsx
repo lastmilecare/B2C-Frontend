@@ -15,13 +15,16 @@ const PurchasedEntryCopy = () => {
 
   const [activeTab, setActiveTab] = useState("grn");
 
+ 
   useEffect(() => {
-    if (location.state?.goToStock) {
-      setActiveTab("stock");
-    } else if (id) {
-      setActiveTab("grn");
-    }
-  }, [id, location.state]);
+  if (location.state?.goToStock) {
+    setActiveTab("stock");
+  } else if (location.state?.goToGRN) {
+    setActiveTab("grn");
+  } else if (id) {
+    setActiveTab("grn");
+  }
+}, [id, location.state]);
 
   return (
     <div className="max-w-[1400px] mx-auto mt-4">
