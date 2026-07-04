@@ -47,6 +47,7 @@ import Revenue from "../pages/Revenue";
 import SpectacleRevenue from "../pages/SpectacleRevenue";
 import OpdohcPage from "../pages/Opdohcpage";
 import TestPackagePage from "../pages/Testpackagepage";
+import OpdListRevenue from "../pages/Opdbillingrevenue";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -599,11 +600,22 @@ export const ROUTES = [
   {
     path: "/test-packages-ohc",
     component: TestPackagePage,
-    // permission: "read:opd_list",
+    permission: "read:opd_revenue",
     permission: null,
     label: "Test packages OHC",
     icon: "ClipboardDocumentListIcon",
     group: "Test_Packages",
     showInSidebar: true,
   },
+ {
+    path: "/opd-revenue",
+    component: OpdListRevenue,
+    // permission: "read:opd_list",
+    permission: null,
+    label: "Opd Revenue List",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  
 ];
