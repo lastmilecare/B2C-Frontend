@@ -182,10 +182,11 @@ const PatientRegistrationCopy = () => {
       ),
 
       idProof_number: Yup.string().when("idProof_name", {
-        is: (val) => !!val,
-        then: (schema) =>
-          schema.required("Identification Number is required"),
-      }),
+  is: (val) => val && val !== "N/A",
+  then: (schema) =>
+    schema.required("Identification Number is required"),
+  otherwise: (schema) => schema.notRequired(),
+}),
       localAddress: Yup.string().required(
         "Local Address is required"
       ),
@@ -860,21 +861,33 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     />
 
                     <Select
-                      {...formik.getFieldProps("idProof_name")}
-                      label="Identification Type"
-                      required
-                      error={
-                        formik.touched.idProof_name &&
-                        formik.errors.idProof_name
-                      }
-                    >
-                      <option value="">Select</option>
-                      {IDENTIFICATION_TYPES.map((b) => (
-                        <option key={b.value} value={b.value}>
-                          {b.label}
-                        </option>
-                      ))}
-                    </Select>
+  label="Identification Type"
+  name="idProof_name"
+  value={formik.values.idProof_name}
+  onChange={(e) => {
+    const value = e.target.value;
+
+    formik.setFieldValue("idProof_name", value);
+
+    if (value === "N/A") {
+      formik.setFieldValue("idProof_number", "N/A");
+    } else if (formik.values.idProof_number === "N/A") {
+      formik.setFieldValue("idProof_number", "");
+    }
+  }}
+  required
+  error={
+    formik.touched.idProof_name &&
+    formik.errors.idProof_name
+  }
+>
+  <option value="">Select</option>
+  {IDENTIFICATION_TYPES.map((b) => (
+    <option key={b.value} value={b.value}>
+      {b.label}
+    </option>
+  ))}
+</Select>
 
                     {formik.values.idProof_name && (
                       <Input
@@ -883,6 +896,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                         value={formik.values.idProof_number}
                         onChange={formik.handleChange}
                         name="idProof_number"
+                        readOnly={formik.values.idProof_name === "N/A"}
                         error={
                           formik.touched.idProof_number &&
                           formik.errors.idProof_number

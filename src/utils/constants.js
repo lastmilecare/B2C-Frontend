@@ -53,6 +53,8 @@ export const IDENTIFICATION_TYPES = [
   { value: "student_id", label: "Student ID" },
   { value: "health_card", label: "Health Card" },
   { value: "other", label: "Other" },
+  { value: "N/A", label: "N/A" },
+
 ];
 
 export const PILL_CONSUMPTION_TIMES = [
