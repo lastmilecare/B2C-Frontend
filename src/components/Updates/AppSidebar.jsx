@@ -310,7 +310,16 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
               Spectacle Revenue
               </NavLink>
-             )}  
+             )} 
+               {can("read:opd_revenue") && (  
+              <NavLink
+                to="/opd-revenue"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+              Opd Revenue
+              </NavLink>
+              )}   
           </MenuGroup>
           )}  
 
