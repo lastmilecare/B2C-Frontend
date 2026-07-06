@@ -103,6 +103,8 @@ const OpdListRevenue = () => {
     { skip: !page || !limit },
   );
 const summary = data?.summary || {};
+const pharmacy = summary.pharmaResult || {};
+const spectacle = summary.specResult || {};
   const { data: doctors, isLoading: doctorsComboLoading } =
     useGetComboQuery("doctor");
   const { data: department, isLoading: departmentComboLoading } =
@@ -605,35 +607,35 @@ const summary = data?.summary || {};
     <span>
       Total Pharmacy Revenue : Rs.
       <span className="font-semibold ml-1">
-        {summary.pharmacyRevenue}
+        {pharmacy.pharmacyRevenue}
       </span>
     </span>
 
     <span>
       Pharmacy Paid Amount : Rs.
       <span className="font-semibold ml-1">
-        {summary.pharmacyPaid}
+        {pharmacy.pharmacyPaid}
       </span>
     </span>
 
     <span>
       Pharmacy Due Amount : Rs.
       <span className="font-semibold ml-1">
-        {summary.pharmacyDue}
+        {pharmacy.pharmacyDue}
       </span>
     </span>
 
     <span>
       Pharmacy Cash Amount : Rs.
       <span className="font-semibold ml-1">
-        {summary.pharmacyCash}
+        {pharmacy.pharmacyCash}
       </span>
     </span>
 
     <span>
       Pharmacy Online / UPI / Cost Free / Card Amount : Rs.
       <span className="font-semibold ml-1">
-        {summary.pharmacyUpi}
+        {pharmacy.pharmacyUpi}
       </span>
     </span>
 
@@ -648,35 +650,35 @@ const summary = data?.summary || {};
     <span>
       Total Spectacle Revenue : Rs.
       <span className="font-semibold ml-1">
-        {summary.spectacleRevenue}
+        {spectacle.spectacleRevenue}
       </span>
     </span>
 
     <span>
       Spectacle Paid Amount : Rs.
       <span className="font-semibold ml-1">
-        {summary.spectaclePaid}
+        {spectacle.spectaclePaid}
       </span>
     </span>
 
     <span>
       Spectacle Due Amount : Rs.
       <span className="font-semibold ml-1">
-        {summary.spectacleDue}
+        {spectacle.spectacleDue}
       </span>
     </span>
 
     <span>
       Spectacle Cash Amount : Rs.
       <span className="font-semibold ml-1">
-        {summary.spectacleCash}
+        {spectacle.spectacleCash}
       </span>
     </span>
 
     <span>
       Spectacle Online / UPI / Cost Free / Card : Rs.
       <span className="font-semibold ml-1">
-        {summary.spectacleUpi}
+        {spectacle.spectacleUpi}
       </span>
     </span>
 
