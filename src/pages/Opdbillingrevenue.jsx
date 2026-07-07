@@ -17,9 +17,14 @@ import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { generateFileName, downloadBlob } from "../utils/helper";
 import { formatDate, formatTime } from "../utils/helper";
+import { useSelector } from "react-redux";
 const OpdListRevenue = () => {
   const [exportExcel] = useLazyExportOpdExcelQuery();
-
+const { permissions } = useSelector((state) => state.auth);
+const can = (permission) => {
+  if (!permission) return true;
+  return permissions?.includes(permission) ?? false;
+};
   const navigate = useNavigate();
   const [deleteOpdBill] = useDeleteOpdBillMutation();
   const handleDelete = async (row) => {
@@ -640,7 +645,8 @@ const spectacle = summary.specResult || {};
     </span>
 
   </div>
-
+{can("read:spectacle_revenue") && (
+  <>
   <hr className="my-4 border-emerald-200"/>
 
   {/* Spectacle */}
@@ -683,6 +689,8 @@ const spectacle = summary.specResult || {};
     </span>
 
   </div>
+  </>
+)}
 
   <hr className="my-4 border-emerald-300"/>
 
