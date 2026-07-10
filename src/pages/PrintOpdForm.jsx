@@ -18,21 +18,24 @@ const {
 });
   const profiles = oragnisationData?.data || {};
   const profile = profiles?.[0] || {};
-  function formatToIST(dateString) {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const formatted = date.toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-    return formatted;
-  }
-  const dateR = formatToIST(data?.AddedDate);
+const formatDate = (date) => {
+  if (!date) return "";
+
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+
+  return `${day}-${month}-${year} ${String(hours).padStart(2, "0")}:${minutes} ${ampm}`;
+};
+
+const formattedDate = formatDate(data?.AddedDate);
   const rowLine = {
     display: "flex",
   };
@@ -161,7 +164,7 @@ const {
         }}
       >
         <div>
-          <b>Date:</b> {dateR}
+          <b>Date:</b> {formattedDate}
         </div>
         <div>
           <b>Bill No:</b> {data?.bill_no}
@@ -208,7 +211,7 @@ const {
               <div style={rowLine}>
                 <span style={label}>Age</span>
                 <span style={colon}>:</span>
-                <span style={value}>{data?.age}</span>
+                <span style={value}>{`${data?.iage ?? 0}y ${data?.imonth ?? 0}m ${data?.idays ?? 0}d`}</span>
               </div>
             </td>
 

@@ -30,20 +30,29 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
     const diffMs = followUpDate - today;
     followup_days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   }
-  function formatToIST(dateString) {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const formatted = date.toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-    return formatted;
-  }
+ const formatDate = (date) => {
+  if (!date) return "";
+
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+
+  return `${day}-${month}-${year} ${String(hours).padStart(
+    2,
+    "0"
+  )}:${minutes}:${seconds} ${ampm}`;
+};
+
+const result = formatDate(data?.addedDate);
   const rowLine = {
     display: "flex",
   };
@@ -70,7 +79,7 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
     marginTop: "12px",
   };
 
-  const result = formatToIST(data?.addedDate);
+
 
   const BASE_URL =import.meta.env.VITE_API_URL.replace(/\/$/, "");
   const mainlogo = profile?.logo
@@ -316,7 +325,12 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
                 <td style={tdCenter}>{i + 1}</td>
                 <td style={tdCenter}>{m.item}</td>
                 <td style={tdCenter}>{m.typeOfMedicine}</td>
-                <td style={tdCenter}>{m.dosage}</td>
+                {/* <td style={tdCenter}>{m.dosage}</td> */}
+                <td style={tdCenter}>
+  {m.typeOfMedicine?.toLowerCase() === "syrup"
+    ? `${m.dosage} mL`
+    : m.dosage}
+</td>
                 <td style={tdCenter}>{m.remarks}</td>
                 <td style={tdCenter}>{m.pillsConsumption}</td>
                 <td style={tdCenter}>{m.duration}</td>
