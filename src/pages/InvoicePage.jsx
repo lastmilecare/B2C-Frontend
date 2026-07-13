@@ -6,7 +6,23 @@ const safeFixed = (value) => Number(value || 0).toFixed(2);
 const InvoiceTemplate = forwardRef(({ data }, ref) => {
   const center_id = cookie.get("center_id");
 const tenant_id = cookie.get("tenantId");
+const billDate = data?.AddedDate
+  ? (() => {
+      const [date, time] = data.AddedDate
+        .replace("T", " ")
+        .replace(/\.\d{3}Z$/, "")
+        .split(" ");
 
+      const [year, month, day] = date.split("-");
+      let [hour, minute, second] = time.split(":");
+
+      hour = Number(hour);
+      const ampm = hour >= 12 ? "PM" : "AM";
+      hour = hour % 12 || 12;
+
+      return `${day}/${month}/${year} ${String(hour).padStart(2, "0")}:${minute}:${second} ${ampm}`;
+    })()
+  : "";
   const page = 1;
   const limit = 10;
   const filters = {
@@ -27,26 +43,7 @@ const tenant_id = cookie.get("tenantId");
   const add = import.meta.env.VITE_CENTER_ADD;
   const mobile = import.meta.env.VITE_CENTER_MOBILE;
   const center = import.meta.env.VITE_CENTER_NAME;
- const formatDate = (date) => {
-  if (!date) return "";
-
-  const d = new Date(date);
-
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
-
-  let hours = d.getHours();
-  const minutes = String(d.getMinutes()).padStart(2, "0");
-  const seconds = String(d.getSeconds()).padStart(2, "0");
-
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12 || 12;
-
-  return `${day}-${month}-${year} ${String(hours).padStart(2, "0")}:${minutes}:${seconds} ${ampm}`;
-};
-
-const billDate = formatDate(data?.AddedDate);
+ 
   const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
   const mainlogo = profile?.logo
     ? `${BASE_URL}${profile.logo}`

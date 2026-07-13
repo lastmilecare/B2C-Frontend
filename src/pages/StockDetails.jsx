@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { cookie } from "../utils/cookie";
 import { healthAlert } from "../utils/healthSwal";
 import { parseCurrency } from "../utils/helper";
-import { formatDate, formatTime } from "../utils/helper";
+import { formatDate, formatTimeVal } from "../utils/helper";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 const username = cookie.get("username");
@@ -343,7 +343,7 @@ const StockDetailsCopy = () => {
                       </span>
             
                       <span className="text-slate-400">
-                       {formatTime(row.AddedDate)}
+                       {formatTimeVal(row.AddedDate)}
                       </span>
                     </div>
                   ),

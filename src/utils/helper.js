@@ -224,6 +224,16 @@ export const formatTime = (value) => {
     second: "2-digit",
   });
 };
+export const formatTimeVal = (value) => {
+  if (!value) return "-";
+
+  const time = value
+    .replace("T", " ")
+    .replace(/\.\d{3}Z$/, "")
+    .split(" ")[1];
+
+  return time || "-";
+};
 
 export const formatDateTime = (value) => {
   if (!value) return "-";
