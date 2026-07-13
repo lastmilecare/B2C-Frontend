@@ -182,7 +182,7 @@ const PrescriptionFormCopy = () => {
   }, [medicineList, debouncedMedicine, selectedMedicine]);
 
   const buildPrescriptionPayload = (values, prescriptionList) => {
-    const addedDate = formatISO(new Date());
+    // const addedDate = formatISO(new Date());
 
     return {
       consultingId: values.consultingId,
@@ -214,12 +214,12 @@ const PrescriptionFormCopy = () => {
       hospitalId: values.hospitalId || 1,
       financialYearId: new Date().getFullYear(),
       addedBy: values.AddedBy,
-      addedDate,
+      // addedDate,
       isActive: true,
       doctor_id: patientData?.ConsultantDoctorID || null,
       centerID: patientData?.CenterID || null,
       driver_id: patientData?.PatientID || null,
-      modifiedDate: addedDate,
+      // modifiedDate: addedDate,
       modifiedBy: user_id,
       AdviceList: prescriptionList.map((item) => ({
         picasoId: values.UHID,
@@ -232,7 +232,7 @@ const PrescriptionFormCopy = () => {
         remarks: item.instructions,
         typeOfMedicine: item.type,
         addedBy: values.AddedBy,
-        addedDate,
+        // addedDate,
         companyId: 10,
         isActive: true,
       })),
@@ -368,7 +368,7 @@ const PrescriptionFormCopy = () => {
     if (populatedUhidRef.current === selectedBill) return;
     populatedUhidRef.current = selectedBill;
     let years = patientData.driverDetails[0]?.iage || 0;
-    let months = patientData.driverDetails[0]?.imonths || 0;
+    let months = patientData.driverDetails[0]?.imonth || 0;
     let days = patientData.driverDetails[0]?.idays || 0;
     const finalAge = `${years}y ${months}m ${days}d`;
     const updates = {
@@ -396,14 +396,14 @@ const PrescriptionFormCopy = () => {
 
     const mappedAdviceList = Array.isArray(row.adviceList)
       ? row.adviceList.map((item) => ({
-          itemId: item.itemId,
-          medicine: item.item,
-          type: item.typeOfMedicine,
-          dosage: item.dosage,
-          instructions: item.remarks || "",
-          preferredTime: item.pillsConsumption,
-          duration: item.duration,
-        }))
+        itemId: item.itemId,
+        medicine: item.item,
+        type: item.typeOfMedicine,
+        dosage: item.dosage,
+        instructions: item.remarks || "",
+        preferredTime: item.pillsConsumption,
+        duration: item.duration,
+      }))
       : [];
 
     if (prescriptionList.length === 0) {
@@ -522,9 +522,8 @@ const PrescriptionFormCopy = () => {
             {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full transition-all duration-300 ${
-                  activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
-                }`}
+                className={`h-2 w-12 rounded-full transition-all duration-300 ${activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
+                  }`}
               />
             ))}
           </div>
@@ -778,19 +777,19 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     label="History"
                   />
                 </div>
-               {!can("update:prescription_form") && (
-      <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-amber-800">
-           ⚠️ Medicine can only be added by a doctor.
-          </p>
-        
-        </div>
-       
-      </div>
-    )}
-  </section>
-)}
+                {!can("update:prescription_form") && (
+                  <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-amber-800">
+                        ⚠️ Medicine can only be added by a doctor.
+                      </p>
+
+                    </div>
+
+                  </div>
+                )}
+              </section>
+            )}
             {activeStep === 4 && (
               <section>
                 <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -858,9 +857,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         Type of Medicine <span className="text-red-500">*</span>
                       </span>
                     }
-                    // className="bg-sky-50 cursor-not-allowed"
+                  // className="bg-sky-50 cursor-not-allowed"
                   />
-                  <Input
+                  {/* <Input
                     label="Quantity"
                     inputMode="numeric"
                     type="text"
@@ -870,7 +869,30 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       const value = e.target.value.replace(/[^0-9]/g, "");
                       formik.setFieldValue("dosage", value);
                     }}
-                  />
+                  /> */}
+                  <div className="relative">
+                    <Input
+                      label={
+                        formik.values.typemedicine?.toLowerCase() === "syrup"
+                          ? "Dosage"
+                          : "Quantity"
+                      }
+                      inputMode="numeric"
+                      type="text"
+                      value={formik.values.dosage}
+                      disabled={!formik.values.billno}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.]/g, "");
+                        formik.setFieldValue("dosage", value);
+                      }}
+                    />
+
+                    {formik.values.typemedicine?.toLowerCase() === "syrup" && (
+                      <span className="absolute right-3 top-[38px] text-gray-500 text-sm">
+                        mL
+                      </span>
+                    )}
+                  </div>
                   <Input
                     {...formik.getFieldProps("dosageinstructions")}
                     placeholder="Instructions "
@@ -905,7 +927,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     onChange={(e) =>
                       formik.setFieldValue("duration", e.target.value)
                     }
-                    // error={formik.touched.duration && formik.errors.duration}
+                  // error={formik.touched.duration && formik.errors.duration}
                   >
                     <option value="">Select Time</option>
                     {MEDICINE_FREQUENCIES.map((time) => (
@@ -962,7 +984,12 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                 {item.medicine}
                               </td>
                               <td className="px-4 py-3">{item.type}</td>
-                              <td className="px-4 py-3">{item.dosage}</td>
+                              {/* <td className="px-4 py-3">{item.dosage}</td> */}
+                              <td className="px-4 py-3">
+                                {item.type?.toLowerCase() === "syrup"
+                                  ? `${item.dosage} mL`
+                                  : item.dosage}
+                              </td>
                               <td className="px-4 py-3">
                                 {item.instructions || "-"}
                               </td>
@@ -1127,10 +1154,14 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                                 <td className="px-3 py-2">
                                   {item.instructions}
                                 </td>
-                                <td className="px-3 py-2 text-center">
+                                {/* <td className="px-3 py-2 text-center">
                                   {item.dosage}
+                                </td> */}
+                                <td className="px-3 py-2 text-center">
+                                  {item.type?.toLowerCase() === "syrup"
+                                    ? `${item.dosage} mL`
+                                    : item.dosage}
                                 </td>
-
                                 <td className="px-3 py-2">
                                   {item.preferredTime}
                                 </td>
@@ -1251,9 +1282,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       id && row
                         ? row
                         : buildPrescriptionPayload(
-                            formik.values,
-                            prescriptionList,
-                          );
+                          formik.values,
+                          prescriptionList,
+                        );
 
                     onPrintCS(dataToPrint);
                   }}

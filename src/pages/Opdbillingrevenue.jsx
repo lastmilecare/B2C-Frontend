@@ -368,9 +368,10 @@ const spectacle = summary.specResult || {};
     {
       name: "Age",
       title: "Patient Age",
-      selector: (row) => safeString(row?.age, "-"),
+        selector: (row) =>
+    `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
       sortable: true,
-      width: "50px",
+      width: "100px",
     },
     {
       name: "Gender",

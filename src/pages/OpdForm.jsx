@@ -503,7 +503,7 @@ const OpdFormCopy = () => {
       }
    */
       let years = patientData.iage || 0;
-      let months = patientData.imonths || 0;
+      let months = patientData.imonth || 0;
       let days = patientData.idays || 0;
       updates.Age = `${years}y ${months}m ${days}d`;
     }
@@ -798,6 +798,7 @@ const OpdFormCopy = () => {
                       label="Refer To"
                     >
                       <option value="">Refer To</option>
+                       <option value="">None</option>
                       {doctors?.map((d) => (
                         <option key={d.id} value={d.id}>
                           {d.name || d.doctor_name}
@@ -1124,7 +1125,7 @@ const OpdFormCopy = () => {
                         </p>
 
                         <p>
-                          <b>Refer To:</b>{" "}
+                          <b>Refer By:</b>{" "}
                           {doctors?.find((d) => d.id == formik.values.ReferBy)
                             ?.name ||
                             doctors?.find((d) => d.id == formik.values.ReferBy)

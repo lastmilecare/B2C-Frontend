@@ -27,18 +27,26 @@ const tenant_id = cookie.get("tenantId");
   const add = import.meta.env.VITE_CENTER_ADD;
   const mobile = import.meta.env.VITE_CENTER_MOBILE;
   const center = import.meta.env.VITE_CENTER_NAME;
-  const billDate = data?.AddedDate
-    ? new Date(
-        new Date(data.AddedDate).getTime() + 5.5 * 60 * 60 * 1000,
-      ).toLocaleString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      })
-    : "";
+ const formatDate = (date) => {
+  if (!date) return "";
+
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+
+  return `${day}-${month}-${year} ${String(hours).padStart(2, "0")}:${minutes}:${seconds} ${ampm}`;
+};
+
+const billDate = formatDate(data?.AddedDate);
   const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
   const mainlogo = profile?.logo
     ? `${BASE_URL}${profile.logo}`
@@ -146,7 +154,7 @@ const tenant_id = cookie.get("tenantId");
                 <td className="border p-2 w-28 font-semibold">Name :</td>
                 <td className="border p-2">{data?.patient_name}</td>
                 <td className="border p-2 w-28 font-semibold">Age :</td>
-                <td className="border p-2">{data?.age}</td>
+                <td className="border p-2"> {`${data?.iage ?? 0}y ${data?.imonth ?? 0}m ${data?.idays ?? 0}d`}</td>
               </tr>
               <tr className="bg-gray-50">
                 <td className="border p-2 w-28 font-semibold">Gender :</td>
@@ -160,6 +168,12 @@ const tenant_id = cookie.get("tenantId");
                   {data?.localAddress}
                 </td>
               </tr>
+              {/* <tr>
+                <td className="border p-2 w-28 font-semibold">ID Proof  :</td>
+                <td className="border p-2" colSpan={3}>
+                  {data?.idProof_number}
+                </td>
+              </tr> */}
             </tbody>
           </table>
         </div>
@@ -230,10 +244,7 @@ const tenant_id = cookie.get("tenantId");
               <span className="font-semibold">Total Amount:</span> Rs{" "}
               {safeFixed(data?.TotalServiceAmount)}
             </p>
-            <p>
-              <span className="font-semibold">Balance Amount:</span> Rs{" "}
-              {safeFixed(data?.balanceAmount)}
-            </p>
+            
             <p>
               <span className="font-semibold">Paid Amount:</span> Rs{" "}
               {safeFixed(data?.PaidAmount)}
@@ -241,6 +252,10 @@ const tenant_id = cookie.get("tenantId");
             <p>
               <span className="font-semibold">Due Amount:</span> Rs{" "}
               {safeFixed(data?.DueAmount)}
+            </p>
+            <p>
+              <span className="font-semibold">Balance Amount:</span> Rs{" "}
+              {safeFixed(data?.balanceAmount)}
             </p>
 
             <hr className="my-2" />
