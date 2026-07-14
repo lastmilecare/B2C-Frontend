@@ -51,7 +51,7 @@ export const IDENTIFICATION_TYPES = [
   { value: "ration_card", label: "Ration Card" },
   // { value: "employee_id", label: "Employee ID" },
   { value: "student_id", label: "Student ID" },
-  { value: "health_card", label: "Health Card" },
+  { value: "health_card_abha", label: "Health Card ABHA" },
   { value: "other", label: "Other" },
   { value: "N/A", label: "N/A" },
 

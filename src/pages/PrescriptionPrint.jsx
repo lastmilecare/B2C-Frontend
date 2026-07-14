@@ -30,29 +30,18 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
     const diffMs = followUpDate - today;
     followup_days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   }
- const formatDate = (date) => {
-  if (!date) return "";
+ const result = data?.addedDate
+  ? (() => {
+      const [date, time] = data.addedDate
+        .replace("T", " ")
+        .replace(/\.\d{3}Z$/, "")
+        .split(" ");
 
-  const d = new Date(date);
+      const [year, month, day] = date.split("-");
 
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
-
-  let hours = d.getHours();
-  const minutes = String(d.getMinutes()).padStart(2, "0");
-  const seconds = String(d.getSeconds()).padStart(2, "0");
-
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12 || 12;
-
-  return `${day}-${month}-${year} ${String(hours).padStart(
-    2,
-    "0"
-  )}:${minutes}:${seconds} ${ampm}`;
-};
-
-const result = formatDate(data?.addedDate);
+      return `${day}/${month}/${year} ${time}`;
+    })()
+  : "";
   const rowLine = {
     display: "flex",
   };

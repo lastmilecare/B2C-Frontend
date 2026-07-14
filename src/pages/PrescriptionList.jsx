@@ -14,7 +14,7 @@ import useDebounce from "../hooks/useDebounce";
 import { healthAlerts, healthAlert } from "../utils/healthSwal";
 import { generateFileName, downloadBlob } from "../utils/helper";
 import Avatar from "../components/common/Avatar";
-import { formatDate, formatTime } from "../utils/helper";
+import { formatDate, formatTimeVal} from "../utils/helper";
 const PrescriptionListCopy = () => {
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
   const [page, setPage] = useState(1);
@@ -254,7 +254,7 @@ setFilters(cleanedFilters);
             {formatDate(row.addedDate)}
           </span>
 
-          <span className="text-slate-400">{formatTime(row.addedDate)}</span>
+          <span className="text-slate-400">{formatTimeVal(row.addedDate)}</span>
         </div>
       ),
     },

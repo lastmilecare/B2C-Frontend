@@ -18,24 +18,27 @@ const {
 });
   const profiles = oragnisationData?.data || {};
   const profile = profiles?.[0] || {};
-const formatDate = (date) => {
-  if (!date) return "";
+const formattedDate = data?.AddedDate
+  ? (() => {
+      const [date, time] = data.AddedDate
+        .replace("T", " ")
+        .replace(/\.\d{3}Z$/, "")
+        .split(" ");
 
-  const d = new Date(date);
+      const [year, month, day] = date.split("-");
 
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
+      let [hour, minute, second] = time.split(":");
 
-  let hours = d.getHours();
-  const minutes = String(d.getMinutes()).padStart(2, "0");
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12 || 12;
+      hour = Number(hour);
+      const ampm = hour >= 12 ? "PM" : "AM";
+      hour = hour % 12 || 12;
 
-  return `${day}-${month}-${year} ${String(hours).padStart(2, "0")}:${minutes} ${ampm}`;
-};
-
-const formattedDate = formatDate(data?.AddedDate);
+      return `${day}/${month}/${year} ${String(hour).padStart(
+        2,
+        "0"
+      )}:${minute}:${second} ${ampm}`;
+    })()
+  : "";
   const rowLine = {
     display: "flex",
   };
