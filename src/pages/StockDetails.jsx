@@ -209,7 +209,7 @@ const StockDetailsCopy = () => {
     },
     {
       name: "Invoice Date",
-      selector: (row) => new Date(row.InvoiceDate).toISOString().split("T")[0],
+      selector: (row) => formatDate(row.InvoiceDate),
       sortable: true,
       width: "120px",
     },
@@ -342,9 +342,9 @@ const StockDetailsCopy = () => {
                        {formatDate(row.AddedDate)}
                       </span>
             
-                      <span className="text-slate-400">
+                      {/* <span className="text-slate-400">
                        {formatTimeVal(row.AddedDate)}
-                      </span>
+                      </span> */}
                     </div>
                   ),
                 },

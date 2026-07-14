@@ -479,10 +479,33 @@ const BillingFormCopy = ({ refetchList }) => {
       Number(formik.values.quantity),
       Number(cleanCurrency(formik.values.discountPercent)),
     );
+    const expiryDate = stockDetails?.data?.[0]?.ExpiryDate;
 
-    const expDate = stockDetails?.data?.[0]?.ExpiryDate
-      ? new Date(stockDetails.data[0].ExpiryDate).toISOString().split("T")[0]
-      : null;
+if (expiryDate) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const expiry = new Date(expiryDate);
+  expiry.setHours(0, 0, 0, 0);
+
+  const diffInDays = Math.ceil(
+    (expiry - today) / (1000 * 60 * 60 * 24)
+  );
+
+  if (diffInDays <= 90) {
+    return healthAlert({
+      title: "Medicine Expiry",
+      text:
+        diffInDays <= 0
+          ? "This medicine has already expired and cannot be billed."
+          : `This medicine will expire in ${diffInDays} day${diffInDays > 1 ? "s" : ""}. Medicines with 90 days or less expiry cannot be billed.`,
+      icon: "warning",
+    });
+  }
+}
+   const expDate = stockDetails?.data?.[0]?.ExpiryDate
+  ? stockDetails.data[0].ExpiryDate.split("T")[0]
+  : null;
     const newItem = {
       description: formik.values.medicine,
       qty: sellingItemCost.qty,
@@ -880,6 +903,19 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       {...formik.getFieldProps("discountPercent")}
                       readOnly
                     />
+            <Input
+  label="Expiry Date"
+  value={
+    selectedMedicine?.id && stockDetails?.data?.[0]?.ExpiryDate
+      ? stockDetails.data[0].ExpiryDate
+          .split("T")[0]
+          .split("-")
+          .reverse()
+          .join("/")
+      : ""
+  }
+  readOnly
+/>
                     <Input
                       label="Bill No"
                       {...formik.getFieldProps("billNo")}
