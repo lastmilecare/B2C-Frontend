@@ -158,6 +158,7 @@ const PatientRegistrationCopy = () => {
       idProof_name: "",
       employeeId: 0,
       ReferredBy: "",
+      isCampRegistration: false,
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
@@ -303,6 +304,7 @@ const PatientRegistrationCopy = () => {
           ReferredBy: p.ReferredBy || "",
           relationship: String(p.relationship || ""),
           occupation: String(p.occupation || ""),
+          isCampRegistration: p.isCampRegistration ?? false,
         });
       };
 
@@ -352,6 +354,7 @@ const PatientRegistrationCopy = () => {
       relationship: Number(values.relationship),
       employeeId: values.employeeId,
       ReferredBy: values.ReferredBy || "",
+      isCampRegistration: values.isCampRegistration,
     };
 
     if (!isEdit) {
@@ -374,6 +377,7 @@ const PatientRegistrationCopy = () => {
         gender: "",
         contactNumber: "",
         employeeId: "",
+        isCampRegistration: false,
       });
     }
 
@@ -494,11 +498,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
             >
               {activeStep === 1 && (
                 <section>
-                  <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
-                    Basic Details
-                  </h3>
-
+                 
+  <h3 className="text-lg font-semibold text-sky-700 flex items-center gap-2">
+    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
+    Basic Details
+  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <Select
                       {...formik.getFieldProps("title")}
@@ -649,6 +653,20 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     // required
                     // error={formik.touched.employeeId && formik.errors.employeeId}
                     />
+                    <div className="md:col-span-3 flex items-center mt-2">
+  <label className="flex items-center gap-3 cursor-pointer select-none">
+    <input
+      type="checkbox"
+      name="isCampRegistration"
+      checked={formik.values.isCampRegistration}
+      onChange={formik.handleChange}
+      className="h-5 w-5 accent-emerald-600 cursor-pointer rounded border-gray-300 focus:ring-2 focus:ring-emerald-500"
+    />
+    <span className="text-sm font-medium text-slate-700">
+      Patient Registration for Camp
+    </span>
+  </label>
+</div>
                   </div>
                 </section>
               )}

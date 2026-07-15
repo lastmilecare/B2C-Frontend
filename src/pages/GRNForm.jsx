@@ -509,6 +509,30 @@ if (
 
   return;
 }
+
+if (v.ExpiryDate) {
+  const today = new Date();
+  const expiry = new Date(v.ExpiryDate);
+
+ 
+  today.setHours(0, 0, 0, 0);
+  expiry.setHours(0, 0, 0, 0);
+
+  const milliseconds = expiry.getTime() - today.getTime();
+  const diffInDays = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
+  if (diffInDays <= 90) {
+    formik.setFieldError(
+      "ExpiryDate",
+      `Medicine will expire in ${diffInDays} days`
+    );
+
+    healthAlerts.warning(
+      `Medicine will expire in ${diffInDays} days. Item cannot be added.`
+    );
+
+    return;
+  }
+}
 // CP should not be greater than MRP
 if (Number(v.CP) > Number(v.MRP)) {
   formik.setFieldError(

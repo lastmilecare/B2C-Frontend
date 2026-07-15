@@ -68,7 +68,8 @@ const PrescriptionFormCopy = () => {
         errors.spo2 ||
         errors.temperature ||
         errors.height ||
-        errors.weight
+        errors.weight ||
+        errors.glucose
       ) {
         const firstError = Object.values(errors)[0];
         healthAlerts.warning(firstError);
@@ -200,9 +201,10 @@ const PrescriptionFormCopy = () => {
       temperature: values.temperature ? Number(values.temperature) : null,
       height: values.height ? Number(values.height) : null,
       weight: values.weight ? Number(values.weight) : null,
+      glucose: values.glucose ? Number(values.glucose) : null,
       chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
       history: values.history || "",
-      physicalFindings: "",
+      
       treatmentPlan: "",
       labs: values.labs || "",
       otherLabs: values.otherlabs || "",
@@ -221,6 +223,8 @@ const PrescriptionFormCopy = () => {
       driver_id: patientData?.PatientID || null,
       // modifiedDate: addedDate,
       modifiedBy: user_id,
+      physicalFindings: values.diagnosis || "",
+
       AdviceList: prescriptionList.map((item) => ({
         picasoId: values.UHID,
         consultingId: values.consultingId,
@@ -284,6 +288,8 @@ const PrescriptionFormCopy = () => {
       ConsultantDoctorID: "",
       CenterID: "",
       PatientID: "",
+      glucose: "",
+      diagnosis: "",
     },
     validationSchema: Yup.object({
       billno: Yup.string().required("Bill No is required"),
@@ -315,6 +321,9 @@ const PrescriptionFormCopy = () => {
       height: Yup.number().min(30, "Invalid height").max(250, "Invalid height"),
 
       weight: Yup.number().min(2, "Invalid weight").max(300, "Invalid weight"),
+      glucose: Yup.number()
+        .min(20, "Glucose too low")
+        .max(700, "Glucose too high"),
     }),
     onSubmit: async (values) => {
       const errors = await formik.validateForm();
@@ -450,6 +459,8 @@ const PrescriptionFormCopy = () => {
       temperature: row.temperature ?? "",
       height: row.height ?? "",
       weight: row.weight ?? "",
+      glucose: row.glucose ?? "",
+      diagnosis: row.physicalFindings ?? "",
     };
 
     formik.setValues((prev) => ({ ...prev, ...updates }), false);
@@ -721,6 +732,15 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     type="number"
                     inputProps={{ min: 1, max: 300 }}
                   />
+                  <Input
+                    {...formik.getFieldProps("glucose")}
+                    label="Glucose (mg/dL)"
+                    type="number"
+                    inputProps={{
+                      min: 20,
+                      max: 700,
+                    }}
+                  />
                 </div>
               </section>
             )}{" "}
@@ -775,6 +795,12 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     {...formik.getFieldProps("history")}
                     placeholder="History"
                     label="History"
+                  />
+                  <Input
+                    {...formik.getFieldProps("diagnosis")}
+                    placeholder="Diagnosis"
+                    label="Diagnosis"
+                    
                   />
                 </div>
                 {!can("update:prescription_form") && (
@@ -1065,6 +1091,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   <p>
                     <b>Weight (kg):</b> {formik.values.weight}
                   </p>
+                  <p>
+                    <b>Glucose (mg/dL):</b> {formik.values.glucose}
+                  </p>
                 </div>
 
                 <div className="border-t pt-3 text-sm">
@@ -1112,6 +1141,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       <p>
                         <b>Other Instructions:</b>{" "}
                         {formik.values.otherinstrution || "-"}
+                      </p>
+                      <p>
+                        <b>Diagnosis:</b> {formik.values.diagnosis || "-"}
                       </p>
                     </div>
                   </div>
@@ -1219,6 +1251,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         temperature: "",
                         height: "",
                         weight: "",
+                        glucose: "",
                       });
                     }
 
@@ -1232,6 +1265,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         followup: "",
                         advice: "",
                         history: "",
+                        glucose: "",
                       });
                     }
 

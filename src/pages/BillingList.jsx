@@ -299,7 +299,7 @@ const BillingListCopy = () => {
             {formatDate(row.AddedDate)}
           </span>
 
-          <span className="text-slate-400">{formatTime(row.AddedDate)}</span>
+          {/* <span className="text-slate-400">{formatTime(row.AddedDate)}</span> */}
         </div>
       ),
     },
