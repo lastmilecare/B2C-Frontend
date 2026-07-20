@@ -230,8 +230,46 @@ export const RADIOLOGY_TESTS = [
   { id: "r7", name: "MRI Brain", category: "Radiology" },
   { id: "r8", name: "2D Echo", category: "Radiology" },
 ];
+export const TEST_MASTER = {
+  vitalSigns: [
+    "Height",
+    "Weight",
+    "BMI",
+    "Blood Pressure",
+    "Pulse",
+    "Temperature",
+    "SpO₂",
+  ],
 
-export const PACKAGE_LEVELS = [
+  clinicalExamination: [
+    "General Examination",
+    "Eye Examination",
+    "ENT",
+    "Respiratory System",
+    "Cardiovascular System",
+    "Abdomen",
+  ],
+
+  laboratoryInvestigation: [
+    "Hemoglobin",
+    "CBC",
+    "Blood Sugar",
+    "Urine Analysis",
+    "Lipid Profile",
+    "LFT",
+    "KFT",
+  ],
+
+  radiologySpecialTests: [
+    "Chest X-Ray",
+    "ECG",
+    "Audiometry",
+    "Spirometry",
+    "Vision Test",
+  ],
+};
+
+export const PACKAGE_TYPES = [
   { value: "BASIC", label: "Basic" },
   { value: "MEDIUM", label: "Medium" },
   { value: "ADVANCED", label: "Advanced" },
@@ -247,3 +285,4 @@ export const getStoredPackages = () => {
     return [];
   }
 };
+

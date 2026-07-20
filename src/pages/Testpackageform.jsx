@@ -1,593 +1,836 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
 import {
-  BeakerIcon,
-  ArrowPathIcon,
-  CheckCircleIcon,
-  DocumentTextIcon,
   ClipboardDocumentCheckIcon,
-  PlusIcon,
-  TrashIcon,
-  UserIcon
+  DocumentTextIcon,
+  CurrencyRupeeIcon,
+  CheckCircleIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
+
+import { useCenterComboListQuery, useGetTenantsQuery, useCreatePackageMutation,
+ } from "../redux/apiSlice";
+
 import { healthAlert } from "../utils/healthSwal";
 import { Input, Select, Button } from "../components/FormControls";
-import { useNavigate } from "react-router-dom";
-import { BLOOD_GROUPS, RADIOLOGY_TESTS, PACKAGE_LEVELS, PACKAGES_STORAGE_KEY, getStoredPackages, BLOOD_TESTS } from "../utils/constants";
-// ─── Static master test catalogue ───────────────────────────────────────────
-import PatientSelector from "../components/common/PatientSelector";
+import { PACKAGE_TYPES, TEST_MASTER } from "../utils/constants";
 
-const savePackageToStorage = (pkg) => {
-  const existing = getStoredPackages();
-  const updated = [...existing, pkg];
-  localStorage.setItem(PACKAGES_STORAGE_KEY, JSON.stringify(updated));
-};
+const TestPackageForm = () => {
 
-const updatePackageInStorage = (id, pkg) => {
-  const existing = getStoredPackages();
-  const updated = existing.map((p) => (p.id === id ? { ...p, ...pkg } : p));
-  localStorage.setItem(PACKAGES_STORAGE_KEY, JSON.stringify(updated));
-};
+  const { data: tenantData } = useGetTenantsQuery();
 
-// ─── Component ────────────────────────────────────────────────────────────────
-const TestPackageForm = ({ editData, onSaved }) => {
+  const { data: centerData } = useCenterComboListQuery();
+
+  const [createPackage, { isLoading }] =
+    useCreatePackageMutation();
+
+  const tenants = tenantData?.data?.data || [];
+  const centers = centerData?.data?.data || [];
   const [activeStep, setActiveStep] = useState(1);
-  const [bloodSearch, setBloodSearch] = useState("");
-  const [radSearch, setRadSearch] = useState("");
-  const navigate = useNavigate();
-
-  const isEditMode = Boolean(editData?.id);
-
+  const [search, setSearch] = useState({
+    vitalSigns: "",
+    clinicalExamination: "",
+    laboratoryInvestigation: "",
+    radiologySpecialTests: "",
+  });
   const formik = useFormik({
-    initialValues: {
-      packageName: editData?.packageName || "",
-      level: editData?.level || "",
-      description: editData?.description || "",
-      bloodTestIds: editData?.bloodTestIds || [],
-      radiologyTestIds: editData?.radiologyTestIds || [],
-    },
-    enableReinitialize: true,
-    validationSchema: Yup.object({
-      packageName: Yup.string().required("Package name is required"),
-      level: Yup.string().required("Level is required"),
-      bloodTestIds: Yup.array().min(1, "Select at least one blood/lab test"),
-    }),
-    onSubmit: async (values, { resetForm }) => {
-      try {
-        const pkg = {
-          id: editData?.id || Date.now().toString(),
-          packageName: values.packageName,
-          level: values.level,
-          description: values.description,
-          bloodTestIds: values.bloodTestIds,
-          radiologyTestIds: values.radiologyTestIds,
-          bloodTests: BLOOD_TESTS.filter((t) =>
-            values.bloodTestIds.includes(t.id)
-          ),
-          radiologyTests: RADIOLOGY_TESTS.filter((t) =>
-            values.radiologyTestIds.includes(t.id)
-          ),
-          createdAt: editData?.createdAt || new Date().toISOString(),
-        };
 
-        if (isEditMode) {
-          updatePackageInStorage(editData.id, pkg);
-        } else {
-          savePackageToStorage(pkg);
-        }
+    initialValues: {
+
+      packageName: "",
+
+      packageType: "",
+
+      tenantId: "",
+
+      centerId: "",
+
+      packagePrice: "",
+
+      selectedTests: {
+
+        vitalSigns: [],
+
+        clinicalExamination: [],
+
+        laboratoryInvestigation: [],
+
+        radiologySpecialTests: [],
+      },
+    },
+
+    validationSchema: Yup.object({
+
+      packageName: Yup.string().required(
+        "Package Name is required"
+      ),
+
+      packageType: Yup.string().required(
+        "Package Type is required"
+      ),
+
+      tenantId: Yup.string().required(
+        "Tenant is required"
+      ),
+
+      centerId: Yup.string().required(
+        "Center is required"
+      ),
+    }),
+
+    onSubmit: async (values) => {
+
+      try {
+
+        await createPackage({
+
+          package_name: values.packageName,
+
+          package_type: values.packageType,
+
+          tenant_id: Number(values.tenantId),
+
+          center_id: Number(values.centerId),
+
+          package_price:
+            values.packagePrice === ""
+              ? null
+              : Number(values.packagePrice),
+
+          package_list: values.selectedTests,
+
+        }).unwrap();
 
         healthAlert({
           title: "Success",
-          text: isEditMode
-            ? "Package updated successfully"
-            : "Package created successfully",
+          text: "Package created successfully",
           icon: "success",
         });
 
-        resetForm();
+        formik.resetForm();
+
         setActiveStep(1);
-        if (onSaved) onSaved();
-      } catch {
+
+      } catch (error) {
+
         healthAlert({
           title: "Error",
-          text: "Failed to save package",
+          text:
+            error?.data?.message ||
+            "Failed to create package",
           icon: "error",
         });
+
       }
+
     },
+
   });
-
   const nextStep = async () => {
+
     const errors = await formik.validateForm();
+
     if (
-      activeStep === 2 &&
-      (errors.packageName || errors.level)
+      activeStep === 1 &&
+      (
+        errors.packageName ||
+        errors.packageType ||
+        errors.tenantId ||
+        errors.centerId
+      )
     ) {
-      formik.setTouched({ packageName: true, level: true });
-      return;
-    }
-    if (activeStep === 3 && errors.bloodTestIds) {
-      formik.setTouched({ bloodTestIds: true });
-      healthAlert({
-        title: "Warning",
-        text: errors.bloodTestIds,
-        icon: "warning",
+
+      formik.setTouched({
+
+        packageName: true,
+
+        packageType: true,
+
+        tenantId: true,
+
+        centerId: true,
+
       });
+
       return;
     }
-    setActiveStep((p) => p + 1);
+
+    setActiveStep((prev) => prev + 1);
+
   };
 
-  const prevStep = () => setActiveStep((p) => p - 1);
+  const prevStep = () =>
+    setActiveStep((prev) => prev - 1);
+  const handleReset = () => {
+    formik.resetForm();
+    setSearch({
+      vitalSigns: "",
+      clinicalExamination: "",
+      laboratoryInvestigation: "",
+      radiologySpecialTests: "",
+    });
+    setActiveStep(1);
+  };
+  const toggleTest = (category, test) => {
+    const selected =
+      formik.values.selectedTests[category];
 
-  const toggleBlood = (id) => {
-    const current = formik.values.bloodTestIds;
+    const updated = selected.includes(test)
+      ? selected.filter((item) => item !== test)
+      : [...selected, test];
+
     formik.setFieldValue(
-      "bloodTestIds",
-      current.includes(id) ? current.filter((x) => x !== id) : [...current, id]
+      `selectedTests.${category}`,
+      updated
     );
   };
-
-  const toggleRad = (id) => {
-    const current = formik.values.radiologyTestIds;
+  const selectAll = (category) => {
     formik.setFieldValue(
-      "radiologyTestIds",
-      current.includes(id) ? current.filter((x) => x !== id) : [...current, id]
+      `selectedTests.${category}`,
+      TEST_MASTER[category]
     );
   };
+  const removeAll = (category) => {
+    formik.setFieldValue(
+      `selectedTests.${category}`,
+      []
+    );
 
-  const toggleAllBlood = () => {
-    const filtered = BLOOD_TESTS.filter((t) =>
-      t.name.toLowerCase().includes(bloodSearch.toLowerCase())
-    );
-    const allIds = filtered.map((t) => t.id);
-    const allSelected = allIds.every((id) =>
-      formik.values.bloodTestIds.includes(id)
-    );
-    if (allSelected) {
-      formik.setFieldValue(
-        "bloodTestIds",
-        formik.values.bloodTestIds.filter((id) => !allIds.includes(id))
-      );
-    } else {
-      formik.setFieldValue("bloodTestIds", [
-        ...new Set([...formik.values.bloodTestIds, ...allIds]),
-      ]);
-    }
   };
+  const filteredTests = useMemo(() => {
+    return {
+      vitalSigns:
+        TEST_MASTER.vitalSigns.filter((x) =>
+          x
+            .toLowerCase()
+            .includes(
+              search.vitalSigns.toLowerCase()
+            )
+        ),
+      clinicalExamination:
+        TEST_MASTER.clinicalExamination.filter(
+          (x) =>
+            x
+              .toLowerCase()
+              .includes(
+                search.clinicalExamination.toLowerCase()
+              )
+        ),
+      laboratoryInvestigation:
+        TEST_MASTER.laboratoryInvestigation.filter(
+          (x) =>
+            x
+              .toLowerCase()
+              .includes(
+                search.laboratoryInvestigation.toLowerCase()
+              )
+        ),
+      radiologySpecialTests:
+        TEST_MASTER.radiologySpecialTests.filter(
+          (x) =>
+            x
+              .toLowerCase()
+              .includes(
+                search.radiologySpecialTests.toLowerCase()
+              )
+        ),
 
-  const toggleAllRad = () => {
-    const filtered = RADIOLOGY_TESTS.filter((t) =>
-      t.name.toLowerCase().includes(radSearch.toLowerCase())
-    );
-    const allIds = filtered.map((t) => t.id);
-    const allSelected = allIds.every((id) =>
-      formik.values.radiologyTestIds.includes(id)
-    );
-    if (allSelected) {
-      formik.setFieldValue(
-        "radiologyTestIds",
-        formik.values.radiologyTestIds.filter((id) => !allIds.includes(id))
-      );
-    } else {
-      formik.setFieldValue("radiologyTestIds", [
-        ...new Set([...formik.values.radiologyTestIds, ...allIds]),
-      ]);
-    }
-  };
+    };
 
-  const filteredBlood = BLOOD_TESTS.filter((t) =>
-    t.name.toLowerCase().includes(bloodSearch.toLowerCase())
-  );
-  const filteredRad = RADIOLOGY_TESTS.filter((t) =>
-    t.name.toLowerCase().includes(radSearch.toLowerCase())
-  );
+  }, [search]);
+  const selectedTenant =
+    tenants.find(
+      (x) =>
+        Number(x.id) ===
+        Number(formik.values.tenantId)
+    )?.name;
 
-  const selectedBloodTests = BLOOD_TESTS.filter((t) =>
-    formik.values.bloodTestIds.includes(t.id)
-  );
-  const selectedRadTests = RADIOLOGY_TESTS.filter((t) =>
-    formik.values.radiologyTestIds.includes(t.id)
-  );
-
-  const selectedLevel = PACKAGE_LEVELS.find(
-    (l) => l.value === formik.values.level
-  );
+  const selectedCenter =
+    centers.find(
+      (x) =>
+        Number(x.id) ===
+        Number(formik.values.centerId)
+    )?.name;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10 px-4">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
+      <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
             <span className="bg-blue-100 p-2 rounded-xl">
-              <BeakerIcon className="w-6 text-blue-600" />
+              <ClipboardDocumentCheckIcon className="w-6 h-6 text-blue-600" />
             </span>
-            {isEditMode ? "Edit Test Package" : "Create Test Package"}
+            Package Registration
           </h1>
           <div className="flex gap-2">
-            {[1, 2, 3, 4].map((s) => (
+            {[1, 2, 3, 4].map((step) => (
+
               <div
-                key={s}
-                className={`h-2 w-12 rounded-full transition-all ${
-                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                }`}
+                key={step}
+                className={`h-2 w-12 rounded-full ${activeStep >= step
+                    ? "bg-sky-600"
+                    : "bg-gray-200"
+                  }`}
               />
+
             ))}
+
           </div>
+
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-          {/* Tab Bar */}
+        <div className="bg-white rounded-3xl shadow-xl shadow-blue-100 border border-gray-100 overflow-hidden">
+
           <div className="flex border-b">
             {[
-                { id: 1, label: "Worker Details", icon: UserIcon },
-              { id: 2, label: "Package Info", icon: DocumentTextIcon },
-              { id: 3, label: "Select Tests", icon: BeakerIcon },
-              { id: 4, label: "Confirm", icon: ClipboardDocumentCheckIcon },
+              {
+                id: 1,
+                label: "Package",
+                icon: DocumentTextIcon,
+              },
+              {
+                id: 2,
+                label: "Tests",
+                icon: ClipboardDocumentCheckIcon,
+              },
+              {
+                id: 3,
+                label: "Price",
+                icon: CurrencyRupeeIcon,
+              },
+              {
+                id: 4,
+                label: "Preview",
+                icon: CheckCircleIcon,
+              },
             ].map((step) => (
+
               <button
                 key={step.id}
-                type="button"
                 disabled
-                className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold transition-colors ${
-                  activeStep === step.id
-                    ? "bg-white text-sky-600 shadow-sm border-b-2 border-sky-600"
+                type="button"
+                className={`flex-1 py-4 flex items-center justify-center gap-2 transition-colors ${activeStep === step.id
+                    ? "bg-white text-sky-600 font-bold"
                     : "text-gray-400"
-                }`}
+                  }`}
               >
-                <step.icon className="w-4 h-4" />
+
+                <step.icon className="w-5 h-5" />
+
                 {step.label}
+
               </button>
+
             ))}
+
           </div>
 
-          <div className="p-8">
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+          <div className="p-10">
 
-                 {activeStep === 1 && (
-                          <section>
-                            <PatientSelector formik={formik} />
-                
-                          </section>
-                        )}
-              {/* ── Step 1: Package Info ── */}
-              {activeStep === 2 && (
-                <section>
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="space-y-8"
+            >
+              {activeStep === 1 && (
+                <section className="animate-in fade-in duration-500">
                   <h3 className="text-lg font-semibold text-sky-700 mb-6 flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-sky-600 rounded-full" />
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
                     Package Information
                   </h3>
-
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Input
                       label="Package Name"
                       required
-                      placeholder="e.g. Annual Health Check"
+                      placeholder="Enter Package Name"
                       {...formik.getFieldProps("packageName")}
                       error={
-                        formik.touched.packageName && formik.errors.packageName
+                        formik.touched.packageName &&
+                        formik.errors.packageName
                       }
                     />
 
                     <Select
-                      label="Package Level"
+                      label="Package Type"
                       required
-                      {...formik.getFieldProps("level")}
-                      error={formik.touched.level && formik.errors.level}
+                      {...formik.getFieldProps("packageType")}
+                      error={
+                        formik.touched.packageType &&
+                        formik.errors.packageType
+                      }
                     >
-                      <option value="">Select Level</option>
-                      {PACKAGE_LEVELS.map((l) => (
-                        <option key={l.value} value={l.value}>
-                          {l.label}
+                      <option value="">
+                        Select Package Type
+                      </option>
+                      {PACKAGE_TYPES.map((item) => (
+                        <option
+                          key={item.value}
+                          value={item.value}
+                        >
+                          {item.label}
                         </option>
+
                       ))}
+
                     </Select>
 
-                    <div className="md:col-span-2">
-                      <Input
-                        label="Description"
-                        placeholder="Brief description of this package"
-                        {...formik.getFieldProps("description")}
-                        error={
-                          formik.touched.description &&
-                          formik.errors.description
-                        }
-                      />
-                    </div>
+                    <Select
+                      label="Assign Tenant"
+                      required
+                      {...formik.getFieldProps("tenantId")}
+                      error={
+                        formik.touched.tenantId &&
+                        formik.errors.tenantId
+                      }
+                    >
+
+                      <option value="">
+
+                        Select Tenant
+
+                      </option>
+
+                      {tenants.map((tenant) => (
+
+                        <option
+                          key={tenant.id}
+                          value={tenant.id}
+                        >
+                          {tenant.name}
+                        </option>
+
+                      ))}
+
+                    </Select>
+
+                    <Select
+                      label="Assign Center"
+                      required
+                      {...formik.getFieldProps("centerId")}
+                      error={
+                        formik.touched.centerId &&
+                        formik.errors.centerId
+                      }
+                    >
+
+                      <option value="">
+
+                        Select Center
+
+                      </option>
+
+                      {centers.map((center) => (
+
+                        <option
+                          key={center.id}
+                          value={center.id}
+                        >
+                          {center.name}
+                        </option>
+
+                      ))}
+
+                    </Select>
+
                   </div>
 
-                  {/* Level badge preview */}
-                  {formik.values.level && (
-                    <div className="mt-6">
-                      <p className="text-xs text-gray-500 mb-2">Preview</p>
-                      <span
-                        className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold ${
-                          formik.values.level === "BASIC"
-                            ? "bg-green-100 text-green-700 border border-green-200"
-                            : formik.values.level === "MEDIUM"
-                            ? "bg-yellow-100 text-yellow-700 border border-yellow-200"
-                            : "bg-purple-100 text-purple-700 border border-purple-200"
-                        }`}
-                      >
-                        {selectedLevel?.label} Package
-                      </span>
-                    </div>
-                  )}
+                </section>
+
+              )}
+
+              {activeStep === 2 && (
+                <section className="animate-in fade-in duration-500">
+
+                  <h3 className="text-lg font-semibold text-sky-700 mb-6 flex items-center gap-2">
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
+                    Select Package Tests
+                  </h3>
+
+                  <div className="space-y-8">
+
+                    {Object.keys(TEST_MASTER).map((category) => {
+
+                      const title = category
+                        .replace(/([A-Z])/g, " $1")
+                        .replace(/^./, (str) => str.toUpperCase());
+
+                      const selected =
+                        formik.values.selectedTests[category];
+
+                      const list = filteredTests[category];
+
+                      const allSelected =
+                        selected.length === TEST_MASTER[category].length;
+
+                      return (
+
+                        <div
+                          key={category}
+                          className="border border-gray-200 rounded-2xl overflow-hidden"
+                        >
+
+                          <div className="bg-slate-50 px-5 py-4 flex justify-between items-center">
+
+                            <div>
+
+                              <h4 className="font-semibold text-slate-800">
+                                {title}
+                              </h4>
+
+                              <p className="text-xs text-slate-500 mt-1">
+                                Selected : {selected.length}
+                              </p>
+
+                            </div>
+
+                            <button
+                              type="button"
+                              className="text-sky-600 text-sm font-semibold hover:underline"
+                              onClick={() =>
+                                allSelected
+                                  ? removeAll(category)
+                                  : selectAll(category)
+                              }
+                            >
+                              {allSelected
+                                ? "Remove All"
+                                : "Select All"}
+                            </button>
+                          </div>
+                          <div className="p-5 border-t">
+                            <Input
+                              placeholder={`Search ${title}`}
+                              value={search[category]}
+                              onChange={(e) =>
+                                setSearch((prev) => ({
+                                  ...prev,
+                                  [category]: e.target.value,
+                                }))
+                              }
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-5 pt-0">
+
+                            {list.map((test) => {
+
+                              const isSelected =
+                                selected.includes(test);
+
+                              return (
+
+                                <div
+                                  key={test}
+                                  onClick={() =>
+                                    toggleTest(category, test)
+                                  }
+                                  className={`cursor-pointer rounded-xl border p-3 transition-all flex justify-between items-center
+                    ${isSelected
+                                      ? "border-sky-500 bg-sky-50"
+                                      : "border-gray-200 hover:border-sky-300 hover:bg-slate-50"
+                                    }`}
+                                >
+
+                                  <span className="text-sm font-medium text-slate-700">
+                                    {test}
+                                  </span>
+
+                                  {isSelected && (
+                                    <CheckCircleIcon className="w-5 h-5 text-sky-600" />
+                                  )}
+
+                                </div>
+
+                              );
+
+                            })}
+
+                          </div>
+                          {selected.length > 0 && (
+
+                            <div className="px-5 pb-5">
+
+                              <div className="flex flex-wrap gap-2">
+
+                                {selected.map((test) => (
+
+                                  <span
+                                    key={test}
+                                    className="bg-sky-100 text-sky-700 border border-sky-200 px-3 py-1 rounded-full text-xs font-medium"
+                                  >
+                                    {test}
+                                  </span>
+
+                                ))}
+
+                              </div>
+
+                            </div>
+
+                          )}
+
+                        </div>
+
+                      );
+
+                    })}
+
+                  </div>
+
                 </section>
               )}
 
-              {/* ── Step 2: Select Tests ── */}
+
               {activeStep === 3 && (
-                <section className="space-y-8">
-                  {/* Blood / Lab Tests */}
-                  <div>
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="text-lg font-semibold text-sky-700 flex items-center gap-2">
-                        <span className="w-1.5 h-6 bg-sky-600 rounded-full" />
-                        Blood / Lab Tests
-                        <span className="ml-2 text-xs bg-sky-100 text-sky-600 px-2 py-0.5 rounded-full">
-                          {formik.values.bloodTestIds.length} selected
-                        </span>
-                      </h3>
-                      <button
-                        type="button"
-                        onClick={toggleAllBlood}
-                        className="text-xs text-sky-600 font-semibold hover:underline"
-                      >
-                        {filteredBlood.every((t) =>
-                          formik.values.bloodTestIds.includes(t.id)
-                        )
-                          ? "Remove All"
-                          : "Select All"}
-                      </button>
+                <section className="animate-in fade-in duration-500">
+
+                  <h3 className="text-lg font-semibold text-sky-700 mb-6 flex items-center gap-2">
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
+                    Package Pricing
+                  </h3>
+
+                  <div className="grid md:grid-cols-2 gap-8">
+
+                    <div>
+
+                      <Input
+                        label="Package Price"
+                        placeholder="Enter Package Price"
+                        type="number"
+                        {...formik.getFieldProps("packagePrice")}
+                      />
+
+                      <p className="text-xs text-gray-500 mt-2">
+                        This field is optional.
+                      </p>
+
                     </div>
 
-                    <input
-                      type="text"
-                      placeholder="Search blood tests..."
-                      value={bloodSearch}
-                      onChange={(e) => setBloodSearch(e.target.value)}
-                      className="w-full mb-3 p-2.5 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm
-                        focus:outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-50"
-                    />
+                    <div className="bg-sky-50 rounded-2xl border border-sky-100 p-6">
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {filteredBlood.map((test) => {
-                        const selected = formik.values.bloodTestIds.includes(
-                          test.id
-                        );
-                        return (
-                          <button
-                            key={test.id}
-                            type="button"
-                            onClick={() => toggleBlood(test.id)}
-                            className={`text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                              selected
-                                ? "border-sky-500 bg-sky-50 text-sky-700"
-                                : "border-gray-100 bg-white text-gray-600 hover:border-sky-200 hover:bg-sky-50"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span>{test.name}</span>
-                              {selected && (
-                                <CheckCircleIcon className="w-4 h-4 text-sky-500 flex-shrink-0" />
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
+                      <h4 className="font-bold text-sky-700 mb-5">
+                        Package Summary
+                      </h4>
+
+                      <div className="space-y-4 text-sm">
+
+                        <div className="flex justify-between">
+                          <span>Package</span>
+                          <b>{formik.values.packageName || "-"}</b>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span>Type</span>
+                          <b>{formik.values.packageType || "-"}</b>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span>Tenant</span>
+                          <b>{selectedTenant || "-"}</b>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span>Center</span>
+                          <b>{selectedCenter || "-"}</b>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span>Price</span>
+                          <b>
+                            {formik.values.packagePrice
+                              ? `₹ ${formik.values.packagePrice}`
+                              : "Not Set"}
+                          </b>
+                        </div>
+
+                      </div>
+
                     </div>
 
-                    {formik.touched.bloodTestIds &&
-                      formik.errors.bloodTestIds && (
-                        <p className="text-xs text-red-500 mt-2">
-                          {formik.errors.bloodTestIds}
-                        </p>
-                      )}
                   </div>
 
-                  {/* Radiology Tests */}
-                  <div>
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="text-lg font-semibold text-sky-700 flex items-center gap-2">
-                        <span className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-                        Radiology Tests
-                        <span className="ml-2 text-xs bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full">
-                          {formik.values.radiologyTestIds.length} selected
-                        </span>
-                      </h3>
-                      <button
-                        type="button"
-                        onClick={toggleAllRad}
-                        className="text-xs text-sky-600 font-semibold hover:underline"
-                      >
-                        {filteredRad.every((t) =>
-                          formik.values.radiologyTestIds.includes(t.id)
-                        )
-                          ? "Remove All"
-                          : "Select All"}
-                      </button>
-                    </div>
-
-                    <input
-                      type="text"
-                      placeholder="Search radiology tests..."
-                      value={radSearch}
-                      onChange={(e) => setRadSearch(e.target.value)}
-                      className="w-full mb-3 p-2.5 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm
-                        focus:outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-50"
-                    />
-
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {filteredRad.map((test) => {
-                        const selected =
-                          formik.values.radiologyTestIds.includes(test.id);
-                        return (
-                          <button
-                            key={test.id}
-                            type="button"
-                            onClick={() => toggleRad(test.id)}
-                            className={`text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                              selected
-                                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                                : "border-gray-100 bg-white text-gray-600 hover:border-emerald-200 hover:bg-emerald-50"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span>{test.name}</span>
-                              {selected && (
-                                <CheckCircleIcon className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
                 </section>
               )}
 
-              {/* ── Step 3: Confirm ── */}
+
               {activeStep === 4 && (
-                <section>
-                  <div className="bg-sky-50 p-8 rounded-3xl border border-sky-100 space-y-6">
-                    <h3 className="text-xl font-bold text-sky-800 flex items-center gap-2">
-                      <ClipboardDocumentCheckIcon className="w-6 h-6" />
-                      Confirm Package Details
+                <section className="animate-in fade-in duration-500">
+
+                  <div className="bg-sky-50 rounded-3xl border border-sky-100 p-8">
+
+                    <h3 className="text-xl font-bold text-sky-700 mb-8">
+                      Package Preview
                     </h3>
 
-                    {/* Basic info */}
-                    <div className="grid md:grid-cols-3 gap-6 text-sm">
+                    <div className="grid md:grid-cols-2 gap-6 mb-8">
+
                       <div>
-                        <p className="text-slate-500 text-[10px] uppercase font-bold mb-1">
+                        <p className="text-xs uppercase text-gray-500">
                           Package Name
                         </p>
-                        <p className="text-slate-800 font-semibold text-base">
+
+                        <p className="font-semibold">
                           {formik.values.packageName}
                         </p>
                       </div>
+
                       <div>
-                        <p className="text-slate-500 text-[10px] uppercase font-bold mb-1">
-                          Level
+                        <p className="text-xs uppercase text-gray-500">
+                          Package Type
                         </p>
-                        <span
-                          className={`inline-flex px-3 py-1 rounded-full text-sm font-semibold ${
-                            formik.values.level === "BASIC"
-                              ? "bg-green-100 text-green-700"
-                              : formik.values.level === "MEDIUM"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-purple-100 text-purple-700"
-                          }`}
-                        >
-                          {selectedLevel?.label}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-slate-500 text-[10px] uppercase font-bold mb-1">
-                          Description
-                        </p>
-                        <p className="text-slate-700 italic">
-                          {formik.values.description || "—"}
+
+                        <p className="font-semibold">
+                          {formik.values.packageType}
                         </p>
                       </div>
+
+                      <div>
+                        <p className="text-xs uppercase text-gray-500">
+                          Tenant
+                        </p>
+
+                        <p className="font-semibold">
+                          {selectedTenant}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs uppercase text-gray-500">
+                          Center
+                        </p>
+
+                        <p className="font-semibold">
+                          {selectedCenter}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs uppercase text-gray-500">
+                          Price
+                        </p>
+
+                        <p className="font-semibold">
+                          {formik.values.packagePrice
+                            ? `₹ ${formik.values.packagePrice}`
+                            : "Not Set"}
+                        </p>
+                      </div>
+
                     </div>
 
-                    {/* Blood tests */}
-                    <div className="border-t border-sky-200 pt-5">
-                      <p className="text-slate-500 text-[10px] uppercase font-bold mb-3">
-                        Blood / Lab Tests ({selectedBloodTests.length})
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedBloodTests.map((t) => (
-                          <span
-                            key={t.id}
-                            className="bg-sky-100 text-sky-700 border border-sky-200 px-3 py-1 rounded-full text-xs font-medium"
+                    {Object.entries(formik.values.selectedTests).map(
+                      ([category, tests]) => {
+
+                        if (tests.length === 0) return null;
+
+                        const title = category
+                          .replace(/([A-Z])/g, " $1")
+                          .replace(/^./, (str) => str.toUpperCase());
+
+                        return (
+
+                          <div
+                            key={category}
+                            className="mb-6"
                           >
-                            {t.name}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
 
-                    {/* Radiology tests */}
-                    {selectedRadTests.length > 0 && (
-                      <div className="border-t border-sky-200 pt-5">
-                        <p className="text-slate-500 text-[10px] uppercase font-bold mb-3">
-                          Radiology Tests ({selectedRadTests.length})
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedRadTests.map((t) => (
-                            <span
-                              key={t.id}
-                              className="bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-medium"
-                            >
-                              {t.name}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                            <h4 className="font-semibold text-sky-700 mb-3">
+                              {title}
+                            </h4>
+
+                            <div className="flex flex-wrap gap-2">
+
+                              {tests.map((test) => (
+
+                                <span
+                                  key={test}
+                                  className="px-3 py-1 rounded-full bg-white border border-sky-200 text-sky-700 text-xs"
+                                >
+                                  {test}
+                                </span>
+
+                              ))}
+
+                            </div>
+
+                          </div>
+
+                        );
+
+                      }
                     )}
+
                   </div>
+
                 </section>
               )}
+             <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
 
-              {/* Navigation */}
-              <div className="flex justify-between items-center pt-6 border-t border-gray-100">
-                <div className="flex gap-3">
-                  {activeStep > 1 && (
-                    <Button type="button" variant="gray" onClick={prevStep}>
-                      Back
-                    </Button>
-                  )}
-                  <Button
-                    type="button"
-                    variant="gray"
-                    onClick={() => {
-                      if (activeStep === 2) {
-                        formik.setValues({
-                          ...formik.values,
-                          packageName: "",
-                          level: "",
-                          description: "",
-                        });
-                      } else if (activeStep === 3) {
-                        formik.setFieldValue("bloodTestIds", []);
-                        formik.setFieldValue("radiologyTestIds", []);
-                        setBloodSearch("");
-                        setRadSearch("");
-                      } else {
-                        formik.resetForm();
-                        setActiveStep(1);
-                      }
-                    }}
-                  >
-                    <ArrowPathIcon className="w-4 h-4 inline mr-1" /> Reset
-                  </Button>
-                </div>
+    <div className="flex gap-3">
 
-                {activeStep < 4 ? (
-                  <Button type="button" variant="sky" onClick={nextStep}>
-                    Continue
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="sky"
-                    onClick={formik.handleSubmit}
-                  >
-                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-                    {isEditMode ? "Update Package" : "Create Package"}
-                  </Button>
-                )}
-              </div>
+      {activeStep > 1 && (
+        <Button
+          type="button"
+          variant="gray"
+          onClick={prevStep}
+        >
+          Back
+        </Button>
+      )}
+
+      <Button
+        type="button"
+        variant="gray"
+        onClick={handleReset}
+      >
+        <ArrowPathIcon className="w-5 h-5 inline mr-1" />
+        Reset
+      </Button>
+
+    </div>
+
+    {activeStep < 4 ? (
+
+      <Button
+        type="button"
+        variant="sky"
+        onClick={nextStep}
+      >
+        Continue
+      </Button>
+
+    ) : (
+
+      <Button
+        type="button"
+        variant="sky"
+        onClick={formik.handleSubmit}
+        disabled={isLoading}
+      >
+        <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+
+        {isLoading
+          ? "Creating..."
+          : "Create Package"}
+
+      </Button>
+
+    )}
+
+  </div>
+
             </form>
+
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
+ 
+
 };
 
 export default TestPackageForm;
