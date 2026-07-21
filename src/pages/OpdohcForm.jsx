@@ -834,6 +834,7 @@ const OpdOhcForm = () => {
                     department={formik.values.Department}
                     consultingDoctor={formik.values.Doctor}
                     payMode={formik.values.PayMode}
+                    type={formik.values.category}
                     setBillingTotals={(total) => {
                       const amount = Number(total || 0);
                       formik.setFieldValue("TotalAmount", amount);

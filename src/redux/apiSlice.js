@@ -197,11 +197,12 @@ export const api = createApi({
       }),
     }),
     getServiceMasters: build.query({
-      query: (serviceName) => ({
+      query: ({serviceName,patientType}) => ({
         url: "/opd-service/service-master",
         method: "GET",
         params: {
           ServiceName: serviceName || "",
+          PatientType: patientType
         },
       }),
     }),
