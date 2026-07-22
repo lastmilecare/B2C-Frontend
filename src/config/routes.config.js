@@ -546,7 +546,7 @@ export const ROUTES = [
   {
     path: "/camp-opd-list",
     component: CampOpdBillingListCopy,
-    permission: "read:camp_opd_list",
+    permission: "create:camp_opd_form",
     
     label: " Camp OPD List",
     icon: "ClipboardDocumentListIcon",
