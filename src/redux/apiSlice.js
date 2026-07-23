@@ -28,7 +28,7 @@ const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
-  tagTypes: ["Bill", "Inventory", "Patient", "Prescription"],
+  tagTypes: ["Bill", "Inventory", "Patient", "Prescription", "PackageManagement",],
   endpoints: (build) => ({
     login: build.mutation({
       query: (body) => ({
@@ -197,11 +197,12 @@ export const api = createApi({
       }),
     }),
     getServiceMasters: build.query({
-      query: (serviceName) => ({
+      query: ({serviceName,patientType}) => ({
         url: "/opd-service/service-master",
         method: "GET",
         params: {
           ServiceName: serviceName || "",
+          PatientType: patientType
         },
       }),
     }),
@@ -1855,6 +1856,51 @@ export const api = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+  
+
+createPackage: build.mutation({
+  query: (body) => ({
+    url: "/package-management/add",
+    method: "POST",
+    body,
+  }),
+  invalidatesTags: ["PackageManagement"],
+}),
+
+getPackageList: build.query({
+  query: (body) => ({
+    url: "/package-management/list",
+    method: "POST",
+    body,
+  }),
+  providesTags: ["PackageManagement"],
+}),
+
+getPackageDetails: build.mutation({
+  query: (body) => ({
+    url: "/package-management/details",
+    method: "POST",
+    body,
+  }),
+}),
+
+updatePackage: build.mutation({
+  query: (body) => ({
+    url: "/package-management/update",
+    method: "POST",
+    body,
+  }),
+  invalidatesTags: ["PackageManagement"],
+}),
+
+deletePackage: build.mutation({
+  query: (body) => ({
+    url: "/package-management/delete",
+    method: "POST",
+    body,
+  }),
+  invalidatesTags: ["PackageManagement"],
+}),
   }),
 });
 
@@ -2060,4 +2106,9 @@ export const {
   useUpdateSpectacleRevenueMutation,
   useDeleteSpectacleRevenueMutation,
   useLazyExportSpectacleRevenueQuery,
+  useCreatePackageMutation,
+  useGetPackageListQuery,
+  useGetPackageDetailsMutation,
+  useUpdatePackageMutation,
+  useDeletePackageMutation,
 } = api;

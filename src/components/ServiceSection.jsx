@@ -9,6 +9,7 @@ const ServiceSection = ({
   department,
   consultingDoctor,
   payMode,
+  type,
   setBillingTotals
 }) => {
   const [quantity, setQuantity] = useState(1);
@@ -16,8 +17,11 @@ const ServiceSection = ({
   const [warning, setWarning] = useState("");
 
   const debouncedSearch = useDebounce(searchTerm, 300);
-
-  const { data = [], isLoading } = useGetServiceMastersQuery(debouncedSearch);
+  const patientType = type?.toLowerCase();
+  const { data = [], isLoading } = useGetServiceMastersQuery({
+    serviceName: debouncedSearch,
+    patientType,
+  },[debouncedSearch]);
 
   const serviceOptions = data.map((item) => ({
     id: item.ID,

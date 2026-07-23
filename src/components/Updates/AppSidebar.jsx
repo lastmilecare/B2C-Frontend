@@ -264,7 +264,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
           </MenuGroup>
         )}
 {/* ── Camp Opd ──────────────────────────── */}
-         {can("read:camp_opd_form") && (
+         {can("create:camp_opd_form") && (
           <MenuGroup menuKey="campopd" icon={BuildingOffice2Icon} label="Camp OPD">
             {can("create:camp_opd_form") && (
               <NavLink
@@ -276,7 +276,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
              )} 
 
-           {can("read:camp_opd_list") && ( 
+           {can("create:camp_opd_form") && ( 
               <NavLink
                 to="/camp-opd-list"
                 className={subNavItem}
