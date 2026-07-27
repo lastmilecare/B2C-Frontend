@@ -9,6 +9,8 @@ import {
   DocumentCheckIcon,
   BeakerIcon,
   CreditCardIcon,
+  EyeIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
   useLazyGetBillingByBillNoQuery,
@@ -17,10 +19,10 @@ import {
   useSearchOpdBillNoQuery,
   useGetMediceneListQuery,
   useGetStockDetailsQuery,
-  
   useCreateMedicinecampBillMutation,
   useUpdateMedicinecampBillMutation,
   useGetMedicinecampBillByIdQuery,
+  useGetPrescriptionsListQuery,
 } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
@@ -79,8 +81,11 @@ const CampBillingFormCopy = ({ refetchList }) => {
     selectedBill ? String(selectedBill) : skipToken,
   );
   const [selectedMedicine, setSelectedMedicine] = useState("");
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
   const [suggestionsList, setSuggestionsList] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
+  const [selectedPrescriptionMedicine, setSelectedPrescriptionMedicine] =
+  useState(null);
   const { id } = useParams();
   const populatedUhidRef = useRef("");
   const { data: billData } = useGetMedicinecampBillByIdQuery(id, {
@@ -106,6 +111,23 @@ const CampBillingFormCopy = ({ refetchList }) => {
     selectedMedicine ? { ItemID: String(selectedMedicine.id) } : skipToken,
     { skip: !selectedMedicine },
   );
+   const [prescriptionBillNo, setPrescriptionBillNo] = useState("");
+ const {
+  data: prescriptionResponse,
+  isFetching: prescriptionLoading,
+  refetch: refetchPrescription,
+} = useGetPrescriptionsListQuery(
+  {
+    bill_no: prescriptionBillNo,
+    page: 1,
+    limit: 1,
+  },
+  {
+    skip: !prescriptionBillNo,
+  }
+);
+const prescriptionMedicines =
+  prescriptionResponse?.data?.[0]?.adviceList || [];
   // const [isEditMedicineLoaded, setIsEditMedicineLoaded] = useState(false);
   const billingItemValues = [];
   useEffect(() => {
@@ -552,6 +574,29 @@ useEffect(() => {
   //     refetchStock();
   //   }
   // }, [selectedMedicine?.id]);
+  useEffect(() => {
+  if (!selectedPrescriptionMedicine) return;
+
+  setMedicineSearch(selectedPrescriptionMedicine.item);
+
+  formik.setFieldValue(
+    "medicine",
+    selectedPrescriptionMedicine.item
+  );
+}, [selectedPrescriptionMedicine]);
+const openPrescriptionMedicine = () => {
+  setPrescriptionBillNo(String(formik.values.opdBillNo));
+  setShowPrescriptionModal(true);
+};
+const usePrescriptionMedicine = (medicine) => {
+  setSelectedPrescriptionMedicine(medicine);
+
+  setMedicineSearch(medicine.item);
+
+  formik.setFieldValue("medicine", medicine.item);
+
+  setShowPrescriptionModal(false);
+};
   return (
     <FormikProvider value={formik}>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -732,9 +777,38 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
               {activeStep === 2 && (
                 <section className="bg-sky-50/40 p-6 rounded-xl border border-sky-100 space-y-6 shadow-sm">
-                  <h3 className="text-sky-700 font-semibold mb-3">
-                    Medicine Entry
-                  </h3>
+                 <div className="flex items-center justify-between mb-4">
+
+    <div>
+        <h3 className="text-sky-700 font-semibold text-lg">
+            Medicine Entry
+        </h3>
+
+        <p className="text-xs text-slate-500 mt-1">
+            Search medicine manually or view prescribed medicines.
+        </p>
+    </div>
+
+    <button
+        type="button"
+         onClick={() => {
+    
+    openPrescriptionMedicine();
+  }}
+        disabled={!formik.values.opdBillNo}
+        className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 shadow-sm border
+        ${
+            formik.values.opdBillNo
+                ? "bg-sky-600 text-white hover:bg-sky-700 border-sky-600"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200"
+        }`}
+    >
+        <EyeIcon className="w-5 h-5" />
+
+        View Medicine
+    </button>
+
+</div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="relative">
                       <label className="text-sm text-gray-600 block mb-1">
@@ -1531,6 +1605,173 @@ if (/^\d*\.?\d{0,2}$/.test(value)) {
           </div>
         </div>
       </div>
+       {showPrescriptionModal && (
+  <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
+
+    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl overflow-hidden">
+
+      <div className="bg-gradient-to-r from-sky-600 to-blue-700 px-6 py-4 flex justify-between items-center">
+
+        <div>
+          <h2 className="text-white text-xl font-bold">
+            Prescription Medicines
+          </h2>
+
+          <p className="text-sky-100 text-sm mt-1">
+            Bill No : {formik.values.opdBillNo}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowPrescriptionModal(false)}
+          className="text-white hover:bg-white/20 rounded-lg p-2"
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
+
+      </div>
+
+      <div className="p-6">
+
+        {prescriptionLoading ? (
+
+          <div className="flex justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-sky-600 border-t-transparent" />
+          </div>
+
+        ) : prescriptionMedicines.length === 0 ? (
+
+          <div className="text-center py-20">
+
+            <BeakerIcon className="w-16 h-16 mx-auto text-slate-300" />
+
+            <h3 className="text-lg font-semibold mt-4 text-slate-600">
+              No Prescription Found
+            </h3>
+
+            <p className="text-slate-400 mt-2">
+              No medicines available for this Bill Number.
+            </p>
+
+          </div>
+
+        ) : (
+
+          <div className="overflow-auto max-h-[500px] border rounded-xl">
+
+            <table className="w-full">
+
+              <thead className="bg-sky-50 sticky top-0">
+
+                <tr>
+
+                  <th className="px-4 py-3 text-left">#</th>
+
+                  <th className="px-4 py-3 text-left">
+                    Medicine
+                  </th>
+
+                  <th className="px-4 py-3 text-center">
+                    Type
+                  </th>
+
+                  <th className="px-4 py-3 text-center">
+                    Dosage
+                  </th>
+
+                  <th className="px-4 py-3 text-center">
+                    Duration
+                  </th>
+
+                  <th className="px-4 py-3 text-left">
+                    Remarks
+                  </th>
+
+                  <th className="px-4 py-3 text-center">
+                    Action
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                {prescriptionMedicines.map((item, index) => (
+
+                  <tr
+                    key={index}
+                    className="border-t hover:bg-sky-50 transition"
+                  >
+
+                    <td className="px-4 py-3">
+                      {index + 1}
+                    </td>
+
+                    <td className="px-4 py-3 font-medium">
+                      {item.item}
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
+                      <span className="px-2 py-1 rounded-full bg-sky-100 text-sky-700 text-xs">
+                        {item.typeOfMedicine}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
+                      {item.dosage}
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
+                      {item.duration} Day
+                    </td>
+
+                    <td className="px-4 py-3">
+                      {item.remarks}
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
+                      <Button
+                        type="button"
+                        variant="sky"
+                        className="text-xs"
+                        onClick={() => usePrescriptionMedicine(item)}
+                      >
+                        Use
+                      </Button>
+                    </td>
+
+                  </tr>
+
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        )}
+
+      </div>
+
+      <div className="border-t px-6 py-4 flex justify-end">
+
+        <Button
+          type="button"
+          variant="gray"
+          onClick={() => setShowPrescriptionModal(false)}
+        >
+          Close
+        </Button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
     </FormikProvider>
   );
 };
