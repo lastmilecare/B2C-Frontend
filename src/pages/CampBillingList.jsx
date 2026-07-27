@@ -296,9 +296,9 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicinecampBillMutation();
                            {formatDate(row.AddedDate)}
                           </span>
                 
-                          <span className="text-slate-400">
+                          {/* <span className="text-slate-400">
                            {formatTime(row.AddedDate)}
-                          </span>
+                          </span> */}
                         </div>
                       ),
                     },
