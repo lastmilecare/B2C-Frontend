@@ -270,9 +270,9 @@ export const TEST_MASTER = {
 };
 
 export const PACKAGE_TYPES = [
-  { value: "BASIC", label: "Basic" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "ADVANCED", label: "Advanced" },
+  { value: "BS", label: "Basic" },
+  { value: "MD", label: "Medium" },
+  { value: "AD", label: "Advanced" },
 ];
 
 // ─── Local storage key for static persistence ────────────────────────────────

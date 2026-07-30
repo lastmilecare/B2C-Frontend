@@ -39,7 +39,7 @@ const TestPackageList = ({ onEdit }) => {
 
   const [deletePackage] = useDeletePackageMutation();
 
-  const packages = data?.data?.data || [];
+  const packages = data?.data || [];
   const pagination = data?.data?.pagination || {};
 
   // ================= Filters =================

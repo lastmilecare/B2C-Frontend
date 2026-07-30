@@ -191,7 +191,7 @@ const OpdFormCopy = () => {
   }, [suggestions, selectedUhid, uhidSearch]);
   const { data: allServices = [] } = useGetServiceMastersQuery("");
   useEffect(() => {
-   
+
 
     if (editData && department && doctors && paymode) {
       setUhidSearch(editData.uhid || "");
@@ -225,12 +225,12 @@ const OpdFormCopy = () => {
       const payObj = Picaso_Paymode_Options.find(
         (p) => p.name?.toLowerCase().trim() === mode,
       );
-     const complaintData = editData.complaint
-  ? editData.complaint.split(",").map((c, index) => ({
-      id: index + 1,
-      name: c.trim(),
-    }))
-  : [];
+      const complaintData = editData.complaint
+        ? editData.complaint.split(",").map((c, index) => ({
+          id: index + 1,
+          name: c.trim(),
+        }))
+        : [];
 
 
 
@@ -252,8 +252,8 @@ const OpdFormCopy = () => {
         CashAmount: editData.CashAmount || 0,
         CardAmount: editData.CardAmount || 0,
         // VisitType: editData.VisitType || "N/A",
-       ChiefComplaint: complaintData,
-          
+        ChiefComplaint: complaintData,
+
       });
       setEditDataLoaded(true);
       if (editData.opd_billing_data) {
@@ -539,8 +539,8 @@ const OpdFormCopy = () => {
 
   useEffect(() => {
     if (editData && !editDataLoaded) {
-    return;
-  }
+      return;
+    }
     const total = Number(formik.values.TotalAmount) || 0;
     const paid = Number(formik.values.PaidAmount) || 0;
     const credit = Number(formik.values.CreditBalance) || 0;
@@ -604,9 +604,8 @@ const OpdFormCopy = () => {
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${
-                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                }`}
+                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                  }`}
               />
             ))}
           </div>
@@ -625,11 +624,10 @@ const OpdFormCopy = () => {
                 disabled
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold 
-                                      ${
-                                        activeStep === step.id
-                                          ? "bg-white text-sky-600 shadow"
-                                          : "text-gray-400"
-                                      }`}
+                                      ${activeStep === step.id
+                    ? "bg-white text-sky-600 shadow"
+                    : "text-gray-400"
+                  }`}
               >
                 <step.icon className="w-4 h-4" />
 
@@ -682,9 +680,21 @@ const OpdFormCopy = () => {
                       {suggestionsList.length > 0 && uhidSearch.length >= 2 && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                           {suggestionsList.map((item) => (
+                            // <li
+                            //   key={item.external_id}
+                            //   onClick={() => {
+                            //     setSelectedUhid(item.external_id);
+                            //     formik.setFieldValue("UHID", item.external_id);
+                            //     setUhidSearch(item.external_id);
+                            //     setSuggestionsList([]);
+                            //   }}
+                            //   className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
+                            // >
                             <li
                               key={item.external_id}
-                              onClick={() => {
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+
                                 setSelectedUhid(item.external_id);
                                 formik.setFieldValue("UHID", item.external_id);
                                 setUhidSearch(item.external_id);
@@ -798,7 +808,7 @@ const OpdFormCopy = () => {
                       label="Refer To"
                     >
                       <option value="">Refer To</option>
-                       <option value="">None</option>
+                      <option value="">None</option>
                       {doctors?.map((d) => (
                         <option key={d.id} value={d.id}>
                           {d.name || d.doctor_name}

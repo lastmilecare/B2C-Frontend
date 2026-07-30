@@ -689,9 +689,11 @@ const referObj =
                       {suggestionsList.length > 0 && uhidSearch.length >= 2 && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                           {suggestionsList.map((item) => (
-                            <li
+                             <li
                               key={item.external_id}
-                              onClick={() => {
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+
                                 setSelectedUhid(item.external_id);
                                 formik.setFieldValue("UHID", item.external_id);
                                 setUhidSearch(item.external_id);
