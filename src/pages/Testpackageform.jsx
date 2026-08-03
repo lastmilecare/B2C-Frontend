@@ -10,24 +10,25 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 
-import { useCenterComboListQuery, useGetTenantsQuery, useCreatePackageMutation,
- } from "../redux/apiSlice";
+import {
+  useGetCentersByTenantQuery, useGetTenantsQuery, useCreatePackageMutation,
+} from "../redux/apiSlice";
 
 import { healthAlert } from "../utils/healthSwal";
 import { Input, Select, Button } from "../components/FormControls";
 import { PACKAGE_TYPES, TEST_MASTER } from "../utils/constants";
 
 const TestPackageForm = () => {
-
+  const [selectedTenantId, setSelectedTenantId] = useState("");
   const { data: tenantData } = useGetTenantsQuery();
-
-  const { data: centerData } = useCenterComboListQuery();
-
+  const { data: centerData } = useGetCentersByTenantQuery(
+    selectedTenantId,
+    {
+      skip: !selectedTenantId,
+    }
+  );
   const [createPackage, { isLoading }] =
     useCreatePackageMutation();
-
-  const tenants = tenantData?.data?.data || [];
-  const centers = centerData?.data?.data || [];
   const [activeStep, setActiveStep] = useState(1);
   const [search, setSearch] = useState({
     vitalSigns: "",
@@ -82,26 +83,22 @@ const TestPackageForm = () => {
 
     onSubmit: async (values) => {
 
+      const payload = {
+        package_name: values.packageName,
+        package_type: values.packageType,
+        tenant_id: Number(values.tenantId),
+        center_id: Number(values.centerId),
+        package_price:
+          values.packagePrice === ""
+            ? null
+            : Number(values.packagePrice),
+        package_list: values.selectedTests,
+      };
+
+
+
       try {
-
-        await createPackage({
-
-          package_name: values.packageName,
-
-          package_type: values.packageType,
-
-          tenant_id: Number(values.tenantId),
-
-          center_id: Number(values.centerId),
-
-          package_price:
-            values.packagePrice === ""
-              ? null
-              : Number(values.packagePrice),
-
-          package_list: values.selectedTests,
-
-        }).unwrap();
+        await createPackage(payload).unwrap();
 
         healthAlert({
           title: "Success",
@@ -109,25 +106,18 @@ const TestPackageForm = () => {
           icon: "success",
         });
 
-        formik.resetForm();
-
-        setActiveStep(1);
-
-      } catch (error) {
-
+      } catch (err) {
         healthAlert({
           title: "Error",
-          text:
-            error?.data?.message ||
-            "Failed to create package",
+          text: err?.data?.message || "Failed",
           icon: "error",
         });
-
       }
-
-    },
+    }
 
   });
+  const tenants = tenantData?.data?.data || [];
+  const centers = centerData?.data || [];
   const nextStep = async () => {
 
     const errors = await formik.validateForm();
@@ -249,10 +239,8 @@ const TestPackageForm = () => {
 
   const selectedCenter =
     centers.find(
-      (x) =>
-        Number(x.id) ===
-        Number(formik.values.centerId)
-    )?.name;
+      (x) => Number(x.id) === Number(formik.values.centerId)
+    )?.project_name;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10 px-4">
@@ -270,8 +258,8 @@ const TestPackageForm = () => {
               <div
                 key={step}
                 className={`h-2 w-12 rounded-full ${activeStep >= step
-                    ? "bg-sky-600"
-                    : "bg-gray-200"
+                  ? "bg-sky-600"
+                  : "bg-gray-200"
                   }`}
               />
 
@@ -312,8 +300,8 @@ const TestPackageForm = () => {
                 disabled
                 type="button"
                 className={`flex-1 py-4 flex items-center justify-center gap-2 transition-colors ${activeStep === step.id
-                    ? "bg-white text-sky-600 font-bold"
-                    : "text-gray-400"
+                  ? "bg-white text-sky-600 font-bold"
+                  : "text-gray-400"
                   }`}
               >
 
@@ -376,9 +364,16 @@ const TestPackageForm = () => {
                     </Select>
 
                     <Select
-                      label="Assign Tenant"
+                      label="Assign Corporate"
                       required
                       {...formik.getFieldProps("tenantId")}
+                      onChange={(e) => {
+                        formik.handleChange(e);
+
+                        setSelectedTenantId(e.target.value);
+
+                        formik.setFieldValue("centerId", "");
+                      }}
                       error={
                         formik.touched.tenantId &&
                         formik.errors.tenantId
@@ -422,11 +417,8 @@ const TestPackageForm = () => {
 
                       {centers.map((center) => (
 
-                        <option
-                          key={center.id}
-                          value={center.id}
-                        >
-                          {center.name}
+                        <option key={center.id} value={center.id}>
+                          {center.project_name}
                         </option>
 
                       ))}
@@ -764,60 +756,60 @@ const TestPackageForm = () => {
 
                 </section>
               )}
-             <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
+              <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
 
-    <div className="flex gap-3">
+                <div className="flex gap-3">
 
-      {activeStep > 1 && (
-        <Button
-          type="button"
-          variant="gray"
-          onClick={prevStep}
-        >
-          Back
-        </Button>
-      )}
+                  {activeStep > 1 && (
+                    <Button
+                      type="button"
+                      variant="gray"
+                      onClick={prevStep}
+                    >
+                      Back
+                    </Button>
+                  )}
 
-      <Button
-        type="button"
-        variant="gray"
-        onClick={handleReset}
-      >
-        <ArrowPathIcon className="w-5 h-5 inline mr-1" />
-        Reset
-      </Button>
+                  <Button
+                    type="button"
+                    variant="gray"
+                    onClick={handleReset}
+                  >
+                    <ArrowPathIcon className="w-5 h-5 inline mr-1" />
+                    Reset
+                  </Button>
 
-    </div>
+                </div>
 
-    {activeStep < 4 ? (
+                {activeStep < 4 ? (
 
-      <Button
-        type="button"
-        variant="sky"
-        onClick={nextStep}
-      >
-        Continue
-      </Button>
+                  <Button
+                    type="button"
+                    variant="sky"
+                    onClick={nextStep}
+                  >
+                    Continue
+                  </Button>
 
-    ) : (
+                ) : (
 
-      <Button
-        type="button"
-        variant="sky"
-        onClick={formik.handleSubmit}
-        disabled={isLoading}
-      >
-        <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+                  <Button
+                    type="button"
+                    variant="sky"
+                    onClick={formik.handleSubmit}
+                    disabled={isLoading}
+                  >
+                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
 
-        {isLoading
-          ? "Creating..."
-          : "Create Package"}
+                    {isLoading
+                      ? "Creating..."
+                      : "Create Package"}
 
-      </Button>
+                  </Button>
 
-    )}
+                )}
 
-  </div>
+              </div>
 
             </form>
 
@@ -829,7 +821,7 @@ const TestPackageForm = () => {
 
     </div>
   );
- 
+
 
 };
 

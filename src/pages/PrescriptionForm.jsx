@@ -614,7 +614,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         {suggestionsList.map((item) => (
                           <li
                             key={item.ID}
-                            onClick={() => {
+                            onMouseDown={(e) => {
+                              e.preventDefault();
                               setSelectedBill(item.ID);
                               formik.setFieldValue("billno", item.ID);
                               setBillSearch(item.ID);

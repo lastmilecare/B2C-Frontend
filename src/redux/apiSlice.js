@@ -1858,48 +1858,65 @@ export const api = createApi({
     }),
   
 
+// createPackage: build.mutation({
+//   query: (body) => ({
+//     url: "/package-management/add",
+//     method: "POST",
+//     body,
+//   }),
+//   invalidatesTags: ["PackageManagement"],
+// }),
 createPackage: build.mutation({
-  query: (body) => ({
-    url: "/package-management/add",
+  query: (data) => ({
+    url: "/package-management",
     method: "POST",
-    body,
+    data,
   }),
   invalidatesTags: ["PackageManagement"],
 }),
 
 getPackageList: build.query({
-  query: (body) => ({
-    url: "/package-management/list",
-    method: "POST",
-    body,
+  query: (params) => ({
+    url: "/package-management",
+    method: "GET",
+    params,
   }),
   providesTags: ["PackageManagement"],
 }),
 
-getPackageDetails: build.mutation({
-  query: (body) => ({
-    url: "/package-management/details",
-    method: "POST",
-    body,
+getPackageDetails: build.query({
+  query: ({ id, ...params }) => ({
+    url: `/package-management/${id}`,
+    method: "GET",
+    params,
   }),
 }),
 
 updatePackage: build.mutation({
-  query: (body) => ({
-    url: "/package-management/update",
-    method: "POST",
-    body,
+  query: ({ id, ...data }) => ({
+    url: `/package-management/${id}`,
+    method: "PUT",
+    data,
   }),
   invalidatesTags: ["PackageManagement"],
 }),
 
 deletePackage: build.mutation({
-  query: (body) => ({
-    url: "/package-management/delete",
-    method: "POST",
-    body,
+  query: ({ id, ...data }) => ({
+    url: `/package-management/${id}`,
+    method: "DELETE",
+    data,
   }),
   invalidatesTags: ["PackageManagement"],
+}),
+getCentersByTenant: build.query({
+  query: (tenantId) => ({
+    url: `${VITE_AUTH_URL}tenants/centers/by-tenant`,
+    method: "GET",
+    params: {
+      tenantId,
+    },
+  }),
 }),
   }),
 });
@@ -2111,4 +2128,5 @@ export const {
   useGetPackageDetailsMutation,
   useUpdatePackageMutation,
   useDeletePackageMutation,
+  useGetCentersByTenantQuery,
 } = api;
