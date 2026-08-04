@@ -228,7 +228,7 @@ const CenterList = () => {
         onDelete={handleDelete}
         enableAdd
         addButtonText="Add"
-        onAdd={() => navigate("/opd-form")}
+        onAdd={() => navigate("/centers")}
 
       />
     </div>

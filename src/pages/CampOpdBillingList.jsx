@@ -113,12 +113,12 @@ const CampOpdBillingList = () => {
     useGetComboQuery("department");
   const { data: paymode, isLoading: paymodeComboLoading } =
     useGetComboQuery("paymode");
-    const {
+  const {
     data: collectedByResponse,
     isLoading: collectedComboLoading,
     refetch: refetchCollectedBy,
   } = useGetCollectedcampByQuery();
-  
+
   const collectedBy = collectedByResponse?.data || [];
 
   const patients = data?.data || [];
@@ -217,7 +217,7 @@ const CampOpdBillingList = () => {
     setPage(1);
     setUhidSearch("");
     refetchCollectedBy();
-     refetch();
+    refetch();
   };
   const formatCurrency = (value) => {
     if (value === null || value === undefined || value === "") return `Rs.0.00`;
@@ -361,7 +361,7 @@ const CampOpdBillingList = () => {
     {
       name: "Age",
       title: "Patient Age",
-      selector: (row) => safeString(row?.age, "-"),
+      selector: (row) => `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
       sortable: true,
       width: "50px",
     },
@@ -446,35 +446,35 @@ const CampOpdBillingList = () => {
         ),
       width: "120px",
     },
-     {
+    {
       name: "Ref",
       title: "Referred By",
       selector: (row) => safeString(row?.refer_to, "-"),
-       width : "140px"
-     },
-   
+      width: "140px"
+    },
+
     {
       name: "Coll By",
       title: "Collected By",
       selector: (row) => safeString(row?.added_by, "-"),
       width: "120px",
     },
-   
-      {
-              name: "Bill.Date",
-        width: "140px",
-              cell: (row) => (
-                <div className="flex flex-col text-xs">
-                  <span className="font-medium text-slate-700">
-                   {formatDate(row.AddedDate)}
-                  </span>
-        
-                  {/* <span className="text-slate-400">
+
+    {
+      name: "Bill.Date",
+      width: "140px",
+      cell: (row) => (
+        <div className="flex flex-col text-xs">
+          <span className="font-medium text-slate-700">
+            {formatDate(row.AddedDate)}
+          </span>
+
+          {/* <span className="text-slate-400">
                    {formatTime(row.AddedDate)}
                   </span> */}
-                </div>
-              ),
-            },
+        </div>
+      ),
+    },
   ];
 
   const handlePrint = useReactToPrint({
@@ -501,21 +501,21 @@ const CampOpdBillingList = () => {
     documentTitle: "Invoice",
   });
 
-  
+
 
   const onPrintInvoice = (row) => {
-  setPrintRow1(null);
-
-  setTimeout(() => {
-    setPrintRow1({ ...row });
+    setPrintRow1(null);
 
     setTimeout(() => {
-      if (printRef1.current) {
-        handlePrint1();
-      }
-    }, 300);
-  }, 50);
-};
+      setPrintRow1({ ...row });
+
+      setTimeout(() => {
+        if (printRef1.current) {
+          handlePrint1();
+        }
+      }, 300);
+    }, 50);
+  };
 
   return (
     <div className="p-0">
@@ -551,11 +551,14 @@ const CampOpdBillingList = () => {
         }}
         enableActions
         isLoading={isLoading}
-        actionButtons={[ "delete", "print", "printCS"]}
+        actionButtons={["delete", "print", "printCS"]}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onPrintCS={onPrintCS}
         onPrint={onPrintInvoice}
+        enableAdd
+        addButtonText="Add"
+        onAdd={() => navigate("/camp-opd-form")}
       />
       {printRow && (
         <div style={{ display: "none" }}>
@@ -563,13 +566,13 @@ const CampOpdBillingList = () => {
         </div>
       )}
       {printRow1 && (
-         <div
-  style={{
-    position: "absolute",
-    left: "-99999px",
-    top: 0,
-  }}
->
+        <div
+          style={{
+            position: "absolute",
+            left: "-99999px",
+            top: 0,
+          }}
+        >
           <InvoiceTemplate ref={printRef1} data={printRow1} />
         </div>
       )}

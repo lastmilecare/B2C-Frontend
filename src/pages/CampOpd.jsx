@@ -484,8 +484,8 @@ const referObj =
       // PreviousDue: previousFetchDue?.data?.PreviousDue || 0,
       // VisitType: patientData?.VisitType || "N/A"
     };
-
-    if (patientData.dateOfBirthOrAge) {
+if (patientData.dateOfBirthOrAge) {
+      /*
       const dobValue = parseDOB(patientData.dateOfBirthOrAge);
       updates.DOB = dobValue;
 
@@ -503,7 +503,10 @@ const referObj =
         years -= 1;
         months += 12;
       }
-
+   */
+      let years = patientData.iage || 0;
+      let months = patientData.imonth || 0;
+      let days = patientData.idays || 0;
       updates.Age = `${years}y ${months}m ${days}d`;
     }
     formik.setValues({ ...formik.values, ...updates }, false);

@@ -392,7 +392,7 @@ ${activeStep === step.id
                     />
 
                     <Input
-                      label="Licance Number"
+                      label="Licence Number"
                       {...formik.getFieldProps("licance_no")}
                     />
                   </div>
