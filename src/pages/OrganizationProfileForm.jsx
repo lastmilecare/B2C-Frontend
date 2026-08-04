@@ -97,6 +97,8 @@ useEffect(() => {
         mobile: "",
         email: "",
         address: "",
+        gst_number: "",
+        licance_no: "",
       });
 
       return;
@@ -142,6 +144,8 @@ useEffect(() => {
     watermark_text: "",
     report_footer: "",
     invoice_prefix: "",
+    gst_number: "",
+    licance_no: "",
   });
 
   formik.setTouched({});
@@ -166,6 +170,8 @@ useEffect(() => {
       watermark_text: editData?.watermark_text || "",
       report_footer: editData?.report_footer || "",
       invoice_prefix: editData?.invoice_prefix || "",
+      gst_number : editData?.gst_number || "",
+      licance_no : editData?.licance_no || "",
     },
 
     validationSchema,
@@ -379,6 +385,16 @@ ${activeStep === step.id
                       label="Address"
                       {...formik.getFieldProps("address")}
                     />
+                    
+                      <Input
+                      label="GST Number"
+                      {...formik.getFieldProps("gst_number")}
+                    />
+
+                    <Input
+                      label="Licance Number"
+                      {...formik.getFieldProps("licance_no")}
+                    />
                   </div>
                 </section>
               )}
@@ -504,6 +520,16 @@ ${activeStep === step.id
                       <p>
                         <b>Address:</b>{" "}
                         {formik.values.address || "-"}
+                      </p>
+
+                       <p>
+                        <b>GST Number:</b>{" "}
+                        {formik.values.gst_number || "-"}
+                      </p>
+
+                      <p>
+                        <b>Licance Number:</b>{" "}
+                        {formik.values.licance_no || "-"}
                       </p>
 
                     </div>

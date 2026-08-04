@@ -40,9 +40,9 @@ const billDate = data?.AddedDate
   });
   const profiles = oragnisationData?.data || {};
   const profile = profiles?.[0] || {};
-  const add = import.meta.env.VITE_CENTER_ADD;
-  const mobile = import.meta.env.VITE_CENTER_MOBILE;
-  const center = import.meta.env.VITE_CENTER_NAME;
+  // const add = import.meta.env.VITE_CENTER_ADD;
+  // const mobile = import.meta.env.VITE_CENTER_MOBILE;
+  // const center = import.meta.env.VITE_CENTER_NAME;
  
   const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
   const mainlogo = profile?.logo

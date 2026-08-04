@@ -54,10 +54,10 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
     });
   }
   const billDate = formatToIST(header.AddedDate);
-  const add = import.meta.env.VITE_CENTER_ADD;
-  const mobile = import.meta.env.VITE_CENTER_MOBILE;
-  const gst = import.meta.env.VITE_COMPANY_GST;
-  const license = import.meta.env.VITE_COMPANY_LICENSE_NO;
+  // const add = import.meta.env.VITE_CENTER_ADD;
+  // const mobile = import.meta.env.VITE_CENTER_MOBILE;
+  const gst_number = profile?.gst_number || "N/A";
+const licanse_no = profile?.licance_no || "N/A";
   const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
   const mainlogo = profile?.logo
     ? `${BASE_URL}${profile.logo}`
@@ -158,7 +158,7 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
       >
         <div>
           <div>
-            <b>GST :</b> {gst}
+            <b>GST :</b> {gst_number}
           </div>
           <div>
             <b>Bill No :</b> {header.BillNo}
@@ -176,7 +176,7 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
 
         <div>
           <div>
-            <b>Licence :</b> {license}
+            <b>Licence :</b> {licanse_no}
           </div>
           <div>
             <b>Date :</b> {billDate}
