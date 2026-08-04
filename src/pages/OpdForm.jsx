@@ -315,7 +315,7 @@ const OpdFormCopy = () => {
       PicasoNo: values.UHID,
       Mobile: values.Mobile,
       ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
-      PatientType: values.FinCategory == "BPL" ? 1 : 2,
+      PatientType: values.FinCategory == "BPL" ? 2 : 1,
       PaidAmount: Number(values.PaidAmount || 0),
       CashAmount: Number(values.CashAmount || 0),
       CardAmount: Number(values.CardAmount || 0),

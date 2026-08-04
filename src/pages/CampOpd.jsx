@@ -179,7 +179,6 @@ const CampOpdForm = () => {
 //       Number(previousFetchDue.data.PreviousDue || 0),
 //     );
 //   }, [previousFetchDue.data]);
-
   useEffect(() => {
     if (selectedUhid) return;
     if (uhidSearch.length < 2) return;
@@ -841,7 +840,7 @@ const referObj =
                     department={formik.values.Department}
                     consultingDoctor={formik.values.Doctor}
                     payMode={formik.values.PayMode}
-                    type={formik.values.category}
+                    type={patientData.category}
                     setBillingTotals={(total) => {
                       const amount = Number(total || 0);
                       formik.setFieldValue("TotalAmount", amount);

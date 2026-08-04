@@ -213,7 +213,7 @@ const prescriptionMedicines =
         Age: values.Age || "",
         Gender: values.Gender || "",
         Mobile: values.Mobile || "",
-        FinCategory: values.FinCategory || "",
+        FinCategory: values.FinCategory == "BPL" ? 2 : 1 || "",
         opdBillNo: values.opdBillNo || "",
 
         payMode: Number(values.payMode || 0),
