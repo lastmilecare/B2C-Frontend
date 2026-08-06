@@ -170,35 +170,66 @@ setFilters(cleanedFilters);
       sortable: true,
       width: "110px",
     },
-    {
-      name: "Patient",
-      center: true,
-      // minWidth: "50px",
-      width: "250px",
+//     {
+//       name: "Patient",
+//       // center: true,
+//       // minWidth: "50px",
+//       width: "250px",
+// style: {
+//     justifyContent: "flex-start", // Cell content ko left align karne ke liye
+//   },
+//   headerStyle: {
+//     justifyContent: "flex-start", // Header text "Patient" ko bhi left align karne ke liye
+//   },
+//       cell: (row) => (
+//         <div className="flex items-center gap-3">
+//           <div className="relative">
+//             <Avatar name={row.patientName} gender={row.gender} age={row.age} />
 
-      cell: (row) => (
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Avatar name={row.patientName} gender={row.gender} age={row.age} />
+//             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+//           </div>
 
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
-          </div>
+//           <div className="leading-tight">
+//             <p className="font-semibold text-gray-800">
+//               {row.patientName || "-"}
+//             </p>
 
-          <div className="leading-tight">
-            <p className="font-semibold text-gray-800">
-              {row.patientName || "-"}
-            </p>
+//             <p className="text-xs text-gray-500">
+//               UHID : {row.picasoId || "-"}
+//             </p>
+//           </div>
+//         </div>
+//       ),
+//     },
+{
+  name: "Patient",
+  center: true,
+  width: "250px",
 
-            <p className="text-xs text-gray-500">
-              UHID : {row.picasoId || "-"}
-            </p>
-          </div>
-        </div>
-      ),
-    },
+  cell: (row) => (
+    <div className="flex items-center gap-3 w-[250px] mx-auto text-left">
+      <div className="relative shrink-0">
+        <Avatar name={row.patientName} gender={row.gender} age={row.age} />
+
+        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+      </div>
+
+      <div className="leading-tight min-w-0 flex-1">
+        <p className="font-semibold text-gray-800 truncate">
+          {row.patientName || "-"}
+        </p>
+
+        <p className="text-xs text-gray-500 truncate">
+          UHID : {row.picasoId || "-"}
+        </p>
+      </div>
+    </div>
+  ),
+},
     {
       name: "Age",
       center: true,
+       width: "150px",
       cell: (row) => (
         <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
           {`${row.age ? `${row.age}` : "N/A"}`}

@@ -230,10 +230,10 @@ const billDate = data?.AddedDate
               <span className="font-semibold">Chief Complaint:</span>{" "}
               {data?.complaint}
             </p>
-            <p>
+            {/* <p>
               <span className="font-semibold">Remarks:</span>{" "}
               {data?.Remarks || "just for testing"}
-            </p>
+            </p> */}
           </div>
 
           <div className="space-y-1 text-right">
