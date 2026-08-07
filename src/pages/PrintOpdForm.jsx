@@ -1,44 +1,24 @@
 import React, { forwardRef } from "react";
 import { useGetOrgProfilesQuery } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
-
+import { formatDateTime2 } from "../utils/helper";
 const PrintOpdForm = forwardRef(({ data }, ref) => {
   const center_id = cookie.get("center_id");
-const tenant_id = cookie.get("tenantId");
+  const tenant_id = cookie.get("tenantId");
 
-const {
-  data: oragnisationData,
-  isLoading,
-  refetch
-} = useGetOrgProfilesQuery({
-  page: 1,
-  limit: 10,
-  tenant_id,
-  center_id,
-});
+  const {
+    data: oragnisationData,
+    isLoading,
+    refetch,
+  } = useGetOrgProfilesQuery({
+    page: 1,
+    limit: 10,
+    tenant_id,
+    center_id,
+  });
   const profiles = oragnisationData?.data || {};
   const profile = profiles?.[0] || {};
-const formattedDate = data?.AddedDate
-  ? (() => {
-      const [date, time] = data.AddedDate
-        .replace("T", " ")
-        .replace(/\.\d{3}Z$/, "")
-        .split(" ");
-
-      const [year, month, day] = date.split("-");
-
-      let [hour, minute, second] = time.split(":");
-
-      hour = Number(hour);
-      const ampm = hour >= 12 ? "PM" : "AM";
-      hour = hour % 12 || 12;
-
-      return `${day}/${month}/${year} ${String(hour).padStart(
-        2,
-        "0"
-      )}:${minute}:${second} ${ampm}`;
-    })()
-  : "";
+  const formattedDate = formatDateTime2(data?.AddedDate || data?.addedDate);
   const rowLine = {
     display: "flex",
   };
@@ -110,21 +90,19 @@ const formattedDate = data?.AddedDate
         Last Mile Care Pvt Ltd
       </div>
 
-       <div className="flex justify-between items-center mb-3">
- 
-  <img
-    className="h-16 w-auto object-contain"
-    src="/images/LMC_1care_logo.webp"
-    alt="1Care Logo"
-  />
+      <div className="flex justify-between items-center mb-3">
+        <img
+          className="h-16 w-auto object-contain"
+          src="/images/LMC_1care_logo.webp"
+          alt="1Care Logo"
+        />
 
- 
-  <img
-    className="h-16 w-auto object-contain"
-    src="/images/LMC_mainlogo.webp"
-    alt="LMC Logo"
-  />
-</div>
+        <img
+          className="h-16 w-auto object-contain"
+          src="/images/LMC_mainlogo.webp"
+          alt="LMC Logo"
+        />
+      </div>
       <div className="text-center mb-4 border-b pb-4">
         <div className="flex justify-center items-center gap-2 mb-2">
           <img
@@ -214,7 +192,9 @@ const formattedDate = data?.AddedDate
               <div style={rowLine}>
                 <span style={label}>Age</span>
                 <span style={colon}>:</span>
-                <span style={value}>{`${data?.iage ?? 0}y ${data?.imonth ?? 0}m ${data?.idays ?? 0}d`}</span>
+                <span
+                  style={value}
+                >{`${data?.iage ?? 0}y ${data?.imonth ?? 0}m ${data?.idays ?? 0}d`}</span>
               </div>
             </td>
 

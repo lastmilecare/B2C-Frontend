@@ -1,7 +1,7 @@
 import React, { forwardRef } from "react";
 import { useGetOrgProfilesQuery } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
-
+import { formatDateTime2 } from "../utils/helper";
 const PrescriptionPrint = forwardRef(({ data }, ref) => {
   const center_id = cookie.get("center_id");
   const tenant_id = cookie.get("tenantId");
@@ -30,18 +30,8 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
     const diffMs = followUpDate - today;
     followup_days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   }
- const result = data?.addedDate
-  ? (() => {
-      const [date, time] = data.addedDate
-        .replace("T", " ")
-        .replace(/\.\d{3}Z$/, "")
-        .split(" ");
 
-      const [year, month, day] = date.split("-");
-
-      return `${day}/${month}/${year} ${time}`;
-    })()
-  : "";
+  const result = formatDateTime2(data?.addedDate);
   const rowLine = {
     display: "flex",
   };
@@ -68,9 +58,7 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
     marginTop: "12px",
   };
 
-
-
-  const BASE_URL =import.meta.env.VITE_API_URL.replace(/\/$/, "");
+  const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
   const mainlogo = profile?.logo
     ? `${BASE_URL}${profile.logo}`
     : "/images/LMC_logo.webp";
@@ -97,20 +85,18 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
       }}
     >
       <div className="flex justify-between items-center mb-3">
- 
-  <img
-    className="h-16 w-auto object-contain"
-    src="/images/LMC_1care_logo.webp"
-    alt="1Care Logo"
-  />
+        <img
+          className="h-16 w-auto object-contain"
+          src="/images/LMC_1care_logo.webp"
+          alt="1Care Logo"
+        />
 
- 
-  <img
-    className="h-16 w-auto object-contain"
-    src="/images/LMC_mainlogo.webp"
-    alt="LMC Logo"
-  />
-</div>
+        <img
+          className="h-16 w-auto object-contain"
+          src="/images/LMC_mainlogo.webp"
+          alt="LMC Logo"
+        />
+      </div>
       {/* Header */}
       <div className="text-center mb-4 border-b pb-4">
         <div className="flex justify-center items-center gap-2 mb-2">
@@ -316,10 +302,10 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
                 <td style={tdCenter}>{m.typeOfMedicine}</td>
                 {/* <td style={tdCenter}>{m.dosage}</td> */}
                 <td style={tdCenter}>
-  {m.typeOfMedicine?.toLowerCase() === "syrup"
-    ? `${m.dosage} mL`
-    : m.dosage}
-</td>
+                  {m.typeOfMedicine?.toLowerCase() === "syrup"
+                    ? `${m.dosage} mL`
+                    : m.dosage}
+                </td>
                 <td style={tdCenter}>{m.remarks}</td>
                 <td style={tdCenter}>{m.pillsConsumption}</td>
                 <td style={tdCenter}>{m.duration}</td>

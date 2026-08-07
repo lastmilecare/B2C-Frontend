@@ -64,76 +64,6 @@ export function cleanCurrency(value) {
   return cleaned;
 }
 
-/**
- * COST PLUS MODEL (Markup Reduced By Discount)
- *
- * LOGIC:
- * 1. Effective Markup = Markup% - Discount%
- * 2. Price Before GST = CP × (1 + Effective Markup%)
- * 3. GST is added (exclusive model)
- *
- * NOTE:
- * Discount reduces PROFIT MARGIN, not selling price directly.
- */
-
-// export const getPharmaSellingFromCP = (item, qty, discountPercent) => {
-
-//   const cp = Number(item?.CP) || 0;
-//   const cgstPercent = Number(item?.CGST) || 0;
-//   const sgstPercent = Number(item?.SGST) || 0;
-
-//   const totalGstPercent = cgstPercent + sgstPercent;
-//   const markupPercent = 10; // constant markup
-
-//   if (discountPercent > markupPercent) {
-//     throw new Error("Discount cannot exceed markup percent");
-//   }
-
-//   const to2 = (n) => Number(n.toFixed(2));
-
-//   // STEP 1: Base cost
-//   const baseCost = cp * qty;
-
-//   // STEP 2: Markup amount (10%)
-//   const markupAmount = (baseCost * markupPercent) / 100;
-
-//   // STEP 3: Discount amount (reducing markup)
-//   const discountAmount = (baseCost * discountPercent) / 100;
-
-//   // STEP 4: Effective markup
-//   const effectiveMarkupAmount = markupAmount - discountAmount;
-
-//   // STEP 5: Selling price before GST
-//   const priceBeforeGST = baseCost + effectiveMarkupAmount;
-
-//   // STEP 6: GST
-//   const totalGstAmount = (priceBeforeGST * totalGstPercent) / 100;
-
-//   const cgstAmount = totalGstAmount / 2;
-//   const sgstAmount = totalGstAmount / 2;
-
-//   // STEP 7: Final
-//   const finalPrice = priceBeforeGST + totalGstAmount;
-
-//   return {
-//     qty,
-//     baseCost: to2(baseCost),
-//     markupPercent,
-//     markupAmount: to2(markupAmount),
-
-//     discountPercent,
-//     discountAmount: to2(discountAmount),
-
-//     effectiveMarkupAmount: to2(effectiveMarkupAmount),
-//     priceBeforeGST: to2(priceBeforeGST),
-
-//     cgstAmount: to2(cgstAmount),
-//     sgstAmount: to2(sgstAmount),
-
-//     total: to2(finalPrice),
-//   };
-// };
-
 export const getPharmaSellingFromCP = (item, qty, discountPercent) => {
   const cp = Number(item?.CP) || 0;
   const cgstPercent = Number(item?.CGST) || 0;
@@ -199,16 +129,60 @@ export const parseCurrency = (value) => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
-// utils/dateFormat.ts
+const correctServerDate = (value) => {
+  if (!value) return null;
+
+  try {
+    let date;
+
+    if (value instanceof Date) {
+      date = new Date(value.getTime());
+    } else if (typeof value === "string") {
+      // Handle "YYYY-MM-DD HH:mm:ss"
+      const normalized = value.includes("T") ? value : value.replace(" ", "T");
+
+      date = new Date(normalized);
+    } else {
+      date = new Date(value);
+    }
+
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    // Server has already added +5:30 incorrectly.
+    // Reverse it to get the original IST stored in DB.
+    date.setMinutes(date.getMinutes() - 330);
+
+    return date;
+  } catch {
+    return null;
+  }
+};
 
 export const formatDate = (value) => {
-  if (!value) return "-";
+  const date = correctServerDate(value);
 
-  const date = new Date(value);
+  if (!date) return "-";
 
-  if (isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
 
-  return date.toLocaleDateString("en-GB");
+export const formatTimeVal = (value) => {
+  const date = correctServerDate(value);
+
+  if (!date) return "-";
+
+  return date.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
 };
 
 export const formatTime = (value) => {
@@ -223,16 +197,6 @@ export const formatTime = (value) => {
     minute: "2-digit",
     second: "2-digit",
   });
-};
-export const formatTimeVal = (value) => {
-  if (!value) return "-";
-
-  const time = value
-    .replace("T", " ")
-    .replace(/\.\d{3}Z$/, "")
-    .split(" ")[1];
-
-  return time || "-";
 };
 
 export const formatDateTime = (value) => {
@@ -261,7 +225,7 @@ export const ROLE_ASSIGNMENT_MAP = {
     "AUDITOR",
     "DOCTOR",
     "PHARMACY",
-    "NURSE"
+    "NURSE",
   ],
 
   TENANT_ADMIN: [
@@ -271,15 +235,10 @@ export const ROLE_ASSIGNMENT_MAP = {
     "VIEWER",
     "DOCTOR",
     "NURSE",
-    "PHARMACY"
+    "PHARMACY",
   ],
 
-  CENTER_ADMIN: [
-    "STAFF",
-    "DOCTOR",
-    "NURSE",
-    "PHARMACY"
-  ],
+  CENTER_ADMIN: ["STAFF", "DOCTOR", "NURSE", "PHARMACY"],
 
   STAFF: [],
 };
@@ -287,11 +246,61 @@ export const ROLE_ASSIGNMENT_MAP = {
 export const formatDateOnly = (date) => {
   if (!date) return "";
 
-  return `${date.getFullYear()}-${String(
-    date.getMonth() + 1
-  ).padStart(2, "0")}-${String(
-    date.getDate()
-  ).padStart(2, "0")}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}-${String(date.getDate()).padStart(2, "0")}`;
 };
 
 
+const correctServerDate1 = (value) => {
+  if (!value) return null;
+
+  try {
+    let date;
+
+    if (value instanceof Date) {
+      date = new Date(value.getTime());
+    } else if (typeof value === "string") {
+      const [datePart, timePart = "00:00:00"] = value.split(" ");
+
+      const [year, month, day] = datePart.split("-").map(Number);
+      const [hour, minute, second] = timePart
+        .split(":")
+        .map((v) => parseInt(v, 10));
+
+      // Create exactly what server sent (no timezone conversion)
+      date = new Date(year, month - 1, day, hour, minute, second);
+    } else {
+      date = new Date(value);
+    }
+
+    if (Number.isNaN(date.getTime())) return null;
+
+    // Reverse the incorrect +5:30 added by the server
+    date.setMinutes(date.getMinutes() - 330);
+
+    return date;
+  } catch {
+    return null;
+  }
+};
+
+export const formatDateTime2 = (value) => {
+  debugger;
+  console.log(value)
+  const date = correctServerDate1(value);
+console.log (date);
+  if (!date) return "-";
+
+  const formattedDate = date.toLocaleDateString("en-GB");
+
+  const formattedTime = date.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
+  return `${formattedDate} ${formattedTime}`;
+};

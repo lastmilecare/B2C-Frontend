@@ -2,32 +2,33 @@ import React, { forwardRef } from "react";
 import { useGetOrgProfilesQuery } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 const safeFixed = (value) => Number(value || 0).toFixed(2);
-
+import { formatDateTime2 } from "../utils/helper";
 const InvoiceTemplate = forwardRef(({ data }, ref) => {
   const center_id = cookie.get("center_id");
-const tenant_id = cookie.get("tenantId");
-const billDate = data?.AddedDate
-  ? (() => {
-      const [date, time] = data.AddedDate
-        .replace("T", " ")
-        .replace(/\.\d{3}Z$/, "")
-        .split(" ");
+  const tenant_id = cookie.get("tenantId");
+  const billDate = formatDateTime2(data?.AddedDate);
+  // data?.AddedDate
+  //   ? (() => {
+  //       const [date, time] = data.AddedDate
+  //         .replace("T", " ")
+  //         .replace(/\.\d{3}Z$/, "")
+  //         .split(" ");
 
-      const [year, month, day] = date.split("-");
-      let [hour, minute, second] = time.split(":");
+  //       const [year, month, day] = date.split("-");
+  //       let [hour, minute, second] = time.split(":");
 
-      hour = Number(hour);
-      const ampm = hour >= 12 ? "PM" : "AM";
-      hour = hour % 12 || 12;
+  //       hour = Number(hour);
+  //       const ampm = hour >= 12 ? "PM" : "AM";
+  //       hour = hour % 12 || 12;
 
-      return `${day}/${month}/${year} ${String(hour).padStart(2, "0")}:${minute}:${second} ${ampm}`;
-    })()
-  : "";
+  //       return `${day}/${month}/${year} ${String(hour).padStart(2, "0")}:${minute}:${second} ${ampm}`;
+  //     })()
+  //   : "";
   const page = 1;
   const limit = 10;
   const filters = {
     center_id: center_id,
-    tenant_id: tenant_id
+    tenant_id: tenant_id,
   };
   const {
     data: oragnisationData,
@@ -43,7 +44,7 @@ const billDate = data?.AddedDate
   // const add = import.meta.env.VITE_CENTER_ADD;
   // const mobile = import.meta.env.VITE_CENTER_MOBILE;
   // const center = import.meta.env.VITE_CENTER_NAME;
- 
+
   const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
   const mainlogo = profile?.logo
     ? `${BASE_URL}${profile.logo}`
@@ -86,21 +87,19 @@ const billDate = data?.AddedDate
         Last Mile Care Pvt Ltd
       </div>
 
-       <div className="flex justify-between items-center mb-3">
- 
-  <img
-    className="h-16 w-auto object-contain"
-    src="/images/LMC_1care_logo.webp"
-    alt="1Care Logo"
-  />
+      <div className="flex justify-between items-center mb-3">
+        <img
+          className="h-16 w-auto object-contain"
+          src="/images/LMC_1care_logo.webp"
+          alt="1Care Logo"
+        />
 
- 
-  <img
-    className="h-16 w-auto object-contain"
-    src="/images/LMC_mainlogo.webp"
-    alt="LMC Logo"
-  />
-</div>
+        <img
+          className="h-16 w-auto object-contain"
+          src="/images/LMC_mainlogo.webp"
+          alt="LMC Logo"
+        />
+      </div>
       <div className="relative z-10">
         <div className="text-center mb-4 border-b pb-4">
           <div className="flex justify-center items-center gap-2 mb-2">
@@ -135,7 +134,7 @@ const billDate = data?.AddedDate
         </div>
 
         <h3 className="text-center text-[12px] font-bold mb-3 text-[#1A73E8] tracking-wide underline">
-          Patient Invoice 
+          Patient Invoice
         </h3>
 
         <div className="rounded-md overflow-hidden shadow-sm border border-gray-300 mb-4 bg-white">
@@ -151,7 +150,10 @@ const billDate = data?.AddedDate
                 <td className="border p-2 w-28 font-semibold">Name :</td>
                 <td className="border p-2">{data?.patient_name}</td>
                 <td className="border p-2 w-28 font-semibold">Age :</td>
-                <td className="border p-2"> {`${data?.iage ?? 0}y ${data?.imonth ?? 0}m ${data?.idays ?? 0}d`}</td>
+                <td className="border p-2">
+                  {" "}
+                  {`${data?.iage ?? 0}y ${data?.imonth ?? 0}m ${data?.idays ?? 0}d`}
+                </td>
               </tr>
               <tr className="bg-gray-50">
                 <td className="border p-2 w-28 font-semibold">Gender :</td>
@@ -241,7 +243,7 @@ const billDate = data?.AddedDate
               <span className="font-semibold">Total Amount:</span> Rs{" "}
               {safeFixed(data?.TotalServiceAmount)}
             </p>
-            
+
             <p>
               <span className="font-semibold">Paid Amount:</span> Rs{" "}
               {safeFixed(data?.PaidAmount)}
