@@ -129,6 +129,9 @@ const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
 const filteredActionButtons = isAdmin
   ? actionButtons
   : actionButtons.filter((btn) => btn !== "edit" && btn !== "delete");
+   if (filteredActionButtons.length === 0) {
+    return visibleColumns;
+  }
     const buttonConfig = {
       view: { label: "View", color: "text-sky-700", handler: onView },
       edit: { label: "Edit", color: "text-yellow-600", handler: onEdit },
