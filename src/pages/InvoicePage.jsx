@@ -1,51 +1,322 @@
+// import React, { forwardRef } from "react";
+// import { useGetOrgProfilesQuery } from "../redux/apiSlice";
+// import { cookie } from "../utils/cookie";
+// const safeFixed = (value) => Number(value || 0).toFixed(2);
+// import { formatDateTime2 } from "../utils/helper";
+// const InvoiceTemplate = forwardRef(({ data }, ref) => {
+//   const center_id = cookie.get("center_id");
+//   const tenant_id = cookie.get("tenantId");
+//   const billDate = formatDateTime2(data?.AddedDate);
+//   // data?.AddedDate
+//   //   ? (() => {
+//   //       const [date, time] = data.AddedDate
+//   //         .replace("T", " ")
+//   //         .replace(/\.\d{3}Z$/, "")
+//   //         .split(" ");
+
+//   //       const [year, month, day] = date.split("-");
+//   //       let [hour, minute, second] = time.split(":");
+
+//   //       hour = Number(hour);
+//   //       const ampm = hour >= 12 ? "PM" : "AM";
+//   //       hour = hour % 12 || 12;
+
+//   //       return `${day}/${month}/${year} ${String(hour).padStart(2, "0")}:${minute}:${second} ${ampm}`;
+//   //     })()
+//   //   : "";
+//   const page = 1;
+//   const limit = 10;
+//   const filters = {
+//     center_id: center_id,
+//     tenant_id: tenant_id,
+//   };
+//   const {
+//     data: oragnisationData,
+//     isLoading,
+//     refetch,
+//   } = useGetOrgProfilesQuery({
+//     page,
+//     limit,
+//     ...filters,
+//   });
+//   const profiles = oragnisationData?.data || {};
+//   const profile = profiles?.[0] || {};
+//   // const add = import.meta.env.VITE_CENTER_ADD;
+//   // const mobile = import.meta.env.VITE_CENTER_MOBILE;
+//   // const center = import.meta.env.VITE_CENTER_NAME;
+
+//   const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
+//   const mainlogo = profile?.logo
+//     ? `${BASE_URL}${profile.logo}`
+//     : "/images/LMC_logo.webp";
+
+//   const secondaryLogo = profile?.secondary_logo
+//     ? `${BASE_URL}${profile.secondary_logo}`
+//     : null;
+//   const address = profile?.address || "N/A";
+//   const contact = profile?.mobile || "N/A";
+//   if (isLoading) {
+//     return <div>Loading...</div>;
+//   }
+//   return (
+//     <div
+//       ref={ref}
+//       className="relative w-[700px] mx-auto p-16 print:p-4 text-[11px] text-black font-sans bg-white"
+//     >
+//       {/* <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
+//         <p className="text-[90px] font-extrabold text-gray-400 opacity-10 rotate-[-30deg] tracking-widest whitespace-nowrap">
+//           Last Mile Care Pvt Ltd
+//         </p>
+//       </div> */}
+//       <div
+//         style={{
+//           position: "absolute",
+//           top: "50%",
+//           left: "50%",
+//           transform: "translate(-50%, -50%) rotate(-45deg)",
+//           fontSize: "80px",
+//           fontWeight: "900",
+//           color: "#000",
+//           opacity: 0.05,
+//           pointerEvents: "none",
+//           userSelect: "none",
+//           whiteSpace: "nowrap",
+//           zIndex: 0,
+//         }}
+//       >
+//         Last Mile Care Pvt Ltd
+//       </div>
+
+//       <div className="flex justify-between items-center mb-3">
+//         <img
+//           className="h-16 w-auto object-contain"
+//           src="/images/LMC_1care_logo.webp"
+//           alt="1Care Logo"
+//         />
+
+//         <img
+//           className="h-16 w-auto object-contain"
+//           src="/images/LMC_mainlogo.webp"
+//           alt="LMC Logo"
+//         />
+//       </div>
+//       <div className="relative z-10">
+//         <div className="text-center mb-4 border-b pb-4">
+//           <div className="flex justify-center items-center gap-2 mb-2">
+//             <img
+//               src={mainlogo}
+//               alt="organization logo"
+//               className="h-16 w-auto object-contain"
+//               onError={(e) => {
+//                 e.currentTarget.src = "/images/LMC_logo.webp";
+//               }}
+//             />
+
+//             {secondaryLogo && (
+//               <img
+//                 src={secondaryLogo}
+//                 alt="secondary logo"
+//                 className="h-16 w-auto object-contain"
+//                 onError={(e) => {
+//                   e.currentTarget.style.display = "none";
+//                 }}
+//               />
+//             )}
+//           </div>
+
+//           <h2 className="text-[#4A6FA1] text-[15px] font-bold tracking-[0.25em]">
+//             HEALTH CENTRE
+//           </h2>
+
+//           <p className="text-[10px] text-[#4A6FA1] mt-1">
+//             {address} • Contact: {contact}
+//           </p>
+//         </div>
+
+//         <h3 className="text-center text-[12px] font-bold mb-3 text-[#1A73E8] tracking-wide underline">
+//           Patient Invoice
+//         </h3>
+
+//         <div className="rounded-md overflow-hidden shadow-sm border border-gray-300 mb-4 bg-white">
+//           <table className="w-full border-collapse text-[11px]">
+//             <tbody>
+//               <tr className="bg-gray-50">
+//                 <td className="border p-2 w-28 font-semibold">UHID :</td>
+//                 <td className="border p-2">{data?.uhid}</td>
+//                 <td className="border p-2 w-28 font-semibold">Token No :</td>
+//                 <td className="border p-2">{data?.token}</td>
+//               </tr>
+//               <tr>
+//                 <td className="border p-2 w-28 font-semibold">Name :</td>
+//                 <td className="border p-2">{data?.patient_name}</td>
+//                 <td className="border p-2 w-28 font-semibold">Age :</td>
+//                 <td className="border p-2">
+//                   {" "}
+//                   {`${data?.iage ?? 0}y ${data?.imonth ?? 0}m ${data?.idays ?? 0}d`}
+//                 </td>
+//               </tr>
+//               <tr className="bg-gray-50">
+//                 <td className="border p-2 w-28 font-semibold">Gender :</td>
+//                 <td className="border p-2">{data?.gender}</td>
+//                 <td className="border p-2 w-28 font-semibold">Consultant :</td>
+//                 <td className="border p-2">{data?.doctor_name}</td>
+//               </tr>
+//               <tr>
+//                 <td className="border p-2 w-28 font-semibold">Address :</td>
+//                 <td className="border p-2" colSpan={3}>
+//                   {data?.localAddress}
+//                 </td>
+//               </tr>
+//               {/* <tr>
+//                 <td className="border p-2 w-28 font-semibold">ID Proof  :</td>
+//                 <td className="border p-2" colSpan={3}>
+//                   {data?.idProof_number}
+//                 </td>
+//               </tr> */}
+//             </tbody>
+//           </table>
+//         </div>
+
+//         <div className="flex justify-between items-center text-[11px] font-semibold mb-3 py-2 px-3 border border-gray-300 rounded-md shadow-sm bg-gray-50">
+//           <div>Bill No : {data?.bill_no || ""}</div>
+//           <div className="text-[#1A73E8] font-bold text-[12px] uppercase tracking-wide">
+//             Bill Receipt
+//           </div>
+//           <div>Bill Date: {billDate}</div>
+//         </div>
+
+//         <div className="rounded-md shadow-sm overflow-hidden border border-gray-300 mb-4 bg-white">
+//           <table className="w-full border-collapse text-[11px]">
+//             <thead className="bg-[#1A73E8] text-white">
+//               <tr>
+//                 <th className="border p-2 text-left w-[50px]">SL.No</th>
+//                 <th className="border p-2 text-left">Particulars</th>
+//                 <th className="border p-2 text-center w-[70px]">Charges</th>
+//                 <th className="border p-2 text-center w-[50px]">Qty</th>
+//                 <th className="border p-2 text-center w-[90px]">Net Total</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {(data?.opd_billing_data || []).map((item, idx) => (
+//                 <tr key={idx} className="odd:bg-white even:bg-gray-50">
+//                   <td className="border p-2 text-center">{idx + 1}</td>
+//                   <td className="border p-2">{item?.ServiceName}</td>
+//                   <td className="border p-2 text-center">
+//                     {safeFixed(item?.ServiceAmount)}
+//                   </td>
+//                   <td className="border p-2 text-center">{item?.Qty}</td>
+//                   <td className="border p-2 text-center">
+//                     {safeFixed(item?.ServiceAmount * item?.Qty)}
+//                   </td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+//         </div>
+
+//         <div className="grid grid-cols-2 gap-4 text-[11px]">
+//           <div className="space-y-1">
+//             <p>
+//               <span className="font-semibold">Fin. Category:</span>{" "}
+//               {data?.patient_type}
+//             </p>
+//             <p>
+//               <span className="font-semibold">Payment Mode:</span>{" "}
+//               {data?.payment_mode}
+//             </p>
+//             <p>
+//               <span className="font-semibold">Refer From:</span>{" "}
+//               {data?.refer_to}
+//             </p>
+//             <p>
+//               <span className="font-semibold">Chief Complaint:</span>{" "}
+//               {data?.complaint}
+//             </p>
+//             {/* <p>
+//               <span className="font-semibold">Remarks:</span>{" "}
+//               {data?.Remarks || "just for testing"}
+//             </p> */}
+//           </div>
+
+//           <div className="space-y-1 text-right">
+//             <p>
+//               <span className="font-semibold">Total Amount:</span> Rs{" "}
+//               {safeFixed(data?.TotalServiceAmount)}
+//             </p>
+
+//             <p>
+//               <span className="font-semibold">Paid Amount:</span> Rs{" "}
+//               {safeFixed(data?.PaidAmount)}
+//             </p>
+//             <p>
+//               <span className="font-semibold">Due Amount:</span> Rs{" "}
+//               {safeFixed(data?.DueAmount)}
+//             </p>
+//             <p>
+//               <span className="font-semibold">Balance Amount:</span> Rs{" "}
+//               {safeFixed(data?.balanceAmount)}
+//             </p>
+
+//             <hr className="my-2" />
+
+//             <p>
+//               <span className="font-semibold">Cash Amount:</span> Rs{" "}
+//               {safeFixed(data?.CashAmount)}
+//             </p>
+//             <p>
+//               <span className="font-semibold">UPI/Online:</span> Rs{" "}
+//               {safeFixed(data?.CardAmount)}
+//             </p>
+//           </div>
+//         </div>
+
+//         <div className="text-right mt-16 mb-4">
+//           <p className="font-semibold text-[12px]">Signature</p>
+//         </div>
+
+//         <div className="grid grid-cols-2 text-[10px] italic text-gray-600 mt-6 border-t pt-2">
+//           <p>Powered By : Last Mile Care</p>
+//           <p className="text-right">Prepared By : {data?.added_by}</p>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// });
+
+// export default InvoiceTemplate;
+
 import React, { forwardRef } from "react";
 import { useGetOrgProfilesQuery } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
-const safeFixed = (value) => Number(value || 0).toFixed(2);
 import { formatDateTime2 } from "../utils/helper";
+
+const safeFixed = (value) => Number(value || 0).toFixed(2);
+
 const InvoiceTemplate = forwardRef(({ data }, ref) => {
   const center_id = cookie.get("center_id");
   const tenant_id = cookie.get("tenantId");
+
   const billDate = formatDateTime2(data?.AddedDate);
-  // data?.AddedDate
-  //   ? (() => {
-  //       const [date, time] = data.AddedDate
-  //         .replace("T", " ")
-  //         .replace(/\.\d{3}Z$/, "")
-  //         .split(" ");
 
-  //       const [year, month, day] = date.split("-");
-  //       let [hour, minute, second] = time.split(":");
-
-  //       hour = Number(hour);
-  //       const ampm = hour >= 12 ? "PM" : "AM";
-  //       hour = hour % 12 || 12;
-
-  //       return `${day}/${month}/${year} ${String(hour).padStart(2, "0")}:${minute}:${second} ${ampm}`;
-  //     })()
-  //   : "";
   const page = 1;
   const limit = 10;
+
   const filters = {
-    center_id: center_id,
-    tenant_id: tenant_id,
+    center_id,
+    tenant_id,
   };
-  const {
-    data: oragnisationData,
-    isLoading,
-    refetch,
-  } = useGetOrgProfilesQuery({
+
+  const { data: oragnisationData, isLoading } = useGetOrgProfilesQuery({
     page,
     limit,
     ...filters,
   });
+
   const profiles = oragnisationData?.data || {};
   const profile = profiles?.[0] || {};
-  // const add = import.meta.env.VITE_CENTER_ADD;
-  // const mobile = import.meta.env.VITE_CENTER_MOBILE;
-  // const center = import.meta.env.VITE_CENTER_NAME;
 
   const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
+
   const mainlogo = profile?.logo
     ? `${BASE_URL}${profile.logo}`
     : "/images/LMC_logo.webp";
@@ -53,233 +324,530 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
   const secondaryLogo = profile?.secondary_logo
     ? `${BASE_URL}${profile.secondary_logo}`
     : null;
+
   const address = profile?.address || "N/A";
   const contact = profile?.mobile || "N/A";
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
   return (
-    <div
-      ref={ref}
-      className="relative w-[700px] mx-auto p-16 print:p-4 text-[11px] text-black font-sans bg-white"
-    >
-      {/* <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
-        <p className="text-[90px] font-extrabold text-gray-400 opacity-10 rotate-[-30deg] tracking-widest whitespace-nowrap">
-          Last Mile Care Pvt Ltd
-        </p>
-      </div> */}
+    <>
+      <style>
+        {`
+          /*
+           * A4 page
+           *
+           * Normal invoice:
+           *   Minimum height = 148.5mm (half A4)
+           *
+           * Larger invoice:
+           *   Height grows automatically when content increases.
+           */
+
+          @page {
+            size: A4 portrait;
+            margin: 0;
+          }
+
+          @media print {
+            html,
+            body {
+              margin: 0 !important;
+              padding: 0 !important;
+              width: 210mm !important;
+            }
+
+            /*
+             * Keep colors/images as much as the printer allows.
+             * The invoice itself is designed to remain readable
+             * even on a black-and-white printer.
+             */
+            *,
+            *::before,
+            *::after {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+
+            /*
+             * Hide everything except the invoice.
+             */
+            body * {
+              visibility: hidden;
+            }
+
+            .invoice-print-area,
+            .invoice-print-area * {
+              visibility: visible;
+            }
+
+            /*
+             * IMPORTANT:
+             *
+             * Do NOT use:
+             *   height: 148.5mm
+             *   overflow: hidden
+             *
+             * 148.5mm is the minimum height.
+             * The invoice is allowed to grow when
+             * more services/content are present.
+             */
+            .invoice-print-area {
+              position: relative !important;
+
+              width: 210mm !important;
+
+              min-height: 148.5mm !important;
+
+              height: auto !important;
+
+              margin: 0 !important;
+
+              padding: 4.5mm !important;
+
+              box-sizing: border-box !important;
+
+              overflow: visible !important;
+
+              background: #ffffff !important;
+
+              page-break-before: avoid !important;
+              page-break-inside: auto !important;
+            }
+
+            /*
+             * Keep table width inside the printable area.
+             */
+            .invoice-print-area table {
+              width: 100% !important;
+            }
+
+            /*
+             * Never split an individual service row.
+             */
+            .invoice-print-area tr {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+
+            /*
+             * If the service table continues onto another
+             * page, repeat the table header.
+             */
+            .invoice-print-area thead {
+              display: table-header-group !important;
+            }
+
+            /*
+             * Avoid splitting these important sections.
+             */
+            .invoice-patient-details,
+            .invoice-bill-header,
+            .invoice-services,
+            .invoice-summary,
+            .invoice-signature,
+            .invoice-footer {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+            }
+          }
+        `}
+      </style>
+
       <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) rotate(-45deg)",
-          fontSize: "80px",
-          fontWeight: "900",
-          color: "#000",
-          opacity: 0.05,
-          pointerEvents: "none",
-          userSelect: "none",
-          whiteSpace: "nowrap",
-          zIndex: 0,
-        }}
+        ref={ref}
+        className="
+          invoice-print-area
+          relative
+          w-[210mm]
+          min-h-[148.5mm]
+          mx-auto
+          p-[4.5mm]
+          box-border
+          bg-white
+          text-black
+          font-sans
+          text-[8.5px]
+        "
       >
-        Last Mile Care Pvt Ltd
-      </div>
+        {/* =====================================================
+            WATERMARK
+        ====================================================== */}
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%) rotate(-45deg)",
+            fontSize: "52px",
+            fontWeight: "900",
+            color: "#000",
+            opacity: 0.035,
+            pointerEvents: "none",
+            userSelect: "none",
+            whiteSpace: "nowrap",
+            zIndex: 0,
+          }}
+        >
+          Last Mile Care Pvt Ltd
+        </div>
 
-      <div className="flex justify-between items-center mb-3">
-        <img
-          className="h-16 w-auto object-contain"
-          src="/images/LMC_1care_logo.webp"
-          alt="1Care Logo"
-        />
-
-        <img
-          className="h-16 w-auto object-contain"
-          src="/images/LMC_mainlogo.webp"
-          alt="LMC Logo"
-        />
-      </div>
-      <div className="relative z-10">
-        <div className="text-center mb-4 border-b pb-4">
-          <div className="flex justify-center items-center gap-2 mb-2">
+        <div className="relative z-10">
+          {/* =====================================================
+              TOP LOGOS
+          ====================================================== */}
+          <div className="flex justify-between items-center mb-1.5">
             <img
-              src={mainlogo}
-              alt="organization logo"
-              className="h-16 w-auto object-contain"
-              onError={(e) => {
-                e.currentTarget.src = "/images/LMC_logo.webp";
-              }}
+              className="h-10 w-auto object-contain"
+              src="/images/LMC_1care_logo.webp"
+              alt="1Care Logo"
             />
 
-            {secondaryLogo && (
+            <img
+              className="h-10 w-auto object-contain"
+              src="/images/LMC_mainlogo.webp"
+              alt="LMC Logo"
+            />
+          </div>
+
+          {/* =====================================================
+              ORGANISATION HEADER
+          ====================================================== */}
+          <div className="text-center mb-2 border-b border-black pb-1.5">
+            <div className="flex justify-center items-center gap-1.5 mb-0.5">
               <img
-                src={secondaryLogo}
-                alt="secondary logo"
-                className="h-16 w-auto object-contain"
+                src={mainlogo}
+                alt="Organization Logo"
+                className="h-10 w-auto object-contain"
                 onError={(e) => {
-                  e.currentTarget.style.display = "none";
+                  e.currentTarget.src = "/images/LMC_logo.webp";
                 }}
               />
-            )}
+
+              {secondaryLogo && (
+                <img
+                  src={secondaryLogo}
+                  alt="Secondary Logo"
+                  className="h-10 w-auto object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              )}
+            </div>
+
+            <h2 className="text-black text-[12px] font-bold tracking-[0.18em]">
+              HEALTH CENTRE
+            </h2>
+
+            <p className="text-[7.5px] text-black mt-0.5">
+              {address} • Contact: {contact}
+            </p>
           </div>
 
-          <h2 className="text-[#4A6FA1] text-[15px] font-bold tracking-[0.25em]">
-            HEALTH CENTRE
-          </h2>
+          {/* =====================================================
+              INVOICE TITLE
+          ====================================================== */}
+          <h3
+            className="
+              text-center
+              text-[10px]
+              font-bold
+              mb-1.5
+              text-black
+              tracking-wide
+              underline
+            "
+          >
+            Patient Invoice
+          </h3>
 
-          <p className="text-[10px] text-[#4A6FA1] mt-1">
-            {address} • Contact: {contact}
-          </p>
-        </div>
-
-        <h3 className="text-center text-[12px] font-bold mb-3 text-[#1A73E8] tracking-wide underline">
-          Patient Invoice
-        </h3>
-
-        <div className="rounded-md overflow-hidden shadow-sm border border-gray-300 mb-4 bg-white">
-          <table className="w-full border-collapse text-[11px]">
-            <tbody>
-              <tr className="bg-gray-50">
-                <td className="border p-2 w-28 font-semibold">UHID :</td>
-                <td className="border p-2">{data?.uhid}</td>
-                <td className="border p-2 w-28 font-semibold">Token No :</td>
-                <td className="border p-2">{data?.token}</td>
-              </tr>
-              <tr>
-                <td className="border p-2 w-28 font-semibold">Name :</td>
-                <td className="border p-2">{data?.patient_name}</td>
-                <td className="border p-2 w-28 font-semibold">Age :</td>
-                <td className="border p-2">
-                  {" "}
-                  {`${data?.iage ?? 0}y ${data?.imonth ?? 0}m ${data?.idays ?? 0}d`}
-                </td>
-              </tr>
-              <tr className="bg-gray-50">
-                <td className="border p-2 w-28 font-semibold">Gender :</td>
-                <td className="border p-2">{data?.gender}</td>
-                <td className="border p-2 w-28 font-semibold">Consultant :</td>
-                <td className="border p-2">{data?.doctor_name}</td>
-              </tr>
-              <tr>
-                <td className="border p-2 w-28 font-semibold">Address :</td>
-                <td className="border p-2" colSpan={3}>
-                  {data?.localAddress}
-                </td>
-              </tr>
-              {/* <tr>
-                <td className="border p-2 w-28 font-semibold">ID Proof  :</td>
-                <td className="border p-2" colSpan={3}>
-                  {data?.idProof_number}
-                </td>
-              </tr> */}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex justify-between items-center text-[11px] font-semibold mb-3 py-2 px-3 border border-gray-300 rounded-md shadow-sm bg-gray-50">
-          <div>Bill No : {data?.bill_no || ""}</div>
-          <div className="text-[#1A73E8] font-bold text-[12px] uppercase tracking-wide">
-            Bill Receipt
-          </div>
-          <div>Bill Date: {billDate}</div>
-        </div>
-
-        <div className="rounded-md shadow-sm overflow-hidden border border-gray-300 mb-4 bg-white">
-          <table className="w-full border-collapse text-[11px]">
-            <thead className="bg-[#1A73E8] text-white">
-              <tr>
-                <th className="border p-2 text-left w-[50px]">SL.No</th>
-                <th className="border p-2 text-left">Particulars</th>
-                <th className="border p-2 text-center w-[70px]">Charges</th>
-                <th className="border p-2 text-center w-[50px]">Qty</th>
-                <th className="border p-2 text-center w-[90px]">Net Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(data?.opd_billing_data || []).map((item, idx) => (
-                <tr key={idx} className="odd:bg-white even:bg-gray-50">
-                  <td className="border p-2 text-center">{idx + 1}</td>
-                  <td className="border p-2">{item?.ServiceName}</td>
-                  <td className="border p-2 text-center">
-                    {safeFixed(item?.ServiceAmount)}
+          {/* =====================================================
+              PATIENT DETAILS
+          ====================================================== */}
+          <div
+            className="
+              invoice-patient-details
+              overflow-hidden
+              border
+              border-black
+              mb-2
+              bg-white
+            "
+          >
+            <table className="w-full border-collapse text-[8px]">
+              <tbody>
+                <tr>
+                  <td className="border border-black p-[3.5px] w-[15%] font-bold">
+                    UHID :
                   </td>
-                  <td className="border p-2 text-center">{item?.Qty}</td>
-                  <td className="border p-2 text-center">
-                    {safeFixed(item?.ServiceAmount * item?.Qty)}
+
+                  <td className="border border-black p-[3.5px] w-[35%]">
+                    {data?.uhid || "-"}
+                  </td>
+
+                  <td className="border border-black p-[3.5px] w-[15%] font-bold">
+                    Token No :
+                  </td>
+
+                  <td className="border border-black p-[3.5px] w-[35%]">
+                    {data?.token || "-"}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4 text-[11px]">
-          <div className="space-y-1">
-            <p>
-              <span className="font-semibold">Fin. Category:</span>{" "}
-              {data?.patient_type}
-            </p>
-            <p>
-              <span className="font-semibold">Payment Mode:</span>{" "}
-              {data?.payment_mode}
-            </p>
-            <p>
-              <span className="font-semibold">Refer From:</span>{" "}
-              {data?.refer_to}
-            </p>
-            <p>
-              <span className="font-semibold">Chief Complaint:</span>{" "}
-              {data?.complaint}
-            </p>
-            {/* <p>
-              <span className="font-semibold">Remarks:</span>{" "}
-              {data?.Remarks || "just for testing"}
-            </p> */}
+                <tr>
+                  <td className="border border-black p-[3.5px] font-bold">
+                    Name :
+                  </td>
+
+                  <td className="border border-black p-[3.5px]">
+                    {data?.patient_name || "-"}
+                  </td>
+
+                  <td className="border border-black p-[3.5px] font-bold">
+                    Age :
+                  </td>
+
+                  <td className="border border-black p-[3.5px]">
+                    {`${data?.iage ?? 0}y ${
+                      data?.imonth ?? 0
+                    }m ${data?.idays ?? 0}d`}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td className="border border-black p-[3.5px] font-bold">
+                    Gender :
+                  </td>
+
+                  <td className="border border-black p-[3.5px]">
+                    {data?.gender || "-"}
+                  </td>
+
+                  <td className="border border-black p-[3.5px] font-bold">
+                    Consultant :
+                  </td>
+
+                  <td className="border border-black p-[3.5px]">
+                    {data?.doctor_name || "-"}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td className="border border-black p-[3.5px] font-bold">
+                    Address :
+                  </td>
+
+                  <td className="border border-black p-[3.5px]" colSpan={3}>
+                    {data?.localAddress || "-"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
-          <div className="space-y-1 text-right">
-            <p>
-              <span className="font-semibold">Total Amount:</span> Rs{" "}
-              {safeFixed(data?.TotalServiceAmount)}
-            </p>
+          {/* =====================================================
+              BILL HEADER
+          ====================================================== */}
+          <div
+            className="
+              invoice-bill-header
+              flex
+              justify-between
+              items-center
+              text-[8px]
+              font-bold
+              mb-2
+              py-[4px]
+              px-2
+              border
+              border-black
+            "
+          >
+            <div>Bill No : {data?.bill_no || "-"}</div>
 
-            <p>
-              <span className="font-semibold">Paid Amount:</span> Rs{" "}
-              {safeFixed(data?.PaidAmount)}
-            </p>
-            <p>
-              <span className="font-semibold">Due Amount:</span> Rs{" "}
-              {safeFixed(data?.DueAmount)}
-            </p>
-            <p>
-              <span className="font-semibold">Balance Amount:</span> Rs{" "}
-              {safeFixed(data?.balanceAmount)}
-            </p>
+            <div className="font-bold text-[9px] uppercase underline">
+              Bill Receipt
+            </div>
 
-            <hr className="my-2" />
-
-            <p>
-              <span className="font-semibold">Cash Amount:</span> Rs{" "}
-              {safeFixed(data?.CashAmount)}
-            </p>
-            <p>
-              <span className="font-semibold">UPI/Online:</span> Rs{" "}
-              {safeFixed(data?.CardAmount)}
-            </p>
+            <div>Bill Date : {billDate || "-"}</div>
           </div>
-        </div>
 
-        <div className="text-right mt-16 mb-4">
-          <p className="font-semibold text-[12px]">Signature</p>
-        </div>
+          {/* =====================================================
+              SERVICES
+          ====================================================== */}
+          <div
+            className="
+              invoice-services
+              overflow-visible
+              border
+              border-black
+              mb-2
+              bg-white
+            "
+          >
+            <table className="w-full border-collapse text-[8px]">
+              <thead>
+                <tr>
+                  <th className="border border-black p-[4px] text-center font-bold w-[35px]">
+                    SL.No
+                  </th>
 
-        <div className="grid grid-cols-2 text-[10px] italic text-gray-600 mt-6 border-t pt-2">
-          <p>Powered By : Last Mile Care</p>
-          <p className="text-right">Prepared By : {data?.added_by}</p>
+                  <th className="border border-black p-[4px] text-left font-bold">
+                    Particulars
+                  </th>
+
+                  <th className="border border-black p-[4px] text-center font-bold w-[65px]">
+                    Charges
+                  </th>
+
+                  <th className="border border-black p-[4px] text-center font-bold w-[45px]">
+                    Qty
+                  </th>
+
+                  <th className="border border-black p-[4px] text-center font-bold w-[80px]">
+                    Net Total
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {(data?.opd_billing_data || []).map((item, idx) => (
+                  <tr key={idx}>
+                    <td className="border border-black p-[4px] text-center">
+                      {idx + 1}
+                    </td>
+
+                    <td className="border border-black p-[4px]">
+                      {item?.ServiceName || "-"}
+                    </td>
+
+                    <td className="border border-black p-[4px] text-center">
+                      {safeFixed(item?.ServiceAmount)}
+                    </td>
+
+                    <td className="border border-black p-[4px] text-center">
+                      {item?.Qty ?? 0}
+                    </td>
+
+                    <td className="border border-black p-[4px] text-center">
+                      {safeFixed(
+                        Number(item?.ServiceAmount || 0) *
+                          Number(item?.Qty || 0),
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* =====================================================
+              SUMMARY / PAYMENT DETAILS
+          ====================================================== */}
+          <div
+            className="
+              invoice-summary
+              grid
+              grid-cols-2
+              gap-5
+              text-[8px]
+            "
+          >
+            {/* LEFT SIDE */}
+            <div className="space-y-1">
+              <p>
+                <span className="font-bold">Fin. Category:</span>{" "}
+                {data?.patient_type || "-"}
+              </p>
+
+              <p>
+                <span className="font-bold">Payment Mode:</span>{" "}
+                {data?.payment_mode || "-"}
+              </p>
+
+              <p>
+                <span className="font-bold">Refer From:</span>{" "}
+                {data?.refer_to || "-"}
+              </p>
+
+              <p>
+                <span className="font-bold">Chief Complaint:</span>{" "}
+                {data?.complaint || "-"}
+              </p>
+            </div>
+
+            {/* RIGHT SIDE */}
+            <div className="space-y-1 text-right">
+              <p>
+                <span className="font-bold">Total Amount:</span> Rs{" "}
+                {safeFixed(data?.TotalServiceAmount)}
+              </p>
+
+              <p>
+                <span className="font-bold">Paid Amount:</span> Rs{" "}
+                {safeFixed(data?.PaidAmount)}
+              </p>
+
+              <p>
+                <span className="font-bold">Due Amount:</span> Rs{" "}
+                {safeFixed(data?.DueAmount)}
+              </p>
+
+              <p>
+                <span className="font-bold">Balance Amount:</span> Rs{" "}
+                {safeFixed(data?.balanceAmount)}
+              </p>
+
+              <div className="border-t border-black my-1.5" />
+
+              <p>
+                <span className="font-bold">Cash Amount:</span> Rs{" "}
+                {safeFixed(data?.CashAmount)}
+              </p>
+
+              <p>
+                <span className="font-bold">UPI/Online:</span> Rs{" "}
+                {safeFixed(data?.CardAmount)}
+              </p>
+            </div>
+          </div>
+
+          {/* =====================================================
+              SIGNATURE
+          ====================================================== */}
+          <div className="invoice-signature text-right mt-3 mb-1">
+            <p className="font-bold text-[8.5px]">Signature</p>
+
+            <div className="inline-block w-[90px] border-b border-black mt-3" />
+          </div>
+
+          {/* =====================================================
+              FOOTER
+          ====================================================== */}
+          <div
+            className="
+              invoice-footer
+              grid
+              grid-cols-2
+              text-[7px]
+              italic
+              text-black
+              border-t
+              border-black
+              pt-1.5
+              mt-1
+            "
+          >
+            <p>Powered By : Last Mile Care</p>
+
+            <p className="text-right">Prepared By : {data?.added_by || "-"}</p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 });
 
