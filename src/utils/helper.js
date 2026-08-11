@@ -252,7 +252,6 @@ export const formatDateOnly = (date) => {
   )}-${String(date.getDate()).padStart(2, "0")}`;
 };
 
-
 const correctServerDate1 = (value) => {
   if (!value) return null;
 
@@ -287,10 +286,7 @@ const correctServerDate1 = (value) => {
 };
 
 export const formatDateTime2 = (value) => {
-  debugger;
-  console.log(value)
   const date = correctServerDate1(value);
-console.log (date);
   if (!date) return "-";
 
   const formattedDate = date.toLocaleDateString("en-GB");

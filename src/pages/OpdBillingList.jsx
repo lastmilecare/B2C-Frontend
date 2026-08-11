@@ -73,12 +73,13 @@ const OpdBillingListCopy = () => {
   });
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const today = new Date().toISOString().split("T")[0];
   const [tempFilters, setTempFilters] = useState({
     name: "",
     contactNumber: "",
     gender: "",
     category: "",
-    startDate: "",
+    startDate: today,
     endDate: "",
     external_id: "",
     idProof_number: "",
@@ -317,7 +318,11 @@ const OpdBillingListCopy = () => {
     { label: "Date to", name: "endDate", type: "date" },
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
+  const truncateText = (text, maxLength = 30) => {
+    if (!text) return "-";
 
+    return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+  };
   const columns = [
     {
       name: "S.No",
@@ -361,8 +366,8 @@ const OpdBillingListCopy = () => {
     {
       name: "Age",
       title: "Patient Age",
-        selector: (row) =>
-    `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
+      selector: (row) =>
+        `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
       sortable: true,
       width: "100px",
     },
@@ -442,8 +447,12 @@ const OpdBillingListCopy = () => {
       name: "Service",
       title: "Service Name",
       selector: (row) =>
-        safeString(
-          (row?.opd_billing_data || []).map((item, idx) => item?.ServiceName),
+        truncateText(
+          (row?.opd_billing_data || [])
+            .map((item) => item?.ServiceName)
+            .filter(Boolean)
+            .join(", "),
+          30,
         ),
       width: "120px",
     },
@@ -551,9 +560,9 @@ const OpdBillingListCopy = () => {
         onDelete={handleDelete}
         onPrintCS={onPrintCS}
         onPrint={onPrintInvoice}
-          enableAdd
-  addButtonText="Add"
-  onAdd={() => navigate("/opd-form")}
+        enableAdd
+        addButtonText="Add"
+        onAdd={() => navigate("/opd-form")}
       />
       {printRow && (
         <div style={{ display: "none" }}>
