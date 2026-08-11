@@ -17,13 +17,10 @@ import { healthAlert } from "../utils/healthSwal";
 import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { generateFileName, downloadBlob } from "../utils/helper";
-import {
-  formatDate,
-  formatTime,
-} from "../utils/helper";
+import { formatDate, formatTime } from "../utils/helper";
 const CampOpdBillingList = () => {
   const [exportExcel] = useLazyExportcampOpdExcelQuery();
-
+  const [depCurrentVal, setDepCurrentVal] = useState();
   const navigate = useNavigate();
   const [deleteOpdBill] = useDeletecampOpdBillMutation();
   const handleDelete = async (row) => {
@@ -113,6 +110,10 @@ const CampOpdBillingList = () => {
     useGetComboQuery("department");
   const { data: paymode, isLoading: paymodeComboLoading } =
     useGetComboQuery("paymode");
+  const { data: nursing, isLoading: nursingComboLoading } =
+    useGetComboQuery("nursing");
+  const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
+
   const {
     data: collectedByResponse,
     isLoading: collectedComboLoading,
@@ -125,6 +126,9 @@ const CampOpdBillingList = () => {
   const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "department") {
+      setDepCurrentVal(value);
+    }
     let finalValue = value;
     if (name === "contactNumber") {
       finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
@@ -133,6 +137,7 @@ const CampOpdBillingList = () => {
     setTempFilters((prev) => ({
       ...prev,
       [name]: finalValue,
+      ...(name === "department" ? { doctor: "" } : {}),
     }));
   };
 
@@ -267,14 +272,53 @@ const CampOpdBillingList = () => {
     },
 
     {
-      label: "Doctor",
+      label:
+        depCurrentVal === "DOCTORS"
+          ? "Consulting Doctor"
+          : depCurrentVal === "NURSING"
+            ? "Nursing"
+            : depCurrentVal === "LAB"
+              ? "Lab"
+              : "Consultant",
+
       name: "doctor",
       type: "select",
-      options:
-        doctors?.map((d) => ({
-          label: d.name || d.doctor_name,
-          value: d.name,
-        })) || [],
+
+      options: [
+        {
+          label:
+            depCurrentVal === "DOCTORS"
+              ? "All Doctors"
+              : depCurrentVal === "NURSING"
+                ? "All Nursing"
+                : depCurrentVal === "LAB"
+                  ? "All Lab"
+                  : "Select Department First",
+
+          value: "",
+        },
+
+        ...(depCurrentVal === "DOCTORS"
+          ? (doctors || []).map((d) => ({
+              label: d.name || d.doctor_name,
+              value: d.name || d.doctor_name,
+            }))
+          : []),
+
+        ...(depCurrentVal === "NURSING"
+          ? (nursing || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+
+        ...(depCurrentVal === "LAB"
+          ? (lab || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+      ],
     },
 
     {
@@ -317,7 +361,11 @@ const CampOpdBillingList = () => {
     { label: "Date to", name: "endDate", type: "date" },
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
+  const truncateText = (text, maxLength = 30) => {
+    if (!text) return "-";
 
+    return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+  };
   const columns = [
     {
       name: "S.No",
@@ -361,7 +409,8 @@ const CampOpdBillingList = () => {
     {
       name: "Age",
       title: "Patient Age",
-      selector: (row) => `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
+      selector: (row) =>
+        `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
       sortable: true,
       width: "50px",
     },
@@ -438,11 +487,15 @@ const CampOpdBillingList = () => {
       width: "100px",
     },
     {
-      name: "Srvc",
+      name: "Service",
       title: "Service Name",
       selector: (row) =>
-        safeString(
-          (row?.opd_billing_data || []).map((item, idx) => item?.ServiceName),
+        truncateText(
+          (row?.opd_billing_data || [])
+            .map((item) => item?.ServiceName)
+            .filter(Boolean)
+            .join(", "),
+          30,
         ),
       width: "120px",
     },
@@ -450,7 +503,7 @@ const CampOpdBillingList = () => {
       name: "Ref",
       title: "Referred By",
       selector: (row) => safeString(row?.refer_to, "-"),
-      width: "140px"
+      width: "140px",
     },
 
     {
@@ -501,8 +554,6 @@ const CampOpdBillingList = () => {
     documentTitle: "Invoice",
   });
 
-
-
   const onPrintInvoice = (row) => {
     setPrintRow1(null);
 
@@ -519,7 +570,9 @@ const CampOpdBillingList = () => {
 
   return (
     <div className="p-0">
-      <h1 className="text-2xl font-semibold text-gray-700 mb-6">Camp Opd List</h1>
+      <h1 className="text-2xl font-semibold text-gray-700 mb-6">
+        Camp Opd List
+      </h1>
       <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}

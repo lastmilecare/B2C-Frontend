@@ -19,7 +19,7 @@ import { generateFileName, downloadBlob } from "../utils/helper";
 import { formatDate, formatTime } from "../utils/helper";
 const OpdBillingListCopy = () => {
   const [exportExcel] = useLazyExportOpdExcelQuery();
-
+  const [depCurrentVal, setDepCurrentVal] = useState();
   const navigate = useNavigate();
   const [deleteOpdBill] = useDeleteOpdBillMutation();
   const handleDelete = async (row) => {
@@ -125,6 +125,9 @@ const OpdBillingListCopy = () => {
   const pagination = data || { currentPage: page, totalRecords: 0 };
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "department") {
+      setDepCurrentVal(value);
+    }
     let finalValue = value;
     if (name === "contactNumber") {
       finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
@@ -133,6 +136,7 @@ const OpdBillingListCopy = () => {
     setTempFilters((prev) => ({
       ...prev,
       [name]: finalValue,
+      ...(name === "department" ? { doctor: "" } : {}),
     }));
   };
 
@@ -263,18 +267,60 @@ const OpdBillingListCopy = () => {
       label: "Department",
       name: "department",
       type: "select",
-      options: department?.map((d) => ({ label: d.name, value: d.name })) || [],
-    },
-
-    {
-      label: "Doctor",
-      name: "doctor",
-      type: "select",
       options:
-        doctors?.map((d) => ({
-          label: d.name || d.doctor_name,
+        department?.map((d) => ({
+          label: d.name,
           value: d.name,
         })) || [],
+    },
+    {
+      label:
+        depCurrentVal === "DOCTORS"
+          ? "Consulting Doctor"
+          : depCurrentVal === "NURSING"
+            ? "Nursing"
+            : depCurrentVal === "LAB"
+              ? "Lab"
+              : "Consultant",
+
+      name: "doctor",
+      type: "select",
+
+      options: [
+        {
+          label:
+            depCurrentVal === "DOCTORS"
+              ? "All Doctors"
+              : depCurrentVal === "NURSING"
+                ? "All Nursing"
+                : depCurrentVal === "LAB"
+                  ? "All Lab"
+                  : "Select Department First",
+
+          value: "",
+        },
+
+        ...(depCurrentVal === "DOCTORS"
+          ? (doctors || []).map((d) => ({
+              label: d.name || d.doctor_name,
+              value: d.name || d.doctor_name,
+            }))
+          : []),
+
+        ...(depCurrentVal === "NURSING"
+          ? (nursing || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+
+        ...(depCurrentVal === "LAB"
+          ? (lab || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+      ],
     },
 
     {
@@ -321,6 +367,7 @@ const OpdBillingListCopy = () => {
     { label: "Date to", name: "endDate", type: "date" },
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
+
   const truncateText = (text, maxLength = 30) => {
     if (!text) return "-";
 

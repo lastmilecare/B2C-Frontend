@@ -20,11 +20,11 @@ import { formatDate, formatTime } from "../utils/helper";
 import { useSelector } from "react-redux";
 const OpdListRevenue = () => {
   const [exportExcel] = useLazyExportOpdExcelQuery();
-const { permissions } = useSelector((state) => state.auth);
-const can = (permission) => {
-  if (!permission) return true;
-  return permissions?.includes(permission) ?? false;
-};
+  const { permissions } = useSelector((state) => state.auth);
+  const can = (permission) => {
+    if (!permission) return true;
+    return permissions?.includes(permission) ?? false;
+  };
   const navigate = useNavigate();
   const [deleteOpdBill] = useDeleteOpdBillMutation();
   const handleDelete = async (row) => {
@@ -98,7 +98,7 @@ const can = (permission) => {
   const [printRow1, setPrintRow1] = useState(null);
   const printRef = useRef();
   const printRef1 = useRef();
-
+  const [depCurrentVal, setDepCurrentVal] = useState();
   const { data, isLoading, isError, error, refetch } = useGetOpdBillingQuery(
     {
       page,
@@ -107,9 +107,9 @@ const can = (permission) => {
     },
     { skip: !page || !limit },
   );
-const summary = data?.summary || {};
-const pharmacy = summary.pharmaResult || {};
-const spectacle = summary.specResult || {};
+  const summary = data?.summary || {};
+  const pharmacy = summary.pharmaResult || {};
+  const spectacle = summary.specResult || {};
   const { data: doctors, isLoading: doctorsComboLoading } =
     useGetComboQuery("doctor");
   const { data: department, isLoading: departmentComboLoading } =
@@ -121,6 +121,9 @@ const spectacle = summary.specResult || {};
     isLoading: collectedComboLoading,
     refetch: refetchCollectedBy,
   } = useGetCollectedByQuery();
+  const { data: nursing, isLoading: nursingComboLoading } =
+    useGetComboQuery("nursing");
+  const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
 
   const collectedBy = collectedByResponse?.data || [];
 
@@ -128,6 +131,9 @@ const spectacle = summary.specResult || {};
   const pagination = data || { currentPage: page, totalRecords: 0 };
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "department") {
+      setDepCurrentVal(value);
+    }
     let finalValue = value;
     if (name === "contactNumber") {
       finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
@@ -136,6 +142,7 @@ const spectacle = summary.specResult || {};
     setTempFilters((prev) => ({
       ...prev,
       [name]: finalValue,
+      ...(name === "department" ? { doctor: "" } : {}),
     }));
   };
 
@@ -266,18 +273,60 @@ const spectacle = summary.specResult || {};
       label: "Department",
       name: "department",
       type: "select",
-      options: department?.map((d) => ({ label: d.name, value: d.name })) || [],
-    },
-
-    {
-      label: "Doctor",
-      name: "doctor",
-      type: "select",
       options:
-        doctors?.map((d) => ({
-          label: d.name || d.doctor_name,
+        department?.map((d) => ({
+          label: d.name,
           value: d.name,
         })) || [],
+    },
+    {
+      label:
+        depCurrentVal === "DOCTORS"
+          ? "Consulting Doctor"
+          : depCurrentVal === "NURSING"
+            ? "Nursing"
+            : depCurrentVal === "LAB"
+              ? "Lab"
+              : "Consultant",
+
+      name: "doctor",
+      type: "select",
+
+      options: [
+        {
+          label:
+            depCurrentVal === "DOCTORS"
+              ? "All Doctors"
+              : depCurrentVal === "NURSING"
+                ? "All Nursing"
+                : depCurrentVal === "LAB"
+                  ? "All Lab"
+                  : "Select Department First",
+
+          value: "",
+        },
+
+        ...(depCurrentVal === "DOCTORS"
+          ? (doctors || []).map((d) => ({
+              label: d.name || d.doctor_name,
+              value: d.name || d.doctor_name,
+            }))
+          : []),
+
+        ...(depCurrentVal === "NURSING"
+          ? (nursing || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+
+        ...(depCurrentVal === "LAB"
+          ? (lab || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+      ],
     },
 
     {
@@ -324,7 +373,11 @@ const spectacle = summary.specResult || {};
     { label: "Date to", name: "endDate", type: "date" },
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
+  const truncateText = (text, maxLength = 30) => {
+    if (!text) return "-";
 
+    return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+  };
   const columns = [
     {
       name: "S.No",
@@ -368,8 +421,8 @@ const spectacle = summary.specResult || {};
     {
       name: "Age",
       title: "Patient Age",
-        selector: (row) =>
-    `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
+      selector: (row) =>
+        `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
       sortable: true,
       width: "100px",
     },
@@ -449,8 +502,12 @@ const spectacle = summary.specResult || {};
       name: "Service",
       title: "Service Name",
       selector: (row) =>
-        safeString(
-          (row?.opd_billing_data || []).map((item, idx) => item?.ServiceName),
+        truncateText(
+          (row?.opd_billing_data || [])
+            .map((item) => item?.ServiceName)
+            .filter(Boolean)
+            .join(", "),
+          30,
         ),
       width: "120px",
     },
@@ -553,190 +610,158 @@ const spectacle = summary.specResult || {};
         }}
         // enableActions
         isLoading={isLoading}
-  //       actionButtons={["edit", "delete", "print", "printCS"]}
-  //       onEdit={handleEdit}
-  //       onDelete={handleDelete}
-  //       onPrintCS={onPrintCS}
-  //       onPrint={onPrintInvoice}
-  //         enableAdd
-  // addButtonText="Add"
-  // onAdd={() => navigate("/opd-form")}
+        //       actionButtons={["edit", "delete", "print", "printCS"]}
+        //       onEdit={handleEdit}
+        //       onDelete={handleDelete}
+        //       onPrintCS={onPrintCS}
+        //       onPrint={onPrintInvoice}
+        //         enableAdd
+        // addButtonText="Add"
+        // onAdd={() => navigate("/opd-form")}
       />
       <section className="mt-4 border rounded-xl bg-emerald-50 px-6 py-4 shadow-sm">
+        {/* OPD */}
+        <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-emerald-900">
+          <span>
+            Total Bill Amount : Rs.
+            <span className="font-semibold ml-1">
+              {summary.totalBillAmount}
+            </span>
+          </span>
 
-  {/* OPD */}
-  <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-emerald-900">
+          <span>
+            Total Paid Amount : Rs.
+            <span className="font-semibold ml-1">
+              {summary.totalPaidAmount}
+            </span>
+          </span>
 
-    <span>
-      Total Bill Amount : Rs.
-      <span className="font-semibold ml-1">
-        {summary.totalBillAmount}
-      </span>
-    </span>
+          <span>
+            Total Due Amount : Rs.
+            <span className="font-semibold ml-1">{summary.totalDueAmount}</span>
+          </span>
 
-    <span>
-      Total Paid Amount : Rs.
-      <span className="font-semibold ml-1">
-        {summary.totalPaidAmount}
-      </span>
-    </span>
+          <span>
+            Total Cash Amount : Rs.
+            <span className="font-semibold ml-1">
+              {summary.totalCashAmount}
+            </span>
+          </span>
 
-    <span>
-      Total Due Amount : Rs.
-      <span className="font-semibold ml-1">
-        {summary.totalDueAmount}
-      </span>
-    </span>
+          <span>
+            Total Online / UPI / Cost Free / Card : Rs.
+            <span className="font-semibold ml-1">{summary.totalUpiAmount}</span>
+          </span>
+        </div>
 
-    <span>
-      Total Cash Amount : Rs.
-      <span className="font-semibold ml-1">
-        {summary.totalCashAmount}
-      </span>
-    </span>
+        <hr className="my-4 border-emerald-200" />
 
-    <span>
-      Total Online / UPI / Cost Free / Card : Rs.
-      <span className="font-semibold ml-1">
-        {summary.totalUpiAmount}
-      </span>
-    </span>
+        {/* Pharmacy */}
 
-  </div>
+        <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-emerald-900">
+          <span>
+            Total Pharmacy Revenue : Rs.
+            <span className="font-semibold ml-1">
+              {pharmacy.pharmacyRevenue}
+            </span>
+          </span>
 
-  <hr className="my-4 border-emerald-200"/>
+          <span>
+            Pharmacy Paid Amount : Rs.
+            <span className="font-semibold ml-1">{pharmacy.pharmacyPaid}</span>
+          </span>
 
-  {/* Pharmacy */}
+          <span>
+            Pharmacy Due Amount : Rs.
+            <span className="font-semibold ml-1">{pharmacy.pharmacyDue}</span>
+          </span>
 
-  <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-emerald-900">
+          <span>
+            Pharmacy Cash Amount : Rs.
+            <span className="font-semibold ml-1">{pharmacy.pharmacyCash}</span>
+          </span>
 
-    <span>
-      Total Pharmacy Revenue : Rs.
-      <span className="font-semibold ml-1">
-        {pharmacy.pharmacyRevenue}
-      </span>
-    </span>
+          <span>
+            Pharmacy Online / UPI / Cost Free / Card Amount : Rs.
+            <span className="font-semibold ml-1">{pharmacy.pharmacyUpi}</span>
+          </span>
+        </div>
+        {can("read:spectacle_revenue") && (
+          <>
+            <hr className="my-4 border-emerald-200" />
 
-    <span>
-      Pharmacy Paid Amount : Rs.
-      <span className="font-semibold ml-1">
-        {pharmacy.pharmacyPaid}
-      </span>
-    </span>
+            {/* Spectacle */}
 
-    <span>
-      Pharmacy Due Amount : Rs.
-      <span className="font-semibold ml-1">
-        {pharmacy.pharmacyDue}
-      </span>
-    </span>
+            <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-emerald-900">
+              <span>
+                Total Spectacle Revenue : Rs.
+                <span className="font-semibold ml-1">
+                  {spectacle.spectacleRevenue}
+                </span>
+              </span>
 
-    <span>
-      Pharmacy Cash Amount : Rs.
-      <span className="font-semibold ml-1">
-        {pharmacy.pharmacyCash}
-      </span>
-    </span>
+              <span>
+                Spectacle Paid Amount : Rs.
+                <span className="font-semibold ml-1">
+                  {spectacle.spectaclePaid}
+                </span>
+              </span>
 
-    <span>
-      Pharmacy Online / UPI / Cost Free / Card Amount : Rs.
-      <span className="font-semibold ml-1">
-        {pharmacy.pharmacyUpi}
-      </span>
-    </span>
+              <span>
+                Spectacle Due Amount : Rs.
+                <span className="font-semibold ml-1">
+                  {spectacle.spectacleDue}
+                </span>
+              </span>
 
-  </div>
-{can("read:spectacle_revenue") && (
-  <>
-  <hr className="my-4 border-emerald-200"/>
+              <span>
+                Spectacle Cash Amount : Rs.
+                <span className="font-semibold ml-1">
+                  {spectacle.spectacleCash}
+                </span>
+              </span>
 
-  {/* Spectacle */}
+              <span>
+                Spectacle Online / UPI / Cost Free / Card : Rs.
+                <span className="font-semibold ml-1">
+                  {spectacle.spectacleUpi}
+                </span>
+              </span>
+            </div>
+          </>
+        )}
 
-  <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-emerald-900">
+        <hr className="my-4 border-emerald-300" />
 
-    <span>
-      Total Spectacle Revenue : Rs.
-      <span className="font-semibold ml-1">
-        {spectacle.spectacleRevenue}
-      </span>
-    </span>
+        {/* Grand Total */}
 
-    <span>
-      Spectacle Paid Amount : Rs.
-      <span className="font-semibold ml-1">
-        {spectacle.spectaclePaid}
-      </span>
-    </span>
+        <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-semibold text-emerald-700">
+          <span>
+            Grand Total : Rs.
+            <span className="ml-1">{summary.grandTotal}</span>
+          </span>
 
-    <span>
-      Spectacle Due Amount : Rs.
-      <span className="font-semibold ml-1">
-        {spectacle.spectacleDue}
-      </span>
-    </span>
+          <span>
+            Total Paid : Rs.
+            <span className="ml-1">{summary.grandPaid}</span>
+          </span>
 
-    <span>
-      Spectacle Cash Amount : Rs.
-      <span className="font-semibold ml-1">
-        {spectacle.spectacleCash}
-      </span>
-    </span>
+          <span>
+            Total Due : Rs.
+            <span className="ml-1">{summary.grandDue}</span>
+          </span>
 
-    <span>
-      Spectacle Online / UPI / Cost Free / Card : Rs.
-      <span className="font-semibold ml-1">
-        {spectacle.spectacleUpi}
-      </span>
-    </span>
+          <span>
+            Total Cash : Rs.
+            <span className="ml-1">{summary.grandCash}</span>
+          </span>
 
-  </div>
-  </>
-)}
-
-  <hr className="my-4 border-emerald-300"/>
-
-  {/* Grand Total */}
-
-  <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-semibold text-emerald-700">
-
-    <span>
-      Grand Total : Rs.
-      <span className="ml-1">
-        {summary.grandTotal}
-      </span>
-    </span>
-
-    <span>
-      Total Paid : Rs.
-      <span className="ml-1">
-        {summary.grandPaid}
-      </span>
-    </span>
-
-    <span>
-      Total Due : Rs.
-      <span className="ml-1">
-        {summary.grandDue}
-      </span>
-    </span>
-
-    <span>
-      Total Cash : Rs.
-      <span className="ml-1">
-        {summary.grandCash}
-      </span>
-    </span>
-
-    <span>
-      Total Online / UPI / Cost Free / Card : Rs.
-      <span className="ml-1">
-        {summary.grandUpi}
-      </span>
-    </span>
-
-  </div>
-
-</section>
+          <span>
+            Total Online / UPI / Cost Free / Card : Rs.
+            <span className="ml-1">{summary.grandUpi}</span>
+          </span>
+        </div>
+      </section>
       {printRow && (
         <div style={{ display: "none" }}>
           <PrintOpdForm ref={printRef} data={printRow} />
