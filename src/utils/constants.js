@@ -172,6 +172,10 @@ export const ROLES = [
     label: "PHARMACY",
     value: "PHARMACY",
   },
+  {
+    label: "LABORATORY",
+    value: "LABORATORY",
+  },
 
 ];
 export const DEPARTMENT_OPTIONS = [

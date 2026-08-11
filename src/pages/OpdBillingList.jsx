@@ -117,6 +117,9 @@ const OpdBillingListCopy = () => {
   } = useGetCollectedByQuery();
 
   const collectedBy = collectedByResponse?.data || [];
+  const { data: nursing, isLoading: nursingComboLoading } =
+    useGetComboQuery("nursing");
+  const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
 
   const patients = data?.data || [];
   const pagination = data || { currentPage: page, totalRecords: 0 };
@@ -438,7 +441,7 @@ const OpdBillingListCopy = () => {
       width: "80px",
     },
     {
-      name: "Dr.",
+      name: "Consultant",
       title: "Consultant Doctor",
       selector: (row) => safeString(row?.doctor_name, "-"),
       width: "100px",
