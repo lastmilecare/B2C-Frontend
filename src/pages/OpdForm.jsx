@@ -117,6 +117,9 @@ const OpdFormCopy = () => {
     useGetComboQuery("collectedBy");
   const { data: paymode, isLoading: paymodeComboLoading } =
     useGetComboQuery("paymode");
+  const { data: nursing, isLoading: nursingComboLoading } =
+    useGetComboQuery("nursing");
+  const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
@@ -191,8 +194,6 @@ const OpdFormCopy = () => {
   }, [suggestions, selectedUhid, uhidSearch]);
   const { data: allServices = [] } = useGetServiceMastersQuery("");
   useEffect(() => {
-
-
     if (editData && department && doctors && paymode) {
       setUhidSearch(editData.uhid || "");
       // setIsPaidManuallyEdited(true);
@@ -227,12 +228,10 @@ const OpdFormCopy = () => {
       );
       const complaintData = editData.complaint
         ? editData.complaint.split(",").map((c, index) => ({
-          id: index + 1,
-          name: c.trim(),
-        }))
+            id: index + 1,
+            name: c.trim(),
+          }))
         : [];
-
-
 
       formik.setValues({
         ...formik.initialValues,
@@ -253,7 +252,6 @@ const OpdFormCopy = () => {
         CardAmount: editData.CardAmount || 0,
         // VisitType: editData.VisitType || "N/A",
         ChiefComplaint: complaintData,
-
       });
       setEditDataLoaded(true);
       if (editData.opd_billing_data) {
@@ -276,7 +274,7 @@ const OpdFormCopy = () => {
       }
     }
   }, [editData, department, doctors, paymode, allServices]);
-
+  const [depCurrentId, setDepCurrentId] = useState(0);
   const parseDOB = (raw) => {
     if (!raw) return "";
 
@@ -604,8 +602,9 @@ const OpdFormCopy = () => {
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                  }`}
+                className={`h-2 w-12 rounded-full ${
+                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                }`}
               />
             ))}
           </div>
@@ -624,10 +623,11 @@ const OpdFormCopy = () => {
                 disabled
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold 
-                                      ${activeStep === step.id
-                    ? "bg-white text-sky-600 shadow"
-                    : "text-gray-400"
-                  }`}
+                                      ${
+                                        activeStep === step.id
+                                          ? "bg-white text-sky-600 shadow"
+                                          : "text-gray-400"
+                                      }`}
               >
                 <step.icon className="w-4 h-4" />
 
@@ -770,8 +770,16 @@ const OpdFormCopy = () => {
                       error={
                         formik.touched.Department && formik.errors.Department
                       }
+                      onChange={(e) => {
+                        const departmentId = Number(e.target.value);
+
+                        setDepCurrentId(departmentId);
+                        formik.setFieldValue("Department", e.target.value);
+                        formik.setFieldValue("Doctor", "");
+                      }}
                     >
                       <option value="">Select Department</option>
+
                       {department?.map((d) => (
                         <option key={d.id} value={d.id}>
                           {d.name}
@@ -783,17 +791,51 @@ const OpdFormCopy = () => {
                       {...formik.getFieldProps("Doctor")}
                       label={
                         <span>
-                          Doctor <span className="text-red-500">*</span>
+                          {depCurrentId === 9
+                            ? "Consulting Doctor"
+                            : depCurrentId === 3
+                              ? "Nursing"
+                              : depCurrentId === 6
+                                ? "Lab"
+                                : "Doctor"}
+                          <span className="text-red-500"> *</span>
                         </span>
                       }
                       error={formik.touched.Doctor && formik.errors.Doctor}
                     >
-                      <option value="">Consulting Doctor</option>
-                      {doctors?.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name || d.doctor_name}
-                        </option>
-                      ))}
+                      <option value="">
+                        {depCurrentId === 9
+                          ? "Consulting Doctor"
+                          : depCurrentId === 3
+                            ? "Select Nursing"
+                            : depCurrentId === 6
+                              ? "Select Lab"
+                              : "Select"}
+                      </option>
+
+                      {/* Department 9 → Doctors */}
+                      {depCurrentId === 9 &&
+                        doctors?.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name || d.doctor_name}
+                          </option>
+                        ))}
+
+                      {/* Department 3 → Nursing */}
+                      {depCurrentId === 3 &&
+                        nursing?.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.username}
+                          </option>
+                        ))}
+
+                      {/* Department 6 → Lab */}
+                      {depCurrentId === 6 &&
+                        lab?.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.username}
+                          </option>
+                        ))}
                     </Select>
 
                     <Input
@@ -1000,14 +1042,6 @@ const OpdFormCopy = () => {
                         formik.setFieldValue("PayMode", mode);
 
                         const currentPaid = formik.values.PaidAmount;
-
-                        // if (mode === "1") {
-                        //   formik.setFieldValue("CashAmount", currentPaid);
-                        //   formik.setFieldValue("CardAmount", "0");
-                        // } else {
-                        //   formik.setFieldValue("CardAmount", currentPaid);
-                        //   formik.setFieldValue("CashAmount", "0");
-                        // }
                         if (mode === "1") {
                           // Cash
                           formik.setFieldValue("CashAmount", currentPaid);
@@ -1128,11 +1162,29 @@ const OpdFormCopy = () => {
                         </p>
 
                         <p>
-                          <b>Doctor:</b>{" "}
-                          {doctors?.find((d) => d.id == formik.values.Doctor)
-                            ?.name ||
-                            doctors?.find((d) => d.id == formik.values.Doctor)
-                              ?.doctor_name}
+                          <b>
+                            {depCurrentId === 9
+                              ? "Doctor:"
+                              : depCurrentId === 3
+                                ? "Nursing:"
+                                : depCurrentId === 6
+                                  ? "Lab:"
+                                  : "Doctor:"}
+                          </b>{" "}
+                          {depCurrentId === 9
+                            ? doctors?.find((d) => d.id == formik.values.Doctor)
+                                ?.name ||
+                              doctors?.find((d) => d.id == formik.values.Doctor)
+                                ?.doctor_name ||
+                              "-"
+                            : depCurrentId === 3
+                              ? nursing?.find(
+                                  (d) => d.id == formik.values.Doctor,
+                                )?.username || "-"
+                              : depCurrentId === 6
+                                ? lab?.find((d) => d.id == formik.values.Doctor)
+                                    ?.username || "-"
+                                : "-"}
                         </p>
 
                         <p>
@@ -1406,4 +1458,3 @@ const OpdFormCopy = () => {
 };
 
 export default OpdFormCopy;
-
