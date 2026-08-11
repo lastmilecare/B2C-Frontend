@@ -137,7 +137,7 @@ const OpdFormCopy = () => {
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
-  const { refetch } = useGetOpdBillByIdQuery(billNo, {
+  const { data: opdBillData, refetch } = useGetOpdBillByIdQuery(billNo, {
     skip: !billNo,
   });
   const populatedUhidRef = useRef("");
@@ -158,6 +158,18 @@ const OpdFormCopy = () => {
       refetch();
     }
   }, [billNo]);
+
+ useEffect(() => {
+  const referTo =
+    opdBillData?.ReferTo ??
+    opdBillData?.refer_id ??
+    editData?.ReferTo ??
+    editData?.refer_id;
+
+  if (referTo === undefined || referTo === null) return;
+
+  formik.setFieldValue("ReferBy", String(referTo), false);
+}, [opdBillData, editData]);
 
   const onPrintCS = (row) => {
     setPrintRow(row);
@@ -223,15 +235,42 @@ const OpdFormCopy = () => {
       setDepCurrentId(Number(deptObj.id));
     }
 
-      const doctorObj =
-        doctors?.find((d) => d.id === editData.DoctorId) ||
-        doctors?.find((d) => d.id === Number(editData.DoctorId)) ||
-        doctors?.find(
-          (d) =>
-            (d.name || d.doctor_name)?.trim().toLowerCase() ===
-            editData.doctor_name?.trim().toLowerCase(),
-        );
+      // const doctorObj =
+      //   doctors?.find((d) => d.id === editData.DoctorId) ||
+      //   doctors?.find((d) => d.id === Number(editData.DoctorId)) ||
+      //   doctors?.find(
+      //     (d) =>
+      //       (d.name || d.doctor_name)?.trim().toLowerCase() ===
+      //       editData.doctor_name?.trim().toLowerCase(),
+      //   );
 
+const departmentId = Number(deptObj?.id || editData.DepartmentID);
+const selectedDoctorId = Number(editData.DoctorId);
+
+let doctorObj = null;
+
+if (departmentId === 9) {
+  doctorObj = doctors?.find(
+    (d) =>
+      Number(d.id) === selectedDoctorId ||
+      (d.name || d.doctor_name)?.trim().toLowerCase() ===
+        editData.doctor_name?.trim().toLowerCase()
+  );
+} else if (departmentId === 3) {
+  doctorObj = nursing?.find(
+    (d) =>
+      Number(d.id) === selectedDoctorId ||
+      d.username?.trim().toLowerCase() ===
+        editData.doctor_name?.trim().toLowerCase()
+  );
+} else if (departmentId === 6) {
+  doctorObj = lab?.find(
+    (d) =>
+      Number(d.id) === selectedDoctorId ||
+      d.username?.trim().toLowerCase() ===
+        editData.doctor_name?.trim().toLowerCase()
+  );
+}
       // const referObj =
       //   doctors?.find((d) => d.id === editData.ReferTo) ||
       //   doctors?.find((d) => d.id === Number(editData.ReferTo)) ||
@@ -261,10 +300,13 @@ const OpdFormCopy = () => {
         Gender: editData.gender || "",
         Age: editData.age || "",
         Department: deptObj ? deptObj.id : 0,
-        Doctor: doctorObj?.id || "",
-        ReferBy: editData.ReferTo
-          ? String(editData.ReferTo)
-          : "",
+        Doctor: doctorObj?.id || editData.DoctorId || "",
+        ReferBy:
+  editData.ReferTo !== undefined && editData.ReferTo !== null
+    ? String(editData.ReferTo)
+    : editData.refer_id !== undefined && editData.refer_id !== null
+      ? String(editData.refer_id)
+      : "",
         FinCategory: editData.patient_type || "",
         TotalAmount: editData.TotalServiceAmount || 0,
         PaidAmount: editData.PaidAmount || 0,
@@ -295,7 +337,7 @@ const OpdFormCopy = () => {
         setSelectedServices(mapped);
       }
     }
-  }, [editData, department, doctors, paymode, allServices]);
+  }, [editData, department, doctors, nursing, lab,  paymode, allServices]);
   const [depCurrentId, setDepCurrentId] = useState(0);
   const parseDOB = (raw) => {
     if (!raw) return "";
@@ -487,6 +529,7 @@ const OpdFormCopy = () => {
   }, [formik.errors]);
 
   useEffect(() => {
+     if (editData) return;
     if (!patientData) return;
     if (patientData.external_id !== selectedUhid) return;
     if (populatedUhidRef.current === selectedUhid) return;
@@ -882,6 +925,7 @@ const OpdFormCopy = () => {
                     {referralConfig[tenantId] && (
                       <Select
                         {...formik.getFieldProps("ReferBy")}
+                        value={String(formik.values.ReferBy || "")}
                         label={referralConfig[tenantId].label}
                       >
                         <option value="">
