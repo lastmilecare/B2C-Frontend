@@ -506,12 +506,24 @@ const OpdBillingListCopy = () => {
         ),
       width: "120px",
     },
-    {
-      name: "Ref",
-      title: "Referred By",
-      selector: (row) => safeString(row?.refer_to, "-"),
-      width: "140px",
-    },
+   {
+  name: "Ref",
+  title: "Referred By",
+  selector: (row) => {
+    const referTo = Number(row?.refer_id);
+
+    if (referTo === 1) {
+      return "Refer from Amp";
+    }
+
+    if (referTo === 2) {
+      return "Refer To Medi Kavach";
+    }
+
+    return "";
+  },
+  width: "140px",
+},
 
     {
       name: "Collected By",
