@@ -102,7 +102,7 @@ export const Referral_Options = [
   { label: "Health Camp", value: "Health Camp" },
   { label: "Mobilization", value: "Mobilization" },
   { label: "Digital Marketing", value: "Digital Marketing" },
-  // { label: "Amp Family", value: "Amp Family" },
+  { label: "Amp Family", value: "Amp Family", tenantIds: [2], },
   { label: "Canopy Outreach", value: "Canopy Outreach" },
   { label: "B2B", value: "B2B" },
 ];

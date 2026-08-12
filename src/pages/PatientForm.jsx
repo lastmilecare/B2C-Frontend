@@ -50,6 +50,7 @@ const PatientRegistrationCopy = () => {
     skip: !isEdit,
   });
   const userId = cookie.get("user_id");
+  const tenantId = cookie.get("tenantId");
   const [createPatient, { isLoading: isCreating }] =
     useRegisterPatientsMutation();
   const [updatePatient, { isLoading: isUpdating }] = useUpdatePatientMutation();
@@ -314,7 +315,21 @@ const PatientRegistrationCopy = () => {
       setStateId(p.state_id || "");
     }
   }, [patientApiResponse, isEdit]);
-  const referralOptions = Referral_Options.map((option) => option.value);
+  // const referralOptions = Referral_Options.map((option) => option.value);
+  const referralOptions = Referral_Options
+  .filter((option) => {
+    if (option.tenantIds) {
+      const isAllowedTenant = option.tenantIds.includes(Number(tenantId));
+
+      const isExistingValue =
+        formik.values.ReferredBy === option.value;
+
+      return isAllowedTenant || isExistingValue;
+    }
+
+    return true;
+  })
+  .map((option) => option.value);
   const buildPayload = (values) => {
     if (!values) return null;
     const ageValue = values?.age?.split(" ") ?? [];
