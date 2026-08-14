@@ -84,22 +84,16 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
         lineHeight: "1.45",
       }}
     >
-      <div className="flex justify-between items-center mb-3">
-        <img
-          className="h-16 w-auto object-contain"
-          src="/images/LMC_1care_logo.webp"
-          alt="1Care Logo"
-        />
+      <div className="flex items-center justify-between mb-4 ">
+        <div className="flex-1 flex justify-start">
+          <img
+            className="h-16 w-auto object-contain"
+            src="/images/LMC_1care_logo.webp"
+            alt="1Care Logo"
+          />
+        </div>
 
-        <img
-          className="h-16 w-auto object-contain"
-          src="/images/LMC_mainlogo.webp"
-          alt="LMC Logo"
-        />
-      </div>
-      {/* Header */}
-      <div className="text-center mb-4 border-b pb-4">
-        <div className="flex justify-center items-center gap-2 mb-2">
+        <div className="flex-1 flex justify-center items-center gap-6">
           <img
             src={mainlogo}
             alt="organization logo"
@@ -121,18 +115,24 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
           )}
         </div>
 
-        <h2 className="text-[#4A6FA1] text-[15px] font-bold tracking-[0.25em]">
-          HEALTH CENTRE
-        </h2>
+        {/* Second Logo */}
+        <div className="flex-1 flex justify-end">
+          <img
+            className="h-16 w-auto object-contain"
+            src="/images/LMC_mainlogo.webp"
+            alt="LMC Logo"
+          />
+        </div>
+      </div>
 
-        <p className="text-[10px] text-[#4A6FA1] mt-1">
+      <div className="text-center mb-4 border-b pb-4">
+        <h2 className="text-xl font-bold">HEALTH CENTRE</h2>
+
+        <p className="text-sm mt-1">
           {address} • Contact: {contact}
         </p>
       </div>
 
-      {/* <hr style={{ margin: "5px 0", borderColor: "#00397A" }} /> */}
-
-      {/* Basic */}
       <div>
         <b>Date:</b> {result}
       </div>
@@ -141,7 +141,7 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
         style={{
           display: "flex",
           justifyContent: "space-between",
-          margin: "20px 0",
+          margin: "10px 0",
         }}
       >
         <div>
@@ -365,7 +365,7 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
 
       {/* Signature */}
       <div
-        style={{ textAlign: "right", marginTop: "60px", fontWeight: "bold" }}
+        style={{ textAlign: "right", marginTop: "100px", fontWeight: "bold" }}
       >
         Doctor's Sign & Stamp
       </div>
@@ -379,7 +379,7 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
 });
 
 const sectionTitle = {
-  marginTop: "20px",
+  marginTop: "10px",
   marginBottom: "8px",
   fontSize: "15px",
   fontWeight: "bold",

@@ -55,18 +55,11 @@ const GRNFormCopy = () => {
 
       return;
     }
-    if (
-      activeStep === 2 &&
-      formik.values.items.length === 0
-    ) {
-      healthAlerts.warning(
-        "Please add at least one item"
-      );
+    if (activeStep === 2 && formik.values.items.length === 0) {
+      healthAlerts.warning("Please add at least one item");
 
       return;
     }
-
-
 
     setActiveStep((prev) => prev + 1);
   };
@@ -89,19 +82,11 @@ const GRNFormCopy = () => {
   const { data: Supplier, isLoading: SupplierLoading } =
     useGetComboQuery("mediciene-supplier");
   const validationSchema = Yup.object({
-    InvoiceDate: Yup.string().required(
-      "Invoice Date is required"
-    ),
+    InvoiceDate: Yup.string().required("Invoice Date is required"),
 
-    RecieptNo: Yup.string().required(
-      "Invoice No is required"
-    ),
+    RecieptNo: Yup.string().required("Invoice No is required"),
 
-    SupplierName: Yup.string().required(
-      "Supplier is required"
-    ),
-
-
+    SupplierName: Yup.string().required("Supplier is required"),
   });
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
 
@@ -122,11 +107,11 @@ const GRNFormCopy = () => {
 
   const hsnCodeOptions = HSNCode
     ? HSNCode.map((t) => ({
-      value: t.HSNID,
-      label: t.HSNCode,
-      CGST: t.CGST,
-      SGST: t.SGST,
-    }))
+        value: t.HSNID,
+        label: t.HSNCode,
+        CGST: t.CGST,
+        SGST: t.SGST,
+      }))
     : [];
 
   const SupplierOptions = Supplier
@@ -281,8 +266,7 @@ const GRNFormCopy = () => {
       // FreeRecvQty: editData.FreeRecvQty ?? 0,
       FreeRecvQty:
         editData.NoQtyperStrip > 0
-          ? Number(editData.FreeRecvQty || 0) /
-          Number(editData.NoQtyperStrip)
+          ? Number(editData.FreeRecvQty || 0) / Number(editData.NoQtyperStrip)
           : 0,
 
       CP: cleanNumber(editData.CP),
@@ -296,12 +280,10 @@ const GRNFormCopy = () => {
       HSNCode: editData.HSNCode ?? "",
       HSNID:
         editData.HSNID ||
-        hsnCodeOptions.find(
-          (h) => h.label === editData.HSNCode
-        )?.value ||
+        hsnCodeOptions.find((h) => h.label === editData.HSNCode)?.value ||
         "",
       items: [],
-      IssueQty: editData.IssueQty ?? 0
+      IssueQty: editData.IssueQty ?? 0,
     });
 
     setMedicineSearch(editData.ItemName ?? "");
@@ -440,7 +422,7 @@ const GRNFormCopy = () => {
     const requiredFields = [
       "ItemName",
       "BatchNo",
-      "MenufacturingDate",
+      // "MenufacturingDate",
       "ExpiryDate",
       "NoStrip",
       "NoQtyperStrip",
@@ -455,10 +437,7 @@ const GRNFormCopy = () => {
       formik.setFieldTouched(field, true, false);
 
       if (!v[field]) {
-        formik.setFieldError(
-          field,
-          `${field} is required`
-        );
+        formik.setFieldError(field, `${field} is required`);
       }
     });
 
@@ -467,9 +446,7 @@ const GRNFormCopy = () => {
     });
 
     if (hasErrors) {
-      healthAlerts.warning(
-        "Please fill all required item fields"
-      );
+      healthAlerts.warning("Please fill all required item fields");
 
       return;
     }
@@ -477,80 +454,64 @@ const GRNFormCopy = () => {
     if (
       v.MenufacturingDate &&
       v.ExpiryDate &&
-      new Date(v.MenufacturingDate) >
-      new Date(v.ExpiryDate)
+      new Date(v.MenufacturingDate) > new Date(v.ExpiryDate)
     ) {
-
       formik.setFieldError(
         "MenufacturingDate",
-        "Mfg Date cannot be greater than Expiry Date"
+        "Mfg Date cannot be greater than Expiry Date",
       );
 
       formik.setFieldError(
         "ExpiryDate",
-        "Expiry Date cannot be less than Mfg Date"
+        "Expiry Date cannot be less than Mfg Date",
       );
 
       return;
     }
     // Expired medicine check
-if (
-  v.ExpiryDate &&
-  new Date(v.ExpiryDate) < new Date(new Date().toDateString())
-) {
-  formik.setFieldError(
-    "ExpiryDate",
-    "Expired medicine cannot be added"
-  );
+    if (
+      v.ExpiryDate &&
+      new Date(v.ExpiryDate) < new Date(new Date().toDateString())
+    ) {
+      formik.setFieldError("ExpiryDate", "Expired medicine cannot be added");
 
-  healthAlerts.warning(
-    "Expired medicine cannot be added"
-  );
+      healthAlerts.warning("Expired medicine cannot be added");
 
-  return;
-}
+      return;
+    }
 
-if (v.ExpiryDate) {
-  const today = new Date();
-  const expiry = new Date(v.ExpiryDate);
+    if (v.ExpiryDate) {
+      const today = new Date();
+      const expiry = new Date(v.ExpiryDate);
 
- 
-  today.setHours(0, 0, 0, 0);
-  expiry.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      expiry.setHours(0, 0, 0, 0);
 
-  const milliseconds = expiry.getTime() - today.getTime();
-  const diffInDays = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
-  if (diffInDays <= 90) {
-    formik.setFieldError(
-      "ExpiryDate",
-      `Medicine will expire in ${diffInDays} days`
-    );
+      const milliseconds = expiry.getTime() - today.getTime();
+      const diffInDays = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
+      if (diffInDays <= 90) {
+        formik.setFieldError(
+          "ExpiryDate",
+          `Medicine will expire in ${diffInDays} days`,
+        );
 
-    healthAlerts.warning(
-      `Medicine will expire in ${diffInDays} days. Item cannot be added.`
-    );
+        healthAlerts.warning(
+          `Medicine will expire in ${diffInDays} days. Item cannot be added.`,
+        );
 
-    return;
-  }
-}
-// CP should not be greater than MRP
-if (Number(v.CP) > Number(v.MRP)) {
-  formik.setFieldError(
-    "CP",
-    "CP cannot be greater than MRP"
-  );
+        return;
+      }
+    }
+    // CP should not be greater than MRP
+    if (Number(v.CP) > Number(v.MRP)) {
+      formik.setFieldError("CP", "CP cannot be greater than MRP");
 
-  formik.setFieldError(
-    "MRP",
-    "MRP must be greater than or equal to CP"
-  );
+      formik.setFieldError("MRP", "MRP must be greater than or equal to CP");
 
-  healthAlerts.warning(
-    "CP cannot be greater than MRP"
-  );
+      healthAlerts.warning("CP cannot be greater than MRP");
 
-  return;
-}
+      return;
+    }
 
     const recvQty = Number(v.RecvQty || 0);
     const qtyPerStrip = Number(v.NoQtyperStrip || 0);
@@ -590,11 +551,8 @@ if (Number(v.CP) > Number(v.MRP)) {
       ItemName: v.ItemName,
       BatchNo: v.BatchNo,
       HSNCode:
-        hsnCodeOptions.find(
-          (h) =>
-            h.value.toString() ===
-            v.HSNID.toString()
-        )?.label || "",
+        hsnCodeOptions.find((h) => h.value.toString() === v.HSNID.toString())
+          ?.label || "",
 
       HSNID: v.HSNID,
       MenufacturingDate: v.MenufacturingDate,
@@ -708,8 +666,9 @@ if (Number(v.CP) > Number(v.MRP)) {
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                  }`}
+                className={`h-2 w-12 rounded-full ${
+                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                }`}
               />
             ))}
           </div>
@@ -769,9 +728,9 @@ if (Number(v.CP) > Number(v.MRP)) {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div className="flex flex-col">
                     <label className="text-sm font-medium text-gray-700 mb-1">
-                      Invoice Date  <span className="text-red-500">*</span>
+                      Invoice Date <span className="text-red-500">*</span>
                     </label>
-                    
+
                     <DatePicker
                       selected={
                         formik.values.InvoiceDate
@@ -781,7 +740,7 @@ if (Number(v.CP) > Number(v.MRP)) {
                       onChange={(date) => {
                         formik.setFieldValue(
                           "InvoiceDate",
-                          formatDateOnly(date)
+                          formatDateOnly(date),
                         );
                       }}
                       dateFormat="dd/MM/yyyy"
@@ -795,11 +754,12 @@ if (Number(v.CP) > Number(v.MRP)) {
                       className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
     outline-none focus:ring-2 focus:ring-sky-400"
                     />
-                    {formik.touched.InvoiceDate && formik.errors.InvoiceDate && (
-    <p className="text-red-500 text-xs mt-1">
-      {formik.errors.InvoiceDate}
-    </p>
-  )}
+                    {formik.touched.InvoiceDate &&
+                      formik.errors.InvoiceDate && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {formik.errors.InvoiceDate}
+                        </p>
+                      )}
                   </div>
                   <Input
                     label="Invoice No"
@@ -858,12 +818,8 @@ if (Number(v.CP) > Number(v.MRP)) {
                         setSelectedMedicine(null);
                         formik.setFieldValue("ItemName", e.target.value);
                       }}
-                      error={
-                        formik.touched.ItemName &&
-                        formik.errors.ItemName
-                      }
+                      error={formik.touched.ItemName && formik.errors.ItemName}
                       autoComplete="off"
-
                     />
 
                     {!isEditMode &&
@@ -916,7 +872,8 @@ if (Number(v.CP) > Number(v.MRP)) {
                   />
                   <div className="flex flex-col">
                     <label className="text-sm font-medium text-gray-700 mb-1">
-                      Mfg Date <span className="text-red-500">*</span>
+                      Mfg Date
+                      {/*<span className="text-red-500">*</span> */}
                     </label>
 
                     <DatePicker
@@ -928,7 +885,7 @@ if (Number(v.CP) > Number(v.MRP)) {
                       onChange={(date) => {
                         formik.setFieldValue(
                           "MenufacturingDate",
-                          formatDateOnly(date)
+                          formatDateOnly(date),
                         );
                       }}
                       dateFormat="dd/MM/yyyy"
@@ -944,10 +901,10 @@ if (Number(v.CP) > Number(v.MRP)) {
     outline-none focus:ring-2 focus:ring-sky-400"
                     />
                     {formik.errors.MenufacturingDate && (
-  <p className="text-red-500 text-xs mt-1">
-    {formik.errors.MenufacturingDate}
-  </p>
-)}
+                      <p className="text-red-500 text-xs mt-1">
+                        {formik.errors.MenufacturingDate}
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-col">
                     <label className="text-sm font-medium text-gray-700 mb-1">
@@ -963,7 +920,7 @@ if (Number(v.CP) > Number(v.MRP)) {
                       onChange={(date) => {
                         formik.setFieldValue(
                           "ExpiryDate",
-                          formatDateOnly(date)
+                          formatDateOnly(date),
                         );
                       }}
                       dateFormat="dd/MM/yyyy"
@@ -978,10 +935,10 @@ if (Number(v.CP) > Number(v.MRP)) {
     outline-none focus:ring-2 focus:ring-sky-400"
                     />
                     {formik.errors.ExpiryDate && (
-  <p className="text-red-500 text-xs mt-1">
-    {formik.errors.ExpiryDate}
-  </p>
-)}
+                      <p className="text-red-500 text-xs mt-1">
+                        {formik.errors.ExpiryDate}
+                      </p>
+                    )}
                   </div>
                   <NumericInput
                     label="No Unit / Strip"
@@ -1021,8 +978,6 @@ if (Number(v.CP) > Number(v.MRP)) {
                   />
                   <NumericInput
                     label="Discount %"
-                    
-                    
                     {...formik.getFieldProps("DiscountPCperitem")}
                   />
                   <Select
@@ -1500,16 +1455,10 @@ if (Number(v.CP) > Number(v.MRP)) {
               </section>
             )}
             <div className="flex justify-between items-center pt-6 border-t">
-
               {/* LEFT SIDE */}
               <div className="flex gap-3">
-
                 {activeStep > 1 && (
-                  <Button
-                    type="button"
-                    variant="gray"
-                    onClick={prevStep}
-                  >
+                  <Button type="button" variant="gray" onClick={prevStep}>
                     Back
                   </Button>
                 )}
@@ -1518,7 +1467,6 @@ if (Number(v.CP) > Number(v.MRP)) {
                   type="button"
                   variant="gray"
                   onClick={() => {
-
                     if (activeStep === 1) {
                       formik.setValues({
                         ...formik.values,
@@ -1575,14 +1523,9 @@ if (Number(v.CP) > Number(v.MRP)) {
                 </Button>
               </div>
 
-
               <div>
                 {activeStep < 3 ? (
-                  <Button
-                    type="button"
-                    variant="sky"
-                    onClick={nextStep}
-                  >
+                  <Button type="button" variant="sky" onClick={nextStep}>
                     Continue
                   </Button>
                 ) : (
