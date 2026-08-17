@@ -28,7 +28,13 @@ const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
-  tagTypes: ["Bill", "Inventory", "Patient", "Prescription", "PackageManagement",],
+  tagTypes: [
+    "Bill",
+    "Inventory",
+    "Patient",
+    "Prescription",
+    "PackageManagement",
+  ],
   endpoints: (build) => ({
     login: build.mutation({
       query: (body) => ({
@@ -197,12 +203,12 @@ export const api = createApi({
       }),
     }),
     getServiceMasters: build.query({
-      query: ({serviceName,patientType}) => ({
+      query: ({ serviceName, patientType }) => ({
         url: "/opd-service/service-master",
         method: "GET",
         params: {
           ServiceName: serviceName || "",
-          PatientType: patientType
+          PatientType: patientType,
         },
       }),
     }),
@@ -1856,68 +1862,74 @@ export const api = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
-  
 
-// createPackage: build.mutation({
-//   query: (body) => ({
-//     url: "/package-management/add",
-//     method: "POST",
-//     body,
-//   }),
-//   invalidatesTags: ["PackageManagement"],
-// }),
-createPackage: build.mutation({
-  query: (data) => ({
-    url: "/package-management",
-    method: "POST",
-    data,
-  }),
-  invalidatesTags: ["PackageManagement"],
-}),
+    // createPackage: build.mutation({
+    //   query: (body) => ({
+    //     url: "/package-management/add",
+    //     method: "POST",
+    //     body,
+    //   }),
+    //   invalidatesTags: ["PackageManagement"],
+    // }),
+    createPackage: build.mutation({
+      query: (data) => ({
+        url: "/package-management",
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["PackageManagement"],
+    }),
 
-getPackageList: build.query({
-  query: (params) => ({
-    url: "/package-management",
-    method: "GET",
-    params,
-  }),
-  providesTags: ["PackageManagement"],
-}),
+    getPackageList: build.query({
+      query: (params) => ({
+        url: "/package-management",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["PackageManagement"],
+    }),
 
-getPackageDetails: build.query({
-  query: ({ id, ...params }) => ({
-    url: `/package-management/${id}`,
-    method: "GET",
-    params,
-  }),
-}),
+    getPackageDetails: build.query({
+      query: ({ id, ...params }) => ({
+        url: `/package-management/${id}`,
+        method: "GET",
+        params,
+      }),
+    }),
 
-updatePackage: build.mutation({
-  query: ({ id, ...data }) => ({
-    url: `/package-management/${id}`,
-    method: "PUT",
-    data,
-  }),
-  invalidatesTags: ["PackageManagement"],
-}),
+    updatePackage: build.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/package-management/${id}`,
+        method: "PUT",
+        data,
+      }),
+      invalidatesTags: ["PackageManagement"],
+    }),
 
-deletePackage: build.mutation({
-  query: ({ id, ...data }) => ({
-    url: `/package-management/${id}`,
-    method: "DELETE",
-    data,
-  }),
-  invalidatesTags: ["PackageManagement"],
-}),
-getCentersByTenant: build.query({
-  query: (tenantId) => ({
-    url: `${VITE_AUTH_URL}tenants/centers/by-tenant`,
-    method: "GET",
-    params: {
-      tenantId,
-    },
-  }),
-}),
+    deletePackage: build.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/package-management/${id}`,
+        method: "DELETE",
+        data,
+      }),
+      invalidatesTags: ["PackageManagement"],
+    }),
+    getCentersByTenant: build.query({
+      query: (tenantId) => ({
+        url: `${VITE_AUTH_URL}tenants/centers/by-tenant`,
+        method: "GET",
+        params: {
+          tenantId,
+        },
+      }),
+    }),
+    getPatientsTrend: build.query({
+      query: () => ({
+        url: "/patient/trend",
+        method: "get",
+      }),
+      providesTags: ["PatientTrend"],
+    }),
   }),
 });
 
@@ -2129,4 +2141,5 @@ export const {
   useUpdatePackageMutation,
   useDeletePackageMutation,
   useGetCentersByTenantQuery,
+  useGetPatientsTrendQuery
 } = api;

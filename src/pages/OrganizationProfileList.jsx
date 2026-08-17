@@ -156,7 +156,6 @@ const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/+$/, '');
       });
     }
   };
-console.log("Imga",BASE_URL)
   // ---------------- Columns ----------------
   const columns = [
     {
