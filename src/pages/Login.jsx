@@ -261,7 +261,6 @@
 // };
 
 // export default Login;
-
 import React, { useState } from "react";
 import { Button, Col, Form, Input, Row, Modal, Radio } from "antd";
 import {
@@ -324,7 +323,7 @@ const Login = () => {
 
         .login-container {
           min-height: 100vh;
-          background: #F4F9F7;
+          background: linear-gradient(165deg, #EAF6F2 0%, #FBFEFD 55%);
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
@@ -361,19 +360,30 @@ const Login = () => {
         }
 
         .brand-mark img {
-          width: 34px;
-          height: 34px;
-          border-radius: 8px;
+          width: 52px;
+          height: 52px;
+          border-radius: 10px;
           background: rgba(255,255,255,0.9);
-          padding: 4px;
+          padding: 6px;
+          object-fit: contain;
         }
 
         .brand-mark span {
           font-family: 'IBM Plex Mono', monospace;
-          font-size: 12px;
+          font-size: 13px;
           letter-spacing: 0.14em;
           text-transform: uppercase;
           color: #BFE6DB;
+          display: block;
+        }
+
+        .brand-tagline {
+          font-family: 'Inter', sans-serif;
+          font-size: 12px;
+          font-style: italic;
+          color: #8FCABB;
+          margin: 3px 0 0;
+          letter-spacing: 0.01em;
         }
 
         .brand-hero {
@@ -653,8 +663,13 @@ const Login = () => {
         <Col md={13} xs={24}>
           <div className="brand-panel">
             <div className="brand-mark">
-              <img src="/images/LMC_logo.webp" alt="LMC Health logo" />
-              <span>LMC Health</span>
+              <img src="/images/LMC_logo.webp" alt="Last Mile Care logo" />
+              <div>
+                <span>Last Mile Care</span>
+                <p className="brand-tagline">
+                  Built for the workers between employers.
+                </p>
+              </div>
             </div>
 
             <div className="brand-hero">
