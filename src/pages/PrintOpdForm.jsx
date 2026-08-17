@@ -90,40 +90,46 @@ const PrintOpdForm = forwardRef(({ data }, ref) => {
         Last Mile Care Pvt Ltd
       </div>
 
-      <div className="flex justify-between items-center mb-3">
-        <img
-          className="h-16 w-auto object-contain"
-          src="/images/LMC_1care_logo.webp"
-          alt="1Care Logo"
-        />
-
-        <img
-          className="h-16 w-auto object-contain"
-          src="/images/LMC_mainlogo.webp"
-          alt="LMC Logo"
-        />
-      </div>
       <div className="text-center mb-4 border-b pb-4">
-        <div className="flex justify-center items-center gap-2 mb-2">
-          <img
-            src={mainlogo}
-            alt="organization logo"
-            className="h-16 w-auto object-contain"
-            onError={(e) => {
-              e.currentTarget.src = "/images/LMC_logo.webp";
-            }}
-          />
-
-          {secondaryLogo && (
+        <div className="flex items-center justify-between mb-4 ">
+          <div className="flex-1 flex justify-start">
             <img
-              src={secondaryLogo}
-              alt="secondary logo"
+              className="h-16 w-auto object-contain"
+              src="/images/LMC_1care_logo.webp"
+              alt="1Care Logo"
+            />
+          </div>
+
+          <div className="flex-1 flex justify-center items-center gap-6">
+            <img
+              src={mainlogo}
+              alt="organization logo"
               className="h-16 w-auto object-contain"
               onError={(e) => {
-                e.currentTarget.style.display = "none";
+                e.currentTarget.src = "/images/LMC_logo.webp";
               }}
             />
-          )}
+
+            {secondaryLogo && (
+              <img
+                src={secondaryLogo}
+                alt="secondary logo"
+                className="h-16 w-auto object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            )}
+          </div>
+
+          {/* Second Logo */}
+          <div className="flex-1 flex justify-end">
+            <img
+              className="h-16 w-auto object-contain"
+              src="/images/LMC_mainlogo.webp"
+              alt="LMC Logo"
+            />
+          </div>
         </div>
 
         <h2 className="text-[#4A6FA1] text-[15px] font-bold tracking-[0.25em]">

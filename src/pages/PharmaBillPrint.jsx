@@ -54,10 +54,8 @@ const PharmaInvoicePrint = forwardRef(({ data }, ref) => {
     });
   }
   const billDate = formatToIST(header.AddedDate);
-  // const add = import.meta.env.VITE_CENTER_ADD;
-  // const mobile = import.meta.env.VITE_CENTER_MOBILE;
   const gst_number = profile?.gst_number || "N/A";
-const licanse_no = profile?.licance_no || "N/A";
+  const licanse_no = profile?.licance_no || "N/A";
   const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
   const mainlogo = profile?.logo
     ? `${BASE_URL}${profile.logo}`
@@ -99,23 +97,16 @@ const licanse_no = profile?.licance_no || "N/A";
       >
         Last Mile Care Pvt Ltd
       </div>
-     <div className="flex justify-between items-center mb-3">
- 
-  <img
-    className="h-16 w-auto object-contain"
-    src="/images/LMC_1care_logo.webp"
-    alt="1Care Logo"
-  />
+      <div className="flex items-center justify-between mb-4 ">
+        <div className="flex-1 flex justify-start">
+          <img
+            className="h-16 w-auto object-contain"
+            src="/images/LMC_1care_logo.webp"
+            alt="1Care Logo"
+          />
+        </div>
 
- 
-  <img
-    className="h-16 w-auto object-contain"
-    src="/images/LMC_mainlogo.webp"
-    alt="LMC Logo"
-  />
-</div>
-      <div className="text-center mb-4 border-b pb-4">
-        <div className="flex justify-center items-center gap-2 mb-2">
+        <div className="flex-1 flex justify-center items-center gap-6">
           <img
             src={mainlogo}
             alt="organization logo"
@@ -137,11 +128,20 @@ const licanse_no = profile?.licance_no || "N/A";
           )}
         </div>
 
-        <h2 className="text-[#4A6FA1] text-[15px] font-bold tracking-[0.25em]">
-          HEALTH CENTRE
-        </h2>
+        {/* Second Logo */}
+        <div className="flex-1 flex justify-end">
+          <img
+            className="h-16 w-auto object-contain"
+            src="/images/LMC_mainlogo.webp"
+            alt="LMC Logo"
+          />
+        </div>
+      </div>
 
-        <p className="text-[10px] text-[#4A6FA1] mt-1">
+      <div className="text-center mb-4 border-b pb-4">
+        <h2 className="text-xl font-bold">HEALTH CENTRE</h2>
+
+        <p className="text-sm mt-1">
           {address} • Contact: {contact}
         </p>
       </div>

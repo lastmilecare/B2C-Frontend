@@ -418,6 +418,20 @@ const BillingListCopy = () => {
             Total Discount (Rs.) :{" "}
             <span className="font-semibold">{data?.totalDiscount || 0}</span>
           </span>
+          <span>
+            Cost Free (Rs.) :{" "}
+            <span className="font-semibold">{data?.costFreeTotal || 0}</span>
+          </span>
+
+          <span>
+            Cash Payment (Rs.) :{" "}
+            <span className="font-semibold">{data?.cashTotal || 0}</span>
+          </span>
+
+          <span>
+            Card/Online Payment (Rs.) :{" "}
+            <span className="font-semibold">{data?.onlineTotal || 0}</span>
+          </span>
         </div>
       </section>
       {printRow && (

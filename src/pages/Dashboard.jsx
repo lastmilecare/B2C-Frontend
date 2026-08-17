@@ -27,9 +27,7 @@ const AppDashboard = () => {
     return permissions?.includes(permission) ?? false;
   };
   const getDisabledClass = (permission) =>
-  can(permission)
-    ? ""
-    : "opacity-50 cursor-not-allowed pointer-events-none";
+    can(permission) ? "" : "opacity-50 cursor-not-allowed pointer-events-none";
   const { data: patientData } = useGetPatientsQuery({ page: 1, limit: 100 });
   const { data: opdData } = useGetOpdBillingQuery({ page: 1, limit: 100 });
   const { data: prescriptionData } = useGetPrescriptionsListQuery({
@@ -60,6 +58,8 @@ const AppDashboard = () => {
   const recentPatients = patients.slice(0, 5);
   const username = cookie.get("name") || "User";
   const role = cookie.get("role") || "N/A";
+  const tenantId = cookie.get("tenantId") || "N/A";
+  const tenantName = tenantId == 2 ? "Amp" : "Honda";
   const lowStockItems = lowStockData?.data || [];
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
@@ -71,113 +71,112 @@ const AppDashboard = () => {
   );
   /* ---------------- MODULES ---------------- */
 
- 
   const modules = [
-  {
-    title: "Patients",
-    permission: "read:patient_registration",
-    icon: <UserIcon className="w-6" />,
-    items: [
-      {
-        name: "Patient Registration",
-        path: "/patient-registration",
-        permission: "create:patient_registration",
-      },
-      {
-        name: "Patient List",
-        path: "/patient-list",
-        permission: "read:patient_list",
-      },
-    ],
-  },
+    {
+      title: "Patients",
+      permission: "read:patient_registration",
+      icon: <UserIcon className="w-6" />,
+      items: [
+        {
+          name: "Patient Registration",
+          path: "/patient-registration",
+          permission: "create:patient_registration",
+        },
+        {
+          name: "Patient List",
+          path: "/patient-list",
+          permission: "read:patient_list",
+        },
+      ],
+    },
 
-  {
-    title: "OPD",
-    permission: "read:opd_form",
-    icon: <ClipboardDocumentIcon className="w-6" />,
-    items: [
-      {
-        name: "OPD Billing",
-        path: "/opd-form",
-        permission: "create:opd_form",
-      },
-      {
-        name: "OPD List",
-        path: "/opd-list",
-        permission: "read:opd_list",
-      },
-    ],
-  },
+    {
+      title: "OPD",
+      permission: "read:opd_form",
+      icon: <ClipboardDocumentIcon className="w-6" />,
+      items: [
+        {
+          name: "OPD Billing",
+          path: "/opd-form",
+          permission: "create:opd_form",
+        },
+        {
+          name: "OPD List",
+          path: "/opd-list",
+          permission: "read:opd_list",
+        },
+      ],
+    },
 
-  {
-    title: "Prescription",
-    permission: "read:prescription_form",
-    icon: <DocumentTextIcon className="w-6" />,
-    items: [
-      {
-        name: "Prescription Form",
-        path: "/prescription-form",
-        permission: "create:prescription_form",
-      },
-      {
-        name: "Prescription List",
-        path: "/prescription-list",
-        permission: "read:prescription_list",
-      },
-    ],
-  },
+    {
+      title: "Prescription",
+      permission: "read:prescription_form",
+      icon: <DocumentTextIcon className="w-6" />,
+      items: [
+        {
+          name: "Prescription Form",
+          path: "/prescription-form",
+          permission: "create:prescription_form",
+        },
+        {
+          name: "Prescription List",
+          path: "/prescription-list",
+          permission: "read:prescription_list",
+        },
+      ],
+    },
 
-  {
-    title: "Inventory",
-    permission: "read:sales_record",
-    icon: <ArchiveBoxIcon className="w-6" />,
-    items: [
-      {
-        name: "Purchase Entry",
-        path: "/purchased-entry",
-        permission: "create:purchased_entry",
-      },
-      {
-        name: "Medicine Billing",
-        path: "/billing",
-        permission: "create:billing",
-      },
-      {
-        name: "Expiry Items",
-        path: "/expiry-items",
-        permission: "read:expiry_items",
-      },
-      {
-        name: "Camp Billing",
-        path: "/camp-billing",
-        permission: "create:camp_billing",
-      },
-      {
-        name: "Sales Record",
-        path: "/sales-record",
-        permission: "read:sales_record",
-      },
-    ],
-  },
+    {
+      title: "Inventory",
+      permission: "read:sales_record",
+      icon: <ArchiveBoxIcon className="w-6" />,
+      items: [
+        {
+          name: "Purchase Entry",
+          path: "/purchased-entry",
+          permission: "create:purchased_entry",
+        },
+        {
+          name: "Medicine Billing",
+          path: "/billing",
+          permission: "create:billing",
+        },
+        {
+          name: "Expiry Items",
+          path: "/expiry-items",
+          permission: "read:expiry_items",
+        },
+        {
+          name: "Camp Billing",
+          path: "/camp-billing",
+          permission: "create:camp_billing",
+        },
+        {
+          name: "Sales Record",
+          path: "/sales-record",
+          permission: "read:sales_record",
+        },
+      ],
+    },
 
-  {
-    title: "Staff",
-    permission: "read:staff_form",
-    icon: <UserGroupIcon className="w-6" />,
-    items: [
-      {
-        name: "Staff",
-        path: "/staff-form",
-        permission: "read:staff_form",
-      },
-      {
-        name: "Staff List",
-        path: "/staff-list",
-        permission: "read:staff_form",
-      },
-    ],
-  },
-];
+    {
+      title: "Staff",
+      permission: "read:staff_form",
+      icon: <UserGroupIcon className="w-6" />,
+      items: [
+        {
+          name: "Staff",
+          path: "/staff-form",
+          permission: "read:staff_form",
+        },
+        {
+          name: "Staff List",
+          path: "/staff-list",
+          permission: "read:staff_form",
+        },
+      ],
+    },
+  ];
   if (!can("read:dashboard")) {
     return <Navigate to="/unauthorized" replace />;
   }
@@ -191,7 +190,7 @@ const AppDashboard = () => {
       <div className="bg-gradient-to-r from-emerald-600 via-emerald-350 to-emerald-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
         <div>
           <h2 className="text-2xl font-bold">
-            Welcome back, {username} ({role}) 👋
+            Welcome back, {username} ({`${role} of ${tenantName}` }) 👋
           </h2>
 
           <p className="opacity-90">LMC Healthcare Management System</p>
@@ -199,25 +198,23 @@ const AppDashboard = () => {
 
         <div className="text-right">
           <button
-  disabled={!can("read:attendance")}
-  onClick={() => navigate("/attendance")}
-  className={`px-5 py-2 rounded-lg font-semibold
+            disabled={!can("read:attendance")}
+            onClick={() => navigate("/attendance")}
+            className={`px-5 py-2 rounded-lg font-semibold
     ${
       can("read:attendance")
         ? "bg-white text-emerald-700"
         : "bg-gray-300 text-gray-500 cursor-not-allowed"
     }
   `}
->
-  Attendance
-</button>
+          >
+            Attendance
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-4 gap-6 overflow-visible">
-        {modules
-  
-  .map((m) => (
+        {modules.map((m) => (
           <motion.div
             whileHover={{ y: -6 }}
             key={m.title}
@@ -232,23 +229,22 @@ const AppDashboard = () => {
             </div>
 
             <div className="absolute left-0 top-16 hidden group-hover:block bg-white shadow-xl rounded-xl mt-2 w-56 p-4 z-[999]">
-              {m.items
-  .map((item) => (
-               <div
-  key={item.name}
-  onClick={() => {
-    if (can(item.permission)) {
-      navigate(item.path);
-    }
-  }}
-  className={`text-sm py-2
+              {m.items.map((item) => (
+                <div
+                  key={item.name}
+                  onClick={() => {
+                    if (can(item.permission)) {
+                      navigate(item.path);
+                    }
+                  }}
+                  className={`text-sm py-2
     ${
       can(item.permission)
         ? "hover:text-emerald-600 cursor-pointer"
         : "text-gray-400 cursor-not-allowed"
     }
   `}
->
+                >
                   {item.name}
                 </div>
               ))}
@@ -259,75 +255,74 @@ const AppDashboard = () => {
 
       <div className="grid grid-cols-4 gap-6">
         <motion.div
-  whileHover={can("read:patient_list") ? { scale: 1.03 } : {}}
-  className={`rounded-xl p-6 shadow-sm
+          whileHover={can("read:patient_list") ? { scale: 1.03 } : {}}
+          className={`rounded-xl p-6 shadow-sm
     ${
       can("read:patient_list")
         ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
         : "bg-gray-100 border border-gray-300 text-gray-400"
     }
   `}
->
-  <p className="text-sm">Today's Patients</p>
+        >
+          <p className="text-sm">Today's Patients</p>
 
-  <h2 className="text-3xl font-bold">
-    {can("read:patient_list") ? todayPatients : "--"}
-  </h2>
-</motion.div>
-<motion.div
-  whileHover={can("read:opd_list") ? { scale: 1.03 } : {}}
-  className={`rounded-xl p-6 shadow-sm
+          <h2 className="text-3xl font-bold">
+            {can("read:patient_list") ? todayPatients : "--"}
+          </h2>
+        </motion.div>
+        <motion.div
+          whileHover={can("read:opd_list") ? { scale: 1.03 } : {}}
+          className={`rounded-xl p-6 shadow-sm
     ${
       can("read:opd_list")
         ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
         : "bg-gray-100 border border-gray-300 text-gray-400"
     }
   `}
->
-  <p className="text-sm">Today's OPD</p>
+        >
+          <p className="text-sm">Today's OPD</p>
 
-  <h2 className="text-3xl font-bold">
-    {can("read:opd_list") ? todayOpd : "--"}
-  </h2>
-</motion.div>
-<motion.div
-  whileHover={can("read:sales_record") ? { scale: 1.03 } : {}}
-  className={`rounded-xl p-6 shadow-sm
+          <h2 className="text-3xl font-bold">
+            {can("read:opd_list") ? todayOpd : "--"}
+          </h2>
+        </motion.div>
+        <motion.div
+          whileHover={can("read:sales_record") ? { scale: 1.03 } : {}}
+          className={`rounded-xl p-6 shadow-sm
     ${
       can("read:sales_record")
         ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
         : "bg-gray-100 border border-gray-300 text-gray-400"
     }
   `}
->
-  <p className="text-sm">Low Stock</p>
+        >
+          <p className="text-sm">Low Stock</p>
 
-  <h2 className="text-3xl font-bold">
-  {can("read:sales_record")
-    ? stockLoading
-      ? "..."
-      : lowStockItems.length
-    : "--"}
-</h2>
-</motion.div>
-<motion.div
-  whileHover={can("read:prescription_list") ? { scale: 1.03 } : {}}
-  className={`rounded-xl p-6 shadow-sm
+          <h2 className="text-3xl font-bold">
+            {can("read:sales_record")
+              ? stockLoading
+                ? "..."
+                : lowStockItems.length
+              : "--"}
+          </h2>
+        </motion.div>
+        <motion.div
+          whileHover={can("read:prescription_list") ? { scale: 1.03 } : {}}
+          className={`rounded-xl p-6 shadow-sm
     ${
       can("read:prescription_list")
         ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
         : "bg-gray-100 border border-gray-300 text-gray-400"
     }
   `}
->
-  <p className="text-sm">Today's Prescription</p>
+        >
+          <p className="text-sm">Today's Prescription</p>
 
-  <h2 className="text-3xl font-bold">
-    {can("read:prescription_list") ? todayPrescription : "--"}
-  </h2>
-</motion.div>
+          <h2 className="text-3xl font-bold">
+            {can("read:prescription_list") ? todayPrescription : "--"}
+          </h2>
+        </motion.div>
 
-       
         {/* {can("read:sales_record") && (
         <motion.div
           whileHover={{ scale: 1.03 }}
@@ -349,7 +344,7 @@ const AppDashboard = () => {
 
           <h2 className="text-3xl font-bold">{todayPrescription}</h2>
         </motion.div>
-        )} */} 
+        )} */}
       </div>
 
       {/* <div className="grid grid-cols-4 gap-6">
@@ -390,88 +385,85 @@ const AppDashboard = () => {
 
             </div> */}
 
-   <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-6">
+        {/* Recent Patients */}
+        <div
+          className={`bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6 ${
+            !can("read:patient_list") ? "opacity-50" : ""
+          }`}
+        >
+          <h3 className="font-semibold mb-4">Recent Patients</h3>
 
-  {/* Recent Patients */}
-  <div
-    className={`bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6 ${
-      !can("read:patient_list") ? "opacity-50" : ""
-    }`}
-  >
-    <h3 className="font-semibold mb-4">Recent Patients</h3>
-
-    {can("read:patient_list") ? (
-      <div className="space-y-2 text-sm">
-        {recentPatients.map((p) => (
-          <div key={p.id} className="flex justify-between">
-            <span>{p.name}</span>
-            <span className="text-gray-400">
-              {new Date(p.createdAt).toLocaleDateString("en-GB")}
-            </span>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <div className="flex items-center justify-center h-40 text-gray-500 font-medium">
-        Access Denied
-      </div>
-    )}
-  </div>
-
-  {/* Low Stock Medicines */}
-  <div
-    className={`bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6 ${
-      !can("read:sales_record") ? "opacity-50" : ""
-    }`}
-  >
-    <h3 className="font-semibold mb-4">Low Stock Medicines</h3>
-
-    {can("read:sales_record") ? (
-      <>
-        <div className="space-y-2 text-sm">
-          {stockLoading ? (
-            <p>Loading...</p>
-          ) : lowStockItems.length === 0 ? (
-            <p>No low stock items</p>
+          {can("read:patient_list") ? (
+            <div className="space-y-2 text-sm">
+              {recentPatients.map((p) => (
+                <div key={p.id} className="flex justify-between">
+                  <span>{p.name}</span>
+                  <span className="text-gray-400">
+                    {new Date(p.createdAt).toLocaleDateString("en-GB")}
+                  </span>
+                </div>
+              ))}
+            </div>
           ) : (
-            paginatedItems.map((item) => (
-              <div key={item.ID} className="flex justify-between">
-                <span>{item.ItemName}</span>
-                <span className="text-red-500 font-semibold">
-                  {item.BalQty} left
-                </span>
-              </div>
-            ))
+            <div className="flex items-center justify-center h-40 text-gray-500 font-medium">
+              Access Denied
+            </div>
           )}
         </div>
 
-        <div className="flex justify-between mt-4">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Prev
-          </button>
+        {/* Low Stock Medicines */}
+        <div
+          className={`bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6 ${
+            !can("read:sales_record") ? "opacity-50" : ""
+          }`}
+        >
+          <h3 className="font-semibold mb-4">Low Stock Medicines</h3>
 
-          <button
-            disabled={startIndex + itemsPerPage >= lowStockItems.length}
-            onClick={() => setPage(page + 1)}
-            className="px-3 py-1 bg-emerald-500 text-white rounded disabled:opacity-50"
-          >
-            Next
-          </button>
+          {can("read:sales_record") ? (
+            <>
+              <div className="space-y-2 text-sm">
+                {stockLoading ? (
+                  <p>Loading...</p>
+                ) : lowStockItems.length === 0 ? (
+                  <p>No low stock items</p>
+                ) : (
+                  paginatedItems.map((item) => (
+                    <div key={item.ID} className="flex justify-between">
+                      <span>{item.ItemName}</span>
+                      <span className="text-red-500 font-semibold">
+                        {item.BalQty} left
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="flex justify-between mt-4">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                  className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+                >
+                  Prev
+                </button>
+
+                <button
+                  disabled={startIndex + itemsPerPage >= lowStockItems.length}
+                  onClick={() => setPage(page + 1)}
+                  className="px-3 py-1 bg-emerald-500 text-white rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-40 text-gray-500 font-medium">
+              Access Denied
+            </div>
+          )}
         </div>
-      </>
-    ) : (
-      <div className="flex items-center justify-center h-40 text-gray-500 font-medium">
-        Access Denied
       </div>
-    )}
-  </div>
-
-</div>
-          
     </motion.div>
   );
 };

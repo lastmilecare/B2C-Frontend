@@ -309,60 +309,54 @@ const InvoiceTemplate = forwardRef(({ data }, ref) => {
               pb-2
             "
           >
-            <div
-              className="
-                flex
-                justify-center
-                items-center
-                gap-2
-                mb-0.5
-              "
-            >
-              <img
-                src={mainlogo}
-                alt="Organization Logo"
-                className="h-10 w-auto object-contain"
-                onError={(e) => {
-                  e.currentTarget.src = "/images/LMC_logo.webp";
-                }}
-              />
-
-              {secondaryLogo && (
+            <div className="flex items-center justify-between mb-4 ">
+              <div className="flex-1 flex justify-start">
                 <img
-                  src={secondaryLogo}
-                  alt="Secondary Logo"
-                  className="h-10 w-auto object-contain"
+                  className="h-16 w-auto object-contain"
+                  src="/images/LMC_1care_logo.webp"
+                  alt="1Care Logo"
+                />
+              </div>
+
+              <div className="flex-1 flex justify-center items-center gap-6">
+                <img
+                  src={mainlogo}
+                  alt="organization logo"
+                  className="h-16 w-auto object-contain"
                   onError={(e) => {
-                    e.currentTarget.style.display = "none";
+                    e.currentTarget.src = "/images/LMC_logo.webp";
                   }}
                 />
-              )}
+
+                {secondaryLogo && (
+                  <img
+                    src={secondaryLogo}
+                    alt="secondary logo"
+                    className="h-16 w-auto object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Second Logo */}
+              <div className="flex-1 flex justify-end">
+                <img
+                  className="h-16 w-auto object-contain"
+                  src="/images/LMC_mainlogo.webp"
+                  alt="LMC Logo"
+                />
+              </div>
             </div>
 
-            <h2
-              className="
-                text-black
-                text-[16px]
-                font-bold
-                tracking-[0.14em]
-                leading-tight
-                m-0
-              "
-            >
-              HEALTH CENTRE
-            </h2>
+            <div className="text-center mb-4 ">
+              <h2 className="text-xl font-bold">HEALTH CENTRE</h2>
 
-            <p
-              className="
-                text-[9.5px]
-                text-black
-                mt-0.5
-                leading-tight
-                font-medium
-              "
-            >
-              {address} • Contact: {contact}
-            </p>
+              <p className="text-sm mt-1">
+                {address} • Contact: {contact}
+              </p>
+            </div>
           </div>
 
           {/* =========================================================
