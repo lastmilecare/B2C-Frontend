@@ -33,7 +33,7 @@ import { useParams } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { Picaso_Paymode_Options } from "../utils/constants";
 import { cookie } from "../utils/cookie";
-
+import { formatDate } from "../utils/helper";
 const OpdFormCopy = () => {
   const userId = cookie.get("user_id");
   const tenantId = Number(cookie.get("tenantId"));
@@ -42,12 +42,12 @@ const OpdFormCopy = () => {
     1: {
       label: "Refer By",
       option: "Refer from Amp",
-      id: 1
+      id: 1,
     },
     2: {
       label: "Refer To",
       option: "Refer To Medi Kavach",
-      id: 2
+      id: 2,
     },
   };
   const navigate = useNavigate();
@@ -159,17 +159,17 @@ const OpdFormCopy = () => {
     }
   }, [billNo]);
 
- useEffect(() => {
-  const referTo =
-    opdBillData?.ReferTo ??
-    opdBillData?.refer_id ??
-    editData?.ReferTo ??
-    editData?.refer_id;
+  useEffect(() => {
+    const referTo =
+      opdBillData?.ReferTo ??
+      opdBillData?.refer_id ??
+      editData?.ReferTo ??
+      editData?.refer_id;
 
-  if (referTo === undefined || referTo === null) return;
+    if (referTo === undefined || referTo === null) return;
 
-  formik.setFieldValue("ReferBy", String(referTo), false);
-}, [opdBillData, editData]);
+    formik.setFieldValue("ReferBy", String(referTo), false);
+  }, [opdBillData, editData]);
 
   const onPrintCS = (row) => {
     setPrintRow(row);
@@ -225,15 +225,15 @@ const OpdFormCopy = () => {
       // setIsPaidManuallyEdited(true);
       setSelectedUhid(editData.uhid || "");
       populatedUhidRef.current = editData.uhid || "";
-     const deptObj = department.find(
-  (d) =>
-    Number(d.id) === Number(editData.DepartmentID) ||
-    d.name?.trim().toLowerCase() ===
-      editData.department_name?.trim().toLowerCase()
-);
- if (deptObj) {
-      setDepCurrentId(Number(deptObj.id));
-    }
+      const deptObj = department.find(
+        (d) =>
+          Number(d.id) === Number(editData.DepartmentID) ||
+          d.name?.trim().toLowerCase() ===
+            editData.department_name?.trim().toLowerCase(),
+      );
+      if (deptObj) {
+        setDepCurrentId(Number(deptObj.id));
+      }
 
       // const doctorObj =
       //   doctors?.find((d) => d.id === editData.DoctorId) ||
@@ -244,33 +244,33 @@ const OpdFormCopy = () => {
       //       editData.doctor_name?.trim().toLowerCase(),
       //   );
 
-const departmentId = Number(deptObj?.id || editData.DepartmentID);
-const selectedDoctorId = Number(editData.DoctorId);
+      const departmentId = Number(deptObj?.id || editData.DepartmentID);
+      const selectedDoctorId = Number(editData.DoctorId);
 
-let doctorObj = null;
+      let doctorObj = null;
 
-if (departmentId === 9) {
-  doctorObj = doctors?.find(
-    (d) =>
-      Number(d.id) === selectedDoctorId ||
-      (d.name || d.doctor_name)?.trim().toLowerCase() ===
-        editData.doctor_name?.trim().toLowerCase()
-  );
-} else if (departmentId === 3) {
-  doctorObj = nursing?.find(
-    (d) =>
-      Number(d.id) === selectedDoctorId ||
-      d.username?.trim().toLowerCase() ===
-        editData.doctor_name?.trim().toLowerCase()
-  );
-} else if (departmentId === 6) {
-  doctorObj = lab?.find(
-    (d) =>
-      Number(d.id) === selectedDoctorId ||
-      d.username?.trim().toLowerCase() ===
-        editData.doctor_name?.trim().toLowerCase()
-  );
-}
+      if (departmentId === 9) {
+        doctorObj = doctors?.find(
+          (d) =>
+            Number(d.id) === selectedDoctorId ||
+            (d.name || d.doctor_name)?.trim().toLowerCase() ===
+              editData.doctor_name?.trim().toLowerCase(),
+        );
+      } else if (departmentId === 3) {
+        doctorObj = nursing?.find(
+          (d) =>
+            Number(d.id) === selectedDoctorId ||
+            d.username?.trim().toLowerCase() ===
+              editData.doctor_name?.trim().toLowerCase(),
+        );
+      } else if (departmentId === 6) {
+        doctorObj = lab?.find(
+          (d) =>
+            Number(d.id) === selectedDoctorId ||
+            d.username?.trim().toLowerCase() ===
+              editData.doctor_name?.trim().toLowerCase(),
+        );
+      }
       // const referObj =
       //   doctors?.find((d) => d.id === editData.ReferTo) ||
       //   doctors?.find((d) => d.id === Number(editData.ReferTo)) ||
@@ -287,9 +287,9 @@ if (departmentId === 9) {
       );
       const complaintData = editData.complaint
         ? editData.complaint.split(",").map((c, index) => ({
-          id: index + 1,
-          name: c.trim(),
-        }))
+            id: index + 1,
+            name: c.trim(),
+          }))
         : [];
 
       formik.setValues({
@@ -302,11 +302,11 @@ if (departmentId === 9) {
         Department: deptObj ? deptObj.id : 0,
         Doctor: doctorObj?.id || editData.DoctorId || "",
         ReferBy:
-  editData.ReferTo !== undefined && editData.ReferTo !== null
-    ? String(editData.ReferTo)
-    : editData.refer_id !== undefined && editData.refer_id !== null
-      ? String(editData.refer_id)
-      : "",
+          editData.ReferTo !== undefined && editData.ReferTo !== null
+            ? String(editData.ReferTo)
+            : editData.refer_id !== undefined && editData.refer_id !== null
+              ? String(editData.refer_id)
+              : "",
         FinCategory: editData.patient_type || "",
         TotalAmount: editData.TotalServiceAmount || 0,
         PaidAmount: editData.PaidAmount || 0,
@@ -316,6 +316,7 @@ if (departmentId === 9) {
         CardAmount: editData.CardAmount || 0,
         // VisitType: editData.VisitType || "N/A",
         ChiefComplaint: complaintData,
+        // lastVisitDate: formatDate(editData.lastVisitDate),
       });
       setEditDataLoaded(true);
       if (editData.opd_billing_data) {
@@ -337,7 +338,7 @@ if (departmentId === 9) {
         setSelectedServices(mapped);
       }
     }
-  }, [editData, department, doctors, nursing, lab,  paymode, allServices]);
+  }, [editData, department, doctors, nursing, lab, paymode, allServices]);
   const [depCurrentId, setDepCurrentId] = useState(0);
   const parseDOB = (raw) => {
     if (!raw) return "";
@@ -391,9 +392,7 @@ if (departmentId === 9) {
       HospitalID: selectedServices[0]?.HospitalID || 1,
       FinancialYearID: currentYear,
       CenterID: userId,
-      ReferTo: values.ReferBy
-        ? Number(values.ReferBy)
-        : null,
+      ReferTo: values.ReferBy ? Number(values.ReferBy) : null,
       IsActive: true,
       complaint: chiefComplaintStr,
     };
@@ -529,7 +528,7 @@ if (departmentId === 9) {
   }, [formik.errors]);
 
   useEffect(() => {
-     if (editData) return;
+    if (editData) return;
     if (!patientData) return;
     if (patientData.external_id !== selectedUhid) return;
     if (populatedUhidRef.current === selectedUhid) return;
@@ -544,7 +543,7 @@ if (departmentId === 9) {
         ? new Date(patientData.createdAt).toISOString().split("T")[0]
         : "",
       PreviousDue: previousFetchDue?.data?.PreviousDue || 0,
-      // VisitType: patientData?.VisitType || "N/A"
+      lastVisitDate: formatDate(patientData?.lastVisitDate) || "N/A",
     };
 
     if (patientData.dateOfBirthOrAge) {
@@ -669,8 +668,9 @@ if (departmentId === 9) {
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                  }`}
+                className={`h-2 w-12 rounded-full ${
+                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                }`}
               />
             ))}
           </div>
@@ -689,10 +689,11 @@ if (departmentId === 9) {
                 disabled
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold 
-                                      ${activeStep === step.id
-                    ? "bg-white text-sky-600 shadow"
-                    : "text-gray-400"
-                  }`}
+                                      ${
+                                        activeStep === step.id
+                                          ? "bg-white text-sky-600 shadow"
+                                          : "text-gray-400"
+                                      }`}
               >
                 <step.icon className="w-4 h-4" />
 
@@ -773,7 +774,6 @@ if (departmentId === 9) {
                         </ul>
                       )}
                     </div>
-
                     <DiseaseSelect
                       label="Complaint"
                       value={formik.values.ChiefComplaint}
@@ -783,7 +783,6 @@ if (departmentId === 9) {
                       required
                       allowManualAdd={true}
                     />
-
                     <Input
                       label="Name"
                       {...formik.getFieldProps("Name")}
@@ -801,14 +800,12 @@ if (departmentId === 9) {
                       className="bg-sky-50 cursor-not-allowed"
                       error={formik.touched.Mobile && formik.errors.Mobile}
                     />
-
                     <Input
                       label="Gender"
                       {...formik.getFieldProps("Gender")}
                       readOnly
                       className="bg-sky-50 cursor-not-allowed"
                     ></Input>
-
                     {/* <Input
                                               label="Date of Birth"
                                               type="date"
@@ -824,7 +821,6 @@ if (departmentId === 9) {
                       readOnly
                       className="bg-sky-50 cursor-not-allowed"
                     />
-
                     <Select
                       {...formik.getFieldProps("Department")}
                       label={
@@ -851,7 +847,6 @@ if (departmentId === 9) {
                         </option>
                       ))}
                     </Select>
-
                     <Select
                       {...formik.getFieldProps("Doctor")}
                       label={
@@ -902,7 +897,6 @@ if (departmentId === 9) {
                           </option>
                         ))}
                     </Select>
-
                     <Input
                       {...formik.getFieldProps("FinCategory")}
                       className="bg-sky-50 cursor-not-allowed"
@@ -937,7 +931,12 @@ if (departmentId === 9) {
                         </option>
                       </Select>
                     )}
-
+                    <Input
+                      {...formik.getFieldProps("lastVisitDate")}
+                      className="bg-sky-50 cursor-not-allowed"
+                      label="Last Visit Date"
+                      readOnly
+                    ></Input>
                     {/* <Input
                 label="Visit Type"
                 {...formik.getFieldProps("VisitType")}
@@ -945,7 +944,6 @@ if (departmentId === 9) {
                 readOnly
               >
               </Input> */}
-
                     {/* <Input
                                               label="Last Visit Date"
                                               type="date"
@@ -1253,23 +1251,26 @@ if (departmentId === 9) {
                           </b>{" "}
                           {depCurrentId === 9
                             ? doctors?.find((d) => d.id == formik.values.Doctor)
-                              ?.name ||
-                            doctors?.find((d) => d.id == formik.values.Doctor)
-                              ?.doctor_name ||
-                            "-"
+                                ?.name ||
+                              doctors?.find((d) => d.id == formik.values.Doctor)
+                                ?.doctor_name ||
+                              "-"
                             : depCurrentId === 3
                               ? nursing?.find(
-                                (d) => d.id == formik.values.Doctor,
-                              )?.username || "-"
+                                  (d) => d.id == formik.values.Doctor,
+                                )?.username || "-"
                               : depCurrentId === 6
                                 ? lab?.find((d) => d.id == formik.values.Doctor)
-                                  ?.username || "-"
+                                    ?.username || "-"
                                 : "-"}
                         </p>
 
                         <p>
-                          <b>{referralConfig[tenantId]?.label || "Referral"}:</b>{" "}
-                          {referralConfig[tenantId]?.id == Number(formik.values.ReferBy)
+                          <b>
+                            {referralConfig[tenantId]?.label || "Referral"}:
+                          </b>{" "}
+                          {referralConfig[tenantId]?.id ==
+                          Number(formik.values.ReferBy)
                             ? referralConfig[tenantId]?.option
                             : "-"}
                         </p>
