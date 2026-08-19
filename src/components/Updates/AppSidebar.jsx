@@ -207,6 +207,24 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Prescription List
               </NavLink>
             )}
+             {can("create:prescription_form") && (
+              <NavLink
+                to="/prescription-form-camp"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Camp Prescription Form
+              </NavLink>
+            )}
+            {can("read:prescription_list") && (
+              <NavLink
+                to="/prescription-list-camp"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Camp Prescription List
+              </NavLink>
+            )}
           </MenuGroup>
         )}
 

@@ -48,6 +48,8 @@ import SpectacleRevenue from "../pages/SpectacleRevenue";
 import OpdohcPage from "../pages/Opdohcpage";
 import TestPackagePage from "../pages/Testpackagepage";
 import OpdListRevenue from "../pages/Opdbillingrevenue";
+import PrescriptionListCamp from "../pages/PrescriptionCampList";
+import PrescriptionFormCamp from "../pages/PrescriptionCampForm";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -253,7 +255,27 @@ export const ROUTES = [
     permission: "update:prescription_form",
     showInSidebar: false,
   },
-
+{
+    path: "/prescription-list-camp",
+    component: PrescriptionListCamp,
+    permission: "read:prescription_list",
+    label: "Prescriptions",
+    icon: "DocumentTextIcon",
+    group: "Prescription",
+    showInSidebar: true,
+  },
+  {
+    path: "/prescription-form-camp",
+    component: PrescriptionFormCamp,
+    permission: "create:prescription_form",
+    showInSidebar: false,
+  },
+  {
+    path: "/prescription-form-camp/:id",
+    component: PrescriptionFormCamp,
+    permission: "update:prescription_form",
+    showInSidebar: false,
+  },
   // ── Billing ───────────────────────────────────────────────────────────────
   {
     path: "/billing",

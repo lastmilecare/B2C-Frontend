@@ -1,0 +1,1389 @@
+import React, { useState, useEffect, useRef } from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import {
+  ArrowPathIcon,
+  UserIcon,
+  ClipboardDocumentIcon,
+  CreditCardIcon,
+  DocumentCheckIcon,
+  BeakerIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/24/outline";
+import DiseaseSelect from "../components/DiseaseSelect";
+import useDebounce from "../hooks/useDebounce";
+import {
+  useSearchcampOpdBillNoQuery,
+  useGetcampOpdBillByIdQuery,
+  useGetMediceneListQuery,
+  useUpdateCampPrescriptionMutation,
+useCreateCampPrescriptionMutation,
+  useGetComboQuery,
+} from "../redux/apiSlice";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { healthAlert, healthAlerts } from "../utils/healthSwal";
+import PrescriptionPrint from "./PrescriptionPrint";
+import { useReactToPrint } from "react-to-print";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { MEDICINE_FREQUENCIES } from "../utils/constants";
+
+import { formatISO } from "date-fns";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { Input, Select, Button, baseInput } from "../components/FormControls";
+import { useSelector } from "react-redux";
+import { cookie } from "../utils/cookie";
+const parseChiefComplaintNames = (value) => {
+  if (!value || typeof value !== "string") return [];
+
+  return value
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+};
+
+const PrescriptionFormCamp = () => {
+  const [activeStep, setActiveStep] = useState(1);
+
+  const nextStep = async () => {
+    const errors = await formik.validateForm();
+
+    if (
+      activeStep === 1 &&
+      (errors.billno || errors.UHID || errors.Name || errors.Mobile)
+    ) {
+      formik.setTouched({
+        billno: true,
+        UHID: true,
+        Name: true,
+        Mobile: true,
+      });
+
+      return;
+    }
+
+    if (activeStep === 2) {
+      if (
+        errors.bpsystolic ||
+        errors.bpdiastolic ||
+        errors.pulserate ||
+        errors.spo2 ||
+        errors.temperature ||
+        errors.height ||
+        errors.weight ||
+        errors.glucose
+      ) {
+        const firstError = Object.values(errors)[0];
+        healthAlerts.warning(firstError);
+        return;
+      }
+    }
+    if (activeStep === 3 && !can("update:prescription_form")) {
+      await formik.submitForm();
+      return;
+    }
+    if (activeStep === 4) {
+      if (prescriptionList.length === 0) {
+        healthAlerts.warning("Please add at least one medicine");
+        return;
+      }
+    }
+    setActiveStep((prev) => prev + 1);
+  };
+
+  const prevStep = () => {
+    setActiveStep((prev) => prev - 1);
+  };
+  const [billSearch, setBillSearch] = useState("");
+  const [medicineSearch, setMedicineSearch] = useState("");
+  const debouncedUhid = useDebounce(billSearch, 500);
+  const debouncedMedicine = useDebounce(medicineSearch, 500);
+  const [selectedBill, setSelectedBill] = useState("");
+  const [selectedMedicine, setSelectedMedicine] = useState("");
+  const [suggestionsList, setSuggestionsList] = useState([]);
+  const [prescriptionList, setPrescriptionList] = useState([]);
+  const [medicineSuggestions, setMedicineSuggestions] = useState([]);
+  const populatedUhidRef = useRef("");
+  const [createPrescription, { isLoading }] = useCreateCampPrescriptionMutation();
+  const { id } = useParams();
+  const location = useLocation();
+  const { data: diseaseSearchResponse } = useGetComboQuery("diseases-byname");
+  const { data: medicineTypeResponse } = useGetComboQuery("medicine-type");
+  const row = location.state?.row ?? null;
+  const diseaseOptions = React.useMemo(
+    () => diseaseSearchResponse || [],
+    [diseaseSearchResponse],
+  );
+  const user_id = cookie.get("user_id");
+  const [printRow, setPrintRow] = useState(null);
+  const printRef = useRef();
+  const [updatePrescription] = useUpdateCampPrescriptionMutation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (printRow && printRef.current) {
+      handlePrint();
+
+      setTimeout(() => {
+        setPrintRow(null);
+      }, 1000);
+    }
+  }, [printRow]);
+
+  const onPrintCS = (row) => {
+    setPrintRow(row);
+  };
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Opd",
+  });
+
+  const { data: patientData, isFetching } = useGetcampOpdBillByIdQuery(
+    selectedBill ? String(selectedBill) : skipToken,
+  );
+
+  const { data: medicineResponse } = useGetMediceneListQuery(
+    { searchTerm: debouncedMedicine || skipToken },
+    { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
+  );
+  const medicineList = React.useMemo(
+    () => medicineResponse?.data || [],
+    [medicineResponse],
+  );
+  const { data: suggestions = [] } = useSearchcampOpdBillNoQuery(debouncedUhid, {
+    skip: debouncedUhid.length < 1,
+  });
+
+  useEffect(() => {
+    if (selectedBill) return;
+    if (billSearch.length < 1) return;
+    const isSame =
+      suggestionsList.length === suggestions.length &&
+      suggestionsList.every((x, i) => x.ID === suggestions[i].ID);
+
+    if (!isSame) {
+      setSuggestionsList(suggestions);
+    }
+  }, [suggestions, selectedBill, billSearch]);
+
+  useEffect(() => {
+    if (selectedMedicine) return;
+    if (!debouncedMedicine) {
+      if (medicineSuggestions.length > 0) setMedicineSuggestions([]);
+      return;
+    }
+
+    if (medicineList && medicineList.length > 0) {
+      const currentDataStr = JSON.stringify(medicineList);
+      const existingDataStr = JSON.stringify(medicineSuggestions);
+
+      if (currentDataStr !== existingDataStr) {
+        setMedicineSuggestions(medicineList);
+      }
+    } else if (medicineList.length === 0 && medicineSuggestions.length > 0) {
+      setMedicineSuggestions([]);
+    }
+  }, [medicineList, debouncedMedicine, selectedMedicine]);
+
+  const buildPrescriptionPayload = (values, prescriptionList) => {
+    // const addedDate = formatISO(new Date());
+
+    return {
+      consultingId: values.consultingId,
+      picasoId: values.UHID,
+      billNo: values.billno ? Number(values.billno) : null,
+      patientName: values.Name,
+      contactNo: values.Mobile,
+      age: values.Age,
+      gender: values.Gender,
+      patientType: values.FinCategory,
+      bpSystolic: values.bpsystolic ? Number(values.bpsystolic) : null,
+      bpDiastolic: values.bpdiastolic ? Number(values.bpdiastolic) : null,
+      pulseRate: values.pulserate ? Number(values.pulserate) : null,
+      spo2: values.spo2 ? Number(values.spo2) : null,
+      temperature: values.temperature ? Number(values.temperature) : null,
+      height: values.height ? Number(values.height) : null,
+      weight: values.weight ? Number(values.weight) : null,
+      glucose: values.glucose ? Number(values.glucose) : null,
+      chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
+      history: values.history || "",
+      
+      treatmentPlan: "",
+      labs: values.labs || "",
+      otherLabs: values.otherlabs || "",
+      preventiveAdvice: values.advice || "",
+      otherInstructions: values.otherinstrution || "",
+      nextFollowup: values.followup || "",
+      referrals: values.ReferTo,
+      remarks: values.Remarks,
+      hospitalId: values.hospitalId || 1,
+      financialYearId: new Date().getFullYear(),
+      addedBy: values.AddedBy,
+      // addedDate,
+      isActive: true,
+      doctor_id: patientData?.ConsultantDoctorID || null,
+      centerID: patientData?.CenterID || null,
+      driver_id: patientData?.PatientID || null,
+      // modifiedDate: addedDate,
+      modifiedBy: user_id,
+      physicalFindings: values.diagnosis || "",
+
+      AdviceList: prescriptionList.map((item) => ({
+        picasoId: values.UHID,
+        consultingId: values.consultingId,
+        itemId: item.itemId || 0,
+        item: item.medicine,
+        dosage: item.dosage,
+        pillsConsumption: item.preferredTime,
+        duration: Number(item.duration),
+        remarks: item.instructions,
+        typeOfMedicine: item.type,
+        addedBy: values.AddedBy,
+        // addedDate,
+        companyId: 10,
+        isActive: true,
+      })),
+    };
+  };
+  const { permissions } = useSelector((state) => state.auth);
+  const can = (permission) => {
+    if (!permission) return true;
+    return permissions?.includes(permission) ?? false;
+  };
+  const formik = useFormik({
+    initialValues: {
+      UHID: "",
+      CenterName: "",
+      diseases: [],
+      Name: "",
+      Mobile: "",
+      Gender: "",
+      Age: "",
+      DOB: "",
+      FinCategory: "",
+      billno: "",
+      Quantity: "",
+      medicine: "",
+      typemedicine: "",
+      dosage: "",
+      duration: "",
+      medicineId: "",
+      ChiefComplaint: [],
+      otherinstrution: "",
+      labs: "",
+      otherlabs: "",
+      followup: "",
+      advice: "",
+      history: "",
+      bpsystolic: "",
+      bpdiastolic: "",
+      pulserate: "",
+      spo2: "",
+      temperature: "",
+      height: "",
+      weight: "",
+      dosageinstructions: "",
+      preferredtime: "",
+      consultingId: "",
+      hospitalId: "",
+      Remarks: "",
+      ReferTo: "",
+      ConsultantDoctorID: "",
+      CenterID: "",
+      PatientID: "",
+      glucose: "",
+      diagnosis: "",
+    },
+    validationSchema: Yup.object({
+      billno: Yup.string().required("Bill No is required"),
+      UHID: Yup.string().required("UHID is required"),
+      Name: Yup.string().required("Name is required"),
+      Mobile: Yup.string()
+        .matches(/^[0-9]{10}$/, "Must be 10 digits")
+        .required("Mobile is required"),
+      bpsystolic: Yup.number()
+        .min(70, "Too low for systolic BP")
+        .max(250, "Too high for systolic BP"),
+
+      bpdiastolic: Yup.number()
+        .min(40, "Too low for diastolic BP")
+        .max(150, "Too high for diastolic BP"),
+
+      pulserate: Yup.number()
+        .min(30, "Pulse too low")
+        .max(220, "Pulse too high"),
+
+      spo2: Yup.number()
+        .min(70, "Critically low SpO₂")
+        .max(100, "Invalid SpO₂ value"),
+
+      temperature: Yup.number()
+        .min(95, "Hypothermia risk")
+        .max(108, "Dangerously high temperature"),
+
+      height: Yup.number().min(30, "Invalid height").max(250, "Invalid height"),
+
+      weight: Yup.number().min(2, "Invalid weight").max(300, "Invalid weight"),
+      glucose: Yup.number()
+        .min(20, "Glucose too low")
+        .max(700, "Glucose too high"),
+    }),
+    onSubmit: async (values) => {
+      const errors = await formik.validateForm();
+
+      if (Object.keys(errors).length > 0) {
+        formik.setTouched(errors);
+
+        const firstError = Object.values(errors)[0];
+        healthAlerts.warning(firstError);
+
+        return;
+      }
+      // if (prescriptionList.length === 0) {
+      //   healthAlerts.warning("Please add at least one medicine");
+      //   return;
+      // }
+      if (can("update:prescription_form") && prescriptionList.length === 0) {
+        healthAlerts.warning("Please add at least one medicine");
+        return;
+      }
+
+      // const payload = buildPrescriptionPayload(values, prescriptionList);
+      const payload = buildPrescriptionPayload(
+        values,
+        can("update:prescription_form") ? prescriptionList : [],
+      );
+
+      try {
+        if (id) {
+          await updatePrescription({ id, ...payload }).unwrap();
+          healthAlerts.success("Prescription Updated Successfully");
+          navigate(`/prescription-list-camp`);
+        } else {
+          await createPrescription(payload).unwrap();
+          healthAlerts.success("Prescription Saved Successfully");
+          navigate(`/prescription-list-camp`);
+        }
+      } catch (error) {
+        healthAlert({
+          title: "Prescription Error",
+          text: error?.data?.message || "Something went wrong",
+          icon: "error",
+        });
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (!patientData) return;
+    if (patientData.ID !== selectedBill) return;
+    if (populatedUhidRef.current === selectedBill) return;
+    populatedUhidRef.current = selectedBill;
+    let years = patientData.driverDetails[0]?.iage || 0;
+    let months = patientData.driverDetails[0]?.imonth || 0;
+    let days = patientData.driverDetails[0]?.idays || 0;
+    const finalAge = `${years}y ${months}m ${days}d`;
+    const updates = {
+      UHID: patientData.PicasoNo || "",
+      Name: patientData.driverDetails[0]?.name || "",
+      Gender: patientData.driverDetails[0].gender || "",
+      Mobile: patientData.Mobile || "",
+      FinCategory: patientData.driverDetails[0]?.category || "",
+      Age: finalAge,
+      consultingId: patientData.ConsultantDoctorID || "",
+      hospitalId: patientData.HospitalID,
+      Remarks: patientData.Remarks,
+      ReferTo: patientData.ReferTo,
+      AddedBy: patientData.AddedBy,
+      ConsultantDoctorID: patientData.ConsultantDoctorID,
+      CenterID: patientData.CenterID,
+      PatientID: patientData.PatientID,
+    };
+    formik.setValues({ ...formik.values, ...updates }, false);
+  }, [patientData, selectedBill]);
+
+  useEffect(() => {
+    if (!id || !row) return;
+    if (!diseaseOptions.length) return;
+
+    const mappedAdviceList = Array.isArray(row.adviceList)
+      ? row.adviceList.map((item) => ({
+        itemId: item.itemId,
+        medicine: item.item,
+        type: item.typeOfMedicine,
+        dosage: item.dosage,
+        instructions: item.remarks || "",
+        preferredTime: item.pillsConsumption,
+        duration: item.duration,
+      }))
+      : [];
+
+    if (prescriptionList.length === 0) {
+      setPrescriptionList(mappedAdviceList);
+    }
+
+    const complaintNames = parseChiefComplaintNames(row.chiefComplaints);
+
+    const diseaseMap = new Map(
+      diseaseOptions.map((d) => [d.name?.toLowerCase().trim(), d]),
+    );
+
+    const mappedComplaints = complaintNames
+      .map((name) => diseaseMap.get(name.toLowerCase()))
+      .filter(Boolean);
+    const billNumber = row.billNo ?? "";
+
+    setBillSearch(String(billNumber));
+    setSelectedBill(String(billNumber));
+    const updates = {
+      UHID: row.picasoId ?? "",
+      Name: row.patientName?.trim() ?? "",
+      Gender: row.gender ?? "",
+      Mobile: row.contactNo ?? "",
+      FinCategory: row.patientType ?? "",
+      Age: row.age ?? "",
+      consultingId: row.consultingId ?? "",
+      hospitalId: row.hospitalId ?? "",
+      Remarks: row.remarks ?? "",
+      ReferTo: row.referrals ?? "",
+      AddedBy: row.addedBy ?? "",
+      billno: billNumber || "",
+      ChiefComplaint: mappedComplaints,
+      otherinstrution: row.otherInstructions ?? "",
+      labs: row.labs ?? "",
+      otherlabs: row.otherLabs ?? "",
+      followup: row.nextFollowup ?? "",
+      advice: row.preventiveAdvice ?? "",
+      history: row.history ?? "",
+      bpsystolic: row.bpSystolic ?? "",
+      bpdiastolic: row.bpDiastolic ?? "",
+      pulserate: row.pulseRate ?? "",
+      spo2: row.spo2 ?? "",
+      temperature: row.temperature ?? "",
+      height: row.height ?? "",
+      weight: row.weight ?? "",
+      glucose: row.glucose ?? "",
+      diagnosis: row.physicalFindings ?? "",
+    };
+
+    formik.setValues((prev) => ({ ...prev, ...updates }), false);
+  }, [id, row, diseaseOptions]);
+
+  const handleAddPrescription = () => {
+    const {
+      medicine,
+      medicineId,
+      typemedicine,
+      dosage,
+      dosageinstructions,
+      preferredtime,
+      duration,
+    } = formik.values;
+    if (
+      !medicine ||
+      !typemedicine ||
+      // !dosage ||
+      !dosageinstructions ||
+      !preferredtime
+      // !duration
+    ) {
+      healthAlerts.warning("Please fill all mandatory medicine fields");
+      return;
+    }
+
+    const newItem = {
+      itemId: medicineId,
+      medicine,
+      type: typemedicine,
+      dosage,
+      instructions: dosageinstructions,
+      preferredTime: preferredtime,
+      duration,
+    };
+
+    setPrescriptionList((prev) => [...prev, newItem]);
+
+    formik.setValues({
+      ...formik.values,
+      medicine: "",
+      medicineId: null,
+      typemedicine: "",
+      dosage: "",
+      dosageinstructions: "",
+      preferredtime: "",
+      duration: "",
+    });
+    setMedicineSearch("");
+    setSelectedMedicine(null);
+    setMedicineSuggestions([]);
+  };
+  const handleDeletePrescription = (index) => {
+    setPrescriptionList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
+      <div className="max-w-[1400px] mx-auto px-8">
+        <div className="flex justify-between items-center mb-10">
+          <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+            <span className="bg-blue-100 p-2 rounded-xl">
+              <ClipboardDocumentIcon className="w-6 text-blue-600" />
+            </span>
+            {id ? "Edit Camp Prescription" : "Camp Prescription"}
+          </h1>
+
+          <div className="flex gap-2">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <div
+                key={s}
+                className={`h-2 w-12 rounded-full transition-all duration-300 ${activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
+                  }`}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="flex border-b">
+            {[
+              { id: 1, label: "Patient", icon: UserIcon },
+              { id: 2, label: "Vitals", icon: ClipboardDocumentIcon },
+              { id: 3, label: "Prescription", icon: CreditCardIcon },
+              { id: 4, label: "Medicine", icon: BeakerIcon },
+              { id: 5, label: "Confirm", icon: DocumentCheckIcon },
+            ].map((step) => (
+              <button
+                key={step.id}
+                type="button"
+                disabled
+                onClick={() => setActiveStep(step.id)}
+                className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold
+${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
+`}
+              >
+                <step.icon className="w-4 h-4" />
+
+                {step.label}
+              </button>
+            ))}
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+
+              if (activeStep !== 5) return;
+
+              formik.handleSubmit(e);
+            }}
+            className="space-y-8 p-9"
+          >
+            {activeStep === 1 && (
+              <section>
+                <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                  Patient Details
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="relative">
+                    <Input
+                      label="Bill No"
+                      required
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="Search Bill no (e.g., 123)"
+                      value={billSearch}
+                      onBlur={() => formik.setFieldTouched("billno", true)}
+                      onChange={(e) => {
+                        if (id) return;
+
+                        const val = e.target.value.replace(/\D/g, "");
+
+                        setBillSearch(val);
+                        setSelectedBill("");
+
+                        formik.setFieldValue("billno", "");
+                        setSuggestionsList([]);
+
+                        populatedUhidRef.current = "";
+                      }}
+                      error={formik.touched.billno && formik.errors.billno}
+                      autoComplete="off"
+                    />
+
+                    {suggestionsList.length > 0 && billSearch.length >= 1 && (
+                      <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                        {suggestionsList.map((item) => (
+                          <li
+                            key={item.ID}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                                setSelectedBill(item.ID);
+
+                                formik.setFieldValue(
+                                    "billno",
+                                    item.BillNo,
+                                );
+
+                                setBillSearch(
+                                    String(item.BillNo),
+                                );
+
+                                setSuggestionsList([]);
+                            }}
+                            className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
+                          >
+                            {item.ID}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <Input
+                    label="Name"
+                    {...formik.getFieldProps("Name")}
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
+                  />
+
+                  <Input
+                    label="UHID"
+                    {...formik.getFieldProps("UHID")}
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
+                  ></Input>
+
+                  <Input
+                    label="Age"
+                    {...formik.getFieldProps("Age")}
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
+                  />
+
+                  <Input
+                    label="Gender"
+                    {...formik.getFieldProps("Gender")}
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
+                  ></Input>
+                  <Input
+                    label="Mobile"
+                    {...formik.getFieldProps("Mobile")}
+                    readOnly
+                    className="bg-sky-50 cursor-not-allowed"
+                  ></Input>
+
+                  <Input
+                    {...formik.getFieldProps("FinCategory")}
+                    className="bg-sky-50 cursor-not-allowed"
+                    label="Category"
+                    readOnly
+                  ></Input>
+                </div>
+              </section>
+            )}
+            {activeStep === 2 && (
+              <section className="mt-6">
+                <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
+                  Vitals & Examination
+                </h3>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+                  <Input
+                    {...formik.getFieldProps("bpsystolic")}
+                    label="BP Systolic (mmHg)"
+                    type="number"
+                    inputProps={{ min: 70, max: 250 }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("bpdiastolic")}
+                    label="BP Diastolic (mmHg)"
+                    type="number"
+                    inputProps={{ min: 40, max: 150 }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("pulserate")}
+                    label="Pulse (bpm)"
+                    type="number"
+                    inputProps={{ min: 30, max: 220 }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("spo2")}
+                    label="SPO2 (%)"
+                    type="number"
+                    inputProps={{ min: 70, max: 100 }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("temperature")}
+                    label="Temperature (°F)"
+                    type="number"
+                    inputProps={{
+                      step: "0.1",
+                      min: 95,
+                      max: 108,
+                    }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("height")}
+                    label="Height (cm)"
+                    type="number"
+                    inputProps={{ min: 30, max: 250 }}
+                  />
+
+                  <Input
+                    {...formik.getFieldProps("weight")}
+                    label="Weight (kg)"
+                    type="number"
+                    inputProps={{ min: 1, max: 300 }}
+                  />
+                  <Input
+                    {...formik.getFieldProps("glucose")}
+                    label="Glucose (mg/dL)"
+                    type="number"
+                    inputProps={{
+                      min: 20,
+                      max: 700,
+                    }}
+                  />
+                </div>
+              </section>
+            )}{" "}
+            {activeStep === 3 && (
+              <section>
+                <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                  Prescription Details
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <Input
+                    {...formik.getFieldProps("otherinstrution")}
+                    placeholder="Other Instructions "
+                    label="Other Instructions"
+                  />
+                  <DiseaseSelect
+                    label="Complaint"
+                    value={formik.values.ChiefComplaint}
+                    onChange={(selected) =>
+                      formik.setFieldValue("ChiefComplaint", selected)
+                    }
+                    required
+                  />
+                  <Input
+                    {...formik.getFieldProps("labs")}
+                    placeholder="Labs"
+                    label="Labs"
+                  />
+                  <Input
+                    {...formik.getFieldProps("otherlabs")}
+                    placeholder="Other Labs"
+                    label="Other Labs"
+                  />
+                  <Input
+                    label="Next Follow-up days"
+                    placeholder="Next Follow-up days"
+                    inputMode="numeric"
+                    type="text"
+                    value={formik.values.followup}
+                    onChange={(e) => {
+                      const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                      formik.setFieldValue("followup", onlyNumbers);
+                    }}
+                  />
+                  <Input
+                    {...formik.getFieldProps("advice")}
+                    placeholder="Preventive Advice"
+                    label="Preventive Advice"
+                  />
+                  <Input
+                    {...formik.getFieldProps("history")}
+                    placeholder="History"
+                    label="History"
+                  />
+                  <Input
+                    {...formik.getFieldProps("diagnosis")}
+                    placeholder="Diagnosis"
+                    label="Diagnosis"
+                    
+                  />
+                </div>
+                {!can("update:prescription_form") && (
+                  <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-amber-800">
+                        ⚠️ Medicine can only be added by a doctor.
+                      </p>
+
+                    </div>
+
+                  </div>
+                )}
+              </section>
+            )}
+            {activeStep === 4 && (
+              <section>
+                <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
+                  Medical Prescription
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="relative">
+                    <label className="text-sm text-gray-600 block mb-1">
+                      Medicine <span className="text-red-500">*</span>
+                    </label>
+
+                    <input
+                      type="text"
+                      className={`${baseInput} 
+                  ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
+                      placeholder={"Search Medicine"}
+                      value={medicineSearch}
+                      disabled={!formik.values.billno}
+                      onChange={(e) => {
+                        setMedicineSearch(e.target.value);
+                        setSelectedMedicine(null);
+                        formik.setFieldValue("medicine", e.target.value);
+                      }}
+                      autoComplete="off"
+                    />
+
+                    {medicineSuggestions.length > 0 && !selectedMedicine && (
+                      <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                        {medicineSuggestions.map((item) => (
+                          <li
+                            key={item.id}
+                            onClick={() => {
+                              setSelectedMedicine(item);
+                              setMedicineSearch(item.descriptions);
+                              formik.setFieldValue(
+                                "medicine",
+                                item.descriptions,
+                              );
+                              formik.setFieldValue("medicineId", item.id);
+                              formik.setFieldValue(
+                                "typemedicine",
+                                item.itemType?.Descriptions || "",
+                              );
+                              setMedicineSuggestions([]);
+                            }}
+                            className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
+                          >
+                            {item.descriptions}
+                            <span className="text-xs text-gray-400 ml-2">
+                              ({item.itemType?.Code})
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <Input
+                    {...formik.getFieldProps("typemedicine")}
+                    placeholder="Type of Medicine"
+                    label={
+                      <span>
+                        Type of Medicine <span className="text-red-500">*</span>
+                      </span>
+                    }
+                  // className="bg-sky-50 cursor-not-allowed"
+                  />
+                  {/* <Input
+                    label="Quantity"
+                    inputMode="numeric"
+                    type="text"
+                    value={formik.values.dosage}
+                    disabled={!formik.values.billno}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, "");
+                      formik.setFieldValue("dosage", value);
+                    }}
+                  /> */}
+                  <div className="relative">
+                    <Input
+                      label={
+                        formik.values.typemedicine?.toLowerCase() === "syrup"
+                          ? "Dosage"
+                          : "Quantity"
+                      }
+                      inputMode="numeric"
+                      type="text"
+                      value={formik.values.dosage}
+                      disabled={!formik.values.billno}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.]/g, "");
+                        formik.setFieldValue("dosage", value);
+                      }}
+                    />
+
+                    {formik.values.typemedicine?.toLowerCase() === "syrup" && (
+                      <span className="absolute right-3 top-[38px] text-gray-500 text-sm">
+                        mL
+                      </span>
+                    )}
+                  </div>
+                  <Input
+                    {...formik.getFieldProps("dosageinstructions")}
+                    placeholder="Instructions "
+                    label="Instructions "
+                    disabled={!formik.values.billno}
+                    required
+                  />
+                  <Input
+                    label="Preferred Time (Morning/Evening/Night)"
+                    placeholder="Enter Preferred Time"
+                    value={formik.values.preferredtime}
+                    required
+                    disabled={!formik.values.billno}
+                    onChange={(e) =>
+                      formik.setFieldValue("preferredtime", e.target.value)
+                    }
+                  />
+
+                  {/* <Input
+              label="Duration (in days) *"
+              inputMode="numeric"
+              type="text"
+              value={formik.values.duration}
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                formik.setFieldValue("duration", onlyNumbers);
+              }}
+            /> */}
+                  <Select
+                    label="Duration (in days)"
+                    value={formik.values.duration}
+                    onChange={(e) =>
+                      formik.setFieldValue("duration", e.target.value)
+                    }
+                  // error={formik.touched.duration && formik.errors.duration}
+                  >
+                    <option value="">Select Time</option>
+                    {MEDICINE_FREQUENCIES.map((time) => (
+                      <option key={time.value} value={time.value}>
+                        {time.label}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="mt-3">
+                  <Button
+                    type="button"
+                    onClick={handleAddPrescription}
+                    className="mt-4 flex items-center gap-1"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    Add Medicine
+                  </Button>
+                </div>
+
+                {prescriptionList.length > 0 && (
+                  <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100">
+                    <div className="px-4 py-3 border-b border-sky-100">
+                      <h2 className="text-sky-700 font-semibold text-sm">
+                        Prescribed Medicines
+                      </h2>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-sky-50 text-sky-700">
+                          <tr>
+                            <th className="px-4 py-3 text-left">SL No</th>
+                            <th className="px-4 py-3 text-left">Medicine</th>
+                            <th className="px-4 py-3 text-left">Type</th>
+                            <th className="px-4 py-3 text-left">Dosage</th>
+                            <th className="px-4 py-3 text-left">
+                              Instructions
+                            </th>
+                            <th className="px-4 py-3 text-left">Time</th>
+                            <th className="px-4 py-3 text-left">Days</th>
+                            <th className="px-4 py-3 text-center">Delete</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {prescriptionList.map((item, index) => (
+                            <tr
+                              key={index}
+                              className="border-t hover:bg-gray-50"
+                            >
+                              <td className="px-4 py-3">{index + 1}</td>
+                              <td className="px-4 py-3 font-medium">
+                                {item.medicine}
+                              </td>
+                              <td className="px-4 py-3">{item.type}</td>
+                              {/* <td className="px-4 py-3">{item.dosage}</td> */}
+                              <td className="px-4 py-3">
+                                {item.type?.toLowerCase() === "syrup"
+                                  ? `${item.dosage} mL`
+                                  : item.dosage}
+                              </td>
+                              <td className="px-4 py-3">
+                                {item.instructions || "-"}
+                              </td>
+                              <td className="px-4 py-3">
+                                {item.preferredTime || "-"}
+                              </td>
+                              <td className="px-4 py-3">{item.duration}</td>
+                              <td className="px-4 py-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleDeletePrescription(index)
+                                  }
+                                  className="text-red-500 hover:text-red-700"
+                                  title="Delete"
+                                >
+                                  🗑
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+            {activeStep === 5 && (
+              <div className="bg-sky-50 p-6 rounded-xl space-y-4 border border-sky-200">
+                <h3 className="text-lg font-semibold text-sky-700">
+                  Confirm Prescription
+                </h3>
+
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <p>
+                    <b>Name:</b> {formik.values.Name}
+                  </p>
+                  <p>
+                    <b>Mobile:</b> {formik.values.Mobile}
+                  </p>
+                  <p>
+                    <b>UHID:</b> {formik.values.UHID}
+                  </p>
+                  <p>
+                    <b>Age:</b> {formik.values.Age}
+                  </p>
+                  <p>
+                    <b>Gender:</b> {formik.values.Gender}
+                  </p>
+                  <p>
+                    <b>Category:</b> {formik.values.FinCategory}
+                  </p>
+                </div>
+
+                <div className="border-t pt-3 text-sm grid md:grid-cols-3 gap-3">
+                  <p>
+                    <b>BP (mmHg):</b> {formik.values.bpsystolic}/
+                    {formik.values.bpdiastolic}
+                  </p>
+                  <p>
+                    <b>Pulse (bpm):</b> {formik.values.pulserate}
+                  </p>
+                  <p>
+                    <b>SPO2 (%):</b> {formik.values.spo2}
+                  </p>
+                  <p>
+                    <b>Temperature (°F) :</b> {formik.values.temperature}
+                  </p>
+                  <p>
+                    <b>Height (cm):</b> {formik.values.height}
+                  </p>
+                  <p>
+                    <b>Weight (kg):</b> {formik.values.weight}
+                  </p>
+                  <p>
+                    <b>Glucose (mg/dL):</b> {formik.values.glucose}
+                  </p>
+                </div>
+
+                <div className="border-t pt-3 text-sm">
+                  <p>
+                    <b>Chief Complaint:</b>{" "}
+                    {formik.values.ChiefComplaint?.map((c) => c.name).join(
+                      ", ",
+                    )}
+                  </p>
+                  <p>
+                    <b>Advice:</b> {formik.values.advice}
+                  </p>
+                  <p>
+                    <b>Follow-up:</b> {formik.values.followup}
+                  </p>
+                </div>
+
+                <div className="border-t pt-4 space-y-4 text-sm">
+                  <div>
+                    <h4 className="font-semibold text-slate-700 mb-2">
+                      Prescription Details
+                    </h4>
+
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <p>
+                        <b>History:</b> {formik.values.history || "-"}
+                      </p>
+
+                      <p>
+                        <b>Labs:</b> {formik.values.labs || "-"}
+                      </p>
+
+                      <p>
+                        <b>Other Labs:</b> {formik.values.otherlabs || "-"}
+                      </p>
+
+                      <p>
+                        <b>Advice:</b> {formik.values.advice || "-"}
+                      </p>
+
+                      <p>
+                        <b>Follow-up:</b> {formik.values.followup || "-"}
+                      </p>
+
+                      <p>
+                        <b>Other Instructions:</b>{" "}
+                        {formik.values.otherinstrution || "-"}
+                      </p>
+                      <p>
+                        <b>Diagnosis:</b> {formik.values.diagnosis || "-"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h4 className="font-semibold text-slate-700 mb-2">
+                      Medicines ({prescriptionList.length})
+                    </h4>
+
+                    {prescriptionList.length > 0 ? (
+                      <div className="overflow-x-auto rounded-xl border border-sky-100">
+                        <table className="min-w-full text-sm">
+                          <thead className="bg-sky-100 text-slate-700">
+                            <tr>
+                              <th className="px-3 py-2 text-left">Medicine</th>
+                              <th className="px-3 py-2 text-left">Type</th>
+                              <th className="px-3 py-2 text-left">
+                                Instructions
+                              </th>
+                              <th className="px-3 py-2 text-center">
+                                Quantity/Dosage
+                              </th>
+                              <th className="px-3 py-2 text-left">
+                                Preferred Time
+                              </th>
+                              <th className="px-3 py-2 text-center">
+                                Duration
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {prescriptionList.map((item, idx) => (
+                              <tr key={idx} className="border-t border-sky-50">
+                                <td className="px-3 py-2 font-medium">
+                                  {item.medicine}
+                                </td>
+
+                                <td className="px-3 py-2">{item.type}</td>
+                                <td className="px-3 py-2">
+                                  {item.instructions}
+                                </td>
+                                {/* <td className="px-3 py-2 text-center">
+                                  {item.dosage}
+                                </td> */}
+                                <td className="px-3 py-2 text-center">
+                                  {item.type?.toLowerCase() === "syrup"
+                                    ? `${item.dosage} mL`
+                                    : item.dosage}
+                                </td>
+                                <td className="px-3 py-2">
+                                  {item.preferredTime}
+                                </td>
+
+                                <td className="px-3 py-2 text-center">
+                                  {item.duration}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">No medicines added</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
+              <div className="flex gap-2">
+                {activeStep > 1 && (
+                  <Button type="button" variant="gray" onClick={prevStep}>
+                    Back
+                  </Button>
+                )}
+
+                <Button
+                  type="button"
+                  variant="gray"
+                  onClick={() => {
+                    if (activeStep === 1) {
+                      formik.setValues({
+                        ...formik.values,
+                        billno: "",
+                        UHID: "",
+                        Name: "",
+                        Gender: "",
+                        Mobile: "",
+                        Age: "",
+                        FinCategory: "",
+                      });
+
+                      setBillSearch("");
+                      setSelectedBill("");
+                    }
+
+                    if (activeStep === 2) {
+                      formik.setValues({
+                        ...formik.values,
+                        bpsystolic: "",
+                        bpdiastolic: "",
+                        pulserate: "",
+                        spo2: "",
+                        temperature: "",
+                        height: "",
+                        weight: "",
+                        glucose: "",
+                      });
+                    }
+
+                    if (activeStep === 3) {
+                      formik.setValues({
+                        ...formik.values,
+                        ChiefComplaint: [],
+                        otherinstrution: "",
+                        labs: "",
+                        otherlabs: "",
+                        followup: "",
+                        advice: "",
+                        history: "",
+                        glucose: "",
+                      });
+                    }
+
+                    if (activeStep === 4) {
+                      formik.setValues({
+                        ...formik.values,
+                        medicine: "",
+                        medicineId: "",
+                        typemedicine: "",
+                        dosage: "",
+                        dosageinstructions: "",
+                        preferredtime: "",
+                        duration: "",
+                      });
+
+                      setMedicineSearch("");
+                      setSelectedMedicine("");
+                      setMedicineSuggestions([]);
+                      setPrescriptionList([]);
+                    }
+                    if (activeStep === 5) {
+                      formik.resetForm();
+
+                      setBillSearch("");
+                      setSelectedBill("");
+                      setSuggestionsList([]);
+
+                      setMedicineSearch("");
+                      setSelectedMedicine("");
+                      setMedicineSuggestions([]);
+
+                      setPrescriptionList([]);
+
+                      populatedUhidRef.current = "";
+                      setActiveStep(1);
+                    }
+                  }}
+                >
+                  <ArrowPathIcon className="w-5 h-5 inline mr-1" />
+                  Reset
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const dataToPrint =
+                      id && row
+                        ? row
+                        : buildPrescriptionPayload(
+                          formik.values,
+                          prescriptionList,
+                        );
+
+                    onPrintCS(dataToPrint);
+                  }}
+                >
+                  Print CS
+                </Button>
+                {printRow && (
+                  <div style={{ position: "absolute", top: "-9999px" }}>
+                    <PrescriptionPrint ref={printRef} data={printRow} />
+                  </div>
+                )}
+              </div>
+
+              {/* {activeStep < 5 ? (
+                <Button type="button" variant="sky" onClick={nextStep}>
+                  Continue
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button type="submit" variant="sky" disabled={isLoading}>
+                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+                    {id ? "Update" : "Save"}
+                  </Button>
+                </div>
+              )} */}
+              {activeStep < 5 ? (
+                activeStep === 3 && !can("update:prescription_form") ? (
+                  <Button
+                    type="button"
+                    variant="sky"
+                    disabled={isLoading}
+                    onClick={() => formik.submitForm()}
+                  >
+                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+                    {id ? "Update" : "Save"} Prescription
+                  </Button>
+                ) : (
+                  <Button type="button" variant="sky" onClick={nextStep}>
+                    Continue
+                  </Button>
+                )
+              ) : (
+                <div className="flex gap-2">
+                  <Button type="submit" variant="sky" disabled={isLoading}>
+                    <CheckCircleIcon className="w-5 h-5 inline mr-1" />
+                    {id ? "Update" : "Save"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PrescriptionFormCamp;
