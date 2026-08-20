@@ -1930,6 +1930,81 @@ export const api = createApi({
       }),
       providesTags: ["PatientTrend"],
     }),
+    getCampPrescriptionsList: build.query({
+  query: ({
+    page = 1,
+    limit = 10,
+    Name_,
+    mobileno,
+    date_from,
+    date_to,
+    bill_no,
+    status,
+    ID,
+  } = {}) => ({
+    url: "/picasoid-prescription-camp",
+    method: "GET",
+    params: {
+      page,
+      limit,
+      Name_,
+      mobileno,
+      date_from,
+      date_to,
+      bill_no,
+      status,
+      ID,
+    },
+  }),
+
+  transformResponse: (response) => ({
+    data: response.data || [],
+    pagination: response.pagination || {},
+  }),
+
+  providesTags: ["Prescription"],
+}),
+
+createCampPrescription: build.mutation({
+  query: (prescriptionData) => ({
+    url: "/picasoid-prescription-camp/create",
+    method: "POST",
+    data: prescriptionData,
+  }),
+
+  invalidatesTags: ["Prescription"],
+}),
+
+updateCampPrescription: build.mutation({
+  query: ({ id, ...body }) => ({
+    url: `/picasoid-prescription-camp/${id}`,
+    method: "PUT",
+    data: body,
+  }),
+
+  invalidatesTags: ["Prescription"],
+}),
+
+toggleCampPrescriptionStatus: build.mutation({
+  query: (id) => ({
+    url: `/picasoid-prescription-camp/${id}/toggle-status`,
+    method: "PATCH",
+    data: {},
+  }),
+
+  invalidatesTags: ["Prescription"],
+}),
+
+exportCampPrescriptionsExcel: build.query({
+  query: (filters = {}) => ({
+    url: "/picasoid-prescription-camp/export/excel",
+    method: "GET",
+    params: filters,
+    responseType: "blob",
+  }),
+
+  keepUnusedDataFor: 0,
+}),
   }),
 });
 
@@ -2141,5 +2216,10 @@ export const {
   useUpdatePackageMutation,
   useDeletePackageMutation,
   useGetCentersByTenantQuery,
-  useGetPatientsTrendQuery
+  useGetPatientsTrendQuery,
+  useGetCampPrescriptionsListQuery,
+  useCreateCampPrescriptionMutation,
+  useUpdateCampPrescriptionMutation,
+  useToggleCampPrescriptionStatusMutation,
+  useLazyExportCampPrescriptionsExcelQuery,
 } = api;
