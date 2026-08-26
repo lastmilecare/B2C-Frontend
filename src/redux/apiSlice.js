@@ -1931,80 +1931,219 @@ export const api = createApi({
       providesTags: ["PatientTrend"],
     }),
     getCampPrescriptionsList: build.query({
-  query: ({
-    page = 1,
-    limit = 10,
-    Name_,
-    mobileno,
-    date_from,
-    date_to,
-    bill_no,
-    status,
-    ID,
-  } = {}) => ({
-    url: "/picasoid-prescription-camp",
-    method: "GET",
-    params: {
-      page,
-      limit,
-      Name_,
-      mobileno,
-      date_from,
-      date_to,
-      bill_no,
-      status,
-      ID,
-    },
-  }),
+      query: ({
+        page = 1,
+        limit = 10,
+        Name_,
+        mobileno,
+        date_from,
+        date_to,
+        bill_no,
+        status,
+        ID,
+      } = {}) => ({
+        url: "/picasoid-prescription-camp",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          Name_,
+          mobileno,
+          date_from,
+          date_to,
+          bill_no,
+          status,
+          ID,
+        },
+      }),
 
-  transformResponse: (response) => ({
-    data: response.data || [],
-    pagination: response.pagination || {},
-  }),
+      transformResponse: (response) => ({
+        data: response.data || [],
+        pagination: response.pagination || {},
+      }),
 
-  providesTags: ["Prescription"],
-}),
+      providesTags: ["Prescription"],
+    }),
 
-createCampPrescription: build.mutation({
-  query: (prescriptionData) => ({
-    url: "/picasoid-prescription-camp/create",
-    method: "POST",
-    data: prescriptionData,
-  }),
+    createCampPrescription: build.mutation({
+      query: (prescriptionData) => ({
+        url: "/picasoid-prescription-camp/create",
+        method: "POST",
+        data: prescriptionData,
+      }),
 
-  invalidatesTags: ["Prescription"],
-}),
+      invalidatesTags: ["Prescription"],
+    }),
 
-updateCampPrescription: build.mutation({
-  query: ({ id, ...body }) => ({
-    url: `/picasoid-prescription-camp/${id}`,
-    method: "PUT",
-    data: body,
-  }),
+    updateCampPrescription: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/picasoid-prescription-camp/${id}`,
+        method: "PUT",
+        data: body,
+      }),
 
-  invalidatesTags: ["Prescription"],
-}),
+      invalidatesTags: ["Prescription"],
+    }),
 
-toggleCampPrescriptionStatus: build.mutation({
-  query: (id) => ({
-    url: `/picasoid-prescription-camp/${id}/toggle-status`,
-    method: "PATCH",
-    data: {},
-  }),
+    toggleCampPrescriptionStatus: build.mutation({
+      query: (id) => ({
+        url: `/picasoid-prescription-camp/${id}/toggle-status`,
+        method: "PATCH",
+        data: {},
+      }),
 
-  invalidatesTags: ["Prescription"],
-}),
+      invalidatesTags: ["Prescription"],
+    }),
 
-exportCampPrescriptionsExcel: build.query({
-  query: (filters = {}) => ({
-    url: "/picasoid-prescription-camp/export/excel",
-    method: "GET",
-    params: filters,
-    responseType: "blob",
-  }),
+    exportCampPrescriptionsExcel: build.query({
+      query: (filters = {}) => ({
+        url: "/picasoid-prescription-camp/export/excel",
+        method: "GET",
+        params: filters,
+        responseType: "blob",
+      }),
 
-  keepUnusedDataFor: 0,
-}),
+      keepUnusedDataFor: 0,
+    }),
+    createDepartment: build.mutation({
+      query: (departmentData) => ({
+        url: "/departments",
+        method: "POST",
+        data: departmentData,
+      }),
+
+      invalidatesTags: ["Department"],
+    }),
+
+    updateDepartment: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/departments/${id}`,
+        method: "PATCH",
+        data: body,
+      }),
+
+      invalidatesTags: ["Department"],
+    }),
+
+    toggleDepartmentStatus: build.mutation({
+      query: (id) => ({
+        url: `/departments/${id}/toggle-status`,
+        method: "PATCH",
+        data: {},
+      }),
+
+      invalidatesTags: ["Department"],
+    }),
+
+    deleteDepartment: build.mutation({
+      query: (id) => ({
+        url: `/departments/${id}`,
+        method: "DELETE",
+      }),
+
+      invalidatesTags: ["Department"],
+    }),
+
+    getDepartmentList: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        code,
+        center_id,
+        startDate,
+        endDate,
+      } = {}) => ({
+        url: "/departments",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          name,
+          code,
+          center_id,
+          startDate,
+          endDate,
+        },
+      }),
+
+      transformResponse: (response) => ({
+        data: response?.data?.data || [],
+        pagination: response?.data?.pagination || {},
+      }),
+
+      providesTags: ["Department"],
+    }),
+
+     createDesignation: build.mutation({
+      query: (designationData) => ({
+        url: "/designation",
+        method: "POST",
+        data: designationData,
+      }),
+
+      invalidatesTags: ["Designation"],
+    }),
+
+    updateDesignation: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/designation/${id}`,
+        method: "PATCH",
+        data: body,
+      }),
+
+      invalidatesTags: ["Designation"],
+    }),
+
+    toggleDesignationStatus: build.mutation({
+      query: (id) => ({
+        url: `/designation/${id}/toggle-status`,
+        method: "PATCH",
+        data: {},
+      }),
+
+      invalidatesTags: ["Designation"],
+    }),
+
+    deleteDesignation: build.mutation({
+      query: (id) => ({
+        url: `/designation/${id}`,
+        method: "DELETE",
+      }),
+
+      invalidatesTags: ["Designation"],
+    }),
+
+    getDesignationList: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        code,
+        center_id,
+        startDate,
+        endDate,
+      } = {}) => ({
+        url: "/designation",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          name,
+          code,
+          center_id,
+          startDate,
+          endDate,
+        },
+      }),
+
+      transformResponse: (response) => ({
+        data: response?.data?.data || [],
+        pagination: response?.data?.pagination || {},
+      }),
+
+      providesTags: ["Designation"],
+    }),
   }),
 });
 
@@ -2222,4 +2361,14 @@ export const {
   useUpdateCampPrescriptionMutation,
   useToggleCampPrescriptionStatusMutation,
   useLazyExportCampPrescriptionsExcelQuery,
+  useCreateDepartmentMutation,
+  useUpdateDepartmentMutation,
+  useDeleteDepartmentMutation,
+  useToggleDepartmentStatusMutation,
+  useGetDepartmentListQuery,
+  useCreateDesignationMutation,
+  useUpdateDesignationMutation,
+  useDeleteDesignationMutation,
+  useToggleDesignationStatusMutation,
+  useGetDesignationListQuery,
 } = api;

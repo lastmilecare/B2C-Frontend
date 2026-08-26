@@ -17,7 +17,7 @@ import {
   HeartIcon,
   BanknotesIcon,
   MapPinIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
 
@@ -207,7 +207,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Prescription List
               </NavLink>
             )}
-             {can("create:prescription_form") && (
+            {can("create:prescription_form") && (
               <NavLink
                 to="/prescription-form-camp"
                 className={subNavItem}
@@ -281,34 +281,38 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             </NavLink>
           </MenuGroup>
         )}
-{/* ── Camp Opd ──────────────────────────── */}
-         {can("create:camp_opd_form") && (
-          <MenuGroup menuKey="campopd" icon={BuildingOffice2Icon} label="Camp OPD">
+        {/* ── Camp Opd ──────────────────────────── */}
+        {can("create:camp_opd_form") && (
+          <MenuGroup
+            menuKey="campopd"
+            icon={BuildingOffice2Icon}
+            label="Camp OPD"
+          >
             {can("create:camp_opd_form") && (
               <NavLink
                 to="/camp-opd-form"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-              Camp OPD Form
+                Camp OPD Form
               </NavLink>
-             )} 
+            )}
 
-           {can("create:camp_opd_form") && ( 
+            {can("create:camp_opd_form") && (
               <NavLink
                 to="/camp-opd-list"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-              Camp OPD List
+                Camp OPD List
               </NavLink>
-             )} 
+            )}
           </MenuGroup>
-         )} 
+        )}
 
-         {/*----- Revenue--------*/}
+        {/*----- Revenue--------*/}
 
-           {can("read:pharmacy_revenue") && (
+        {can("read:pharmacy_revenue") && (
           <MenuGroup menuKey="Revenue" icon={BanknotesIcon} label="Revenue">
             {can("read:pharmacy_revenue") && (
               <NavLink
@@ -316,30 +320,30 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-              Pharmacy Revenue
+                Pharmacy Revenue
               </NavLink>
-              )}  
+            )}
 
-            {can("read:spectacle_revenue") && (  
+            {can("read:spectacle_revenue") && (
               <NavLink
                 to="/spectacle-revenue"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-              Spectacle Revenue
+                Spectacle Revenue
               </NavLink>
-             )} 
-               {can("read:opd_revenue") && (  
+            )}
+            {can("read:opd_revenue") && (
               <NavLink
                 to="/opd-revenue"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-              Opd Revenue
+                Opd Revenue
               </NavLink>
-              )}   
+            )}
           </MenuGroup>
-          )}  
+        )}
 
         {/* ── Staff ────────────────────────────────────────── */}
         {can("read:staff_form") && (
@@ -350,7 +354,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-               Add Staff
+                Add Staff
               </NavLink>
             )}
             {can("read:staff_form") && (
@@ -409,22 +413,18 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
             )}
             {can("create:resource") && (
-            <NavLink
-              to="/resource"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Resources
-            </NavLink>
+              <NavLink
+                to="/resource"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Resources
+              </NavLink>
             )}
           </MenuGroup>
         )}
         {can("read:center") && (
-          <MenuGroup
-            menuKey="centers"
-            icon={MapPinIcon}
-            label="Centers"
-          >
+          <MenuGroup menuKey="centers" icon={MapPinIcon} label="Centers">
             {can("create:center") && (
               <NavLink
                 to="/centers"
@@ -447,7 +447,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         {can("read:tenant") && (
           <MenuGroup
             menuKey="tenants"
-            icon={BuildingOffice2Icon }
+            icon={BuildingOffice2Icon}
             label="Tenants (Corporate)"
           >
             {can("create:tenant") && (
@@ -505,30 +505,30 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
             )}
             {/* {can("create:ohc_patient_registration") && ( */}
-              <NavLink
-                to="/opd-ohc"
-                className={subNavItem}
-                onClick={() => setIsOpen(false)}
-              >
-                OPD Health Checkup 
-              </NavLink>
+            <NavLink
+              to="/opd-ohc"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              OPD Health Checkup
+            </NavLink>
             {/* )} */}
             <NavLink
-                to="/test-packages-ohc"
-                className={subNavItem}
-                onClick={() => setIsOpen(false)}
-              >
-                Test Package Management
-              </NavLink>
-             {can("create:patient_examination_details_ohc") && (
-            <NavLink
+              to="/test-packages-ohc"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Test Package Management
+            </NavLink>
+            {can("create:patient_examination_details_ohc") && (
+              <NavLink
                 to="/patient-examination-details"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
                 Worker Health Checkup
               </NavLink>
-             )}
+            )}
             {/* <NavLink
               to="/vitals"
               className={subNavItem}
@@ -606,21 +606,39 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
             )}
             {can("create:ohc_staff_page") && (
-             <NavLink
+              <NavLink
                 to="/staff-page-ohc"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                Add Staff 
+                Add Staff
               </NavLink>
             )}
-              {can("create:ohc_center") && (
+            {can("create:ohc_center") && (
               <NavLink
                 to="/ohc-centers"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
                 Add Center
+              </NavLink>
+            )}
+            {can("read:ohc_dashboard") && (
+              <NavLink
+                to="/ohc-department"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Department
+              </NavLink>
+            )}
+            {can("read:ohc_dashboard") && (
+              <NavLink
+                to="/ohc-designation"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Designation
               </NavLink>
             )}
           </MenuGroup>
@@ -631,4 +649,3 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
 };
 
 export default AppSidebar;
-
