@@ -326,6 +326,11 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
         <span style={colon1}>:</span>
         <span style={value}>{data?.chiefComplaints}</span>
       </div>
+      <div style={rowBlock}>
+        <span style={label}>Complaint Remarks</span>
+        <span style={colon1}>:</span>
+        <span style={value}>{data?.remarks}</span>
+      </div>
 
       <div style={rowBlock}>
         <span style={label}>Lab Tests</span>
