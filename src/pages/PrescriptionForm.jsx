@@ -289,8 +289,7 @@ const PrescriptionFormCopy = () => {
       CenterID: "",
       PatientID: "",
       glucose: "",
-      diagnosis: "",
-      Remarks:""
+      diagnosis: ""
     },
     validationSchema: Yup.object({
       billno: Yup.string().required("Bill No is required"),
