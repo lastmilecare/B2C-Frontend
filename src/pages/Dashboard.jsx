@@ -57,17 +57,17 @@ const AppDashboard = () => {
 
   const { data: patientData } = useGetPatientsQuery({
     page: 1,
-    limit: 100,
+    limit: 1000,
   });
 
   const { data: opdData } = useGetOpdBillingQuery({
     page: 1,
-    limit: 100,
+    limit: 1000,
   });
 
   const { data: prescriptionData } = useGetPrescriptionsListQuery({
     page: 1,
-    limit: 100,
+    limit: 1000,
   });
 
   const { data: lowStockData, isLoading: stockLoading } =
@@ -91,9 +91,22 @@ const AppDashboard = () => {
     (o) => new Date(o.AddedDate).toDateString() === today,
   ).length;
 
+  const todayOpdCount = new Set(
+    opd
+      .filter((o) => new Date(o.AddedDate).toDateString() === today)
+      .map((o) => o.uhid)
+      .filter(Boolean),
+  ).size;
+
   const todayPrescription = prescriptions.filter(
     (p) => new Date(p.addedDate).toDateString() === today,
   ).length;
+  const todayPrescriptionCount = new Set(
+    prescriptions
+      .filter((o) => new Date(o.addedDate).toDateString() === today)
+      .map((o) => o.picasoId)
+      .filter(Boolean),
+  ).size;
 
   /* =========================================================
      USER / TENANT
@@ -339,7 +352,7 @@ const AppDashboard = () => {
             }
           `}
         >
-          <p className="text-sm">Today's Patients</p>
+          <p className="text-sm">Today's New Registered Patients</p>
 
           <h2 className="text-3xl font-bold">
             {can("read:patient_list") ? todayPatients : "--"}
@@ -358,10 +371,10 @@ const AppDashboard = () => {
             }
           `}
         >
-          <p className="text-sm">Today's OPD</p>
+          <p className="text-sm">Today's total Unique OPD</p>
 
           <h2 className="text-3xl font-bold">
-            {can("read:opd_list") ? todayOpd : "--"}
+            {can("read:opd_list") ? todayOpdCount : "--"}
           </h2>
         </motion.div>
 
@@ -400,10 +413,10 @@ const AppDashboard = () => {
             }
           `}
         >
-          <p className="text-sm">Today's Prescription</p>
+          <p className="text-sm">Today's total Unique Prescription</p>
 
           <h2 className="text-3xl font-bold">
-            {can("read:prescription_list") ? todayPrescription : "--"}
+            {can("read:prescription_list") ? todayPrescriptionCount : "--"}
           </h2>
         </motion.div>
       </div>

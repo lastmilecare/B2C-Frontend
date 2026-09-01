@@ -502,7 +502,7 @@ const OpdBillingListCopy = () => {
             .map((item) => item?.ServiceName)
             .filter(Boolean)
             .join(", "),
-          30,
+          120,
         ),
       width: "120px",
     },
