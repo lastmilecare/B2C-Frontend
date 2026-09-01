@@ -110,6 +110,7 @@ const OpdBillingListCopy = () => {
     useGetComboQuery("department");
   const { data: paymode, isLoading: paymodeComboLoading } =
     useGetComboQuery("paymode");
+
   const {
     data: collectedByResponse,
     isLoading: collectedComboLoading,
@@ -120,6 +121,7 @@ const OpdBillingListCopy = () => {
   const { data: nursing, isLoading: nursingComboLoading } =
     useGetComboQuery("nursing");
   const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
+  const { data: radiology, isLoading: radiologyComboLoading } = useGetComboQuery("radiology");
 
   const patients = data?.data || [];
   const pagination = data || { currentPage: page, totalRecords: 0 };
@@ -282,7 +284,9 @@ const OpdBillingListCopy = () => {
             ? "Nursing"
             : depCurrentVal === "LAB"
               ? "Lab"
-              : "Consultant",
+              : depCurrentVal === "RADIOLOGY"
+                ? "Radiology"
+                : "Consultant",
 
       name: "doctor",
       type: "select",
@@ -296,7 +300,9 @@ const OpdBillingListCopy = () => {
                 ? "All Nursing"
                 : depCurrentVal === "LAB"
                   ? "All Lab"
-                  : "Select Department First",
+                  : depCurrentVal === "RADIOLOGY"
+                    ? "All Radiology"
+                    : "Select Department First",
 
           value: "",
         },
@@ -317,6 +323,12 @@ const OpdBillingListCopy = () => {
 
         ...(depCurrentVal === "LAB"
           ? (lab || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+          ...(depCurrentVal === "RADIOLOGY"
+          ? (radiology || []).map((d) => ({
               label: d.username,
               value: d.username,
             }))
