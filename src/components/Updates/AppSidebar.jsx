@@ -20,6 +20,7 @@ import {
   DocumentTextIcon
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
+import PatientDetails from "../../pages/PatientDetails";
 
 const AppSidebar = ({ isOpen, setIsOpen }) => {
   const { permissions } = useSelector((state) => state.auth);
@@ -41,6 +42,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     centers: false,
     campopd: false,
     Revenue: false,
+    PatientDetails: false,
   });
 
   const toggleSubMenu = (menu) => {
@@ -305,6 +307,21 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
              )} 
           </MenuGroup>
          )} 
+          {can("read:patient_details") && (
+          <MenuGroup menuKey="PatientDetails" icon={BuildingOffice2Icon} label="Patient Details">
+            {can("read:patient_details") && (
+              <NavLink
+                to="/patient-details"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+              Patient Details
+              </NavLink>
+              )}  
+
+        
+          </MenuGroup>
+         )}
 
          {/*----- Revenue--------*/}
 

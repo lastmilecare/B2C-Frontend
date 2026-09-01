@@ -2005,6 +2005,46 @@ exportCampPrescriptionsExcel: build.query({
 
   keepUnusedDataFor: 0,
 }),
+ getPatientDetails: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        contactNumber,
+        gender,
+        category,
+        startDate,
+        endDate,
+        external_id,
+        idProof_number,
+        bill_no,
+        department,
+        doctor,
+        payment_mode,
+        added_by,
+      } = {}) => ({
+        url: "/opd-billing/view-patient-details",
+        method: "get",
+        params: {
+          page,
+          limit,
+          name,
+          contactNumber,
+          gender,
+          category,
+          startDate,
+          endDate,
+          external_id,
+          idProof_number,
+          bill_no,
+          department,
+          doctor,
+          payment_mode,
+          added_by,
+        },
+      }),
+      providesTags: ["Bill"],
+    }),
   }),
 });
 
@@ -2222,4 +2262,5 @@ export const {
   useUpdateCampPrescriptionMutation,
   useToggleCampPrescriptionStatusMutation,
   useLazyExportCampPrescriptionsExcelQuery,
+  useGetPatientDetailsQuery,
 } = api;
