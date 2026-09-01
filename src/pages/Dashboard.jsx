@@ -112,7 +112,7 @@ const AppDashboard = () => {
      USER / TENANT
   ========================================================= */
 
-  const recentPatients = patients.slice(0, 5);
+  const recentPatients = patients.slice(0, 10);
 
   const username = cookie.get("name") || "User";
   const role = cookie.get("role") || "N/A";
