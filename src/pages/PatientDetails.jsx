@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import CommonList from "../components/CommonList";
 import CopyFilterBar from "../components/Updates/Filter";
 import {
-  useGetOpdBillingQuery,
+  useGetPatientDetailsQuery,
   useGetComboQuery,
   useSearchUHIDQuery,
   useDeleteOpdBillMutation,
@@ -17,7 +17,7 @@ import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { generateFileName, downloadBlob } from "../utils/helper";
 import { formatDate, formatTime } from "../utils/helper";
-const OpdBillingListCopy = () => {
+const PatientDetails = () => {
   const [exportExcel] = useLazyExportOpdExcelQuery();
   const [depCurrentVal, setDepCurrentVal] = useState();
   const navigate = useNavigate();
@@ -95,7 +95,7 @@ const OpdBillingListCopy = () => {
   const printRef = useRef();
   const printRef1 = useRef();
 
-  const { data, isLoading, isError, error, refetch } = useGetOpdBillingQuery(
+  const { data, isLoading, isError, error, refetch } = useGetPatientDetailsQuery(
     {
       page,
       limit,
@@ -173,39 +173,39 @@ const OpdBillingListCopy = () => {
     setPage(1);
   };
 
-  const handleExport = async () => {
-  try {
-    const blob = await exportExcel({
-      ...filters,
-      reportType: "list",
-    }).unwrap();
+//   const handleExport = async () => {
+//   try {
+//     const blob = await exportExcel({
+//       ...filters,
+//       reportType: "list",
+//     }).unwrap();
 
-    const fileName = generateFileName("OpdBillingDetail", {
-      dateFrom: filters?.startDate,
-      dateTo: filters?.endDate,
-      extension: "xlsx",
-    });
+//     const fileName = generateFileName("OpdBillingDetail", {
+//       dateFrom: filters?.startDate,
+//       dateTo: filters?.endDate,
+//       extension: "xlsx",
+//     });
 
-    downloadBlob(blob, fileName);
-  } catch (error) {
-    const status = error?.status;
-    const message = error?.data?.message || "Something went wrong";
+//     downloadBlob(blob, fileName);
+//   } catch (error) {
+//     const status = error?.status;
+//     const message = error?.data?.message || "Something went wrong";
 
-    if (status === 404) {
-      return healthAlert({
-        title: "No Data Found",
-        text: message,
-        icon: "info",
-      });
-    }
+//     if (status === 404) {
+//       return healthAlert({
+//         title: "No Data Found",
+//         text: message,
+//         icon: "info",
+//       });
+//     }
 
-    healthAlert({
-      title: "Export Error",
-      text: message,
-      icon: "error",
-    });
-  }
-};
+//     healthAlert({
+//       title: "Export Error",
+//       text: message,
+//       icon: "error",
+//     });
+//   }
+// };
 
   const handleResetFilters = () => {
     setTempFilters({
@@ -264,109 +264,109 @@ const OpdBillingListCopy = () => {
       },
     },
     { label: "Bill No", name: "bill_no", type: "text" },
-    {
-      label: "Department",
-      name: "department",
-      type: "select",
-      options:
-        department?.map((d) => ({
-          label: d.name,
-          value: d.name,
-        })) || [],
-    },
-    {
-      label:
-        depCurrentVal === "DOCTORS"
-          ? "Consulting Doctor"
-          : depCurrentVal === "NURSING"
-            ? "Nursing"
-            : depCurrentVal === "LAB"
-              ? "Lab"
-              : "Consultant",
+    // {
+    //   label: "Department",
+    //   name: "department",
+    //   type: "select",
+    //   options:
+    //     department?.map((d) => ({
+    //       label: d.name,
+    //       value: d.name,
+    //     })) || [],
+    // },
+    // {
+    //   label:
+    //     depCurrentVal === "DOCTORS"
+    //       ? "Consulting Doctor"
+    //       : depCurrentVal === "NURSING"
+    //         ? "Nursing"
+    //         : depCurrentVal === "LAB"
+    //           ? "Lab"
+    //           : "Consultant",
 
-      name: "doctor",
-      type: "select",
+    //   name: "doctor",
+    //   type: "select",
 
-      options: [
-        {
-          label:
-            depCurrentVal === "DOCTORS"
-              ? "All Doctors"
-              : depCurrentVal === "NURSING"
-                ? "All Nursing"
-                : depCurrentVal === "LAB"
-                  ? "All Lab"
-                  : "Select Department First",
+    //   options: [
+    //     {
+    //       label:
+    //         depCurrentVal === "DOCTORS"
+    //           ? "All Doctors"
+    //           : depCurrentVal === "NURSING"
+    //             ? "All Nursing"
+    //             : depCurrentVal === "LAB"
+    //               ? "All Lab"
+    //               : "Select Department First",
 
-          value: "",
-        },
+    //       value: "",
+    //     },
 
-        ...(depCurrentVal === "DOCTORS"
-          ? (doctors || []).map((d) => ({
-              label: d.name || d.doctor_name,
-              value: d.name || d.doctor_name,
-            }))
-          : []),
+    //     ...(depCurrentVal === "DOCTORS"
+    //       ? (doctors || []).map((d) => ({
+    //           label: d.name || d.doctor_name,
+    //           value: d.name || d.doctor_name,
+    //         }))
+    //       : []),
 
-        ...(depCurrentVal === "NURSING"
-          ? (nursing || []).map((d) => ({
-              label: d.username,
-              value: d.username,
-            }))
-          : []),
+    //     ...(depCurrentVal === "NURSING"
+    //       ? (nursing || []).map((d) => ({
+    //           label: d.username,
+    //           value: d.username,
+    //         }))
+    //       : []),
 
-        ...(depCurrentVal === "LAB"
-          ? (lab || []).map((d) => ({
-              label: d.username,
-              value: d.username,
-            }))
-          : []),
-      ],
-    },
+    //     ...(depCurrentVal === "LAB"
+    //       ? (lab || []).map((d) => ({
+    //           label: d.username,
+    //           value: d.username,
+    //         }))
+    //       : []),
+    //   ],
+    // },
 
-    {
-      label: "Fin Category",
-      name: "category",
-      type: "select",
-      options: [
-        { label: "APL", value: "apl" },
-        { label: "BPL", value: "bpl" },
-      ],
-    },
-    {
-      label: "Pay Mode",
-      name: "payment_mode",
-      type: "select",
-      options: paymode?.map((p) => ({ label: p.name, value: p.name })) || [],
-    },
+    // {
+    //   label: "Fin Category",
+    //   name: "category",
+    //   type: "select",
+    //   options: [
+    //     { label: "APL", value: "apl" },
+    //     { label: "BPL", value: "bpl" },
+    //   ],
+    // },
+    // {
+    //   label: "Pay Mode",
+    //   name: "payment_mode",
+    //   type: "select",
+    //   options: paymode?.map((p) => ({ label: p.name, value: p.name })) || [],
+    // },
 
-    {
-      label: "Collected By",
-      name: "added_by",
-      type: "select",
-      options:
-        collectedBy?.map((u) => ({
-          id: u.id,
-          label: u.name,
-          value: u.name,
-        })) || [],
-    },
+    // {
+    //   label: "Collected By",
+    //   name: "added_by",
+    //   type: "select",
+    //   options:
+    //     collectedBy?.map((u) => ({
+    //       id: u.id,
+    //       label: u.name,
+    //       value: u.name,
+    //     })) || [],
+    // },
 
     { label: "Mobile", name: "contactNumber", type: "text" },
-    {
-      label: "Gender",
-      name: "gender",
-      type: "select",
-      options: [
-        { label: "Male", value: "Male" },
-        { label: "Female", value: "Female" },
-        { label: "Other", value: "Other" },
-      ],
-    },
+    // {
+    //   label: "Gender",
+    //   name: "gender",
+    //   type: "select",
+    //   options: [
+    //     { label: "Male", value: "Male" },
+    //     { label: "Female", value: "Female" },
+    //     { label: "Other", value: "Other" },
+    //   ],
+    // },
 
-    { label: "Date from ", name: "startDate", type: "date" },
-    { label: "Date to", name: "endDate", type: "date" },
-    { label: "Unique Id", name: "idProof_number", type: "text" },
+    // { label: "Date from ", name: "startDate", type: "date" },
+    // { label: "Date to", name: "endDate", type: "date" },
+    // { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
 
   const truncateText = (text, maxLength = 30) => {
@@ -381,30 +381,30 @@ const OpdBillingListCopy = () => {
       selector: (row, i) => (page - 1) * limit + i + 1,
       width: "70px",
     },
-    {
-      name: "T.No",
-      title: "Token Number",
-      selector: (row) => safeString(row?.token, "-"),
-      sortable: true,
-    },
+    // {
+    //   name: "T.No",
+    //   title: "Token Number",
+    //   selector: (row) => safeString(row?.token, "-"),
+    //   sortable: true,
+    // },
     {
       name: "Bill No",
       title: "Bill Number",
       selector: (row) => safeString(row?.bill_no, "-"),
       sortable: true,
-      width: "70px",
+      width: "100px",
     },
-    {
-      name: "Center",
-      title: "Centre Name",
-      selector: (row) => safeString(row?.center_name, "-"),
-      width: "140px",
-    },
+    // {
+    //   name: "Center",
+    //   title: "Centre Name",
+    //   selector: (row) => safeString(row?.center_name, "-"),
+    //   width: "140px",
+    // },
     {
       name: "UHID",
       title: "Unique Health ID",
       selector: (row) => safeString(row?.uhid, "-"),
-      width: "135px",
+      width: "150px",
       sortable: true,
     },
     {
@@ -412,7 +412,7 @@ const OpdBillingListCopy = () => {
       title: "Patient Name",
       selector: (row) => safeString(row?.patient_name, "-"),
       sortable: true,
-      width: "100px",
+      width: "150px",
     },
     {
       name: "Age",
@@ -420,118 +420,120 @@ const OpdBillingListCopy = () => {
       selector: (row) =>
         `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
       sortable: true,
-      width: "100px",
+      width: "150px",
     },
-    {
-      name: "Gender",
-      title: "Gender",
-      selector: (row) => safeString(row?.gender, "-"),
-      width: "60px",
-    },
-    {
-      name: "Address",
-      title: "Address / District",
-      selector: (row) => safeString(row?.localAddress, "-"),
-      width: "110px",
-    },
-    {
-      name: "Category",
-      title: "Category",
-      selector: (row) => safeString(row?.patient_type, "-"),
-      sortable: true,
-      width: "55px",
-    },
+    // {
+    //   name: "Gender",
+    //   title: "Gender",
+    //   selector: (row) => safeString(row?.gender, "-"),
+    //   width: "60px",
+    // },
+    // {
+    //   name: "Address",
+    //   title: "Address / District",
+    //   selector: (row) => safeString(row?.localAddress, "-"),
+    //   width: "110px",
+    // },
+    // {
+    //   name: "Category",
+    //   title: "Category",
+    //   selector: (row) => safeString(row?.patient_type, "-"),
+    //   sortable: true,
+    //   width: "55px",
+    // },
     {
       name: "Ph",
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNumber, "-"),
       width: "100px",
     },
-    {
-      name: "Total.Due (Rs.)",
-      title: "Total Previous Due Amount",
-      selector: (row) => formatCurrency(calculateDue(patients, row.uhid)),
-      sortable: true,
-      width: "110px",
-    },
-    {
-      name: "Bill.Amt (Rs.)",
-      title: "Bill Amount",
-      selector: (row) => formatCurrency(row?.BillAmount ?? row?.PaidAmount),
-      sortable: true,
-      width: "100px",
-    },
-    {
-      name: "T.Amt (Rs.)",
-      title: "Total Bill Amount",
-      selector: (row) => formatCurrency(row?.TotalServiceAmount),
-      sortable: true,
-      width: "95px",
-    },
-    {
-      name: "P.Amt (Rs.)",
-      title: "Paid Amount",
-      selector: (row) => formatCurrency(row?.PaidAmount),
-      sortable: true,
-      width: "95px",
-    },
-    {
-      name: "Due.Amt (Rs.)",
-      title: "Due Amount",
-      selector: (row) => formatCurrency(row?.DueAmount),
-      sortable: true,
-      width: "105px",
-    },
-    {
-      name: "Pay.Mode",
-      title: "Payment Mode",
-      selector: (row) => safeString(row?.payment_mode, "-"),
-      width: "80px",
-    },
-    {
-      name: "Consultant",
-      title: "Consultant Doctor",
-      selector: (row) => safeString(row?.doctor_name, "-"),
-      width: "100px",
-    },
+    // {
+    //   name: "Total.Due (Rs.)",
+    //   title: "Total Previous Due Amount",
+    //   selector: (row) => formatCurrency(calculateDue(patients, row.uhid)),
+    //   sortable: true,
+    //   width: "110px",
+    // },
+    // {
+    //   name: "Bill.Amt (Rs.)",
+    //   title: "Bill Amount",
+    //   selector: (row) => formatCurrency(row?.BillAmount ?? row?.PaidAmount),
+    //   sortable: true,
+    //   width: "100px",
+    // },
+    // {
+    //   name: "T.Amt (Rs.)",
+    //   title: "Total Bill Amount",
+    //   selector: (row) => formatCurrency(row?.TotalServiceAmount),
+    //   sortable: true,
+    //   width: "95px",
+    // },
+    // {
+    //   name: "P.Amt (Rs.)",
+    //   title: "Paid Amount",
+    //   selector: (row) => formatCurrency(row?.PaidAmount),
+    //   sortable: true,
+    //   width: "95px",
+    // },
+    // {
+    //   name: "Due.Amt (Rs.)",
+    //   title: "Due Amount",
+    //   selector: (row) => formatCurrency(row?.DueAmount),
+    //   sortable: true,
+    //   width: "105px",
+    // },
+    // {
+    //   name: "Pay.Mode",
+    //   title: "Payment Mode",
+    //   selector: (row) => safeString(row?.payment_mode, "-"),
+    //   width: "80px",
+    // },
+    // {
+    //   name: "Consultant",
+    //   title: "Consultant Doctor",
+    //   selector: (row) => safeString(row?.doctor_name, "-"),
+    //   width: "100px",
+    // },
     {
       name: "Service",
       title: "Service Name",
+     
       selector: (row) =>
         truncateText(
           (row?.opd_billing_data || [])
             .map((item) => item?.ServiceName)
             .filter(Boolean)
             .join(", "),
-          120,
+          30,
         ),
-      width: "120px",
+      width: "220px",
+      
     },
-   {
-  name: "Ref",
-  title: "Referred By",
-  selector: (row) => {
-    const referTo = Number(row?.refer_id);
+//    {
+//   name: "Ref",
+//   title: "Referred By",
+//   selector: (row) => {
+//     const referTo = Number(row?.refer_id);
 
-    if (referTo === 1) {
-      return "Refer from Amp";
-    }
+//     if (referTo === 1) {
+//       return "Refer from Amp";
+//     }
 
-    if (referTo === 2) {
-      return "Refer To Medi Kavach";
-    }
+//     if (referTo === 2) {
+//       return "Refer To Medi Kavach";
+//     }
 
-    return "";
-  },
-  width: "140px",
-},
+//     return "";
+//   },
+//   width: "140px",
+// },
 
-    {
-      name: "Collected By",
-      title: "Collected By",
-      selector: (row) => safeString(row?.added_by, "-"),
-      width: "120px",
-    },
+//     {
+//       name: "Collected By",
+//       title: "Collected By",
+//       selector: (row) => safeString(row?.added_by, "-"),
+//       width: "120px",
+//     },
 
     {
       name: "Bill.Date",
@@ -586,7 +588,7 @@ const OpdBillingListCopy = () => {
 
   return (
     <div className="p-0">
-      <h1 className="text-2xl font-semibold text-gray-700 mb-6">Opd List</h1>
+      <h1 className="text-2xl font-semibold text-gray-700 mb-6">Patient Details</h1>
       <CopyFilterBar
         filtersConfig={filtersConfig}
         tempFilters={tempFilters}
@@ -600,12 +602,12 @@ const OpdBillingListCopy = () => {
         }}
         onApply={handleApplyFilters}
         onReset={handleResetFilters}
-        onExport={handleExport}
+        // onExport={handleExport}
         suggestions={suggestions}
         onSelectSuggestion={handleSelectSuggestion}
       />
       <CommonList
-        title="💳 OPD Billing List"
+        title="💳 Patient Details List"
         columns={columns}
         data={patients}
         totalRows={pagination.total || 0}
@@ -623,9 +625,7 @@ const OpdBillingListCopy = () => {
         onDelete={handleDelete}
         onPrintCS={onPrintCS}
         onPrint={onPrintInvoice}
-        enableAdd
-        addButtonText="Add"
-        onAdd={() => navigate("/opd-form")}
+       
       />
       {printRow && (
         <div style={{ display: "none" }}>
@@ -647,4 +647,4 @@ const OpdBillingListCopy = () => {
   );
 };
 
-export default OpdBillingListCopy;
+export default PatientDetails;

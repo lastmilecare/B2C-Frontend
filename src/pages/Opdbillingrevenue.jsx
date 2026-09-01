@@ -179,38 +179,39 @@ const OpdListRevenue = () => {
     setPage(1);
   };
 
-  const handleExport = async () => {
-    try {
-      const blob = await exportExcel(filters).unwrap();
+ const handleExport = async () => {
+  try {
+    const blob = await exportExcel({
+      ...filters,
+      reportType: "revenue",
+    }).unwrap();
 
-      const fileName = generateFileName("OpdBillingDetail", {
-        dateFrom: filters?.date_from,
-        dateTo: filters?.date_to,
-        extension: "xlsx",
-      });
+    const fileName = generateFileName("OpdBillingRevenue", {
+      dateFrom: filters?.startDate,
+      dateTo: filters?.endDate,
+      extension: "xlsx",
+    });
 
-      downloadBlob(blob, fileName);
-    } catch (error) {
-      const status = error?.status;
-      const message = error?.data?.message || "Something went wrong";
+    downloadBlob(blob, fileName);
+  } catch (error) {
+    const status = error?.status;
+    const message = error?.data?.message || "Something went wrong";
 
-      // No data case
-      if (status === 404) {
-        return healthAlert({
-          title: "No Data Found",
-          text: message,
-          icon: "info",
-        });
-      }
-
-      // Real error
-      healthAlert({
-        title: "Export Error",
+    if (status === 404) {
+      return healthAlert({
+        title: "No Data Found",
         text: message,
-        icon: "error",
+        icon: "info",
       });
     }
-  };
+
+    healthAlert({
+      title: "Export Error",
+      text: message,
+      icon: "error",
+    });
+  }
+};
 
   const handleResetFilters = () => {
     setTempFilters({
