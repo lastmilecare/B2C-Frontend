@@ -181,6 +181,15 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 OPD List
               </NavLink>
             )}
+            {can("read:opd_analysis") && (
+             <NavLink
+                to="/opd-analysis"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                OPD Bill Analysis
+              </NavLink>
+            )}
           </MenuGroup>
         )}
 

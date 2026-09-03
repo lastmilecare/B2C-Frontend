@@ -51,6 +51,7 @@ import OpdListRevenue from "../pages/Opdbillingrevenue";
 import PrescriptionListCamp from "../pages/PrescriptionCampList";
 import PrescriptionFormCamp from "../pages/PrescriptionCampForm";
 import PatientDetails from "../pages/PatientDetails";
+import OpdBillAnalysis from "../pages/OpdBillAnalysis";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -644,11 +645,20 @@ export const ROUTES = [
     path: "/patient-details",
     component: PatientDetails,
     permission: "read:patient_details",
-    
-    
     label: "Patient Details",
     icon: "ClipboardDocumentListIcon",
     group: "Patient Details",
+    showInSidebar: true,
+  },
+  {
+    path: "/opd-analysis",
+    component: OpdBillAnalysis,
+    permission: "read:opd_analysis",
+    
+    
+    label: "Opd Bill Analysis",
+    icon: "ClipboardDocumentListIcon",
+    group: "OPD",
     showInSidebar: true,
   },
   
