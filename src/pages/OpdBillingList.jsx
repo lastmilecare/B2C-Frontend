@@ -17,7 +17,9 @@ import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { generateFileName, downloadBlob } from "../utils/helper";
 import { formatDate, formatTime } from "../utils/helper";
+import { cookie } from "../utils/cookie";
 const OpdBillingListCopy = () => {
+  const role = cookie.get("role");
   const [exportExcel] = useLazyExportOpdExcelQuery();
   const [depCurrentVal, setDepCurrentVal] = useState();
   const navigate = useNavigate();
@@ -628,9 +630,9 @@ const OpdBillingListCopy = () => {
           setLimit(newLimit);
           setPage(1);
         }}
-        enableActions
+       enableActions={role !== "DOCTOR"}
         isLoading={isLoading}
-        actionButtons={["edit", "delete", "print", "printCS"]}
+        actionButtons={role !== "DOCTOR" ? ["edit", "delete", "print", "printCS"] : []}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onPrintCS={onPrintCS}
