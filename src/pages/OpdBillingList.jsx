@@ -123,7 +123,8 @@ const OpdBillingListCopy = () => {
   const { data: nursing, isLoading: nursingComboLoading } =
     useGetComboQuery("nursing");
   const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
-  const { data: radiology, isLoading: radiologyComboLoading } = useGetComboQuery("radiology");
+  const { data: radiology, isLoading: radiologyComboLoading } =
+    useGetComboQuery("radiology");
 
   const patients = data?.data || [];
   const pagination = data || { currentPage: page, totalRecords: 0 };
@@ -178,38 +179,38 @@ const OpdBillingListCopy = () => {
   };
 
   const handleExport = async () => {
-  try {
-    const blob = await exportExcel({
-      ...filters,
-      reportType: "list",
-    }).unwrap();
+    try {
+      const blob = await exportExcel({
+        ...filters,
+        reportType: "list",
+      }).unwrap();
 
-    const fileName = generateFileName("OpdBillingDetail", {
-      dateFrom: filters?.startDate,
-      dateTo: filters?.endDate,
-      extension: "xlsx",
-    });
+      const fileName = generateFileName("OpdBillingDetail", {
+        dateFrom: filters?.startDate,
+        dateTo: filters?.endDate,
+        extension: "xlsx",
+      });
 
-    downloadBlob(blob, fileName);
-  } catch (error) {
-    const status = error?.status;
-    const message = error?.data?.message || "Something went wrong";
+      downloadBlob(blob, fileName);
+    } catch (error) {
+      const status = error?.status;
+      const message = error?.data?.message || "Something went wrong";
 
-    if (status === 404) {
-      return healthAlert({
-        title: "No Data Found",
+      if (status === 404) {
+        return healthAlert({
+          title: "No Data Found",
+          text: message,
+          icon: "info",
+        });
+      }
+
+      healthAlert({
+        title: "Export Error",
         text: message,
-        icon: "info",
+        icon: "error",
       });
     }
-
-    healthAlert({
-      title: "Export Error",
-      text: message,
-      icon: "error",
-    });
-  }
-};
+  };
 
   const handleResetFilters = () => {
     setTempFilters({
@@ -329,7 +330,7 @@ const OpdBillingListCopy = () => {
               value: d.username,
             }))
           : []),
-          ...(depCurrentVal === "RADIOLOGY"
+        ...(depCurrentVal === "RADIOLOGY"
           ? (radiology || []).map((d) => ({
               label: d.username,
               value: d.username,
@@ -464,7 +465,10 @@ const OpdBillingListCopy = () => {
     {
       name: "Total.Due (Rs.)",
       title: "Total Previous Due Amount",
-      selector: (row) => formatCurrency(calculateDue(patients, row.uhid)),
+      selector: (row) => {
+        const due = Number(calculateDue(patients, row.uhid)) || 0;
+        return formatCurrency(Math.max(0, due));
+      },
       sortable: true,
       width: "110px",
     },
@@ -521,24 +525,24 @@ const OpdBillingListCopy = () => {
         ),
       width: "120px",
     },
-   {
-  name: "Ref",
-  title: "Referred By",
-  selector: (row) => {
-    const referTo = Number(row?.refer_id);
+    {
+      name: "Ref",
+      title: "Referred By",
+      selector: (row) => {
+        const referTo = Number(row?.refer_id);
 
-    if (referTo === 1) {
-      return "Refer from Amp";
-    }
+        if (referTo === 1) {
+          return "Refer from Amp";
+        }
 
-    if (referTo === 2) {
-      return "Refer To Medi Kavach";
-    }
+        if (referTo === 2) {
+          return "Refer To Medi Kavach";
+        }
 
-    return "";
-  },
-  width: "140px",
-},
+        return "";
+      },
+      width: "140px",
+    },
 
     {
       name: "Collected By",
@@ -630,9 +634,11 @@ const OpdBillingListCopy = () => {
           setLimit(newLimit);
           setPage(1);
         }}
-       enableActions={role !== "DOCTOR"}
+        enableActions={role !== "DOCTOR"}
         isLoading={isLoading}
-        actionButtons={role !== "DOCTOR" ? ["edit", "delete", "print", "printCS"] : []}
+        actionButtons={
+          role !== "DOCTOR" ? ["edit", "delete", "print", "printCS"] : []
+        }
         onEdit={handleEdit}
         onDelete={handleDelete}
         onPrintCS={onPrintCS}
