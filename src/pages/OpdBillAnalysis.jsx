@@ -295,13 +295,13 @@ const OpdBillAnalysis = () => {
         Math.max(0, Number(calculateDue(patients, row?.uhid)) || 0),
       ),
 
-      formatCurrency(row?.BillAmount ?? row?.PaidAmount),
+      formatCurrency(row?.NetServiceAmount),
 
-      formatCurrency(row?.TotalServiceAmount),
+      formatCurrency(row?.NetServiceAmount),
 
-      formatCurrency(row?.PaidAmount),
+      formatCurrency(row?.NetPaidAmount),
 
-      formatCurrency(row?.DueAmount),
+      formatCurrency(row?.NetDueAmount),
 
       safeString(row?.payment_mode, "-"),
 
@@ -847,10 +847,10 @@ const OpdBillAnalysis = () => {
       formatCurrency(
         Math.max(0, Number(calculateDue(patients, row?.uhid)) || 0),
       ),
-      formatCurrency(row?.BillAmount ?? row?.PaidAmount),
-      formatCurrency(row?.TotalServiceAmount),
-      formatCurrency(row?.PaidAmount),
-      formatCurrency(row?.DueAmount),
+      formatCurrency(row?.NetServiceAmount),
+      formatCurrency(row?.NetServiceAmount),
+      formatCurrency(row?.NetPaidAmount),
+      formatCurrency(row?.NetDueAmount),
       safeString(row?.payment_mode, "-"),
       safeString(row?.doctor_name, "-"),
       (row?.opd_billing_data || [])
@@ -1046,8 +1046,8 @@ const OpdBillAnalysis = () => {
     return rows
       .filter((r) => r.uhid === uhid) // ✅ correct field
       .reduce((acc, curr) => {
-        const total = Number(curr.TotalServiceAmount) || 0;
-        const paid = Number(curr.PaidAmount) || 0;
+        const total = Number(curr.NetServiceAmount) || 0;
+        const paid = Number(curr.NetPaidAmount) || 0;
 
         return acc + (total - paid);
       }, 0);
@@ -1260,28 +1260,28 @@ const OpdBillAnalysis = () => {
     {
       name: "Bill.Amt (Rs.)",
       title: "Bill Amount",
-      selector: (row) => formatCurrency(row?.BillAmount ?? row?.PaidAmount),
+      selector: (row) => formatCurrency(row?.NetServiceAmount),
       sortable: true,
       width: "100px",
     },
     {
       name: "T.Amt (Rs.)",
       title: "Total Bill Amount",
-      selector: (row) => formatCurrency(row?.TotalServiceAmount),
+      selector: (row) => formatCurrency(row?.NetServiceAmount),
       sortable: true,
       width: "95px",
     },
     {
       name: "P.Amt (Rs.)",
       title: "Paid Amount",
-      selector: (row) => formatCurrency(row?.PaidAmount),
+      selector: (row) => formatCurrency(row?.NetPaidAmount),
       sortable: true,
       width: "95px",
     },
     {
       name: "Due.Amt (Rs.)",
       title: "Due Amount",
-      selector: (row) => formatCurrency(row?.DueAmount),
+      selector: (row) => formatCurrency(row?.NetDueAmount),
       sortable: true,
       width: "105px",
     },
