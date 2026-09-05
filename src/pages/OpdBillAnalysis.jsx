@@ -184,7 +184,7 @@ const OpdBillAnalysis = () => {
 
     setFilters(tempFilters);
     setPage(1);
-    setLimit(10);
+    setLimit(500);
   };
 
   const handleExport = () => {
@@ -1454,7 +1454,7 @@ const OpdBillAnalysis = () => {
         data={patients}
         totalRows={hasFilters ? pagination.total || 0 : patients.length}
         currentPage={hasFilters ? pagination.page || page : 1}
-        perPage={hasFilters ? limit : patients.length || 10}
+        perPage={hasFilters ? limit : patients.length || 500}
         onPageChange={(newPage) => {
           if (hasFilters) {
             setPage(newPage);
