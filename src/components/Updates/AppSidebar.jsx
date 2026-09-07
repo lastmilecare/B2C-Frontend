@@ -20,7 +20,7 @@ import {
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
-import PatientDetails from "../../pages/PatientDetails";
+import { cookie } from "../../utils/cookie";
 
 const AppSidebar = ({ isOpen, setIsOpen }) => {
   const { permissions } = useSelector((state) => state.auth);
@@ -29,7 +29,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     if (!permission) return true;
     return permissions?.includes(permission) ?? false;
   };
-
+  const tenantType = cookie.get("tenantType");
   const [menus, setMenus] = useState({
     patient: false,
     opd: false,
@@ -38,7 +38,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     staff: false,
     roles: false,
     tenants: false,
-    ohc: false,
+    ohc: tenantType === "ohc",
     centers: false,
     campopd: false,
     Revenue: false,

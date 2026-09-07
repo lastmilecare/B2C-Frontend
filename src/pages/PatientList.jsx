@@ -174,9 +174,9 @@ const PatientListCopy = () => {
   const columns = [
     {
       name: "Patient",
-     width: "300px",
-  minWidth: "300px",
-  maxWidth: "300px",
+      width: "300px",
+      minWidth: "300px",
+      maxWidth: "300px",
       // center: true,
       cell: (row) => (
         <div className="flex items-center gap-3">
@@ -196,20 +196,20 @@ const PatientListCopy = () => {
     },
 
     {
-  name: "Mobile",
-  width: "120px",
-  minWidth: "120px",
-  maxWidth: "120px",
-  center: true,
-  selector: (row) => row.contactNumber,
-},
+      name: "Mobile",
+      width: "120px",
+      minWidth: "120px",
+      maxWidth: "120px",
+      center: true,
+      selector: (row) => row.contactNumber,
+    },
 
     {
       name: "Gender",
       center: true,
-       width: "140px",
-  minWidth: "140px",
-  maxWidth: "140px",
+      width: "140px",
+      minWidth: "140px",
+      maxWidth: "140px",
       cell: (row) => {
         const gender = row.gender?.toLowerCase();
 
@@ -241,8 +241,8 @@ const PatientListCopy = () => {
       name: "Age",
       center: true,
       width: "140px",
-  minWidth: "140px",
-  maxWidth: "140px",
+      minWidth: "140px",
+      maxWidth: "140px",
       cell: (row) => {
         const hasAge =
           row.iage != null || row.imonth != null || row.idays != null;
@@ -259,9 +259,9 @@ const PatientListCopy = () => {
 
     {
       name: "Category",
-     width: "120px",
-  minWidth: "120px",
-  maxWidth: "120px",
+      width: "120px",
+      minWidth: "120px",
+      maxWidth: "120px",
       cell: (row) => {
         const category = row.category || "N/A";
 
@@ -285,8 +285,8 @@ const PatientListCopy = () => {
     {
       name: "Referred By",
       width: "160px",
-  minWidth: "160px",
-  maxWidth: "160px",
+      minWidth: "160px",
+      maxWidth: "160px",
       center: true,
       selector: (row) => row.ReferredBy || "N/A",
     },
@@ -294,8 +294,8 @@ const PatientListCopy = () => {
       name: "Added On",
       center: true,
       width: "140px",
-  minWidth: "140px",
-  maxWidth: "140px",
+      minWidth: "140px",
+      maxWidth: "140px",
 
       cell: (row) => (
         <div className="flex flex-col text-xs">
@@ -343,9 +343,9 @@ const PatientListCopy = () => {
           navigate(`/patient-registration/${row.id}`);
         }}
         onDelete={handleDelete}
-         enableAdd
-  addButtonText="Add"
-  onAdd={() => navigate("/patient-registration")}
+        enableAdd
+        addButtonText="Add"
+        onAdd={() => navigate("/patient-registration")}
       />
     </div>
   );

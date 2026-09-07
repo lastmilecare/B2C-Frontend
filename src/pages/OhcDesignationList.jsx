@@ -44,7 +44,6 @@ const DesignationList = () => {
       skip: !page || !limit,
     },
   );
-  console.log("Designation List Data:", data);
   const [deleteDesignation] = useDeleteDesignationMutation();
 
   const [toggleStatus] = useToggleDesignationStatusMutation();

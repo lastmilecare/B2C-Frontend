@@ -4,7 +4,7 @@ import DataTable from "react-data-table-component";
 import {
   EllipsisVerticalIcon,
   ArrowDownTrayIcon,
-   PlusIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import { healthAlert } from "../utils/healthSwal";
 import GlobalLoader from "./common/GlobalLoader";
@@ -36,7 +36,12 @@ const CommonList = ({
   enableAdd = false,
   addButtonText = "Add",
   onAdd = () => {},
-
+  enableAddBulkUpload = false,
+  addBulkUploadButtonText = "Add Bulk Upload",
+  onAddBulkUpload = () => {},
+  enableAddBulkUploadFormat = false,
+  addBulkUploadFormatButtonText = "Add Bulk Upload Format",
+  onAddBulkUploadFormat = () => {},
 }) => {
   const [tempFilters, setTempFilters] = useState({});
   const [openMenuRow, setOpenMenuRow] = useState(null);
@@ -101,7 +106,6 @@ const CommonList = ({
         padding: "4px",
       },
     },
-    
   };
 
   const visibleColumns = useMemo(
@@ -125,13 +129,13 @@ const CommonList = ({
   const enhancedColumns = useMemo(() => {
     if (!enableActions) return visibleColumns;
     const role = cookie.get("role");
-const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
-const filteredActionButtons = isAdmin
-  ? actionButtons
-  : actionButtons.filter((btn) => btn !== "edit" && btn !== "delete");
-   if (filteredActionButtons.length === 0) {
-    return visibleColumns;
-  }
+    const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
+    const filteredActionButtons = isAdmin
+      ? actionButtons
+      : actionButtons.filter((btn) => btn !== "edit" && btn !== "delete");
+    if (filteredActionButtons.length === 0) {
+      return visibleColumns;
+    }
     const buttonConfig = {
       view: { label: "View", color: "text-sky-700", handler: onView },
       edit: { label: "Edit", color: "text-yellow-600", handler: onEdit },
@@ -177,33 +181,64 @@ const filteredActionButtons = isAdmin
   ]);
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-3 border border-gray-100">   
-  <div className="flex items-center justify-between mb-3">
-  <h2 className="text-base font-semibold text-sky-700">
-    {title}
-  </h2>
+    <div className="bg-white shadow-md rounded-xl p-3 border border-gray-100">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-base font-semibold text-sky-700">{title}</h2>
 
-  {enableAdd && (
-    <button
-      onClick={onAdd}
-      className="inline-flex items-center gap-1 bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
-    >
-      <PlusIcon className="w-4 h-4" />
-      {addButtonText}
-    </button>
-  )}
-</div>
- <div className="flex flex-wrap justify-between items-center mb-3 gap-2">
-  {enableExport && (
-    <button
-      onClick={onExport}
-      className="inline-flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs"
-    >
-      <ArrowDownTrayIcon className="w-4 h-4" />
-      Export
-    </button>
-  )}
-</div>
+        <div className="flex items-center gap-2">
+          {enableAdd && (
+            <button
+              onClick={onAdd}
+              className="inline-flex items-center gap-1 bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
+            >
+              <PlusIcon className="w-4 h-4" />
+              {addButtonText}
+            </button>
+          )}
+
+          {enableAddBulkUpload && (
+            <button
+              onClick={onAddBulkUpload}
+              className="inline-flex items-center gap-1 bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
+            >
+              <PlusIcon className="w-4 h-4" />
+              {addBulkUploadButtonText}
+            </button>
+          )}
+
+          {enableAddBulkUploadFormat && (
+            <button
+              onClick={onAddBulkUploadFormat}
+              className="inline-flex items-center gap-1 bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
+            >
+              <PlusIcon className="w-4 h-4" />
+              {addBulkUploadFormatButtonText}
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-wrap justify-between items-center mb-3 gap-2">
+        {enableExport && (
+          <button
+            onClick={onExport}
+            className="inline-flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            Export
+          </button>
+        )}
+      </div>
+      <div className="flex flex-wrap justify-between items-center mb-3 gap-2">
+        {enableExport && (
+          <button
+            onClick={onExport}
+            className="inline-flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            Export
+          </button>
+        )}
+      </div>
 
       {filtersConfig.length > 0 && (
         <div className="w-full bg-sky-50 p-3 rounded-lg border border-sky-100 mb-3">
@@ -277,10 +312,8 @@ const filteredActionButtons = isAdmin
                 <ArrowDownTrayIcon className="w-4 h-4" />
                 Export
               </button>
-              
             )}
           </div>
-
         </div>
       )}
 

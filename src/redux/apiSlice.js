@@ -2184,6 +2184,38 @@ export const api = createApi({
 
       providesTags: ["Designation"],
     }),
+    downloadBulkTemplate: build.mutation({
+      query: () => ({
+        url: "/patients/bulk-upload/template",
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = "patient_bulk_upload_template.xlsx";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+          return { data: null };
+        },
+        cache: "no-cache",
+      }),
+    }),
+
+    bulkUploadPatients: build.mutation({
+      query: (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        return {
+          url: "/patients/bulk-upload",
+          method: "POST",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["Patients"],
+    }),
   }),
 });
 
@@ -2412,4 +2444,6 @@ export const {
   useDeleteDesignationMutation,
   useToggleDesignationStatusMutation,
   useGetDesignationListQuery,
+  useDownloadBulkTemplateMutation,
+  useBulkUploadPatientsMutation,
 } = api;

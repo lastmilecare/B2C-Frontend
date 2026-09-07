@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
@@ -109,10 +109,7 @@ const PatientRegistrationOhc = () => {
     },
   );
   const designationsData = designationData?.data || [];
-  const designation = useMemo(
-    () => [...designationsData].sort((a, b) => a.name.localeCompare(b.name)),
-    [designationsData],
-  );
+
   const nextStep = async () => {
     const errors = await formik.validateForm();
 
@@ -201,8 +198,8 @@ const PatientRegistrationOhc = () => {
       employeeId: "",
       // ReferredBy: "",
       permanentAddress: "",
-      department: "",
-      designation: "",
+      department_id: "",
+      designation_id: "",
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
@@ -228,8 +225,8 @@ const PatientRegistrationOhc = () => {
         is: (val) => !!val,
         then: (schema) => schema.required("Identification Number is required"),
       }),
-      department: Yup.string().required("Department is required"),
-      designation: Yup.string().required("Designation is required"),
+      department_id: Yup.string().required("Department is required"),
+      designation_id: Yup.string().required("Designation is required"),
     }),
 
     onSubmit: async (values) => {
@@ -276,7 +273,16 @@ const PatientRegistrationOhc = () => {
       }
     },
   });
+  const designation = useMemo(() => {
+    if (!formik.values.department_id) return [];
 
+    return designationsData
+      .filter(
+        (item) =>
+          Number(item.department_id) === Number(formik.values.department_id),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [designationsData, formik.values.department_id]);
   useEffect(() => {
     if (!id) {
       formik.resetForm();
@@ -341,8 +347,8 @@ const PatientRegistrationOhc = () => {
           employeeId: p.employeeId || "",
           // ReferredBy: p.ReferredBy || "",
           permanentAddress: p.permanentAddress || "",
-          department: p.department || "",
-          designation: p.designation || "",
+          department_id: p.department_id || "",
+          designation_id: p.designation_id || "",
         });
       };
 
@@ -393,8 +399,8 @@ const PatientRegistrationOhc = () => {
       employeeId: values.employeeId,
       // ReferredBy: values.ReferredBy || "",
       permanentAddress: values.permanentAddress,
-      department: values.department,
-      designation: values.designation,
+      department_id: values.department_id,
+      designation_id: values.designation_id,
     };
 
     if (!isEdit) {
@@ -418,8 +424,8 @@ const PatientRegistrationOhc = () => {
         contactNumber: "",
         employeeId: "",
         occupation: "",
-        department: "",
-        designation: "",
+        department_id: "",
+        designation_id: "",
       });
     }
 
@@ -485,7 +491,13 @@ const PatientRegistrationOhc = () => {
     }
     formik.setFieldValue("age", `${years}y ${months}m ${days}d`);
   };
+  const selectedDepartment = departments.find(
+    (item) => String(item.id) === String(formik.values.department_id),
+  );
 
+  const selectedDesignation = designation.find(
+    (item) => String(item.id) === String(formik.values.designation_id),
+  );
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
       {(isEdit && isPageLoading) || isSubmitting ? <GlobalLoader /> : null}
@@ -709,32 +721,47 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       ))}
                     </Select>
                     <Select
-                      {...formik.getFieldProps("department")}
+                      {...formik.getFieldProps("department_id")}
                       label="Department"
                       required
                       error={
-                        formik.touched.department && formik.errors.department
+                        formik.touched.department_id &&
+                        formik.errors.department_id
                       }
+                      onChange={(e) => {
+                        const departmentId = e.target.value;
+
+                        formik.setFieldValue("department_id", departmentId);
+                        formik.setFieldValue("designation_id", "");
+                      }}
                     >
-                      <option value="">Select</option>
+                      <option value="">Select Department</option>
+
                       {departments.map((item) => (
-                        <option key={item.id} value={item.name}>
+                        <option key={item.id} value={item.id}>
                           {item.name || `Department #${item.id}`}
                         </option>
                       ))}
                     </Select>
 
                     <Select
-                      {...formik.getFieldProps("designation")}
+                      {...formik.getFieldProps("designation_id")}
                       label="Designation"
                       required
+                      disabled={!formik.values.department_id}
                       error={
-                        formik.touched.designation && formik.errors.designation
+                        formik.touched.designation_id &&
+                        formik.errors.designation_id
                       }
                     >
-                      <option value="">Select</option>
+                      <option value="">
+                        {formik.values.department_id
+                          ? "Select Designation"
+                          : "Select Department First"}
+                      </option>
+
                       {designation.map((item) => (
-                        <option key={item.id} value={item.name}>
+                        <option key={item.id} value={item.id}>
                           {item.name || `Designation #${item.id}`}
                         </option>
                       ))}
@@ -1017,11 +1044,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                         <b>Category:</b> {formik.values.fincat || "-"}
                       </p>
                       <p>
-                        <b>Department:</b> {formik.values.department || "-"}
+                        <b>Department:</b> {selectedDepartment?.name || "-"}
                       </p>
 
                       <p>
-                        <b>Designation:</b> {formik.values.designation || "-"}
+                        <b>Designation:</b> {selectedDesignation?.name || "-"}
                       </p>
                     </div>
 
@@ -1124,11 +1151,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </p>
                     </div>
 
-                    <div className="border-t pt-3 text-sm">
+                    {/* <div className="border-t pt-3 text-sm">
                       <p>
                         <b>Credit Amount:</b> {formik.values.creditamount || 0}
                       </p>
-                    </div>
+                    </div> */}
                   </div>
                 </section>
               )}
