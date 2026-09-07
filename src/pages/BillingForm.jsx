@@ -112,7 +112,7 @@ const BillingFormCopy = ({ refetchList }) => {
   const [updateMedicineBill] = useUpdateMedicineBillMutation();
   const [triggerGetBillDetails] = useLazyGetBillingByBillNoQuery();
   const { data: stockDetails, refetch: refetchStock } = useGetStockDetailsQuery(
-    selectedMedicine ? { ItemID: String(selectedMedicine.id) } : skipToken,
+    selectedMedicine ? { ItemID: String(selectedMedicine.itemid) } : skipToken,
   );
   const [prescriptionBillNo, setPrescriptionBillNo] = useState("");
   const {
@@ -198,6 +198,7 @@ const BillingFormCopy = ({ refetchList }) => {
       cashAmount: 0,
       cardAmount: 0,
       chequeAmount: 0,
+      payableAmount: 0,
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -222,8 +223,8 @@ const BillingFormCopy = ({ refetchList }) => {
         payMode: Number(paymodeId),
 
         totalQuantity: Number(values.totalQuantity || 0),
-        totalAmount: Number(values.totalAmount || 0),
-        totalDiscount: Number(values.totalDiscount || 0),
+        totalAmount: Number(Math.ceil(values.totalAmount || 0)),
+        totalDiscount: Number(totalDiscount || 0),
 
         paidAmount: Number(paymodeId == 5 ? 0 : values.paidAmount || 0),
 
@@ -268,7 +269,7 @@ const BillingFormCopy = ({ refetchList }) => {
 
           taxableAmt: Number(i.taxableAmt || 0),
 
-          total: Number(i.total || 0),
+          total: Number(Math.ceil(i.total || 0)),
           stockDetailId: Number(i.stockDetailId || 0),
         })),
       };
@@ -308,7 +309,6 @@ const BillingFormCopy = ({ refetchList }) => {
   });
   useEffect(() => {
     if (!billData || !id) return;
-
     const header = billData.header;
     const mappedItems =
       billData.items?.map((item) => ({
@@ -536,7 +536,7 @@ const BillingFormCopy = ({ refetchList }) => {
       total: sellingItemCost.total,
       UHID: formik.values.UHID,
       opdBillNo: formik.values.opdBillNo,
-      itemId: selectedMedicine.id,
+      itemId: selectedMedicine.itemid,
       stockId: stockDetails?.data[0]?.StockID,
       stockNo: stockDetails?.data[0]?.StockNo,
       basePrice: cleanCurrency(stockDetails?.data[0]?.CPU),
@@ -556,26 +556,7 @@ const BillingFormCopy = ({ refetchList }) => {
     setSelectedMedicine(null);
     setMedicineSuggestions([]);
   };
-  useEffect(() => {
-    const totalAmount = Number(formik.values.totalAmount || 0);
 
-    if (formik.values.payMode === "5") {
-      formik.setFieldValue("totalDiscount", totalAmount);
-      formik.setFieldValue("paidAmount", 0);
-      formik.setFieldValue("cashAmount", 0);
-      formik.setFieldValue("cardAmount", 0);
-      formik.setFieldValue("dueAmount", 0);
-
-      return;
-    }
-
-    const discount = Number(formik.values.totalDiscount || 0);
-    const paid = Number(formik.values.paidAmount || 0);
-
-    const payableAmount = Math.max(totalAmount - discount, 0);
-
-    formik.setFieldValue("dueAmount", Math.max(payableAmount - paid, 0));
-  }, [formik.values.totalAmount, formik.values.payMode]);
   useEffect(() => {
     let totals = formik.values.items.reduce(
       (acc, i) => ({
@@ -597,17 +578,13 @@ const BillingFormCopy = ({ refetchList }) => {
         sgstAmount: totals.sgst.toFixed(2),
         totalDiscount: totals.disc.toFixed(2),
         taxableAmount: (totals.gross - totals.cgst - totals.sgst).toFixed(2),
-        paidAmount: id ? formik.values.paidAmount : totals.gross.toFixed(2),
+        // paidAmount: id ? formik.values.paidAmount : totals.gross.toFixed(2),
+        paidAmount: id ? formik.values.paidAmount : 0,
       },
       false,
     );
   }, [formik.values.items]);
-  useEffect(() => {
-    const total = Number(formik.values.totalAmount) || 0;
-    const paid = Number(formik.values.paidAmount) || 0;
 
-    formik.setFieldValue("dueAmount", (total - paid).toFixed(2));
-  }, [formik.values.paidAmount, formik.values.totalAmount]);
   useEffect(() => {
     const paid = Number(formik.values.paidAmount || 0);
 
@@ -620,11 +597,13 @@ const BillingFormCopy = ({ refetchList }) => {
       formik.setFieldValue("cardAmount", paid);
     }
   }, [formik.values.payMode, formik.values.paidAmount]);
+
   useEffect(() => {
-    if (selectedMedicine?.id) {
+    if (selectedMedicine?.itemid) {
       refetchStock();
     }
-  }, [selectedMedicine?.id]);
+  }, [selectedMedicine?.itemid]);
+
   useEffect(() => {
     if (!selectedPrescriptionMedicine) return;
 
@@ -633,19 +612,6 @@ const BillingFormCopy = ({ refetchList }) => {
     formik.setFieldValue("medicine", selectedPrescriptionMedicine.item);
   }, [selectedPrescriptionMedicine]);
 
-  //   const openPrescriptionMedicine = async () => {
-  //   if (!formik.values.opdBillNo) {
-  //     return healthAlert({
-  //       title: "Warning",
-  //       text: "Please select OPD Bill first.",
-  //       icon: "warning",
-  //     });
-  //   }
-
-  //   await refetchPrescription();
-
-  //   setShowPrescriptionModal(true);
-  // };
   const openPrescriptionMedicine = () => {
     setPrescriptionBillNo(String(formik.values.opdBillNo));
     setShowPrescriptionModal(true);
@@ -659,6 +625,60 @@ const BillingFormCopy = ({ refetchList }) => {
 
     setShowPrescriptionModal(false);
   };
+  const calculatePayment = (totalAmount, paidAmount) => {
+    const total = Number(totalAmount || 0);
+    const paid = Number(paidAmount || 0);
+
+    // This is the amount customer actually needs to pay
+    const payableAmount = Math.ceil(total);
+
+    const balance = payableAmount - paid;
+
+    return {
+      payableAmount,
+      dueAmount: Math.max(balance, 0),
+      changeAmount: Math.max(-balance, 0),
+    };
+  };
+  useEffect(() => {
+    const totalAmount = Number(formik.values.totalAmount || 0);
+    const totalDiscount = Number(formik.values.totalDiscount || 0);
+    const paidAmount = Number(formik.values.paidAmount || 0);
+
+    if (formik.values.payMode === "5") {
+      formik.setFieldValue("payableAmount", 0, false);
+      formik.setFieldValue("dueAmount", 0, false);
+      formik.setFieldValue("changeAmount", 0, false);
+
+      return;
+    }
+
+    const netAmount = Math.max(totalAmount - totalDiscount, 0);
+
+    // Business payable amount
+    const payableAmount = Math.ceil(netAmount);
+
+    const balance = payableAmount - paidAmount;
+
+    formik.setFieldValue("payableAmount", payableAmount, false);
+
+    formik.setFieldValue("dueAmount", Math.max(balance, 0).toFixed(2), false);
+
+    formik.setFieldValue(
+      "changeAmount",
+      Math.max(-balance, 0).toFixed(2),
+      false,
+    );
+  }, [
+    formik.values.totalAmount,
+    formik.values.totalDiscount,
+    formik.values.paidAmount,
+    formik.values.payMode,
+  ]);
+  const totalDiscount = formik.values.items.reduce(
+  (total, item) => total + Number(item.discAmt || 0),
+  0
+);
   return (
     <FormikProvider value={formik}>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -716,33 +736,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="relative">
-                      {/* <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        className={`${baseInput} ${
-                          formik.touched.opdBillNo && formik.errors.opdBillNo
-                            ? "border-red-500"
-                            : ""
-                        }`}
-                        placeholder="Search Bill no (e.g., 123)"
-                        value={billSearch || formik.values.opdBillNo}
-                        onChange={(e) => {
-                          if (id) return;
-                          const val = e.target.value.replace(/\D/g, "");
-                          setBillSearch(val);
-                          setSelectedBill("");
-                          formik.setFieldValue("billno", "");
-                          setSuggestionsList([]);
-                          populatedUhidRef.current = "";
-                        }}
-                        autoComplete="off"
-                      />
-                      {formik.touched.opdBillNo && formik.errors.opdBillNo && (
-  <p className="text-red-500 text-sm mt-1">
-    {formik.errors.opdBillNo}
-  </p>
-)} */}
                       <Input
                         label="Bill No"
                         required
@@ -1166,7 +1159,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       />
                       <Input
                         label="Total Discount"
-                        value={formik.values.totalDiscount}
+                        value={totalDiscount.toFixed(2)}
                         readOnly
                       />
                       <Input
@@ -1233,58 +1226,24 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         value={formik.values.grossAmount}
                         readOnly
                       />
+
                       <Input
                         label="Paid Amount"
-                        value={formik.values.paidAmount}
+                        value={formik.values.paidAmount ?? ""}
                         readOnly={formik.values.payMode === "5"}
                         onChange={(e) => {
                           const value = e.target.value;
 
+                          // Allow only numbers and max 2 decimal places
                           if (!/^\d*\.?\d{0,2}$/.test(value)) {
                             return;
                           }
 
-                          const totalAmount = Number(
-                            formik.values.totalAmount || 0,
-                          );
-                          const totalDiscount = Number(
-                            formik.values.totalDiscount || 0,
-                          );
-
+                          // Cost Free
                           if (formik.values.payMode === "5") {
-                            // Cost Free can never have a paid amount
-                            formik.setFieldValue("paidAmount", 0);
-                            formik.setFieldValue("dueAmount", 0);
                             return;
                           }
-
-                          const paid = Number(value || 0);
-                          const payableAmount = Math.max(
-                            totalAmount - totalDiscount,
-                            0,
-                          );
-
-                          // Don't allow paid amount greater than payable amount
-                          const finalPaid = Math.min(paid, payableAmount);
-
-                          formik.setFieldValue(
-                            "paidAmount",
-                            value === "" ? "" : finalPaid,
-                          );
-
-                          formik.setFieldValue(
-                            "dueAmount",
-                            Math.max(payableAmount - finalPaid, 0),
-                          );
-
-                          // Update payment split
-                          if (formik.values.payMode === "3") {
-                            formik.setFieldValue("cashAmount", finalPaid);
-                            formik.setFieldValue("cardAmount", 0);
-                          } else {
-                            formik.setFieldValue("cashAmount", 0);
-                            formik.setFieldValue("cardAmount", finalPaid);
-                          }
+                          formik.setFieldValue("paidAmount", value);
                         }}
                       />
 
@@ -1320,8 +1279,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                             0,
                           );
 
-                          const paid = Math.min(cash + card, payableAmount);
-
+                          // const paid = Math.min(cash + card, payableAmount);
+                          const paid = cash + card;
                           formik.setFieldValue("cashAmount", value);
                           formik.setFieldValue("paidAmount", paid);
 
@@ -1383,7 +1342,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                           const paid = Math.min(cash + card, payableAmount);
 
                           formik.setFieldValue("cardAmount", value);
-                          formik.setFieldValue("paidAmount", paid);
+                          // formik.setFieldValue("paidAmount", paid);
 
                           formik.setFieldValue(
                             "dueAmount",
@@ -1391,6 +1350,21 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                           );
                         }}
                       />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div className="bg-white border rounded-lg px-3 py-2">
+                        <p className="text-xs text-gray-500">Actual Amount</p>
+                        <p className="font-semibold text-slate-700">
+                          ₹{Number(formik.values.totalAmount || 0).toFixed(2)}
+                        </p>
+                      </div>
+
+                      <div className="bg-sky-50 border border-sky-200 rounded-lg px-3 py-2">
+                        <p className="text-xs text-sky-600">Payable Amount</p>
+                        <p className="font-semibold text-sky-700">
+                          ₹{Number(formik.values.payableAmount || 0).toFixed(2)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -1450,7 +1424,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     </p>
 
                     <p>
-                      <b>Discount:</b> {formik.values.totalDiscount || 0}
+                      <b>Discount:</b> {totalDiscount.toFixed(2) || 0}
                     </p>
 
                     <p>
@@ -1474,7 +1448,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     </p>
 
                     <p className="text-emerald-600 font-semibold">
-                      <b>Final Amount:</b> {formik.values.totalAmount || 0}
+                      <b>Final Amount:</b>{" "}
+                      {Math.ceil(formik.values.totalAmount || 0)}
                     </p>
                   </div>
 

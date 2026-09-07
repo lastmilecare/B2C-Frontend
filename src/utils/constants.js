@@ -176,6 +176,10 @@ export const ROLES = [
     label: "LABORATORY",
     value: "LABORATORY",
   },
+  {
+    label: "RADIOLOGY",
+    value: "RADIOLOGY",
+  },
 
 ];
 export const DEPARTMENT_OPTIONS = [

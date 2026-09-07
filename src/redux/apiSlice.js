@@ -2005,6 +2005,46 @@ export const api = createApi({
 
       keepUnusedDataFor: 0,
     }),
+    getPatientDetails: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        contactNumber,
+        gender,
+        category,
+        startDate,
+        endDate,
+        external_id,
+        idProof_number,
+        bill_no,
+        department,
+        doctor,
+        payment_mode,
+        added_by,
+      } = {}) => ({
+        url: "/opd-billing/view-patient-details",
+        method: "get",
+        params: {
+          page,
+          limit,
+          name,
+          contactNumber,
+          gender,
+          category,
+          startDate,
+          endDate,
+          external_id,
+          idProof_number,
+          bill_no,
+          department,
+          doctor,
+          payment_mode,
+          added_by,
+        },
+      }),
+      providesTags: ["Bill"],
+    }),
     createDepartment: build.mutation({
       query: (departmentData) => ({
         url: "/departments",
@@ -2075,7 +2115,7 @@ export const api = createApi({
       providesTags: ["Department"],
     }),
 
-     createDesignation: build.mutation({
+    createDesignation: build.mutation({
       query: (designationData) => ({
         url: "/designation",
         method: "POST",
@@ -2360,6 +2400,7 @@ export const {
   useCreateCampPrescriptionMutation,
   useUpdateCampPrescriptionMutation,
   useToggleCampPrescriptionStatusMutation,
+  useGetPatientDetailsQuery,
   useLazyExportCampPrescriptionsExcelQuery,
   useCreateDepartmentMutation,
   useUpdateDepartmentMutation,

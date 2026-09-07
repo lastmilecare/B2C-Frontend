@@ -84,8 +84,9 @@ const CampBillingFormCopy = ({ refetchList }) => {
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
   const [suggestionsList, setSuggestionsList] = useState([]);
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
+  const [medicineSelectionCount, setMedicineSelectionCount] = useState(0);
   const [selectedPrescriptionMedicine, setSelectedPrescriptionMedicine] =
-  useState(null);
+    useState(null);
   const { id } = useParams();
   const populatedUhidRef = useRef("");
   const { data: billData } = useGetMedicinecampBillByIdQuery(id, {
@@ -108,26 +109,26 @@ const CampBillingFormCopy = ({ refetchList }) => {
   const [updateMedicineBill] = useUpdateMedicinecampBillMutation();
   const [triggerGetBillDetails] = useLazyGetBillingByBillNoQuery();
   const { data: stockDetails } = useGetStockDetailsQuery(
-    selectedMedicine ? { ItemID: String(selectedMedicine.id) } : skipToken,
+    selectedMedicine ? { ItemID: String(selectedMedicine.itemid) } : skipToken,
     { skip: !selectedMedicine },
   );
-   const [prescriptionBillNo, setPrescriptionBillNo] = useState("");
- const {
-  data: prescriptionResponse,
-  isFetching: prescriptionLoading,
-  refetch: refetchPrescription,
-} = useGetPrescriptionsListQuery(
-  {
-    bill_no: prescriptionBillNo,
-    page: 1,
-    limit: 1,
-  },
-  {
-    skip: !prescriptionBillNo,
-  }
-);
-const prescriptionMedicines =
-  prescriptionResponse?.data?.[0]?.adviceList || [];
+  const [prescriptionBillNo, setPrescriptionBillNo] = useState("");
+  const {
+    data: prescriptionResponse,
+    isFetching: prescriptionLoading,
+    refetch: refetchPrescription,
+  } = useGetPrescriptionsListQuery(
+    {
+      bill_no: prescriptionBillNo,
+      page: 1,
+      limit: 1,
+    },
+    {
+      skip: !prescriptionBillNo,
+    },
+  );
+  const prescriptionMedicines =
+    prescriptionResponse?.data?.[0]?.adviceList || [];
   // const [isEditMedicineLoaded, setIsEditMedicineLoaded] = useState(false);
   const billingItemValues = [];
   useEffect(() => {
@@ -195,6 +196,7 @@ const prescriptionMedicines =
       cashAmount: 0,
       cardAmount: 0,
       chequeAmount: 0,
+      payableAmount: 0,
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -219,8 +221,8 @@ const prescriptionMedicines =
         payMode: Number(values.payMode || 0),
 
         totalQuantity: Number(values.totalQuantity || 0),
-        totalAmount: Number(values.totalAmount || 0),
-        totalDiscount: Number(values.totalDiscount || 0),
+        totalAmount: Number(Math.ceil(values.totalAmount || 0)),
+        totalDiscount: Number(totalDiscount || 0),
 
         paidAmount: Number(values.paidAmount || 0),
 
@@ -265,7 +267,7 @@ const prescriptionMedicines =
 
           taxableAmt: Number(i.taxableAmt || 0),
 
-          total: Number(i.total || 0),
+          total: Number(Math.ceil(i.total || 0)),
           stockDetailId: Number(i.stockDetailId || 0),
         })),
       };
@@ -415,7 +417,6 @@ const prescriptionMedicines =
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [stockDetails]);
 
-
   const handleBillSelect = async (billNo) => {
     setBillSearch(billNo);
     const res = await triggerGetBillDetails(billNo).unwrap();
@@ -491,7 +492,7 @@ const prescriptionMedicines =
       total: sellingItemCost.total,
       UHID: formik.values.UHID,
       opdBillNo: formik.values.opdBillNo,
-      itemId: selectedMedicine.id,
+      itemId: selectedMedicine.itemid,
       stockId: stockDetails?.data[0]?.StockID,
       stockNo: stockDetails?.data[0]?.StockNo,
       basePrice: cleanCurrency(stockDetails?.data[0]?.CPU),
@@ -532,7 +533,7 @@ const prescriptionMedicines =
         sgstAmount: totals.sgst.toFixed(2),
         totalDiscount: totals.disc.toFixed(2),
         taxableAmount: (totals.gross - totals.cgst - totals.sgst).toFixed(2),
-        paidAmount: id ? formik.values.paidAmount : totals.gross.toFixed(2),
+        paidAmount: id ? formik.values.paidAmount : 0,
       },
       false,
     );
@@ -543,60 +544,82 @@ const prescriptionMedicines =
 
     formik.setFieldValue("dueAmount", (total - paid).toFixed(2));
   }, [formik.values.paidAmount, formik.values.totalAmount]);
-useEffect(() => {
+  useEffect(() => {
+    const paid = Number(formik.values.paidAmount || 0);
 
-  const paid = Number(formik.values.paidAmount || 0);
-
-  if (formik.values.payMode === "1" || formik.values.payMode === "") {
-
-    formik.setFieldValue("cashAmount", paid);
-    formik.setFieldValue("cardAmount", 0);
-
-  }
-
-  else if (formik.values.payMode === "3") {
-
-  }
-
-  else {
-
-    formik.setFieldValue("cashAmount", 0);
-    formik.setFieldValue("cardAmount", paid);
-
-  }
-
-}, [
-  formik.values.payMode,
-  formik.values.paidAmount
-]);
+    if (formik.values.payMode === "1" || formik.values.payMode === "") {
+      formik.setFieldValue("cashAmount", paid);
+      formik.setFieldValue("cardAmount", 0);
+    } else if (formik.values.payMode === "3") {
+    } else {
+      formik.setFieldValue("cashAmount", 0);
+      formik.setFieldValue("cardAmount", paid);
+    }
+  }, [formik.values.payMode, formik.values.paidAmount]);
   // useEffect(() => {
   //   if (selectedMedicine?.id) {
   //     refetchStock();
   //   }
   // }, [selectedMedicine?.id]);
   useEffect(() => {
-  if (!selectedPrescriptionMedicine) return;
+    if (!selectedPrescriptionMedicine) return;
 
-  setMedicineSearch(selectedPrescriptionMedicine.item);
+    setMedicineSearch(selectedPrescriptionMedicine.item);
 
-  formik.setFieldValue(
-    "medicine",
-    selectedPrescriptionMedicine.item
+    formik.setFieldValue("medicine", selectedPrescriptionMedicine.item);
+  }, [selectedPrescriptionMedicine]);
+  const openPrescriptionMedicine = () => {
+    setPrescriptionBillNo(String(formik.values.opdBillNo));
+    setShowPrescriptionModal(true);
+  };
+  const usePrescriptionMedicine = (medicine) => {
+    setSelectedPrescriptionMedicine(medicine);
+
+    setMedicineSearch(medicine.item);
+
+    formik.setFieldValue("medicine", medicine.item);
+
+    setShowPrescriptionModal(false);
+  };
+  useEffect(() => {
+    const totalAmount = Number(formik.values.totalAmount || 0);
+    const totalDiscount = Number(formik.values.totalDiscount || 0);
+    const paidAmount = Number(formik.values.paidAmount || 0);
+
+    if (formik.values.payMode === "5") {
+      formik.setFieldValue("payableAmount", 0, false);
+      formik.setFieldValue("dueAmount", 0, false);
+      formik.setFieldValue("changeAmount", 0, false);
+
+      return;
+    }
+
+    const netAmount = Math.max(totalAmount - totalDiscount, 0);
+
+    // Business payable amount
+    const payableAmount = Math.ceil(netAmount);
+
+    const balance = payableAmount - paidAmount;
+
+    formik.setFieldValue("payableAmount", payableAmount, false);
+
+    formik.setFieldValue("dueAmount", Math.max(balance, 0).toFixed(2), false);
+
+    formik.setFieldValue(
+      "changeAmount",
+      Math.max(-balance, 0).toFixed(2),
+      false,
+    );
+  }, [
+    formik.values.totalAmount,
+    formik.values.totalDiscount,
+    formik.values.paidAmount,
+    formik.values.payMode,
+  ]);
+  const totalDiscount = formik.values.items.reduce(
+    (total, item) => total + Number(item.discAmt || 0),
+    0,
   );
-}, [selectedPrescriptionMedicine]);
-const openPrescriptionMedicine = () => {
-  setPrescriptionBillNo(String(formik.values.opdBillNo));
-  setShowPrescriptionModal(true);
-};
-const usePrescriptionMedicine = (medicine) => {
-  setSelectedPrescriptionMedicine(medicine);
-
-  setMedicineSearch(medicine.item);
-
-  formik.setFieldValue("medicine", medicine.item);
-
-  setShowPrescriptionModal(false);
-};
   return (
     <FormikProvider value={formik}>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -613,8 +636,9 @@ const usePrescriptionMedicine = (medicine) => {
               {[1, 2, 3, 4].map((s) => (
                 <div
                   key={s}
-                  className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-sky-100"
-                    }`}
+                  className={`h-2 w-12 rounded-full ${
+                    activeStep >= s ? "bg-sky-600" : "bg-sky-100"
+                  }`}
                 />
               ))}
             </div>
@@ -653,8 +677,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="relative">
-
-
                       {/* <input
                         type="text"
                         inputMode="numeric"
@@ -690,9 +712,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         pattern="[0-9]*"
                         placeholder="Search Bill no (e.g., 123)"
                         value={formik.values.opdBillNo}
-                        onBlur={() =>
-                          formik.setFieldTouched("opdBillNo", true)
-                        }
+                        onBlur={() => formik.setFieldTouched("opdBillNo", true)}
                         onChange={(e) => {
                           if (id) return;
 
@@ -709,12 +729,10 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                           populatedUhidRef.current = "";
                         }}
                         error={
-                          formik.touched.opdBillNo &&
-                          formik.errors.opdBillNo
+                          formik.touched.opdBillNo && formik.errors.opdBillNo
                         }
                         autoComplete="off"
                       />
-
 
                       {suggestionsList.length > 0 && billSearch.length >= 1 && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
@@ -777,38 +795,34 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
               {activeStep === 2 && (
                 <section className="bg-sky-50/40 p-6 rounded-xl border border-sky-100 space-y-6 shadow-sm">
-                 <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sky-700 font-semibold text-lg">
+                        Medicine Entry
+                      </h3>
 
-    <div>
-        <h3 className="text-sky-700 font-semibold text-lg">
-            Medicine Entry
-        </h3>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Search medicine manually or view prescribed medicines.
+                      </p>
+                    </div>
 
-        <p className="text-xs text-slate-500 mt-1">
-            Search medicine manually or view prescribed medicines.
-        </p>
-    </div>
-
-    <button
-        type="button"
-         onClick={() => {
-    
-    openPrescriptionMedicine();
-  }}
-        disabled={!formik.values.opdBillNo}
-        className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 shadow-sm border
-        ${
-            formik.values.opdBillNo
-                ? "bg-sky-600 text-white hover:bg-sky-700 border-sky-600"
-                : "bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200"
-        }`}
-    >
-        <EyeIcon className="w-5 h-5" />
-
-        View Medicine
-    </button>
-
-</div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        openPrescriptionMedicine();
+                      }}
+                      disabled={!formik.values.opdBillNo}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 shadow-sm border
+                      ${
+                        formik.values.opdBillNo
+                          ? "bg-sky-600 text-white hover:bg-sky-700 border-sky-600"
+                          : "bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200"
+                      }`}
+                    >
+                      <EyeIcon className="w-5 h-5" />
+                      View Medicine
+                    </button>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="relative">
                       <label className="text-sm text-gray-600 block mb-1">
@@ -818,13 +832,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       <input
                         type="text"
                         className={`${baseInput}
-  ${formik.touched.medicine &&
-                            !formik.values.medicine
-                            ? "border-red-500"
-                            : ""}
-  ${!formik.values.opdBillNo
-                            ? "bg-sky-50 cursor-not-allowed"
-                            : ""}`}
+                ${formik.touched.medicine && !formik.values.medicine ? "border-red-500" : ""}
+                ${!formik.values.opdBillNo ? "bg-sky-50 cursor-not-allowed" : ""}`}
                         placeholder="Search Medicine"
                         value={medicineSearch || formik.values.medicine}
                         disabled={!formik.values.opdBillNo}
@@ -848,16 +857,16 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                               key={item.id}
                               onClick={() => {
                                 setSelectedMedicine(item);
+
+                                setMedicineSelectionCount((prev) => prev + 1);
+
                                 setMedicineSearch(item.descriptions);
+
                                 formik.setFieldValue(
                                   "medicine",
                                   item.descriptions,
                                 );
-                                formik.setFieldValue("medicineId", item.id);
-                                formik.setFieldValue(
-                                  "typemedicine",
-                                  item.itemType?.Descriptions || "",
-                                );
+
                                 setMedicineSuggestions([]);
                               }}
                               className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
@@ -895,10 +904,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       required
                       error={
                         formik.touched.quantity &&
-                          (
-                            !formik.values.quantity ||
-                            isNaN(formik.values.quantity)
-                          )
+                        (!formik.values.quantity ||
+                          isNaN(formik.values.quantity))
                           ? "Quantity is required"
                           : ""
                       }
@@ -920,6 +927,19 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     <Input
                       label="Discount (%)"
                       {...formik.getFieldProps("discountPercent")}
+                      readOnly
+                    />
+                    <Input
+                      label="Expiry Date"
+                      value={
+                        selectedMedicine?.id &&
+                        stockDetails?.data?.[0]?.ExpiryDate
+                          ? stockDetails.data[0].ExpiryDate.split("T")[0]
+                              .split("-")
+                              .reverse()
+                              .join("/")
+                          : ""
+                      }
                       readOnly
                     />
                     <Input
@@ -957,14 +977,14 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       </p>
 
                       {/* <Button
-                        type="button"
-                        variant="sky"
-                        className="mt-4"
-                        onClick={() => setActiveStep(2)}
-                      >
-                        <PlusIcon className="w-4 h-4 mr-1" />
-                        Add Medicine
-                      </Button> */}
+                                      type="button"
+                                      variant="sky"
+                                      className="mt-4"
+                                      onClick={() => setActiveStep(2)}
+                                    >
+                                      <PlusIcon className="w-4 h-4 mr-1" />
+                                      Add Medicine
+                                    </Button> */}
                     </div>
                   ) : (
                     <div className="mt-6 bg-white rounded-xl shadow-sm border border-sky-100 overflow-hidden">
@@ -1028,8 +1048,10 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 
                                     <td className="px-3 py-3 text-center text-red-500 text-xs">
                                       {item.expDate
-  ? new Date(item.expDate).toLocaleDateString("en-GB")
-  : "-"}
+                                        ? new Date(
+                                            item.expDate,
+                                          ).toLocaleDateString("en-GB")
+                                        : "-"}
                                     </td>
 
                                     <td className="px-3 py-3 text-right">
@@ -1105,7 +1127,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       />
                       <Input
                         label="Total Discount"
-                        value={formik.values.totalDiscount}
+                        value={totalDiscount.toFixed(2)}
                         readOnly
                       />
                       <Input
@@ -1118,48 +1140,47 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         required
                         value={formik.values.payMode}
                         error={formik.touched.payMode && formik.errors.payMode}
+                        options={Picaso_Paymode_Options.map((option) => ({
+                          label: option.name,
+                          value: String(option.id),
+                        }))}
                         onChange={(e) => {
+                          const payMode = String(e.target.value);
 
-                          const mode = e.target.value;
+                          formik.setFieldValue("payMode", payMode);
 
-                          formik.setFieldValue("payMode", mode);
+                          const totalAmount = Number(
+                            formik.values.totalAmount || 0,
+                          );
 
-                          const paid = Number(formik.values.paidAmount || 0);
-
-                          if (mode === "1") {
-
-                            formik.setFieldValue("cashAmount", paid);
-                            formik.setFieldValue("cardAmount", 0);
-
-                          }
-
-                          else if (mode === "3") {
-
-                            formik.setFieldValue("cashAmount", "");
-                            formik.setFieldValue("cardAmount", "");
-
-                          }
-
-                          else {
-
+                          if (payMode === "5") {
+                            // Cost Free
+                            formik.setFieldValue("totalDiscount", totalAmount);
+                            formik.setFieldValue("paidAmount", 0);
                             formik.setFieldValue("cashAmount", 0);
-                            formik.setFieldValue("cardAmount", paid);
+                            formik.setFieldValue("cardAmount", 0);
+                            formik.setFieldValue("dueAmount", 0);
 
+                            return;
                           }
 
+                          // Switching back from Cost Free
+                          formik.setFieldValue("totalDiscount", 0);
+                          formik.setFieldValue("paidAmount", 0);
+                          formik.setFieldValue("cashAmount", 0);
+                          formik.setFieldValue("cardAmount", 0);
+
+                          // Initially nothing is paid
+                          formik.setFieldValue("dueAmount", totalAmount);
                         }}
                       >
-
                         <option value="">Select</option>
 
                         {Picaso_Paymode_Options.map((m) => (
-
                           <option key={m.id} value={m.id}>
                             {m.name}
                           </option>
-
                         ))}
-
                       </Select>
                     </div>
                     <div className="space-y-1">
@@ -1173,90 +1194,68 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         value={formik.values.grossAmount}
                         readOnly
                       />
+
                       <Input
-
                         label="Paid Amount"
-
-                        value={formik.values.paidAmount}
-
+                        value={formik.values.paidAmount ?? ""}
+                        readOnly={formik.values.payMode === "5"}
                         onChange={(e) => {
+                          const value = e.target.value;
 
-                          const paid = Number(
-                            e.target.value || 0
-                          );
-
-                          formik.setFieldValue(
-                            "paidAmount",
-                            paid
-                          );
-
-                          if (
-
-                            formik.values.payMode === "1"
-
-                            ||
-
-                            formik.values.payMode === ""
-
-                          ) {
-
-                            formik.setFieldValue(
-                              "cashAmount",
-                              paid
-                            );
-
-                            formik.setFieldValue(
-                              "cardAmount",
-                              0
-                            );
-
+                          // Allow only numbers and max 2 decimal places
+                          if (!/^\d*\.?\d{0,2}$/.test(value)) {
+                            return;
                           }
 
-                          else if (
-
-                            formik.values.payMode === "3"
-
-                          ) {
+                          // Cost Free
+                          if (formik.values.payMode === "5") {
+                            return;
                           }
-
-                          else {
-
-                            formik.setFieldValue(
-                              "cashAmount",
-                              0
-                            );
-
-                            formik.setFieldValue(
-                              "cardAmount",
-                              paid
-                            );
-
-                          }
-
+                          formik.setFieldValue("paidAmount", value);
                         }}
                       />
-                       <Input
+
+                      <Input
                         label="Cash Amount"
                         value={formik.values.cashAmount}
                         readOnly={formik.values.payMode !== "3"}
                         onChange={(e) => {
-
                           const value = e.target.value;
 
-if (/^\d*\.?\d{0,2}$/.test(value)) {
-    formik.setFieldValue("cashAmount", value);
-}
-
-                          if (formik.values.payMode === "3") {
-
-                         formik.setFieldValue(
-    "paidAmount",
-    Number(value || 0) +
-    Number(formik.values.cardAmount || 0)
-);
-
+                          if (!/^\d*\.?\d{0,2}$/.test(value)) {
+                            return;
                           }
 
+                          if (formik.values.payMode === "5") {
+                            formik.setFieldValue("cashAmount", 0);
+                            formik.setFieldValue("paidAmount", 0);
+                            formik.setFieldValue("dueAmount", 0);
+                            return;
+                          }
+
+                          const cash = Number(value || 0);
+                          const card = Number(formik.values.cardAmount || 0);
+
+                          const totalAmount = Number(
+                            formik.values.totalAmount || 0,
+                          );
+                          const discount = Number(
+                            formik.values.totalDiscount || 0,
+                          );
+                          const payableAmount = Math.max(
+                            totalAmount - discount,
+                            0,
+                          );
+
+                          // const paid = Math.min(cash + card, payableAmount);
+                          const paid = cash + card;
+                          formik.setFieldValue("cashAmount", value);
+                          formik.setFieldValue("paidAmount", paid);
+
+                          formik.setFieldValue(
+                            "dueAmount",
+                            Math.max(payableAmount - paid, 0),
+                          );
                         }}
                       />
                     </div>
@@ -1276,44 +1275,76 @@ if (/^\d*\.?\d{0,2}$/.test(value)) {
                         value={formik.values.dueAmount}
                         readOnly
                       />
-                       <Input
+                      <Input
                         label="Card / Online Amount / Cost Free"
                         value={formik.values.cardAmount}
                         readOnly={formik.values.payMode !== "3"}
                         onChange={(e) => {
-
                           const value = e.target.value;
 
-if (/^\d*\.?\d{0,2}$/.test(value)) {
-    formik.setFieldValue("cardAmount", value);
-}
-
-                          if (formik.values.payMode === "3") {
-
-                           formik.setFieldValue(
-    "paidAmount",
-    Number(value || 0) +
-    Number(formik.values.cashAmount || 0)
-);
-
+                          if (!/^\d*\.?\d{0,2}$/.test(value)) {
+                            return;
                           }
 
+                          if (formik.values.payMode === "5") {
+                            formik.setFieldValue("cardAmount", 0);
+                            formik.setFieldValue("paidAmount", 0);
+                            formik.setFieldValue("dueAmount", 0);
+                            return;
+                          }
+
+                          const card = Number(value || 0);
+                          const cash = Number(formik.values.cashAmount || 0);
+
+                          const totalAmount = Number(
+                            formik.values.totalAmount || 0,
+                          );
+                          const discount = Number(
+                            formik.values.totalDiscount || 0,
+                          );
+                          const payableAmount = Math.max(
+                            totalAmount - discount,
+                            0,
+                          );
+
+                          const paid = Math.min(cash + card, payableAmount);
+
+                          formik.setFieldValue("cardAmount", value);
+                          // formik.setFieldValue("paidAmount", paid);
+
+                          formik.setFieldValue(
+                            "dueAmount",
+                            Math.max(payableAmount - paid, 0),
+                          );
                         }}
                       />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div className="bg-white border rounded-lg px-3 py-2">
+                        <p className="text-xs text-gray-500">Actual Amount</p>
+                        <p className="font-semibold text-slate-700">
+                          ₹{Number(formik.values.totalAmount || 0).toFixed(2)}
+                        </p>
+                      </div>
+
+                      <div className="bg-sky-50 border border-sky-200 rounded-lg px-3 py-2">
+                        <p className="text-xs text-sky-600">Payable Amount</p>
+                        <p className="font-semibold text-sky-700">
+                          ₹{Number(formik.values.payableAmount || 0).toFixed(2)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </section>
               )}
               {activeStep === 4 && (
                 <div className="bg-sky-50 p-6 rounded-xl space-y-4 border border-sky-200">
-
                   <h3 className="text-lg font-semibold text-sky-700">
                     Confirm Bill
                   </h3>
 
                   {/* Patient Details */}
                   <div className="grid md:grid-cols-2 gap-4 text-sm">
-
                     <p>
                       <b>Bill No:</b> {formik.values.opdBillNo}
                     </p>
@@ -1344,65 +1375,50 @@ if (/^\d*\.?\d{0,2}$/.test(value)) {
 
                     <p>
                       <b>Payment Mode:</b>
-                      {
-                        Picaso_Paymode_Options.find(
-                          (x) =>
-                            String(x.id) ===
-                            String(formik.values.payMode)
-                        )?.name || "-"
-                      }
+                      {Picaso_Paymode_Options.find(
+                        (x) => String(x.id) === String(formik.values.payMode),
+                      )?.name || "-"}
                     </p>
-
                   </div>
 
                   {/* Payment Summary */}
                   <div className="border-t pt-3 text-sm grid md:grid-cols-3 gap-3">
-
                     <p>
-                      <b>Total Qty:</b>{" "}
-                      {formik.values.totalQuantity || 0}
+                      <b>Total Qty:</b> {formik.values.totalQuantity || 0}
                     </p>
 
                     <p>
-                      <b>Gross Amount:</b> {" "}
-                      {formik.values.grossAmount || 0}
+                      <b>Gross Amount:</b> {formik.values.grossAmount || 0}
                     </p>
 
                     <p>
-                      <b>Discount:</b> {" "}
-                      {formik.values.totalDiscount || 0}
+                      <b>Discount:</b> {totalDiscount.toFixed(2) || 0}
                     </p>
 
                     <p>
-                      <b>CGST:</b> {" "}
-                      {formik.values.cgstAmount || 0}
+                      <b>CGST:</b> {formik.values.cgstAmount || 0}
                     </p>
 
                     <p>
-                      <b>SGST:</b> {" "}
-                      {formik.values.sgstAmount || 0}
+                      <b>SGST:</b> {formik.values.sgstAmount || 0}
                     </p>
 
                     <p>
-                      <b>Taxable Amount:</b> {" "}
-                      {formik.values.taxableAmount || 0}
+                      <b>Taxable Amount:</b> {formik.values.taxableAmount || 0}
                     </p>
 
                     <p>
-                      <b>Paid Amount:</b> {" "}
-                      {formik.values.paidAmount || 0}
+                      <b>Paid Amount:</b> {formik.values.paidAmount || 0}
                     </p>
 
                     <p>
-                      <b>Due Amount:</b> {" "}
-                      {formik.values.dueAmount || 0}
+                      <b>Due Amount:</b> {formik.values.dueAmount || 0}
                     </p>
 
                     <p className="text-emerald-600 font-semibold">
-                      <b>Final Amount:</b> {" "}
-                      {formik.values.totalAmount || 0}
+                      <b>Final Amount:</b>{" "}
+                      {Math.ceil(formik.values.totalAmount || 0)}
                     </p>
-
                   </div>
 
                   {/* Medicine Details */}
@@ -1413,43 +1429,26 @@ if (/^\d*\.?\d{0,2}$/.test(value)) {
 
                     {formik.values.items?.length > 0 ? (
                       <div className="overflow-x-auto rounded-xl border border-sky-100">
-
                         <table className="min-w-full text-sm">
-
                           <thead className="bg-sky-100 text-slate-700">
                             <tr>
-                              <th className="px-3 py-2 text-left">
-                                Medicine
-                              </th>
+                              <th className="px-3 py-2 text-left">Medicine</th>
 
-                              <th className="px-3 py-2 text-left">
-                                Batch
-                              </th>
+                              <th className="px-3 py-2 text-left">Batch</th>
 
-                              <th className="px-3 py-2 text-left">
-                                HSN
-                              </th>
+                              <th className="px-3 py-2 text-left">HSN</th>
 
-                              <th className="px-3 py-2 text-center">
-                                Qty
-                              </th>
+                              <th className="px-3 py-2 text-center">Qty</th>
 
-                              <th className="px-3 py-2 text-right">
-                                MRP
-                              </th>
+                              <th className="px-3 py-2 text-right">MRP</th>
 
-                              <th className="px-3 py-2 text-right">
-                                Total
-                              </th>
+                              <th className="px-3 py-2 text-right">Total</th>
                             </tr>
                           </thead>
 
                           <tbody>
                             {formik.values.items.map((item, idx) => (
-                              <tr
-                                key={idx}
-                                className="border-t border-sky-50"
-                              >
+                              <tr key={idx} className="border-t border-sky-50">
                                 <td className="px-3 py-2 font-medium">
                                   {item.description || "-"}
                                 </td>
@@ -1458,34 +1457,28 @@ if (/^\d*\.?\d{0,2}$/.test(value)) {
                                   {item.batchNo || "-"}
                                 </td>
 
-                                <td className="px-3 py-2">
-                                  {item.hsn || "-"}
-                                </td>
+                                <td className="px-3 py-2">{item.hsn || "-"}</td>
 
                                 <td className="px-3 py-2 text-center">
                                   {item.qty || 0}
                                 </td>
 
                                 <td className="px-3 py-2 text-right">
-                                   {item.saleRate || 0}
+                                  {item.saleRate || 0}
                                 </td>
 
                                 <td className="px-3 py-2 text-right font-semibold">
-                                   {item.total || 0}
+                                  {item.total || 0}
                                 </td>
                               </tr>
                             ))}
                           </tbody>
-
                         </table>
                       </div>
                     ) : (
-                      <p className="text-gray-500">
-                        No medicines added
-                      </p>
+                      <p className="text-gray-500">No medicines added</p>
                     )}
                   </div>
-
                 </div>
               )}
               <div className="flex justify-between items-center pt-6 border-t">
@@ -1500,7 +1493,6 @@ if (/^\d*\.?\d{0,2}$/.test(value)) {
                     type="button"
                     variant="gray"
                     onClick={() => {
-
                       if (activeStep === 1) {
                         formik.setValues({
                           ...formik.values,
@@ -1548,7 +1540,6 @@ if (/^\d*\.?\d{0,2}$/.test(value)) {
                         setMedicineSuggestions([]);
                       }
 
-
                       if (activeStep === 3) {
                         formik.setValues({
                           ...formik.values,
@@ -1559,7 +1550,6 @@ if (/^\d*\.?\d{0,2}$/.test(value)) {
                       }
 
                       if (activeStep === 4) {
-
                         formik.resetForm();
 
                         setActiveStep(1);
@@ -1605,176 +1595,125 @@ if (/^\d*\.?\d{0,2}$/.test(value)) {
           </div>
         </div>
       </div>
-       {showPrescriptionModal && (
-  <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
+      {showPrescriptionModal && (
+        <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl overflow-hidden">
+            <div className="bg-gradient-to-r from-sky-600 to-blue-700 px-6 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-white text-xl font-bold">
+                  Prescription Medicines
+                </h2>
 
-    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl overflow-hidden">
+                <p className="text-sky-100 text-sm mt-1">
+                  Bill No : {formik.values.opdBillNo}
+                </p>
+              </div>
 
-      <div className="bg-gradient-to-r from-sky-600 to-blue-700 px-6 py-4 flex justify-between items-center">
+              <button
+                type="button"
+                onClick={() => setShowPrescriptionModal(false)}
+                className="text-white hover:bg-white/20 rounded-lg p-2"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
 
-        <div>
-          <h2 className="text-white text-xl font-bold">
-            Prescription Medicines
-          </h2>
+            <div className="p-6">
+              {prescriptionLoading ? (
+                <div className="flex justify-center py-20">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-sky-600 border-t-transparent" />
+                </div>
+              ) : prescriptionMedicines.length === 0 ? (
+                <div className="text-center py-20">
+                  <BeakerIcon className="w-16 h-16 mx-auto text-slate-300" />
 
-          <p className="text-sky-100 text-sm mt-1">
-            Bill No : {formik.values.opdBillNo}
-          </p>
+                  <h3 className="text-lg font-semibold mt-4 text-slate-600">
+                    No Prescription Found
+                  </h3>
+
+                  <p className="text-slate-400 mt-2">
+                    No medicines available for this Bill Number.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-auto max-h-[500px] border rounded-xl">
+                  <table className="w-full">
+                    <thead className="bg-sky-50 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-3 text-left">#</th>
+
+                        <th className="px-4 py-3 text-left">Medicine</th>
+
+                        <th className="px-4 py-3 text-center">Type</th>
+
+                        <th className="px-4 py-3 text-center">Dosage</th>
+
+                        <th className="px-4 py-3 text-center">Duration</th>
+
+                        <th className="px-4 py-3 text-left">Remarks</th>
+
+                        <th className="px-4 py-3 text-center">Action</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {prescriptionMedicines.map((item, index) => (
+                        <tr
+                          key={index}
+                          className="border-t hover:bg-sky-50 transition"
+                        >
+                          <td className="px-4 py-3">{index + 1}</td>
+
+                          <td className="px-4 py-3 font-medium">{item.item}</td>
+
+                          <td className="px-4 py-3 text-center">
+                            <span className="px-2 py-1 rounded-full bg-sky-100 text-sky-700 text-xs">
+                              {item.typeOfMedicine}
+                            </span>
+                          </td>
+
+                          <td className="px-4 py-3 text-center">
+                            {item.dosage}
+                          </td>
+
+                          <td className="px-4 py-3 text-center">
+                            {item.duration} Day
+                          </td>
+
+                          <td className="px-4 py-3">{item.remarks}</td>
+
+                          <td className="px-4 py-3 text-center">
+                            <Button
+                              type="button"
+                              variant="sky"
+                              className="text-xs"
+                              onClick={() => usePrescriptionMedicine(item)}
+                            >
+                              Use
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t px-6 py-4 flex justify-end">
+              <Button
+                type="button"
+                variant="gray"
+                onClick={() => setShowPrescriptionModal(false)}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setShowPrescriptionModal(false)}
-          className="text-white hover:bg-white/20 rounded-lg p-2"
-        >
-          <XMarkIcon className="w-6 h-6" />
-        </button>
-
-      </div>
-
-      <div className="p-6">
-
-        {prescriptionLoading ? (
-
-          <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-sky-600 border-t-transparent" />
-          </div>
-
-        ) : prescriptionMedicines.length === 0 ? (
-
-          <div className="text-center py-20">
-
-            <BeakerIcon className="w-16 h-16 mx-auto text-slate-300" />
-
-            <h3 className="text-lg font-semibold mt-4 text-slate-600">
-              No Prescription Found
-            </h3>
-
-            <p className="text-slate-400 mt-2">
-              No medicines available for this Bill Number.
-            </p>
-
-          </div>
-
-        ) : (
-
-          <div className="overflow-auto max-h-[500px] border rounded-xl">
-
-            <table className="w-full">
-
-              <thead className="bg-sky-50 sticky top-0">
-
-                <tr>
-
-                  <th className="px-4 py-3 text-left">#</th>
-
-                  <th className="px-4 py-3 text-left">
-                    Medicine
-                  </th>
-
-                  <th className="px-4 py-3 text-center">
-                    Type
-                  </th>
-
-                  <th className="px-4 py-3 text-center">
-                    Dosage
-                  </th>
-
-                  <th className="px-4 py-3 text-center">
-                    Duration
-                  </th>
-
-                  <th className="px-4 py-3 text-left">
-                    Remarks
-                  </th>
-
-                  <th className="px-4 py-3 text-center">
-                    Action
-                  </th>
-
-                </tr>
-
-              </thead>
-
-              <tbody>
-
-                {prescriptionMedicines.map((item, index) => (
-
-                  <tr
-                    key={index}
-                    className="border-t hover:bg-sky-50 transition"
-                  >
-
-                    <td className="px-4 py-3">
-                      {index + 1}
-                    </td>
-
-                    <td className="px-4 py-3 font-medium">
-                      {item.item}
-                    </td>
-
-                    <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-1 rounded-full bg-sky-100 text-sky-700 text-xs">
-                        {item.typeOfMedicine}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3 text-center">
-                      {item.dosage}
-                    </td>
-
-                    <td className="px-4 py-3 text-center">
-                      {item.duration} Day
-                    </td>
-
-                    <td className="px-4 py-3">
-                      {item.remarks}
-                    </td>
-
-                    <td className="px-4 py-3 text-center">
-                      <Button
-                        type="button"
-                        variant="sky"
-                        className="text-xs"
-                        onClick={() => usePrescriptionMedicine(item)}
-                      >
-                        Use
-                      </Button>
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-        )}
-
-      </div>
-
-      <div className="border-t px-6 py-4 flex justify-end">
-
-        <Button
-          type="button"
-          variant="gray"
-          onClick={() => setShowPrescriptionModal(false)}
-        >
-          Close
-        </Button>
-
-      </div>
-
-    </div>
-
-  </div>
-)}
+      )}
     </FormikProvider>
   );
 };
 
 export default CampBillingFormCopy;
-

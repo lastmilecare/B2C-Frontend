@@ -15,7 +15,9 @@ import { healthAlerts, healthAlert } from "../utils/healthSwal";
 import { generateFileName, downloadBlob } from "../utils/helper";
 import Avatar from "../components/common/Avatar";
 import { formatDate, formatTimeVal} from "../utils/helper";
+import { cookie } from "../utils/cookie";
 const PrescriptionListCopy = () => {
+  const role = cookie.get("role");
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -385,7 +387,11 @@ setFilters(cleanedFilters);
           setPage(1);
         }}
         enableActions
-        actionButtons={["edit", "delete", "print"]}
+        actionButtons={
+    role === "DOCTOR"
+      ? ["edit", "print"]
+      : ["edit", "delete", "print"]
+  }
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}

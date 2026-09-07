@@ -204,7 +204,7 @@ const PrescriptionFormCopy = () => {
       glucose: values.glucose ? Number(values.glucose) : null,
       chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
       history: values.history || "",
-      
+
       treatmentPlan: "",
       labs: values.labs || "",
       otherLabs: values.otherlabs || "",
@@ -289,7 +289,7 @@ const PrescriptionFormCopy = () => {
       CenterID: "",
       PatientID: "",
       glucose: "",
-      diagnosis: "",
+      diagnosis: ""
     },
     validationSchema: Yup.object({
       billno: Yup.string().required("Bill No is required"),
@@ -405,14 +405,14 @@ const PrescriptionFormCopy = () => {
 
     const mappedAdviceList = Array.isArray(row.adviceList)
       ? row.adviceList.map((item) => ({
-        itemId: item.itemId,
-        medicine: item.item,
-        type: item.typeOfMedicine,
-        dosage: item.dosage,
-        instructions: item.remarks || "",
-        preferredTime: item.pillsConsumption,
-        duration: item.duration,
-      }))
+          itemId: item.itemId,
+          medicine: item.item,
+          type: item.typeOfMedicine,
+          dosage: item.dosage,
+          instructions: item.remarks || "",
+          preferredTime: item.pillsConsumption,
+          duration: item.duration,
+        }))
       : [];
 
     if (prescriptionList.length === 0) {
@@ -533,8 +533,9 @@ const PrescriptionFormCopy = () => {
             {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full transition-all duration-300 ${activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
-                  }`}
+                className={`h-2 w-12 rounded-full transition-all duration-300 ${
+                  activeStep >= s ? "bg-sky-600 shadow-sm" : "bg-blue-100"
+                }`}
               />
             ))}
           </div>
@@ -767,6 +768,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     required
                   />
                   <Input
+                    {...formik.getFieldProps("Remarks")}
+                    placeholder="Remarks"
+                    label="Complaint Remarks"
+                  />
+                  <Input
                     {...formik.getFieldProps("labs")}
                     placeholder="Labs"
                     label="Labs"
@@ -783,8 +789,8 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     type="text"
                     value={formik.values.followup}
                     onChange={(e) => {
-                      const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
-                      formik.setFieldValue("followup", onlyNumbers);
+                      // const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                      formik.setFieldValue("followup", e.target.value);
                     }}
                   />
                   <Input
@@ -801,7 +807,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     {...formik.getFieldProps("diagnosis")}
                     placeholder="Diagnosis"
                     label="Diagnosis"
-                    
                   />
                 </div>
                 {!can("update:prescription_form") && (
@@ -810,9 +815,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       <p className="text-sm font-medium text-amber-800">
                         ⚠️ Medicine can only be added by a doctor.
                       </p>
-
                     </div>
-
                   </div>
                 )}
               </section>
@@ -884,7 +887,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         Type of Medicine <span className="text-red-500">*</span>
                       </span>
                     }
-                  // className="bg-sky-50 cursor-not-allowed"
+                    // className="bg-sky-50 cursor-not-allowed"
                   />
                   {/* <Input
                     label="Quantity"
@@ -938,17 +941,17 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     }
                   />
 
-                  {/* <Input
-              label="Duration (in days) *"
-              inputMode="numeric"
-              type="text"
-              value={formik.values.duration}
-              onChange={(e) => {
-                const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
-                formik.setFieldValue("duration", onlyNumbers);
-              }}
-            /> */}
-                  <Select
+                  <Input
+                    label="Duration (in days) *"
+                    inputMode="numeric"
+                    type="text"
+                    value={formik.values.duration}
+                    onChange={(e) => {
+                      const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                      formik.setFieldValue("duration", onlyNumbers);
+                    }}
+                  />
+                  {/* <Select
                     label="Duration (in days)"
                     value={formik.values.duration}
                     onChange={(e) =>
@@ -962,7 +965,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         {time.label}
                       </option>
                     ))}
-                  </Select>
+                  </Select> */}
                 </div>
                 <div className="mt-3">
                   <Button
@@ -1108,7 +1111,10 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     <b>Advice:</b> {formik.values.advice}
                   </p>
                   <p>
-                    <b>Follow-up:</b> {formik.values.followup}
+                    <b>Complaint Remarks:</b> {formik.values.Remarks}
+                  </p>
+                  <p>
+                    <b>Follow-up:</b> {formik.values.followup ? `${formik.values.followup} days` : "-"}
                   </p>
                 </div>
 
@@ -1136,7 +1142,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       </p>
 
                       <p>
-                        <b>Follow-up:</b> {formik.values.followup || "-"}
+                        <b>Follow-up:</b> {formik.values.followup ? `${formik.values.followup} days` : "-"}
                       </p>
 
                       <p>
@@ -1317,9 +1323,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       id && row
                         ? row
                         : buildPrescriptionPayload(
-                          formik.values,
-                          prescriptionList,
-                        );
+                            formik.values,
+                            prescriptionList,
+                          );
 
                     onPrintCS(dataToPrint);
                   }}

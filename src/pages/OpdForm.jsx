@@ -134,6 +134,7 @@ const OpdFormCopy = () => {
   const { data: nursing, isLoading: nursingComboLoading } =
     useGetComboQuery("nursing");
   const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
+  const { data: radiology, isLoading: radiologyComboLoading } = useGetComboQuery("radiology");
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
@@ -857,7 +858,9 @@ const OpdFormCopy = () => {
                               ? "Nursing"
                               : depCurrentId === 6
                                 ? "Lab"
-                                : "Doctor"}
+                                : depCurrentId === 13
+                                  ? "Radiology"
+                                  : "Doctor"}
                           <span className="text-red-500"> *</span>
                         </span>
                       }
@@ -870,7 +873,9 @@ const OpdFormCopy = () => {
                             ? "Select Nursing"
                             : depCurrentId === 6
                               ? "Select Lab"
-                              : "Select"}
+                              : depCurrentId === 13
+                                ? "Select Radiology"
+                                : "Select"}
                       </option>
 
                       {/* Department 9 → Doctors */}
@@ -892,6 +897,12 @@ const OpdFormCopy = () => {
                       {/* Department 6 → Lab */}
                       {depCurrentId === 6 &&
                         lab?.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.username}
+                          </option>
+                        ))}
+                        {depCurrentId === 13 &&
+                        radiology?.map((d) => (
                           <option key={d.id} value={d.id}>
                             {d.username}
                           </option>
