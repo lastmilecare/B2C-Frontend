@@ -317,7 +317,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
           </MenuGroup>
          )} 
           {can("read:patient_details") && (
-          <MenuGroup menuKey="PatientDetails" icon={BuildingOffice2Icon} label="Patient Details">
+          <MenuGroup menuKey="PatientDetails" icon={UserCircleIcon} label="Patient Details">
             {can("read:patient_details") && (
               <NavLink
                 to="/patient-details"
