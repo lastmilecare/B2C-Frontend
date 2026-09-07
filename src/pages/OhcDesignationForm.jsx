@@ -1,4 +1,4 @@
-import React,{useState,useMemos} from "react";
+import React, { useState, useMemos } from "react";
 import { useFormik } from "formik";
 import { useLocation, useNavigate } from "react-router-dom";
 import * as Yup from "yup";
@@ -24,8 +24,8 @@ import { cookie } from "../utils/cookie";
 
 const DesignationForm = () => {
   const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(100);
-    const [filters, setFilters] = useState({});
+  const [limit, setLimit] = useState(100);
+  const [filters, setFilters] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -71,6 +71,7 @@ const DesignationForm = () => {
       code: editData?.code || "",
       center_id: editData?.center_id || "",
       is_active: editData?.is_active ?? true,
+      department_id: editData?.department_id || "",
     },
 
     enableReinitialize: true,
@@ -112,7 +113,9 @@ const DesignationForm = () => {
           //     ? Number(values.center_id)
           //     : null,
           center_id: 2,
-
+          department_id: values.department_id
+            ? Number(values.department_id)
+            : null,
           is_active: values.is_active,
 
           modified_by: userId ? Number(userId) : null,
@@ -205,14 +208,14 @@ const DesignationForm = () => {
                 />
 
                 <Select
-                  {...formik.getFieldProps("department")}
+                  {...formik.getFieldProps("department_id")}
                   label="Department"
                   required
-                  error={formik.touched.department && formik.errors.department}
+                  error={formik.touched.department_id && formik.errors.department_id}
                 >
                   <option value="">Select</option>
                   {departments.map((item) => (
-                    <option key={item.id} value={item.name}>
+                    <option key={item.id} value={item.id}>
                       {item.name || `Department #${item.id}`}
                     </option>
                   ))}
