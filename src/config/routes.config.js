@@ -58,7 +58,8 @@ import DepartmentForm from "../pages/OhcDeparmentForm";
 import DesignationPage from "../pages/OhcDesignationPage";
 import DesignationList from "../pages/OhcDesignationList";
 import DesignationForm from "../pages/OhcDesignationForm";
-
+import AmbulancePage from "../pages/AmbulancePage";
+import AmbulanceServicePage from "../pages/AmbulanceServicePage";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -720,6 +721,45 @@ export const ROUTES = [
     label: "Opd Bill Analysis",
     icon: "ClipboardDocumentListIcon",
     group: "OPD",
+    showInSidebar: true,
+  },
+  //Ambulance Module need to change permission with actual one
+  {
+    path: "/ambulance",
+    component: AmbulancePage,
+    // permission: "read:opd_list",
+    permission: "read:ohc_dashboard",
+    label: "Ohc Department",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/ambulance-service",
+    component: AmbulanceServicePage,
+    permission: "read:ohc_dashboard",
+    label: "Ambulance Service",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/ambulance/:id",
+    component: AmbulancePage,
+    // permission: "read:opd_list",
+    permission: "read:ohc_dashboard",
+    label: "Ambulance",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/ambulance-service/:id",
+    component: AmbulanceServicePage,
+    permission: "read:ohc_dashboard",
+    label: "Ambulance Service",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
     showInSidebar: true,
   },
 ];

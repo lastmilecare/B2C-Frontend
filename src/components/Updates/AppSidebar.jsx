@@ -667,6 +667,25 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Designation
               </NavLink>
             )}
+
+            {can("read:ohc_dashboard") && (
+              <NavLink
+                to="/ambulance"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Ambulance
+              </NavLink>
+            )}
+            {can("read:ohc_dashboard") && (
+              <NavLink
+                to="/ambulance-service"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Ambulance Service
+              </NavLink>
+            )}
           </MenuGroup>
         )}
       </nav>

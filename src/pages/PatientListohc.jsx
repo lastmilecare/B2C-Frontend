@@ -12,7 +12,7 @@ import { healthAlert } from "../utils/healthSwal";
 import Avatar from "../components/common/Avatar";
 import { useNavigate } from "react-router-dom";
 import BulkUploadModal from "./BulkUploadModal";
-
+import { downloadBlob, getBulkTemplateFilename } from "../utils/downloadBlob";
 const PatientListohc = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
@@ -116,7 +116,8 @@ const PatientListohc = () => {
   };
   const handleDownloadTemplate = async () => {
     try {
-      await downloadTemplate().unwrap();
+      const result = await downloadTemplate().unwrap();
+      downloadBlob(result, getBulkTemplateFilename()); // ← triggers actual download
       healthAlert({
         title: "Downloaded",
         text: "Excel template downloaded successfully",
@@ -303,7 +304,7 @@ const PatientListohc = () => {
         onAdd={() => navigate("/PatientRegistrationOhc")}
         enableAddBulkUpload
         addBulkUploadButtonText="Bulk Upload"
-        onAddBulkUpload={() => navigate("/PatientBulkUploadOhc")}
+        onAddBulkUpload={() => setShowBulkUpload(true)}
         enableAddBulkUploadFormat
         addBulkUploadFormatButtonText="Download Bulk Upload Format"
         onAddBulkUploadFormat={handleDownloadTemplate}
@@ -312,7 +313,7 @@ const PatientListohc = () => {
         isOpen={showBulkUpload}
         onClose={() => setShowBulkUpload(false)}
         onSuccess={() => refetch()}
-        downloadTemplate={async () => await downloadTemplate().unwrap()}
+        downloadTemplate={handleDownloadTemplate}
         uploadFile={async (file) => await bulkUpload(file).unwrap()}
       />
     </div>

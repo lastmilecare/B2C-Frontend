@@ -2188,18 +2188,7 @@ export const api = createApi({
       query: () => ({
         url: "/patients/bulk-upload/template",
         method: "GET",
-        responseHandler: async (response) => {
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = "patient_bulk_upload_template.xlsx";
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          window.URL.revokeObjectURL(url);
-          return { data: null };
-        },
+        responseType: "blob",
         cache: "no-cache",
       }),
     }),
@@ -2215,6 +2204,78 @@ export const api = createApi({
         };
       },
       invalidatesTags: ["Patients"],
+    }),
+    getAmbulances: build.query({
+      query: (params) => ({
+        url: "/ambulances",
+        params,
+      }),
+      providesTags: ["Ambulances"],
+    }),
+    searchAmbulance: build.query({
+      query: (q) => `/ambulances/search?q=${encodeURIComponent(q)}`,
+    }),
+    getAmbulance: build.query({
+      query: (id) => `/ambulances/${id}`,
+      providesTags: (_r, _e, id) => [{ type: "Ambulances", id }],
+    }),
+    createAmbulance: build.mutation({
+      query: (body) => ({
+        url: "/ambulances",
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Ambulances"],
+    }),
+    updateAmbulance: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/ambulances/${id}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["Ambulances"],
+    }),
+    deleteAmbulance: build.mutation({
+      query: (id) => ({
+        url: `/ambulances/${id}`,
+        method: "DELETE",
+        data: {},
+      }),
+      invalidatesTags: ["Ambulances"],
+    }),
+    getAmbulanceServices: build.query({
+      query: (params) => ({
+        url: "/ambulance-services",
+        params,
+      }),
+      providesTags: ["AmbulanceServices"],
+    }),
+    getAmbulanceService: build.query({
+      query: (id) => `/ambulance-services/${id}`,
+      providesTags: (_r, _e, id) => [{ type: "AmbulanceServices", id }],
+    }),
+    createAmbulanceService: build.mutation({
+      query: (body) => ({
+        url: "/ambulance-services",
+        method: "POST",
+        data:body,
+      }),
+      invalidatesTags: ["AmbulanceServices", "Ambulances"],
+    }),
+    updateAmbulanceService: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/ambulance-services/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["AmbulanceServices", "Ambulances"],
+    }),
+    deleteAmbulanceService: build.mutation({
+      query: (id) => ({
+        url: `/ambulance-services/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["AmbulanceServices", "Ambulances"],
     }),
   }),
 });
@@ -2446,4 +2507,15 @@ export const {
   useGetDesignationListQuery,
   useDownloadBulkTemplateMutation,
   useBulkUploadPatientsMutation,
+  useGetAmbulancesQuery,
+  useSearchAmbulanceQuery,
+  useGetAmbulanceQuery,
+  useCreateAmbulanceMutation,
+  useUpdateAmbulanceMutation,
+  useDeleteAmbulanceMutation,
+  useGetAmbulanceServicesQuery,
+  useGetAmbulanceServiceQuery,
+  useCreateAmbulanceServiceMutation,
+  useUpdateAmbulanceServiceMutation,
+  useDeleteAmbulanceServiceMutation,
 } = api;
