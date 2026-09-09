@@ -2200,7 +2200,7 @@ export const api = createApi({
         return {
           url: "/patients/bulk-upload",
           method: "POST",
-          body: formData,
+          data: formData,
         };
       },
       invalidatesTags: ["Patients"],
