@@ -538,14 +538,21 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             >
               OPD Health Checkup
             </NavLink>
+             <NavLink
+              to="/ohc-prescription-form"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              OPD Prescription
+            </NavLink>
             {/* )} */}
-            <NavLink
+            {/* <NavLink
               to="/test-packages-ohc"
               className={subNavItem}
               onClick={() => setIsOpen(false)}
             >
               Test Package Management
-            </NavLink>
+            </NavLink> */}
             {can("create:patient_examination_details_ohc") && (
               <NavLink
                 to="/patient-examination-details"
@@ -572,7 +579,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
             )} */}
 
-            {can("create:medical_history") && (
+            {/* {can("create:medical_history") && (
               <NavLink
                 to="/medical-history"
                 className={subNavItem}
@@ -580,7 +587,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Medical History
               </NavLink>
-            )}
+            )} */}
 
             {/* {can("create:clinical_examination") && (
               <NavLink
@@ -612,7 +619,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
             )} */}
 
-            {can("create:doctor_assessment") && (
+            {/* {can("create:doctor_assessment") && (
               <NavLink
                 to="/doctor-assessment"
                 className={subNavItem}
@@ -630,7 +637,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Fitness Certificate
               </NavLink>
-            )}
+            )} */}
             {can("create:ohc_staff_page") && (
               <NavLink
                 to="/staff-page-ohc"
@@ -649,7 +656,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Add Center
               </NavLink>
             )}
-            {can("read:ohc_dashboard") && (
+            {/* {can("read:ohc_dashboard") && (
               <NavLink
                 to="/ohc-department"
                 className={subNavItem}
@@ -666,7 +673,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Designation
               </NavLink>
-            )}
+            )} */}
 
             {can("read:ohc_dashboard") && (
               <NavLink

@@ -60,6 +60,9 @@ import DesignationList from "../pages/OhcDesignationList";
 import DesignationForm from "../pages/OhcDesignationForm";
 import AmbulancePage from "../pages/AmbulancePage";
 import AmbulanceServicePage from "../pages/AmbulanceServicePage";
+import OpdohcPrescriptionPage from "../pages/OhcPrescriptionpage";
+import ohcPrescriptionForm from "../pages/OhcPrescriptionForm";
+import ohcPrescriptionList from "../pages/OhcPrescriptionList";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -761,5 +764,27 @@ export const ROUTES = [
     icon: "ClipboardDocumentListIcon",
     group: "Revenue",
     showInSidebar: true,
+  },
+  {
+    path: "/ohc-prescription-form",
+    component:OpdohcPrescriptionPage ,
+    // permission: "read:opd_list",
+    permission: null,
+    label: "OPD OHC",
+    icon: "ClipboardDocumentListIcon",
+    group: "OPD_OHC",
+    showInSidebar: true,
+  },
+  {
+    path: "/ohc-prescription-form",
+    component: ohcPrescriptionForm,
+    permission: "null",
+    showInSidebar: false,
+  },
+  {
+    path: "/ohc-prescription-form/:ID",
+    component: ohcPrescriptionForm,
+    permission: "null",
+    showInSidebar: false,
   },
 ];

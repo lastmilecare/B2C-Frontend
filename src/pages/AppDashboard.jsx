@@ -315,6 +315,7 @@ const Dashboard = () => {
   const { data: patientData } = useGetPatientsQuery({ page: 1, limit: 100 });
   const patients      = patientData?.data || [];
   const today         = new Date().toDateString();
+  const todayRegistrations = patientData?.pagination?.totalRecords || 0;
   const todayPatients = patients.filter(
     (p) => new Date(p.createdAt).toDateString() === today
   ).length;
@@ -336,9 +337,10 @@ const Dashboard = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-4 gap-6">
         {[
+          { label: "Total Registered Worker Count",  value: todayRegistrations },
           { label: "Today's Worker Registrations",  value: todayPatients },
           { label: "OPD Health Checkup",             value: todayPatients },
-          { label: "Today's Worker Health Checkup",  value: todayPatients },
+          { label: "Today's OPD Prescription",  value: todayPatients },
           { label: "Today's Doctor Assessment",      value: todayPatients },
         ].map(({ label, value }, i) => (
           <motion.div

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import OpdOhcForm from "./OpdohcForm";
-import OpdBillingOhcList from "./OpdohcList";
+import OhcPrescriptionForm from "./OhcPrescriptionForm";
+import OhcPrescriptionList from "./OhcPrescriptionList";
 import { useLocation, useParams } from "react-router-dom";
 
 import {
@@ -8,7 +8,7 @@ import {
   CreditCardIcon,
 } from "@heroicons/react/24/outline";
 
-const OpdohcPage = () => {
+const OpdohcPrescriptionPage = () => {
   const location = useLocation();
   const { id } = useParams();
 
@@ -24,12 +24,8 @@ const OpdohcPage = () => {
 
   return (
     <div className="max-w-[1400px] mx-auto mt-4">
-
-      
       <div className="flex justify-center -mt-4 mb-6">
         <div className="flex bg-white shadow-md border border-gray-200 rounded-2xl overflow-hidden">
-
-        
           <button
             onClick={() => setActiveTab("form")}
             className={`px-8 py-2.5 text-sm font-semibold flex items-center gap-2 transition-all
@@ -40,10 +36,9 @@ const OpdohcPage = () => {
             }`}
           >
             <ClipboardDocumentIcon className="w-4 h-4" />
-            Opd Form
+            Prescription Form
           </button>
 
-         
           <button
             onClick={() => setActiveTab("list")}
             className={`px-8 py-2.5 text-sm font-semibold flex items-center gap-2 transition-all
@@ -54,21 +49,14 @@ const OpdohcPage = () => {
             }`}
           >
             <CreditCardIcon className="w-4 h-4" />
-            Opd List
+            Prescription List
           </button>
-
         </div>
       </div>
 
-     
-      {activeTab === "form" ? (
-        <OpdOhcForm />
-      ) : (
-        <OpdBillingOhcList />
-      )}
-
+      {activeTab === "form" ? <OhcPrescriptionForm /> : <OhcPrescriptionList />}
     </div>
   );
 };
 
-export default OpdohcPage;
+export default OpdohcPrescriptionPage;
