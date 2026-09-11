@@ -37,12 +37,13 @@ import { useSelector } from "react-redux";
 import "../components/chart-registry";
 import {
   useGetPatientsQuery,
-  useGetOpdBillingQuery,
+  useGetOpdBillingCountQuery,
   useGetPrescriptionsListQuery,
   useGetLowStockItemsQuery,
   useGetPatientsTrendQuery,
 } from "../redux/apiSlice";
-
+import { getOpdDashboardData } from "../utils/dashboard/opdTransformer";
+import { getPatientDashboardData } from "../utils/dashboard/patientTransformer";
 import { cookie } from "../utils/cookie";
 const KPI_ICONS = {
   users: Users,
@@ -53,7 +54,7 @@ const KPI_ICONS = {
   ambulance: Ambulance,
   activity: Activity,
 };
-import { getPatientDashboardData } from "../utils/dashboard/patientTransformer";
+import { getPrescriptionDashboardData } from "../utils/dashboard/prescriptionTransformer";
 function KpiCard({ metric, index }) {
   const Icon = KPI_ICONS[metric.icon];
   const delta = formatDelta(metric.value, metric.previous);
@@ -116,16 +117,40 @@ export const Dashboard = () => {
     isFetching: patientsFetching,
   } = useGetPatientsQuery({
     page: 1,
-    limit: 1000,
+    limit: 10000,
+  });
+  const {
+    data: opdBillingCountData,
+    isLoading: opdBillingCountLoading,
+    isFetching: opdBillingCountFetching,
+  } = useGetOpdBillingCountQuery();
+  const {
+    data: prescriptionData,
+    isLoading: prescriptionLoading,
+    isFetching: prescriptionFetching,
+  } = useGetPrescriptionsListQuery({
+    page: 1,
+    limit: 10000,
   });
   const patientDashboard = useMemo(
     () => getPatientDashboardData(patientData, period),
     [patientData, period],
   );
-  const data  = useMemo(
-    () => getDashboardData(period, center, patientDashboard),
-    [period, center, patientDashboard],
+
+  const opdDashboard = useMemo(
+    () => getOpdDashboardData(opdBillingCountData, period),
+    [opdBillingCountData, period],
   );
+  const prescriptionDashboard = useMemo(
+    () => getPrescriptionDashboardData(prescriptionData, period),
+    [prescriptionData, period],
+  );
+
+  const data = useMemo(
+    () => getDashboardData(period, center, patientDashboard, opdDashboard, prescriptionDashboard),
+    [period, center, patientDashboard, opdDashboard,prescriptionDashboard],
+  );
+
   const username = cookie.get("name") || "User";
   const role = cookie.get("role") || "N/A";
 

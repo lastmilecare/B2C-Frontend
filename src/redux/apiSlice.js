@@ -2258,7 +2258,7 @@ export const api = createApi({
       query: (body) => ({
         url: "/ambulance-services",
         method: "POST",
-        data:body,
+        data: body,
       }),
       invalidatesTags: ["AmbulanceServices", "Ambulances"],
     }),
@@ -2276,6 +2276,13 @@ export const api = createApi({
         method: "DELETE",
       }),
       invalidatesTags: ["AmbulanceServices", "Ambulances"],
+    }),
+    getOpdBillingCount: build.query({
+      query: () => ({
+        url: "/opd-billing/view/count",
+        method: "get",
+      }),
+      providesTags: ["Bill"],
     }),
   }),
 });
@@ -2518,4 +2525,5 @@ export const {
   useCreateAmbulanceServiceMutation,
   useUpdateAmbulanceServiceMutation,
   useDeleteAmbulanceServiceMutation,
+  useGetOpdBillingCountQuery,
 } = api;

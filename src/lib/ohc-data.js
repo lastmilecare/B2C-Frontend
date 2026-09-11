@@ -117,7 +117,13 @@ function reorderTests(base, center) {
   };
 }
 
-export function getDashboardData(period, center,patientDashboard) {
+export function getDashboardData(
+  period,
+  center,
+  patientDashboard,
+  opdDashboard,
+  prescriptionDashboard,
+) {
   const base = PERIOD_BASE[period];
   const labels = PERIOD_LABELS[period];
 
@@ -161,14 +167,14 @@ export function getDashboardData(period, center,patientDashboard) {
       },
       {
         label: "OPD Health Checkups",
-        value: newPatients[last] + followUp[last],
-        previous: newPatients[prev] + followUp[prev],
+        value: opdDashboard?.currentOpdCount ?? 0,
+        previous: opdDashboard?.previousOpdCount ?? 0,
         icon: "stethoscope",
       },
       {
         label: "Prescriptions Issued",
-        value: prescriptions[last],
-        previous: prescriptions[prev],
+        value: prescriptionDashboard?.currentPrescriptions ?? 0,
+        previous: prescriptionDashboard?.previousPrescriptions ?? 0,
         icon: "pill",
       },
       {
