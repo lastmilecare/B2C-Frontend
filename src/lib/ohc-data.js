@@ -1,3 +1,11 @@
+import {
+  useGetPatientsQuery,
+  useGetOpdBillingQuery,
+  useGetPrescriptionsListQuery,
+  useGetLowStockItemsQuery,
+  useGetPatientsTrendQuery,
+} from "../redux/apiSlice";
+import { getPatientDashboardData } from "../utils/dashboard/patientTransformer";
 const CENTER_SCALE = {
   All: 1,
   XYZ: 0.35,
@@ -109,7 +117,7 @@ function reorderTests(base, center) {
   };
 }
 
-export function getDashboardData(period, center) {
+export function getDashboardData(period, center,patientDashboard) {
   const base = PERIOD_BASE[period];
   const labels = PERIOD_LABELS[period];
 
@@ -128,8 +136,7 @@ export function getDashboardData(period, center) {
 
   const totalWorkers = workersVisited.reduce((a, b) => a + b, 0);
   const prevWorkersSum =
-    workersVisited.slice(0, -1).reduce((a, b) => a + b, 0) /
-    Math.max(prev, 1);
+    workersVisited.slice(0, -1).reduce((a, b) => a + b, 0) / Math.max(prev, 1);
 
   return {
     labels,
@@ -137,8 +144,8 @@ export function getDashboardData(period, center) {
     kpis: [
       {
         label: "Registered Workers",
-        value: totalWorkers,
-        previous: Math.round(prevWorkersSum * (prev + 1)),
+        value: patientDashboard.registeredWorkers,
+        previous: patientDashboard.previousRegistrations,
         icon: "users",
       },
       {
@@ -148,8 +155,8 @@ export function getDashboardData(period, center) {
             : period === "month"
               ? "This Month's Registrations"
               : "This Year's Registrations",
-        value: workersVisited[last],
-        previous: workersVisited[prev],
+        value: patientDashboard.currentRegistrations,
+        previous: patientDashboard.previousRegistrations,
         icon: "clipboard",
       },
       {
@@ -181,7 +188,7 @@ export function getDashboardData(period, center) {
         value: ambulanceDispatches.reduce((a, b) => a + b, 0),
         previous: Math.round(
           ambulanceDispatches.slice(0, -1).reduce((a, b) => a + b, 0) *
-            (labels.length / Math.max(prev, 1))
+            (labels.length / Math.max(prev, 1)),
         ),
         icon: "ambulance",
       },

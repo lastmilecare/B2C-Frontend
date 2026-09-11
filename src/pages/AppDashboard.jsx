@@ -33,9 +33,17 @@ import { formatDelta, getDashboardData } from "../lib/ohc-data";
 import { CENTER_OPTIONS } from "../lib/ohc-theme";
 import { useMemo, useState } from "react";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
-
+import { useSelector } from "react-redux";
 import "../components/chart-registry";
+import {
+  useGetPatientsQuery,
+  useGetOpdBillingQuery,
+  useGetPrescriptionsListQuery,
+  useGetLowStockItemsQuery,
+  useGetPatientsTrendQuery,
+} from "../redux/apiSlice";
 
+import { cookie } from "../utils/cookie";
 const KPI_ICONS = {
   users: Users,
   clipboard: ClipboardList,
@@ -45,7 +53,7 @@ const KPI_ICONS = {
   ambulance: Ambulance,
   activity: Activity,
 };
-
+import { getPatientDashboardData } from "../utils/dashboard/patientTransformer";
 function KpiCard({ metric, index }) {
   const Icon = KPI_ICONS[metric.icon];
   const delta = formatDelta(metric.value, metric.previous);
@@ -59,7 +67,9 @@ function KpiCard({ metric, index }) {
       className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-5 shadow-sm"
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm leading-snug text-emerald-800/80">{metric.label}</p>
+        <p className="text-sm leading-snug text-emerald-800/80">
+          {metric.label}
+        </p>
         <span className="rounded-lg bg-emerald-100 p-2 text-emerald-700">
           <Icon className="h-4 w-4" />
         </span>
@@ -93,11 +103,34 @@ export const Dashboard = () => {
   const [period, setPeriod] = useState("month");
   const [center, setCenter] = useState("All");
 
-  const data = useMemo(
-    () => getDashboardData(period, center),
-    [period, center]
-  );
+  const { permissions } = useSelector((state) => state.auth);
 
+  const can = (permission) => {
+    if (!permission) return true;
+
+    return permissions?.includes(permission) ?? false;
+  };
+  const {
+    data: patientData,
+    isLoading: patientsLoading,
+    isFetching: patientsFetching,
+  } = useGetPatientsQuery({
+    page: 1,
+    limit: 1000,
+  });
+  const patientDashboard = useMemo(
+    () => getPatientDashboardData(patientData, period),
+    [patientData, period],
+  );
+  const data  = useMemo(
+    () => getDashboardData(period, center, patientDashboard),
+    [period, center, patientDashboard],
+  );
+  const username = cookie.get("name") || "User";
+  const role = cookie.get("role") || "N/A";
+
+  const tenantId = cookie.get("tenantId") || "N/A";
+  const tenantName = tenantId == 1 ? "Honda" : "M3M";
   const opdChart = {
     labels: data.labels,
     datasets: [
@@ -297,7 +330,8 @@ export const Dashboard = () => {
       <div className="flex flex-col gap-4 rounded-xl bg-emerald-600 p-6 text-white sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-bold sm:text-2xl">
-            OHC Operations Dashboard
+            Operations Dashboard Welcome back, {username} (
+            {`${role} of ${tenantName}`})
           </h1>
           <p className="mt-1 text-sm text-emerald-100">
             Worker Registration → OPD → Prescription · Fitness · Ambulance
@@ -444,9 +478,7 @@ export const Dashboard = () => {
             />
           </div>
           <ChartLegend
-            items={[
-              { color: OHC_THEME.amber, label: "Fitness certificates" },
-            ]}
+            items={[{ color: OHC_THEME.amber, label: "Fitness certificates" }]}
           />
         </ChartCard>
 
@@ -461,9 +493,7 @@ export const Dashboard = () => {
             />
           </div>
           <ChartLegend
-            items={[
-              { color: OHC_THEME.rose, label: "Ambulance dispatches" },
-            ]}
+            items={[{ color: OHC_THEME.rose, label: "Ambulance dispatches" }]}
           />
         </ChartCard>
 
@@ -555,6 +585,6 @@ export const Dashboard = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Dashboard;
