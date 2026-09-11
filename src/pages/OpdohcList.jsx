@@ -61,9 +61,10 @@ const OpdBillingOhcList = () => {
       return;
     }
 
-    navigate(`/opd-form/${row.bill_no}`, {
+    navigate(`/opd-ohc/${row.bill_no}`, {
       state: {
         editData: row,
+        goToForm: true,
       },
     });
   };
@@ -645,7 +646,13 @@ const OpdBillingOhcList = () => {
         onPrint={onPrintInvoice}
         enableAdd
         addButtonText="Add"
-        onAdd={() => navigate("/opd-ohc")}
+        onAdd={() =>
+          navigate("/opd-ohc", {
+            state: {
+              goToForm: true,
+            },
+          })
+        }
       />
       {printRow && (
         <div style={{ display: "none" }}>

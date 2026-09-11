@@ -19,7 +19,7 @@ const AmbulanceServicePage = () => {
   useEffect(() => {
     if (location.state?.goToList) {
       setActiveTab("list");
-    } else if (id) {
+    } else if (location.state?.goToForm || id) {
       setActiveTab("form");
     }
   }, [id, location.state]);

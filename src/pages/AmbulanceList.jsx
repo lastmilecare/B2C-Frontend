@@ -268,11 +268,19 @@ const AmbulanceList = () => {
           setPage(1);
         }}
         isLoading={isLoading}
-        onEdit={(row) => navigate(`/ambulances/${row.id}`)}
+        onEdit={(row) =>
+          navigate(`/ambulance/${row.id}`, {
+            state: { goToForm: true },
+          })
+        }
         onDelete={handleDelete}
         enableAdd
         addButtonText="Add Ambulance"
-        onAdd={() => navigate('/ambulance')}
+        onAdd={() =>
+          navigate("/ambulance", {
+            state: { goToForm: true },
+          })
+        }
       />
     </div>
   );

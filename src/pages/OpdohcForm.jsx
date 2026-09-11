@@ -503,7 +503,7 @@ const OpdOhcForm = () => {
           icon: "success",
         });
         handleFormReset();
-        navigate("/OpdBillingOhcList ");
+        navigate("/opd-ohc", { state: { goToList: true } });
       } catch (err) {
         healthAlert({
           title: "OPD Billing",
