@@ -30,11 +30,17 @@ const PatientTable = ({
   enableAddBulkUploadFormat = false,
   addBulkUploadFormatButtonText = "Bulk Upload Format",
   onAddBulkUploadFormat = () => {},
+  allowStaffEdit = false,
 }) => {
   const role = cookie.get("role");
   const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
-  const actionButtons = isAdmin ? ["edit", "delete"] : [];
-  const enableActions = isAdmin;
+  const canStaffEdit = allowStaffEdit && role === "STAFF";
+  const actionButtons = isAdmin
+    ? ["edit", "delete"]
+    : canStaffEdit
+      ? ["edit"]
+      : [];
+  const enableActions = actionButtons.length > 0;
 
   return (
     <div className="bg-white rounded-xl shadow border border-gray-100 p-4">
@@ -63,6 +69,7 @@ const PatientTable = ({
         enableAddBulkUploadFormat={enableAddBulkUploadFormat}
         addBulkUploadFormatButtonText={addBulkUploadFormatButtonText}
         onAddBulkUploadFormat={onAddBulkUploadFormat}
+        allowStaffActions={allowStaffEdit}
       />
     </div>
   );

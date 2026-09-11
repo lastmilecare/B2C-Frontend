@@ -283,6 +283,7 @@ const PatientListohc = () => {
       />
 
       <PatientTable
+        allowStaffEdit
         title="Patient List"
         data={patients}
         columns={columns}
@@ -301,7 +302,13 @@ const PatientListohc = () => {
         onDelete={(row) => {}}
         enableAdd
         addButtonText="Add"
-        onAdd={() => navigate("/PatientRegistrationOhc")}
+        onAdd={() =>
+          navigate("/PatientRegistrationOhc", {
+            state: {
+              goToForm: true,
+            },
+          })
+        }
         enableAddBulkUpload
         addBulkUploadButtonText="Bulk Upload"
         onAddBulkUpload={() => setShowBulkUpload(true)}

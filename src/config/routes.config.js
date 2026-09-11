@@ -632,6 +632,12 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
+    path: "/opd-ohc/:ID",
+    component: OpdohcPage,
+    permission: null,
+    showInSidebar: false,
+  },
+  {
     path: "/test-packages-ohc",
     component: TestPackagePage,
     permission: "read:opd_revenue",
@@ -783,8 +789,8 @@ export const ROUTES = [
   },
   {
     path: "/ohc-prescription-form/:ID",
-    component: ohcPrescriptionForm,
-    permission: "null",
+    component: OpdohcPrescriptionPage,
+    permission: null,
     showInSidebar: false,
   },
 ];

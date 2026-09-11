@@ -42,6 +42,7 @@ const CommonList = ({
   enableAddBulkUploadFormat = false,
   addBulkUploadFormatButtonText = "Add Bulk Upload Format",
   onAddBulkUploadFormat = () => {},
+  allowStaffActions = false,
 }) => {
   const [tempFilters, setTempFilters] = useState({});
   const [openMenuRow, setOpenMenuRow] = useState(null);
@@ -132,7 +133,9 @@ const CommonList = ({
     const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
     const filteredActionButtons = isAdmin
       ? actionButtons
-      : actionButtons.filter((btn) => btn !== "edit" && btn !== "delete");
+      : allowStaffActions
+        ? actionButtons.filter((btn) => btn !== "delete")
+        : actionButtons.filter((btn) => btn !== "edit" && btn !== "delete");
     if (filteredActionButtons.length === 0) {
       return visibleColumns;
     }
@@ -178,6 +181,7 @@ const CommonList = ({
     onPrint,
     onPrintCS,
     openMenuRow,
+    allowStaffActions,
   ]);
 
   return (

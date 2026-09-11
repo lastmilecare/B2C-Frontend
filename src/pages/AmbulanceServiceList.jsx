@@ -17,7 +17,6 @@ const AmbulanceServiceList = () => {
 
   const [tempFilters, setTempFilters] = useState({
     patient_name: '',
-    patient_mobile: '',
     patient_type: '',
     status: '',
     startDate: '',
@@ -33,13 +32,7 @@ const AmbulanceServiceList = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    let finalValue = value;
-
-    if (name === 'patient_mobile') {
-      finalValue = value.replace(/[^0-9]/g, '').slice(0, 10);
-    }
-
-    setTempFilters((prev) => ({ ...prev, [name]: finalValue }));
+    setTempFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleApplyFilters = () => {
@@ -64,14 +57,16 @@ const AmbulanceServiceList = () => {
       return;
     }
 
-    setFilters(tempFilters);
+    const cleanedFilters = Object.fromEntries(
+      Object.entries(tempFilters).filter(([, value]) => value !== ''),
+    );
+    setFilters(cleanedFilters);
     setPage(1);
   };
 
   const handleResetFilters = () => {
     setTempFilters({
       patient_name: '',
-      patient_mobile: '',
       patient_type: '',
       status: '',
       startDate: '',
@@ -102,7 +97,6 @@ const AmbulanceServiceList = () => {
 
   const filtersConfig = [
     { label: 'Patient Name', name: 'patient_name', type: 'text' },
-    { label: 'Patient Mobile', name: 'patient_mobile', type: 'text' },
     {
       label: 'Patient Type',
       name: 'patient_type',
@@ -248,11 +242,19 @@ const AmbulanceServiceList = () => {
           setPage(1);
         }}
         isLoading={isLoading}
-        onEdit={(row) => navigate(`/ambulance-services/${row.id}`)}
+        onEdit={(row) =>
+          navigate(`/ambulance-service/${row.id}`, {
+            state: { goToForm: true },
+          })
+        }
         onDelete={handleDelete}
         enableAdd
         addButtonText="New Service"
-        onAdd={() => navigate('/ambulance-services')}
+        onAdd={() =>
+          navigate('/ambulance-service', {
+            state: { goToForm: true },
+          })
+        }
       />
     </div>
   );

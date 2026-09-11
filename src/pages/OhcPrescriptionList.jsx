@@ -279,11 +279,13 @@ const OhcPrescriptionList = () => {
 
   const navigate = useNavigate();
   const handleEdit = (row) => {
-    debugger;
     if (!row?.ID) return;
 
     navigate(`/ohc-prescription-form/${row.ID}`, {
-      state: { row },
+      state: {
+        row,
+        goToForm: true,
+      },
     });
   };
 
@@ -362,7 +364,13 @@ const OhcPrescriptionList = () => {
         onPrint={onPrint}
         enableAdd
         addButtonText="Add"
-        onAdd={() => navigate("/ohc-prescription-form")}
+        onAdd={() =>
+          navigate("/ohc-prescription-form", {
+            state: {
+              goToForm: true,
+            },
+          })
+        }
       />
       {printRow && (
         <div style={{ display: "none" }}>

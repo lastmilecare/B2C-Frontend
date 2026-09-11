@@ -10,17 +10,17 @@ import {
 
 const OpdohcPrescriptionPage = () => {
   const location = useLocation();
-  const { id } = useParams();
+  const { ID } = useParams();
 
   const [activeTab, setActiveTab] = useState("form");
 
   useEffect(() => {
     if (location.state?.goToList) {
       setActiveTab("list");
-    } else if (id) {
+    } else if (location.state?.goToForm || location.state?.row || ID) {
       setActiveTab("form");
     }
-  }, [id, location.state]);
+  }, [ID, location.state]);
 
   return (
     <div className="max-w-[1400px] mx-auto mt-4">
