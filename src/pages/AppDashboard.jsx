@@ -1,414 +1,560 @@
-import React, { useState, useEffect, useRef } from "react";
+"use client";
+
 import { motion } from "framer-motion";
-import { cookie } from "../utils/cookie";
-import { useGetPatientsQuery } from "../redux/apiSlice";
-import "chart.js/auto"; // registers ALL controllers — fixes "not a registered controller"
-import { Chart } from "chart.js";
+import {
+  Activity,
+  Ambulance,
+  ClipboardList,
+  FileCheck2,
+  Pill,
+  Stethoscope,
+  TrendingDown,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import { Badge } from "../components/ui-chart/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui-chart/select";
+import { Tabs, TabsList, TabsTrigger } from "../components/ui-chart/tabs";
+import { ChartLegend, ChartCard } from "../components/chart-ui";
+import {
+  barChartOptions,
+  doughnutChartOptions,
+  gradientBarColors,
+  lineChartOptions,
+  OHC_THEME,
+} from "../lib/chart-config";
+import { formatDelta, getDashboardData } from "../lib/ohc-data";
+import { CENTER_OPTIONS } from "../lib/ohc-theme";
+import { useMemo, useState } from "react";
+import { Bar, Doughnut, Line } from "react-chartjs-2";
 
-// ─── Hospital theme palette ────────────────────────────────────────────────
-const T = {
-  emerald:     "#059669",
-  emeraldMd:   "#10b981",
-  emeraldLt:   "#6ee7b7",
-  teal:        "#0d9488",
-  tealLt:      "#5eead4",
-  sky:         "#0ea5e9",
-  indigo:      "#4f46e5",
-  amber:       "#d97706",
-  rose:        "#e11d48",
-  slatemd:     "#64748b",
-  emeraldFill: "rgba(5,150,105,0.12)",
-  tealFill:    "rgba(13,148,136,0.10)",
+import "../components/chart-registry";
+
+const KPI_ICONS = {
+  users: Users,
+  clipboard: ClipboardList,
+  stethoscope: Stethoscope,
+  pill: Pill,
+  file: FileCheck2,
+  ambulance: Ambulance,
+  activity: Activity,
 };
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+function KpiCard({ metric, index }) {
+  const Icon = KPI_ICONS[metric.icon];
+  const delta = formatDelta(metric.value, metric.previous);
+  const isUp = metric.value >= metric.previous;
 
-// ─── Static Data ──────────────────────────────────────────────────────────
-const OPD_DATA = {
-  All:  { new: [42,55,68,75,88,96], fu: [30,38,50,60,72,84] },
-  XYZ:  { new: [18,24,32,38,44,52], fu: [12,16,22,28,34,40] },
-  TTT:  { new: [10,14,18,22,26,28], fu: [8,10,14,18,22,26]  },
-  IIIS: { new: [8,12,14,20,24,28],  fu: [6,9,11,16,18,22]   },
-  VAX:  { new: [6,9,12,15,18,22],   fu: [4,6,8,12,14,18]    },
-};
-
-const WORKERS_DATA = {
-  All:  [120,145,168,182,205,224],
-  XYZ:  [45,55,64,70,82,90],
-  TTT:  [28,34,40,44,50,54],
-  IIIS: [22,28,34,38,44,48],
-  VAX:  [18,22,28,32,36,40],
-};
-
-const TESTS_DATA = {
-  All:  { labels:["CBC","X-Ray","ECG","MRI","LFT","RFT"], data:[340,280,210,160,130,95] },
-  XYZ:  { labels:["CBC","X-Ray","ECG","MRI","LFT","RFT"], data:[140,110,82,60,50,36]   },
-  TTT:  { labels:["ECG","CBC","X-Ray","MRI","LFT","RFT"], data:[95,80,70,45,35,28]     },
-  IIIS: { labels:["CBC","LFT","X-Ray","ECG","RFT","MRI"], data:[88,62,60,55,40,32]     },
-  VAX:  { labels:["X-Ray","CBC","ECG","LFT","MRI","RFT"], data:[72,60,52,38,28,20]     },
-};
-
-const COMPLAINTS_DATA = {
-  All:  { labels:["Fever","Back pain","Cough","Fatigue","Headache","Injury","Other"], data:[22,18,15,14,12,10,9] },
-  XYZ:  { labels:["Back pain","Fever","Cough","Fatigue","Headache","Injury","Other"], data:[20,18,14,13,12,9,8]  },
-  TTT:  { labels:["Fever","Cough","Back pain","Headache","Fatigue","Injury","Other"], data:[24,20,16,12,11,9,8]  },
-  IIIS: { labels:["Fatigue","Fever","Headache","Back pain","Cough","Injury","Other"], data:[22,19,15,14,12,9,9]  },
-  VAX:  { labels:["Injury","Back pain","Fever","Fatigue","Cough","Headache","Other"], data:[26,20,16,14,12,8,4]  },
-};
-
-const COMPLAINT_COLORS = [T.emerald,T.teal,T.sky,T.indigo,T.amber,T.rose,T.slatemd];
-const TEST_COLORS      = [T.emerald,T.teal,T.sky,T.indigo,T.amber,T.rose];
-
-// ─── Legend ───────────────────────────────────────────────────────────────
-const ChartLegend = ({ items }) => (
-  <div style={{ display:"flex", flexWrap:"wrap", gap:10, marginTop:8 }}>
-    {items.map(({ color, label }) => (
-      <span key={label} style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#64748b" }}>
-        <span style={{ background:color, width:10, height:10, borderRadius:2, display:"inline-block", flexShrink:0 }} />
-        {label}
-      </span>
-    ))}
-  </div>
-);
-
-// ─── Safe chart hook — fixes "canvas already in use" ──────────────────────
-// Stores the Chart instance in a ref so cleanup always destroys the right one.
-function useChart(canvasRef, buildConfig, deps) {
-  const chartInstanceRef = useRef(null);
-
-  useEffect(() => {
-    if (!canvasRef.current) return;
-
-    // Destroy any previous instance on this canvas before creating a new one
-    if (chartInstanceRef.current) {
-      chartInstanceRef.current.destroy();
-      chartInstanceRef.current = null;
-    }
-
-    const ctx = canvasRef.current.getContext("2d");
-    chartInstanceRef.current = new Chart(ctx, buildConfig());
-
-    return () => {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.destroy();
-        chartInstanceRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-5 shadow-sm"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm leading-snug text-emerald-800/80">{metric.label}</p>
+        <span className="rounded-lg bg-emerald-100 p-2 text-emerald-700">
+          <Icon className="h-4 w-4" />
+        </span>
+      </div>
+      <p className="mt-3 text-3xl font-bold tabular-nums text-emerald-900">
+        {metric.value.toLocaleString()}
+      </p>
+      <div className="mt-2 flex items-center gap-2">
+        <Badge
+          variant="outline"
+          className={
+            isUp
+              ? "border-emerald-300 bg-emerald-100 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-700"
+          }
+        >
+          {isUp ? (
+            <TrendingUp className="mr-1 h-3 w-3" />
+          ) : (
+            <TrendingDown className="mr-1 h-3 w-3" />
+          )}
+          {delta}
+        </Badge>
+        <span className="text-xs text-slate-400">vs previous period</span>
+      </div>
+    </motion.div>
+  );
 }
 
-// ─── Chart 1: OPD — stacked area line ─────────────────────────────────────
-const OpdChart = ({ center }) => {
-  const ref = useRef(null);
-  useChart(ref, () => {
-    const d = OPD_DATA[center];
-    return {
-      type: "line",
-      data: {
-        labels: MONTHS,
-        datasets: [
-          {
-            label: "New patients",
-            data: d.new,
-            borderColor: T.emerald,
-            backgroundColor: T.emeraldFill,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: T.emerald,
-            pointBorderColor: "#fff",
-            pointBorderWidth: 1.5,
-            borderWidth: 2,
-          },
-          {
-            label: "Follow-up",
-            data: d.fu,
-            borderColor: T.teal,
-            backgroundColor: T.tealFill,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: T.teal,
-            pointBorderColor: "#fff",
-            pointBorderWidth: 1.5,
-            borderWidth: 2,
-            borderDash: [5, 3],
-          },
+export const Dashboard = () => {
+  const [period, setPeriod] = useState("month");
+  const [center, setCenter] = useState("All");
+
+  const data = useMemo(
+    () => getDashboardData(period, center),
+    [period, center]
+  );
+
+  const opdChart = {
+    labels: data.labels,
+    datasets: [
+      {
+        label: "New patients",
+        data: data.opd.newPatients,
+        borderColor: OHC_THEME.emerald,
+        backgroundColor: OHC_THEME.emeraldFill,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: OHC_THEME.emerald,
+        pointBorderColor: "#fff",
+        pointBorderWidth: 1.5,
+        borderWidth: 2.5,
+      },
+      {
+        label: "Follow-up",
+        data: data.opd.followUp,
+        borderColor: OHC_THEME.teal,
+        backgroundColor: OHC_THEME.tealFill,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: OHC_THEME.teal,
+        pointBorderColor: "#fff",
+        pointBorderWidth: 1.5,
+        borderWidth: 2.5,
+        borderDash: [6, 4],
+      },
+    ],
+  };
+
+  const workersChart = {
+    labels: data.labels,
+    datasets: [
+      {
+        label: "Workers visited",
+        data: data.workersVisited,
+        backgroundColor: gradientBarColors(data.workersVisited),
+        borderColor: OHC_THEME.emerald,
+        borderWidth: 0.5,
+        borderRadius: 6,
+        borderSkipped: false,
+      },
+    ],
+  };
+
+  const careFlowChart = {
+    labels: data.labels,
+    datasets: [
+      {
+        label: "Registration",
+        data: data.careFlow.registrations,
+        backgroundColor: OHC_THEME.emerald + "cc",
+        borderColor: OHC_THEME.emerald,
+        borderWidth: 0.5,
+        borderRadius: 4,
+      },
+      {
+        label: "OPD visit",
+        data: data.careFlow.opdVisits,
+        backgroundColor: OHC_THEME.teal + "cc",
+        borderColor: OHC_THEME.teal,
+        borderWidth: 0.5,
+        borderRadius: 4,
+      },
+      {
+        label: "Prescription",
+        data: data.careFlow.prescriptions,
+        backgroundColor: OHC_THEME.sky + "cc",
+        borderColor: OHC_THEME.sky,
+        borderWidth: 0.5,
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  const careFlowOptions = {
+    ...barChartOptions(false, "cases"),
+    plugins: {
+      ...barChartOptions(false, "cases").plugins,
+      legend: { display: false },
+      tooltip: {
+        ...barChartOptions(false, "cases").plugins?.tooltip,
+        mode: "index",
+      },
+    },
+    scales: {
+      x: {
+        ...barChartOptions().scales?.x,
+        stacked: false,
+        grid: { display: false },
+      },
+      y: {
+        ...barChartOptions().scales?.y,
+        stacked: false,
+      },
+    },
+  };
+
+  const prescriptionChart = {
+    labels: data.labels,
+    datasets: [
+      {
+        label: "Prescriptions",
+        data: data.prescriptions,
+        borderColor: OHC_THEME.indigo,
+        backgroundColor: "rgba(79,70,229,0.12)",
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        borderWidth: 2.5,
+      },
+    ],
+  };
+
+  const fitnessChart = {
+    labels: data.labels,
+    datasets: [
+      {
+        label: "Fitness certificates",
+        data: data.fitnessCertificates,
+        backgroundColor: OHC_THEME.amber + "cc",
+        borderColor: OHC_THEME.amber,
+        borderWidth: 0.5,
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  const ambulanceChart = {
+    labels: data.labels,
+    datasets: [
+      {
+        label: "Ambulance dispatches",
+        data: data.ambulanceDispatches,
+        backgroundColor: OHC_THEME.rose + "cc",
+        borderColor: OHC_THEME.rose,
+        borderWidth: 0.5,
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  const testsChart = {
+    labels: data.tests.labels,
+    datasets: [
+      {
+        label: "Tests conducted",
+        data: data.tests.data,
+        backgroundColor: [
+          OHC_THEME.emerald,
+          OHC_THEME.teal,
+          OHC_THEME.sky,
+          OHC_THEME.indigo,
+          OHC_THEME.amber,
+          OHC_THEME.rose,
+        ].map((c) => c + "cc"),
+        borderColor: [
+          OHC_THEME.emerald,
+          OHC_THEME.teal,
+          OHC_THEME.sky,
+          OHC_THEME.indigo,
+          OHC_THEME.amber,
+          OHC_THEME.rose,
         ],
+        borderWidth: 0.5,
+        borderRadius: 4,
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: { mode: "index", intersect: false },
-        },
-        scales: {
-          x: { ticks:{color:"#94a3b8",font:{size:11}}, grid:{color:"#e2e8f0"}, border:{display:false} },
-          y: { ticks:{color:"#94a3b8",font:{size:11}}, grid:{color:"#e2e8f0"}, border:{display:false}, beginAtZero:true },
-        },
-      },
-    };
-  }, [center]);
+    ],
+  };
 
-  return (
-    <div>
-      <div style={{ position:"relative", height:200 }}>
-        <canvas ref={ref} role="img" aria-label="OPD new vs follow-up patient trend" />
-      </div>
-      <ChartLegend items={[{ color:T.emerald, label:"New patients" }, { color:T.teal, label:"Follow-up" }]} />
-    </div>
-  );
-};
-
-// ─── Chart 2: Workers Visited — gradient bars ──────────────────────────────
-const WorkersChart = ({ center }) => {
-  const ref = useRef(null);
-  useChart(ref, () => {
-    const vals = WORKERS_DATA[center];
-    const max  = Math.max(...vals);
-    const bgColors = vals.map((v) => {
-      const ratio = v / max;
-      const r = Math.round(110 - (110 - 5)   * ratio);
-      const g = Math.round(231 - (231 - 150)  * ratio);
-      const b = Math.round(183 - (183 - 105)  * ratio);
-      return `rgba(${r},${g},${b},0.88)`;
-    });
-    return {
-      type: "bar",
-      data: {
-        labels: MONTHS,
-        datasets: [{
-          label: "Workers visited",
-          data: vals,
-          backgroundColor: bgColors,
-          borderColor: T.emerald,
-          borderWidth: 0.5,
-          borderRadius: 6,
-          borderSkipped: false,
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.y} workers` } },
-        },
-        scales: {
-          x: { ticks:{color:"#94a3b8",font:{size:11}}, grid:{display:false}, border:{display:false} },
-          y: { ticks:{color:"#94a3b8",font:{size:11}}, grid:{color:"#e2e8f0"}, border:{display:false}, beginAtZero:true },
-        },
-      },
-    };
-  }, [center]);
-
-  return (
-    <div>
-      <div style={{ position:"relative", height:200 }}>
-        <canvas ref={ref} role="img" aria-label="Monthly worker visit count" />
-      </div>
-      <ChartLegend items={[{ color:T.emeraldMd, label:"Workers visited" }]} />
-    </div>
-  );
-};
-
-// ─── Chart 3: Tests — horizontal bar ──────────────────────────────────────
-const TestsChart = ({ center }) => {
-  const ref = useRef(null);
-  useChart(ref, () => {
-    const d = TESTS_DATA[center];
-    return {
-      type: "bar",
-      data: {
-        labels: d.labels,
-        datasets: [{
-          label: "Tests conducted",
-          data: d.data,
-          backgroundColor: TEST_COLORS.map((c) => c + "cc"),
-          borderColor: TEST_COLORS,
-          borderWidth: 0.5,
-          borderRadius: 4,
-        }],
-      },
-      options: {
-        indexAxis: "y",
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.x} tests` } },
-        },
-        scales: {
-          x: { ticks:{color:"#94a3b8",font:{size:11}}, grid:{color:"#e2e8f0"}, border:{display:false}, beginAtZero:true },
-          y: { ticks:{color:"#334155",font:{size:11}}, grid:{display:false}, border:{display:false} },
-        },
-      },
-    };
-  }, [center]);
-
-  const d = TESTS_DATA[center];
-  return (
-    <div>
-      <div style={{ position:"relative", height:220 }}>
-        <canvas ref={ref} role="img" aria-label="Most frequently conducted tests" />
-      </div>
-      <ChartLegend items={d.labels.map((lbl, i) => ({ color:TEST_COLORS[i], label:lbl }))} />
-    </div>
-  );
-};
-
-// ─── Chart 4: Chief Complaints — donut ────────────────────────────────────
-const ComplaintsChart = ({ center }) => {
-  const ref = useRef(null);
-  const d   = COMPLAINTS_DATA[center];
-  useChart(ref, () => ({
-    type: "doughnut",
-    data: {
-      labels: d.labels,
-      datasets: [{
-        data: d.data,
-        backgroundColor: COMPLAINT_COLORS.map((c) => c + "dd"),
+  const complaintsChart = {
+    labels: data.complaints.labels,
+    datasets: [
+      {
+        data: data.complaints.data,
+        backgroundColor: [
+          OHC_THEME.emerald,
+          OHC_THEME.teal,
+          OHC_THEME.sky,
+          OHC_THEME.indigo,
+          OHC_THEME.amber,
+          OHC_THEME.rose,
+          OHC_THEME.slate,
+        ].map((c) => c + "dd"),
         borderColor: "#fff",
         borderWidth: 2,
         hoverOffset: 6,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: "62%",
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed}%` } },
       },
-    },
-  }), [center]);
+    ],
+  };
 
   return (
-    <div style={{ display:"flex", gap:16, alignItems:"center" }}>
-      <div style={{ position:"relative", height:200, width:200, flexShrink:0 }}>
-        <canvas ref={ref} role="img" aria-label="Chief complaints donut chart" />
-      </div>
-      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-        {d.labels.map((lbl, i) => (
-          <span key={lbl} style={{ display:"flex", alignItems:"center", gap:8, fontSize:11, color:"#475569" }}>
-            <span style={{ background:COMPLAINT_COLORS[i], width:10, height:10, borderRadius:2, display:"inline-block", flexShrink:0 }} />
-            {lbl}
-            <span style={{ color:"#94a3b8", marginLeft:"auto", paddingLeft:12 }}>{d.data[i]}%</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ─── Main Dashboard ────────────────────────────────────────────────────────
-const Dashboard = () => {
-  const username = cookie?.get?.("username") || "Admin";
-  const role     = cookie?.get?.("role")     || "N/A";
-
-  const centerType = "PARENT"; // cookie?.get?.("centerType") || "PARENT"
-  const userCenter = "XYZ";   // cookie?.get?.("centerName") || "XYZ"
-
-  const { data: patientData } = useGetPatientsQuery({ page: 1, limit: 100 });
-  const patients      = patientData?.data || [];
-  const today         = new Date().toDateString();
-  const todayRegistrations = patientData?.pagination?.totalRecords || 0;
-  const todayPatients = patients.filter(
-    (p) => new Date(p.createdAt).toDateString() === today
-  ).length;
-
-  const [selectedCenter, setSelectedCenter] = useState("All");
-  const activeCenter = centerType === "PARENT" ? selectedCenter : userCenter;
-
-  return (
-    <div className="space-y-6">
-
-      {/* Header */}
-      <div className="bg-emerald-600 text-white p-6 rounded-xl flex justify-between items-center">
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-4 rounded-xl bg-emerald-600 p-6 text-white sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-bold">Welcome back, {username} ({role}) 👋</h2>
-          <p className="text-sm opacity-80">Healthcare Dashboard</p>
+          <h1 className="text-xl font-bold sm:text-2xl">
+            OHC Operations Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-emerald-100">
+            Worker Registration → OPD → Prescription · Fitness · Ambulance
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Tabs value={period} onValueChange={setPeriod}>
+            <TabsList className="bg-emerald-700/60 text-white">
+              <TabsTrigger
+                value="day"
+                className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
+              >
+                Day
+              </TabsTrigger>
+              <TabsTrigger
+                value="month"
+                className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
+              >
+                Month
+              </TabsTrigger>
+              <TabsTrigger
+                value="year"
+                className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
+              >
+                Year
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Select value={center} onValueChange={setCenter}>
+            <SelectTrigger className="w-[180px] border-emerald-400/40 bg-white/10 text-white [&>span]:text-white">
+              <SelectValue placeholder="Center" />
+            </SelectTrigger>
+            <SelectContent>
+              {CENTER_OPTIONS.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-4 gap-6">
-        {[
-          { label: "Total Registered Worker Count",  value: todayRegistrations },
-          { label: "Today's Worker Registrations",  value: todayPatients },
-          { label: "OPD Health Checkup",             value: todayPatients },
-          { label: "Today's OPD Prescription",  value: todayPatients },
-          { label: "Today's Doctor Assessment",      value: todayPatients },
-        ].map(({ label, value }, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity:0, y:16 }}
-            animate={{ opacity:1, y:0 }}
-            transition={{ delay: i * 0.08 }}
-            whileHover={{ scale: 1.03 }}
-            className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-6 shadow-sm"
-          >
-            <p className="text-sm">{label}</p>
-            <h2 className="text-3xl font-bold mt-1">{value}</h2>
-          </motion.div>
+      <p className="text-sm text-slate-500">{data.periodLabel}</p>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {data.kpis.map((kpi, i) => (
+          <KpiCard key={kpi.label} metric={kpi} index={i} />
         ))}
       </div>
 
-      {/* Center Filter */}
-      {centerType === "PARENT" && (
-        <div className="flex items-center gap-3">
-          <label className="text-sm text-slate-500 font-medium">Filter by center:</label>
-          <select
-            value={selectedCenter}
-            onChange={(e) => setSelectedCenter(e.target.value)}
-            className="border border-emerald-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-slate-700"
-          >
-            <option value="All">All Centers</option>
-            <option value="XYZ">XYZ Center</option>
-            <option value="TTT">TTT Center</option>
-            <option value="IIIS">IIIS Center</option>
-            <option value="VAX">VAX Center</option>
-          </select>
+      <ChartCard
+        title="Care Flow Pipeline"
+        subtitle="Registration → OPD → Prescription per period bucket (ideal for client EOD/ EOM review)"
+      >
+        <div className="h-[260px]">
+          <Bar data={careFlowChart} options={careFlowOptions} />
         </div>
-      )}
+        <ChartLegend
+          items={[
+            { color: OHC_THEME.emerald, label: "Worker registration" },
+            { color: OHC_THEME.teal, label: "OPD visit" },
+            { color: OHC_THEME.sky, label: "Prescription issued" },
+          ]}
+        />
+      </ChartCard>
 
-      {/* 4 Charts */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ChartCard
+          title="OPD Data Analysis"
+          subtitle="New vs follow-up patients — line chart for trend clarity"
+        >
+          <div className="h-[220px]">
+            <Line data={opdChart} options={lineChartOptions("Patients")} />
+          </div>
+          <ChartLegend
+            items={[
+              { color: OHC_THEME.emerald, label: "New patients" },
+              { color: OHC_THEME.teal, label: "Follow-up" },
+            ]}
+          />
+        </ChartCard>
 
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.10}}
-          className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
-          <h3 className="text-base font-semibold text-slate-700">OPD Data Analysis</h3>
-          <p className="text-xs text-slate-400 mb-3">New vs follow-up patients — last 6 months</p>
-          <OpdChart center={activeCenter} />
-        </motion.div>
+        <ChartCard
+          title="Workers Visited"
+          subtitle="Footfall volume — vertical bars for precise count comparison"
+        >
+          <div className="h-[220px]">
+            <Bar
+              data={workersChart}
+              options={barChartOptions(false, "workers")}
+            />
+          </div>
+          <ChartLegend
+            items={[{ color: OHC_THEME.emeraldMd, label: "Workers visited" }]}
+          />
+        </ChartCard>
 
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.18}}
-          className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
-          <h3 className="text-base font-semibold text-slate-700">Workers Visited</h3>
-          <p className="text-xs text-slate-400 mb-3">Monthly footfall — last 6 months</p>
-          <WorkersChart center={activeCenter} />
-        </motion.div>
+        <ChartCard
+          title="Prescriptions Trend"
+          subtitle="Issued after doctor assessment in OPD flow"
+        >
+          <div className="h-[220px]">
+            <Line
+              data={prescriptionChart}
+              options={lineChartOptions("Prescriptions")}
+            />
+          </div>
+          <ChartLegend
+            items={[{ color: OHC_THEME.indigo, label: "Prescriptions issued" }]}
+          />
+        </ChartCard>
 
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.26}}
-          className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
-          <h3 className="text-base font-semibold text-slate-700">Most Conducted Tests</h3>
-          <p className="text-xs text-slate-400 mb-3">Lab & radiology — last 6 months</p>
-          <TestsChart center={activeCenter} />
-        </motion.div>
+        <ChartCard
+          title="Most Conducted Tests"
+          subtitle="Lab & radiology — horizontal bars for readable test names"
+        >
+          <div className="h-[240px]">
+            <Bar data={testsChart} options={barChartOptions(true, "tests")} />
+          </div>
+          <ChartLegend
+            items={data.tests.labels.map((lbl, i) => ({
+              color: [
+                OHC_THEME.emerald,
+                OHC_THEME.teal,
+                OHC_THEME.sky,
+                OHC_THEME.indigo,
+                OHC_THEME.amber,
+                OHC_THEME.rose,
+              ][i],
+              label: lbl,
+            }))}
+          />
+        </ChartCard>
 
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.34}}
-          className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
-          <h3 className="text-base font-semibold text-slate-700">Chief Complaints</h3>
-          <p className="text-xs text-slate-400 mb-3">Most common presenting complaints — last 6 months</p>
-          <ComplaintsChart center={activeCenter} />
-        </motion.div>
+        <ChartCard
+          title="Fitness Certificates"
+          subtitle="Occupational fitness clearance issued per period"
+        >
+          <div className="h-[220px]">
+            <Bar
+              data={fitnessChart}
+              options={barChartOptions(false, "certificates")}
+            />
+          </div>
+          <ChartLegend
+            items={[
+              { color: OHC_THEME.amber, label: "Fitness certificates" },
+            ]}
+          />
+        </ChartCard>
 
+        <ChartCard
+          title="Ambulance Service"
+          subtitle="Emergency dispatches — track volume by day/month/year"
+        >
+          <div className="h-[220px]">
+            <Bar
+              data={ambulanceChart}
+              options={barChartOptions(false, "dispatches")}
+            />
+          </div>
+          <ChartLegend
+            items={[
+              { color: OHC_THEME.rose, label: "Ambulance dispatches" },
+            ]}
+          />
+        </ChartCard>
+
+        <ChartCard
+          title="Chief Complaints"
+          subtitle="Most common presenting complaints — donut for proportion at a glance"
+          className="lg:col-span-2"
+        >
+          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
+            <div className="h-[220px] w-[220px] shrink-0">
+              <Doughnut
+                data={complaintsChart}
+                options={doughnutChartOptions()}
+              />
+            </div>
+            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
+              {data.complaints.labels.map((lbl, i) => (
+                <div
+                  key={lbl}
+                  className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm"
+                >
+                  <span className="flex items-center gap-2 text-slate-600">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-sm"
+                      style={{
+                        background: [
+                          OHC_THEME.emerald,
+                          OHC_THEME.teal,
+                          OHC_THEME.sky,
+                          OHC_THEME.indigo,
+                          OHC_THEME.amber,
+                          OHC_THEME.rose,
+                          OHC_THEME.slate,
+                        ][i],
+                      }}
+                    />
+                    {lbl}
+                  </span>
+                  <span className="font-semibold tabular-nums text-slate-700">
+                    {data.complaints.data[i]}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </ChartCard>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <h3 className="text-base font-semibold text-slate-800">
+          Recommended dashboard layout for OHC
+        </h3>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            {
+              title: "Executive KPI strip",
+              desc: "Top cards with today / this month / this year totals and % change vs previous period.",
+            },
+            {
+              title: "Care flow grouped bars",
+              desc: "Registration → OPD → Prescription side-by-side — best for spotting drop-off in your core flow.",
+            },
+            {
+              title: "Trend lines (OPD, Rx)",
+              desc: "Line charts for new vs follow-up and prescriptions — easy day/month/year comparison.",
+            },
+            {
+              title: "Volume bars (workers, fitness, ambulance)",
+              desc: "Vertical bars with integer ticks — precise counts for client EOD/EOM reports.",
+            },
+            {
+              title: "Distribution (tests, complaints)",
+              desc: "Horizontal bars for test names; donut + table for complaint mix percentages.",
+            },
+            {
+              title: "Filters",
+              desc: "Day | Month | Year toggle plus center filter for parent vs single-site views.",
+            },
+          ].map((item) => (
+            <div
+              key={item.title}
+              className="rounded-xl border border-white bg-white p-4 shadow-sm"
+            >
+              <p className="font-medium text-emerald-800">{item.title}</p>
+              <p className="mt-1 text-sm text-slate-500">{item.desc}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
-};
+}
 
 export default Dashboard;
