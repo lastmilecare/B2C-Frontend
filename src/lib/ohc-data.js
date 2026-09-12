@@ -123,6 +123,7 @@ export function getDashboardData(
   patientDashboard,
   opdDashboard,
   prescriptionDashboard,
+  ambulanceDashboard,
 ) {
   const base = PERIOD_BASE[period];
   const labels = PERIOD_LABELS[period];
@@ -179,8 +180,8 @@ export function getDashboardData(
       },
       {
         label: "Doctor Assessments",
-        value: Math.round((newPatients[last] + followUp[last]) * 0.92),
-        previous: Math.round((newPatients[prev] + followUp[prev]) * 0.92),
+        value: prescriptionDashboard?.currentPrescriptions ?? 0,
+        previous: prescriptionDashboard?.previousPrescriptions ?? 0,
         icon: "activity",
       },
       {
@@ -191,11 +192,8 @@ export function getDashboardData(
       },
       {
         label: "Ambulance Dispatches",
-        value: ambulanceDispatches.reduce((a, b) => a + b, 0),
-        previous: Math.round(
-          ambulanceDispatches.slice(0, -1).reduce((a, b) => a + b, 0) *
-            (labels.length / Math.max(prev, 1)),
-        ),
+        value: ambulanceDashboard?.currentAmbulanceCount ?? 0,
+        previous: ambulanceDashboard?.previousAmbulanceCount ?? 0,
         icon: "ambulance",
       },
     ],

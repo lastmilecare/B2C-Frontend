@@ -41,6 +41,7 @@ import {
   useGetPrescriptionsListQuery,
   useGetLowStockItemsQuery,
   useGetPatientsTrendQuery,
+  useGetAmbulanceServicesQuery,
 } from "../redux/apiSlice";
 import { getOpdDashboardData } from "../utils/dashboard/opdTransformer";
 import { getPatientDashboardData } from "../utils/dashboard/patientTransformer";
@@ -55,6 +56,8 @@ const KPI_ICONS = {
   activity: Activity,
 };
 import { getPrescriptionDashboardData } from "../utils/dashboard/prescriptionTransformer";
+import { getAmbulanceDashboardData } from "../utils/dashboard/ambulanceTransformer";
+import { getCareFlowDashboardData } from "../utils/dashboard/careFlowTransformer";
 function KpiCard({ metric, index }) {
   const Icon = KPI_ICONS[metric.icon];
   const delta = formatDelta(metric.value, metric.previous);
@@ -132,6 +135,9 @@ export const Dashboard = () => {
     page: 1,
     limit: 10000,
   });
+  const { data: ambulanceData, isLoading: ambulanceLoading } =
+    useGetAmbulanceServicesQuery({ page: 1, limit: 10000 });
+
   const patientDashboard = useMemo(
     () => getPatientDashboardData(patientData, period),
     [patientData, period],
@@ -146,9 +152,38 @@ export const Dashboard = () => {
     [prescriptionData, period],
   );
 
+  const ambulanceDashboard = useMemo(
+    () => getAmbulanceDashboardData(ambulanceData, period),
+    [ambulanceData, period],
+  );
+  const careFlow = useMemo(
+    () =>
+      getCareFlowDashboardData({
+        patientData,
+        opdData: opdBillingCountData,
+        prescriptionData,
+        period,
+      }),
+    [patientData, opdBillingCountData, prescriptionData, period],
+  );
   const data = useMemo(
-    () => getDashboardData(period, center, patientDashboard, opdDashboard, prescriptionDashboard),
-    [period, center, patientDashboard, opdDashboard,prescriptionDashboard],
+    () =>
+      getDashboardData(
+        period,
+        center,
+        patientDashboard,
+        opdDashboard,
+        prescriptionDashboard,
+        ambulanceDashboard,
+      ),
+    [
+      period,
+      center,
+      patientDashboard,
+      opdDashboard,
+      prescriptionDashboard,
+      ambulanceDashboard,
+    ],
   );
 
   const username = cookie.get("name") || "User";
@@ -209,7 +244,7 @@ export const Dashboard = () => {
     datasets: [
       {
         label: "Registration",
-        data: data.careFlow.registrations,
+        data: careFlow.registrations,
         backgroundColor: OHC_THEME.emerald + "cc",
         borderColor: OHC_THEME.emerald,
         borderWidth: 0.5,
@@ -217,7 +252,7 @@ export const Dashboard = () => {
       },
       {
         label: "OPD visit",
-        data: data.careFlow.opdVisits,
+        data: careFlow.opdVisits,
         backgroundColor: OHC_THEME.teal + "cc",
         borderColor: OHC_THEME.teal,
         borderWidth: 0.5,
@@ -225,7 +260,7 @@ export const Dashboard = () => {
       },
       {
         label: "Prescription",
-        data: data.careFlow.prescriptions,
+        data: careFlow.prescriptions,
         backgroundColor: OHC_THEME.sky + "cc",
         borderColor: OHC_THEME.sky,
         borderWidth: 0.5,
@@ -385,6 +420,8 @@ export const Dashboard = () => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
+
+          {/* center Drop down for future purpose
           <Select value={center} onValueChange={setCenter}>
             <SelectTrigger className="w-[180px] border-emerald-400/40 bg-white/10 text-white [&>span]:text-white">
               <SelectValue placeholder="Center" />
@@ -397,6 +434,7 @@ export const Dashboard = () => {
               ))}
             </SelectContent>
           </Select>
+            */}
         </div>
       </div>
 
