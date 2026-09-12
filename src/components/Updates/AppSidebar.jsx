@@ -628,7 +628,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Doctor Assessment
               </NavLink>
             )}
-
+ */}
             {can("create:fitness_certificate") && (
               <NavLink
                 to="/fitness-certificate"
@@ -637,7 +637,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               >
                 Fitness Certificate
               </NavLink>
-            )} */}
+            )}
             {can("create:ohc_staff_page") && (
               <NavLink
                 to="/staff-page-ohc"

@@ -199,6 +199,28 @@ export const formatTime = (value) => {
   });
 };
 
+export const getApiErrorMessage = (err, fallback = "Something went wrong") => {
+  const message = err?.data?.message;
+
+  if (Array.isArray(message)) {
+    return message.filter(Boolean).join(", ");
+  }
+
+  if (typeof message === "string" && message.trim()) {
+    return message;
+  }
+
+  if (typeof err?.data?.error === "string" && err.data.error.trim()) {
+    return err.data.error;
+  }
+
+  if (typeof err?.message === "string" && err.message.trim()) {
+    return err.message;
+  }
+
+  return fallback;
+};
+
 export const formatDateTime = (value) => {
   if (!value) return "-";
 

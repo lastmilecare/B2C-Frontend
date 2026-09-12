@@ -5,18 +5,23 @@ import { useNavigate } from "react-router-dom";
 import {
   useGetFitnessCertificatesQuery,
   useDeleteFitnessMutation,
+  useDownloadFitnessCertificatePdfMutation,
 } from "../redux/apiSlice";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { healthAlerts } from "../utils/healthSwal";
+import { getApiErrorMessage, downloadBlob } from "../utils/helper";
+
 const FitnessCertificateList = () => {
   const navigate = useNavigate();
   const { data: records = [], isLoading } = useGetFitnessCertificatesQuery();
   const [deleteFitness] = useDeleteFitnessMutation();
+  const [downloadPdf] = useDownloadFitnessCertificatePdfMutation();
+  const [downloadingId, setDownloadingId] = useState(null);
 
   const [tempFilters, setTempFilters] = useState({
-    patientName: "",
-
-    fitnessStatus: "",
-    doctor: "",
+    workmanName: "",
+    trade: "",
+    sex: "",
     fromDate: "",
     toDate: "",
   });
@@ -25,11 +30,7 @@ const FitnessCertificateList = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setTempFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setTempFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleApplyFilters = () => {
@@ -38,135 +39,89 @@ const FitnessCertificateList = () => {
 
   const handleResetFilters = () => {
     const reset = {
-      patientName: "",
-
-      fitnessStatus: "",
-      doctor: "",
+      workmanName: "",
+      trade: "",
+      sex: "",
       fromDate: "",
       toDate: "",
     };
     setTempFilters(reset);
     setFilters({});
   };
+
   const formattedData = records.map((item) => ({
     id: item.id,
-    patientName: item.name,
     certNo: item.certificate_number,
-    issueDate: item.issue_date?.split("T")[0],
-    validity: item.valid_till,
-    fitnessStatus: item.fitness_status,
-    doctor: item.doctor_signature,
-    pdfUrl: item.pdf_url,
+    workmanName: item.workman_name,
+    trade: item.trade,
+    sex: item.sex,
+    createdAt: item.created_at?.split("T")[0],
+    raw: item,
   }));
+
   const filteredData = formattedData.filter((item) => {
-    const { patientName, fitnessStatus, doctor, fromDate, toDate } = filters;
+    const { workmanName, trade, sex, fromDate, toDate } = filters;
 
     return (
-      (!patientName ||
-        item.patientName?.toLowerCase().includes(patientName.toLowerCase())) &&
-      (!fitnessStatus || item.fitnessStatus === fitnessStatus) &&
-      (!doctor || item.doctor?.toLowerCase().includes(doctor.toLowerCase())) &&
-      (!fromDate || item.issueDate >= fromDate) &&
-      (!toDate || item.issueDate <= toDate)
+      (!workmanName ||
+        item.workmanName?.toLowerCase().includes(workmanName.toLowerCase())) &&
+      (!trade || item.trade?.toLowerCase().includes(trade.toLowerCase())) &&
+      (!sex || item.sex?.toLowerCase() === sex.toLowerCase()) &&
+      (!fromDate || item.createdAt >= fromDate) &&
+      (!toDate || item.createdAt <= toDate)
     );
   });
-  const BASE_URL = import.meta.env.VITE_API_URL || "https://api.example.com";
 
-  const handleDownload = async (row) => {
-    if (!row.pdfUrl) {
-      healthAlerts.error("PDF not available");
-      return;
-    }
-
+  const onDownloadPdf = async (row) => {
     try {
-      const url = `${BASE_URL}${row.pdfUrl}`;
-      const response = await fetch(url);
-
-      if (!response.ok) throw new Error("Failed to fetch PDF");
-
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = `${row.certNo}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      URL.revokeObjectURL(blobUrl); // cleanup
+      setDownloadingId(row.id);
+      const blob = await downloadPdf(row.id).unwrap();
+      downloadBlob(
+        blob,
+        `Fitness-Certificate-${row.certNo || row.id}.pdf`,
+      );
     } catch (err) {
-      healthAlerts.error("Download failed");
+      healthAlerts.error(getApiErrorMessage(err, "PDF download failed"), "Error");
+    } finally {
+      setDownloadingId(null);
     }
   };
-  const filtersConfig = [
-    {
-      label: "Patient Name",
-      name: "patientName",
-      type: "text",
-    },
 
+  const filtersConfig = [
+    { label: "Workman Name", name: "workmanName", type: "text" },
+    { label: "Trade", name: "trade", type: "text" },
     {
-      label: "Fitness Status",
-      name: "fitnessStatus",
+      label: "Sex",
+      name: "sex",
       type: "select",
       options: [
-        { label: "Fit", value: "FIT" },
-        { label: "Fit with Restrictions", value: "FIT_WITH_RESTRICTIONS" },
-        { label: "Unfit", value: "UNFIT" },
+        { label: "All", value: "" },
+        { label: "Male", value: "Male" },
+        { label: "Female", value: "Female" },
+        { label: "Other", value: "Other" },
       ],
     },
-    {
-      label: "Doctor",
-      name: "doctor",
-      type: "text",
-    },
-    {
-      label: "Date Form",
-      name: "fromDate",
-      type: "date",
-    },
-    {
-      label: "Date To",
-      name: "toDate",
-      type: "date",
-    },
+    { label: "Date From", name: "fromDate", type: "date" },
+    { label: "Date To", name: "toDate", type: "date" },
   ];
 
   const columns = [
+    { name: "Certificate No", selector: (row) => row.certNo },
+    { name: "Workman Name", selector: (row) => row.workmanName },
+    { name: "Trade", selector: (row) => row.trade },
+    { name: "Sex", selector: (row) => row.sex },
+    { name: "Created On", selector: (row) => row.createdAt },
     {
-      name: "Certificate No",
-      selector: (row) => row.certNo,
-    },
-    {
-      name: "Patient",
-      selector: (row) => row.patientName,
-    },
-
-    {
-      name: "Issue Date",
-      selector: (row) => row.issueDate,
-    },
-    {
-      name: "Validity",
-      selector: (row) => row.validity,
-    },
-    {
-      name: "Fitness",
-      selector: (row) => row.fitnessStatus,
-    },
-    {
-      name: "Doctor",
-      selector: (row) => row.doctor,
-    },
-    {
-      name: "Download",
+      name: "Certificate",
       cell: (row) => (
         <button
-          className="flex items-center gap-2 cursor-pointer text-blue-600 hover:text-blue-800"
-          onClick={() => handleDownload(row)}
+          type="button"
+          className="flex items-center gap-2 cursor-pointer text-blue-600 hover:text-blue-800 disabled:opacity-50"
+          onClick={() => onDownloadPdf(row)}
+          disabled={downloadingId === row.id}
         >
           <ArrowDownTrayIcon className="w-5 h-5" />
+          {downloadingId === row.id ? "Downloading..." : "Download PDF"}
         </button>
       ),
     },
@@ -196,18 +151,28 @@ const FitnessCertificateList = () => {
         onPageChange={() => {}}
         onPerPageChange={() => {}}
         isLoading={isLoading}
+        enableAdd
+        addButtonText="Add Certificate"
+        onAdd={() =>
+          navigate("/fitness-certificate", {
+            state: { goToForm: true },
+          })
+        }
         onEdit={(row) => {
-          navigate(`/fitness-certificate/${row.id}`);
+          navigate(`/fitness-certificate/${row.id}`, {
+            state: { goToForm: true },
+          });
         }}
         onDelete={async (row) => {
           try {
             await deleteFitness(row.id).unwrap();
-            healthAlerts.success("Deleted Successfully");
-          } catch {
-            healthAlerts.error("Delete Failed");
+            healthAlerts.success("Deleted successfully", "Deleted");
+          } catch (err) {
+            healthAlerts.error(getApiErrorMessage(err, "Delete failed"), "Error");
           }
         }}
       />
+
     </div>
   );
 };
