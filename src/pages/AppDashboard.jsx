@@ -39,8 +39,6 @@ import {
   useGetPatientsQuery,
   useGetOpdBillingCountQuery,
   useGetPrescriptionsListQuery,
-  useGetLowStockItemsQuery,
-  useGetPatientsTrendQuery,
   useGetAmbulanceServicesQuery,
 } from "../redux/apiSlice";
 import { getOpdDashboardData } from "../utils/dashboard/opdTransformer";
@@ -55,7 +53,10 @@ const KPI_ICONS = {
   ambulance: Ambulance,
   activity: Activity,
 };
-import { getPrescriptionDashboardData } from "../utils/dashboard/prescriptionTransformer";
+import {
+  getPrescriptionDashboardData,
+  getChiefComplaintsData,
+} from "../utils/dashboard/prescriptionTransformer";
 import { getAmbulanceDashboardData } from "../utils/dashboard/ambulanceTransformer";
 import { getCareFlowDashboardData } from "../utils/dashboard/careFlowTransformer";
 function KpiCard({ metric, index }) {
@@ -166,6 +167,10 @@ export const Dashboard = () => {
       }),
     [patientData, opdBillingCountData, prescriptionData, period],
   );
+  const chiefComplaints = useMemo(
+    () => getChiefComplaintsData(prescriptionData),
+    [prescriptionData],
+  );
   const data = useMemo(
     () =>
       getDashboardData(
@@ -175,6 +180,7 @@ export const Dashboard = () => {
         opdDashboard,
         prescriptionDashboard,
         ambulanceDashboard,
+        chiefComplaints,
       ),
     [
       period,
@@ -183,6 +189,7 @@ export const Dashboard = () => {
       opdDashboard,
       prescriptionDashboard,
       ambulanceDashboard,
+      chiefComplaints,
     ],
   );
 
@@ -293,11 +300,11 @@ export const Dashboard = () => {
   };
 
   const prescriptionChart = {
-    labels: data.labels,
+    labels: prescriptionDashboard?.trend?.labels ?? [],
     datasets: [
       {
         label: "Prescriptions",
-        data: data.prescriptions,
+        data: prescriptionDashboard?.trend?.counts ?? [],
         borderColor: OHC_THEME.indigo,
         backgroundColor: "rgba(79,70,229,0.12)",
         fill: true,
@@ -323,11 +330,11 @@ export const Dashboard = () => {
   };
 
   const ambulanceChart = {
-    labels: data.labels,
+    labels: ambulanceDashboard?.trend?.labels ?? [],
     datasets: [
       {
         label: "Ambulance dispatches",
-        data: data.ambulanceDispatches,
+        data: ambulanceDashboard?.trend?.counts ?? [],
         backgroundColor: OHC_THEME.rose + "cc",
         borderColor: OHC_THEME.rose,
         borderWidth: 0.5,
@@ -365,10 +372,10 @@ export const Dashboard = () => {
   };
 
   const complaintsChart = {
-    labels: data.complaints.labels,
+    labels: chiefComplaints.labels,
     datasets: [
       {
-        data: data.complaints.data,
+        data: chiefComplaints.values,
         backgroundColor: [
           OHC_THEME.emerald,
           OHC_THEME.teal,
@@ -507,8 +514,8 @@ export const Dashboard = () => {
             items={[{ color: OHC_THEME.indigo, label: "Prescriptions issued" }]}
           />
         </ChartCard>
-
-        <ChartCard
+        {/* Labs chart commented for future use */}
+        {/* <ChartCard
           title="Most Conducted Tests"
           subtitle="Lab & radiology — horizontal bars for readable test names"
         >
@@ -528,7 +535,7 @@ export const Dashboard = () => {
               label: lbl,
             }))}
           />
-        </ChartCard>
+        </ChartCard> */}
 
         <ChartCard
           title="Fitness Certificates"
@@ -604,7 +611,7 @@ export const Dashboard = () => {
           </div>
         </ChartCard>
       </div>
-
+      {/* 
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
         <h3 className="text-base font-semibold text-slate-800">
           Recommended dashboard layout for OHC
@@ -645,7 +652,7 @@ export const Dashboard = () => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

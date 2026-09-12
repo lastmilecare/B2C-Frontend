@@ -1,11 +1,3 @@
-import {
-  useGetPatientsQuery,
-  useGetOpdBillingQuery,
-  useGetPrescriptionsListQuery,
-  useGetLowStockItemsQuery,
-  useGetPatientsTrendQuery,
-} from "../redux/apiSlice";
-import { getPatientDashboardData } from "../utils/dashboard/patientTransformer";
 const CENTER_SCALE = {
   All: 1,
   XYZ: 0.35,
@@ -124,14 +116,17 @@ export function getDashboardData(
   opdDashboard,
   prescriptionDashboard,
   ambulanceDashboard,
+  chiefComplaints
 ) {
   const base = PERIOD_BASE[period];
   const labels = PERIOD_LABELS[period];
 
-  const workersVisited = buildSeries(base.workers, center, 1.2);
-  const newPatients = buildSeries(base.opdNew, center, 2.1);
-  const followUp = buildSeries(base.opdFu, center, 3.4);
-  const prescriptions = buildSeries(base.rx, center, 4.2);
+  const workersVisited = patientDashboard?.workersVisitedSeries ?? [];
+  const newPatients = opdDashboard?.trend?.newPatients ?? [];
+
+  const followUp = opdDashboard?.trend?.followUp ?? [];
+  const opdLabels = opdDashboard?.trend?.labels ?? labels;
+  const prescriptions = prescriptionDashboard?.trend?.counts ?? [];
   const fitnessCertificates = buildSeries(base.fitness, center, 5.1);
   const ambulanceDispatches = buildSeries(base.ambulance, center, 6.3);
 
@@ -208,7 +203,11 @@ export function getDashboardData(
       prescriptions,
     },
     tests: reorderTests(scaledTests, center),
-    complaints: reorderComplaints(scaledComplaints, center),
+    complaints: {
+      labels: chiefComplaints?.labels ?? [],
+      data: chiefComplaints?.percentages ?? [],
+      values: chiefComplaints?.values ?? [],
+    },
   };
 }
 
