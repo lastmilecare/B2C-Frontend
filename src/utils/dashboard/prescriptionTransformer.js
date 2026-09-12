@@ -23,7 +23,6 @@ export const isSameYear = (date1, date2) => {
 
 export const getPrescriptionDashboardData = (prescriptionData, period) => {
   const prescriptions = getPrescriptionArray(prescriptionData);
-debugger;
   const now = new Date();
 
   let currentPrescriptions = 0;
