@@ -1307,6 +1307,29 @@ export const api = createApi({
       }),
       responseHandler: async (response) => response.text(),
     }),
+    previewFitnessCertificate: build.mutation({
+      query: (body) => ({
+        url: "/ohc-fitness/preview-certificate",
+        method: "POST",
+        data: body,
+      }),
+      responseHandler: async (response) => response.text(),
+    }),
+    previewFitnessCertificatePdf: build.mutation({
+      query: (body) => ({
+        url: "/ohc-fitness/preview-certificate-pdf",
+        method: "POST",
+        data: body,
+        responseType: "blob",
+      }),
+    }),
+    downloadFitnessCertificatePdf: build.mutation({
+      query: (id) => ({
+        url: `/ohc-fitness/${id}/pdf`,
+        method: "GET",
+        responseType: "blob",
+      }),
+    }),
 
     getLowStockItems: build.query({
       query: () => ({
@@ -2431,6 +2454,9 @@ export const {
   useDeletePatientMutation,
   useGetAllTemplatesQuery,
   usePreviewTemplateMutation,
+  usePreviewFitnessCertificateMutation,
+  usePreviewFitnessCertificatePdfMutation,
+  useDownloadFitnessCertificatePdfMutation,
   useGetLowStockItemsQuery,
   useGetPatientDueQuery,
   useUpdateTemplateMutation,
