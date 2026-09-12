@@ -2307,6 +2307,13 @@ export const api = createApi({
       }),
       providesTags: ["Bill"],
     }),
+    getFitnessCertificatesCount: build.query({
+      query: () => ({
+        url: "/ohc-fitness/count",
+        method: "GET",
+      }),
+      providesTags: ["Fitness"],
+    }),
   }),
 });
 
@@ -2552,4 +2559,5 @@ export const {
   useUpdateAmbulanceServiceMutation,
   useDeleteAmbulanceServiceMutation,
   useGetOpdBillingCountQuery,
+  useGetFitnessCertificatesCountQuery
 } = api;

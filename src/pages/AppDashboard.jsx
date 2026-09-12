@@ -40,9 +40,11 @@ import {
   useGetOpdBillingCountQuery,
   useGetPrescriptionsListQuery,
   useGetAmbulanceServicesQuery,
+  useGetFitnessCertificatesCountQuery,
 } from "../redux/apiSlice";
 import { getOpdDashboardData } from "../utils/dashboard/opdTransformer";
 import { getPatientDashboardData } from "../utils/dashboard/patientTransformer";
+import { getFitnessCertificateDashboardData } from "../utils/dashboard/fitnessCertificateTransformer";
 import { cookie } from "../utils/cookie";
 const KPI_ICONS = {
   users: Users,
@@ -138,7 +140,11 @@ export const Dashboard = () => {
   });
   const { data: ambulanceData, isLoading: ambulanceLoading } =
     useGetAmbulanceServicesQuery({ page: 1, limit: 10000 });
-
+  const {
+    data: fitnessCertificateData,
+    isLoading: fitnessCertificateLoading,
+    isFetching: fitnessCertificateFetching,
+  } = useGetFitnessCertificatesCountQuery();
   const patientDashboard = useMemo(
     () => getPatientDashboardData(patientData, period),
     [patientData, period],
@@ -171,6 +177,10 @@ export const Dashboard = () => {
     () => getChiefComplaintsData(prescriptionData),
     [prescriptionData],
   );
+  const fitnessCertificateDashboard = useMemo(
+    () => getFitnessCertificateDashboardData(fitnessCertificateData, period),
+    [fitnessCertificateData, period],
+  );
   const data = useMemo(
     () =>
       getDashboardData(
@@ -181,6 +191,7 @@ export const Dashboard = () => {
         prescriptionDashboard,
         ambulanceDashboard,
         chiefComplaints,
+        fitnessCertificateDashboard,
       ),
     [
       period,
@@ -190,6 +201,7 @@ export const Dashboard = () => {
       prescriptionDashboard,
       ambulanceDashboard,
       chiefComplaints,
+      fitnessCertificateDashboard,
     ],
   );
 
@@ -316,11 +328,11 @@ export const Dashboard = () => {
   };
 
   const fitnessChart = {
-    labels: data.labels,
+    labels: fitnessCertificateDashboard?.trend?.labels ?? [],
     datasets: [
       {
         label: "Fitness certificates",
-        data: data.fitnessCertificates,
+        data: fitnessCertificateDashboard?.trend?.counts ?? [],
         backgroundColor: OHC_THEME.amber + "cc",
         borderColor: OHC_THEME.amber,
         borderWidth: 0.5,
@@ -370,21 +382,26 @@ export const Dashboard = () => {
       },
     ],
   };
-
+  const complaintColors = [
+    OHC_THEME.emerald, // Fever
+    OHC_THEME.teal, // Cough
+    OHC_THEME.sky, // Headache
+    OHC_THEME.indigo, // Fatigue
+    OHC_THEME.amber, // Vomiting
+    OHC_THEME.rose, // Nausea
+    OHC_THEME.slate, // Abdominal Pain
+    OHC_THEME.emerald, // Back Pain
+    OHC_THEME.teal, // Chest Pain
+    OHC_THEME.sky, // Injury
+    OHC_THEME.indigo, // Diarrhea
+    OHC_THEME.slate, // Other
+  ];
   const complaintsChart = {
     labels: chiefComplaints.labels,
     datasets: [
       {
         data: chiefComplaints.values,
-        backgroundColor: [
-          OHC_THEME.emerald,
-          OHC_THEME.teal,
-          OHC_THEME.sky,
-          OHC_THEME.indigo,
-          OHC_THEME.amber,
-          OHC_THEME.rose,
-          OHC_THEME.slate,
-        ].map((c) => c + "dd"),
+        backgroundColor: complaintColors.map((c) => c + "dd"),
         borderColor: "#fff",
         borderWidth: 2,
         hoverOffset: 6,
@@ -589,15 +606,7 @@ export const Dashboard = () => {
                     <span
                       className="inline-block h-2.5 w-2.5 rounded-sm"
                       style={{
-                        background: [
-                          OHC_THEME.emerald,
-                          OHC_THEME.teal,
-                          OHC_THEME.sky,
-                          OHC_THEME.indigo,
-                          OHC_THEME.amber,
-                          OHC_THEME.rose,
-                          OHC_THEME.slate,
-                        ][i],
+                        background: complaintColors[i],
                       }}
                     />
                     {lbl}

@@ -116,7 +116,8 @@ export function getDashboardData(
   opdDashboard,
   prescriptionDashboard,
   ambulanceDashboard,
-  chiefComplaints
+  chiefComplaints,
+  fitnessCertificateDashboard,
 ) {
   const base = PERIOD_BASE[period];
   const labels = PERIOD_LABELS[period];
@@ -181,8 +182,8 @@ export function getDashboardData(
       },
       {
         label: "Fitness Certificates",
-        value: fitnessCertificates[last],
-        previous: fitnessCertificates[prev],
+        value: fitnessCertificateDashboard?.currentCertificateCount ?? 0,
+        previous: fitnessCertificateDashboard?.previousCertificateCount ?? 0,
         icon: "file",
       },
       {
