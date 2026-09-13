@@ -15,6 +15,7 @@ import {
   useUpdateFitnessMutation,
   useGetFitnessByIdQuery,
   useGetOrgProfilesQuery,
+  useGetComboQuery,
   usePreviewFitnessCertificatePdfMutation,
 } from "../redux/apiSlice";
 import { healthAlerts } from "../utils/healthSwal";
@@ -44,22 +45,36 @@ const YES_NO_FIELDS = [
 ];
 
 const OPERATOR_CHECKS = [
-  { key: "op_general_physique", label: "General Physique" },
-  { key: "op_vision", label: "Vision" },
-  { key: "op_hearing", label: "Hearing" },
-  { key: "op_breathing", label: "Breathing" },
-  { key: "op_upper_limbs", label: "Upper Limbs" },
-  { key: "op_lower_limbs", label: "Lower Limbs" },
-  { key: "op_spine", label: "Spine" },
-  {
-    key: "op_general_mental_alertness",
-    label: "General (Mental Alertness and Stability)",
-  },
+  { key: "op_general_physique", label: "(i) General Physique" },
+  { key: "op_vision", label: "(ii) Vision" },
+  { key: "op_hearing", label: "(iii) Hearing" },
+  { key: "op_breathing", label: "(iv) Breathing" },
+  { key: "op_upper_limbs", label: "(v) Upper Limbs" },
+  { key: "op_lower_limbs", label: "(vi) Lower Limbs" },
+  { key: "op_spine", label: "(vii) Spine" },
+  { key: "op_general_mental_alertness", label: "(viii) General (Mental Alertness and Stability)" },
 ];
+
+const toTextField = (value) => {
+  if (value === true) return "Yes";
+  if (value === false || value === null || value === undefined) return "";
+  return String(value);
+};
+
+const validateOptionalNumber = (value, min, max, label) => {
+  if (!value?.toString().trim()) return null;
+  const num = Number(value);
+  if (Number.isNaN(num) || num < min || num > max) {
+    return `${label} must be between ${min} and ${max}`;
+  }
+  return null;
+};
 
 const initialValues = {
   project_name: "",
   certificate_number: "",
+  doctor_id: "",
+  doctor_name: "",
   workman_name: "",
   trade: "",
   identification_mark_1: "",
@@ -91,19 +106,19 @@ const initialValues = {
   prev_major_illness_surgery: "",
   prev_symptoms_visible: "",
   prev_others: "",
-  op_general_physique: false,
-  op_vision: false,
-  op_hearing: false,
-  op_breathing: false,
-  op_upper_limbs: false,
-  op_lower_limbs: false,
-  op_spine: false,
-  op_general_mental_alertness: false,
+  op_general_physique: "",
+  op_vision: "",
+  op_hearing: "",
+  op_breathing: "",
+  op_upper_limbs: "",
+  op_lower_limbs: "",
+  op_spine: "",
+  op_general_mental_alertness: "",
   op_other_examination: "",
-  fh_skin_diseases: false,
-  fh_personal_hygiene: false,
+  fh_skin_diseases: "",
+  fh_personal_hygiene: "",
   fh_chest_xray: "",
-  welder_respiratory_diseases: false,
+  welder_respiratory_diseases: "",
   welder_chest_xray: "",
 };
 
@@ -113,18 +128,6 @@ const YesNoSelect = ({ label, value, onChange }) => (
     <option value="yes">Yes</option>
     <option value="no">No</option>
   </Select>
-);
-
-const CheckboxField = ({ label, checked, onChange }) => (
-  <label className="flex items-center gap-2 text-sm text-gray-700">
-    <input
-      type="checkbox"
-      checked={checked}
-      onChange={onChange}
-      className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
-    />
-    {label}
-  </label>
 );
 
 const PreviewSection = ({ title, children }) => (
@@ -137,12 +140,6 @@ const PreviewSection = ({ title, children }) => (
 const PreviewItem = ({ label, value }) => (
   <p>
     <b>{label}:</b> {value || "-"}
-  </p>
-);
-
-const PreviewChecked = ({ label, checked }) => (
-  <p>
-    <b>{label}:</b> {checked ? "Yes" : "No"}
   </p>
 );
 
@@ -164,17 +161,31 @@ const FitnessCertificate = () => {
     tenant_id,
     center_id,
   });
+  const { data: doctors = [] } = useGetComboQuery("doctor");
 
   const orgProfile = organisationData?.data?.[0] || {};
+
+  const resolveDoctorName = (doctorId, fallbackName = "") => {
+    if (!doctorId) return fallbackName || "";
+    const doctor = doctors.find((d) => Number(d.id) === Number(doctorId));
+    return doctor?.name || doctor?.doctor_name || fallbackName || "";
+  };
 
   const formik = useFormik({
     initialValues,
     enableReinitialize: true,
     onSubmit: async (values) => {
       try {
+        const doctorName = resolveDoctorName(values.doctor_id, values.doctor_name);
         const payload = {
           ...values,
           project_name: values.project_name || orgProfile.display_name || "",
+          doctor_id: values.doctor_id ? Number(values.doctor_id) : null,
+          doctor_name: doctorName,
+          height: values.height?.toString() || "",
+          weight: values.weight?.toString() || "",
+          pulse: values.pulse?.toString() || "",
+          certificate_age: values.certificate_age?.toString() || "",
         };
 
         if (id) {
@@ -205,6 +216,8 @@ const FitnessCertificate = () => {
       ...initialValues,
       project_name: editData.project_name || orgProfile.display_name || "",
       certificate_number: editData.certificate_number || "",
+      doctor_id: editData.doctor_id || "",
+      doctor_name: editData.doctor_name || "",
       workman_name: editData.workman_name || "",
       trade: editData.trade || "",
       identification_mark_1: editData.identification_mark_1 || "",
@@ -236,19 +249,19 @@ const FitnessCertificate = () => {
       prev_major_illness_surgery: editData.prev_major_illness_surgery || "",
       prev_symptoms_visible: editData.prev_symptoms_visible || "",
       prev_others: editData.prev_others || "",
-      op_general_physique: Boolean(editData.op_general_physique),
-      op_vision: Boolean(editData.op_vision),
-      op_hearing: Boolean(editData.op_hearing),
-      op_breathing: Boolean(editData.op_breathing),
-      op_upper_limbs: Boolean(editData.op_upper_limbs),
-      op_lower_limbs: Boolean(editData.op_lower_limbs),
-      op_spine: Boolean(editData.op_spine),
-      op_general_mental_alertness: Boolean(editData.op_general_mental_alertness),
+      op_general_physique: toTextField(editData.op_general_physique),
+      op_vision: toTextField(editData.op_vision),
+      op_hearing: toTextField(editData.op_hearing),
+      op_breathing: toTextField(editData.op_breathing),
+      op_upper_limbs: toTextField(editData.op_upper_limbs),
+      op_lower_limbs: toTextField(editData.op_lower_limbs),
+      op_spine: toTextField(editData.op_spine),
+      op_general_mental_alertness: toTextField(editData.op_general_mental_alertness),
       op_other_examination: editData.op_other_examination || "",
-      fh_skin_diseases: Boolean(editData.fh_skin_diseases),
-      fh_personal_hygiene: Boolean(editData.fh_personal_hygiene),
+      fh_skin_diseases: toTextField(editData.fh_skin_diseases),
+      fh_personal_hygiene: toTextField(editData.fh_personal_hygiene),
       fh_chest_xray: editData.fh_chest_xray || "",
-      welder_respiratory_diseases: Boolean(editData.welder_respiratory_diseases),
+      welder_respiratory_diseases: toTextField(editData.welder_respiratory_diseases),
       welder_chest_xray: editData.welder_chest_xray || "",
     });
   }, [editData, orgProfile.display_name]);
@@ -257,6 +270,11 @@ const FitnessCertificate = () => {
     ...formik.values,
     project_name: formik.values.project_name || orgProfile.display_name || "",
     certificate_number: formik.values.certificate_number || "PREVIEW",
+    doctor_name: resolveDoctorName(formik.values.doctor_id, formik.values.doctor_name),
+    height: formik.values.height?.toString() || "",
+    weight: formik.values.weight?.toString() || "",
+    pulse: formik.values.pulse?.toString() || "",
+    certificate_age: formik.values.certificate_age?.toString() || "",
   };
 
   const handleDownloadPdf = async () => {
@@ -282,11 +300,25 @@ const FitnessCertificate = () => {
         ["guardian_name", "Guardian name"],
         ["sex", "Sex"],
         ["residence_address", "Residence address"],
-        ["date_of_birth", "Date of birth"],
         ["certificate_age", "Certificate age"],
+        ["doctor_id", "Medical Inspector / Doctor"],
       ];
       const missing = required.find(([field]) => !formik.values[field]?.toString()?.trim());
       if (missing) return `${missing[1]} is required`;
+    }
+
+    if (step === 2) {
+      const physicalErrors = [
+        validateOptionalNumber(formik.values.height, 30, 250, "Height (cm)"),
+        validateOptionalNumber(formik.values.weight, 2, 300, "Weight (kg)"),
+        validateOptionalNumber(formik.values.pulse, 30, 220, "Pulse (bpm)"),
+      ].filter(Boolean);
+      if (physicalErrors.length) return physicalErrors[0];
+
+      const bp = formik.values.blood_pressure?.trim();
+      if (bp && !/^\d{2,3}\/\d{2,3}$/.test(bp)) {
+        return "Blood Pressure must be in format 120/80 (mmHg)";
+      }
     }
 
     return null;
@@ -352,6 +384,14 @@ const FitnessCertificate = () => {
                 <div className="grid md:grid-cols-3 gap-6">
                   <Input label="Name of the Workman" required {...formik.getFieldProps("workman_name")} />
                   <Input label="Trade of the Workman" required {...formik.getFieldProps("trade")} />
+                  <Select label="Medical Inspector / Doctor" required {...formik.getFieldProps("doctor_id")}>
+                    <option value="">Select Doctor</option>
+                    {doctors.map((doctor) => (
+                      <option key={doctor.id} value={doctor.id}>
+                        {doctor.name || doctor.doctor_name}
+                      </option>
+                    ))}
+                  </Select>
                   <Input label="Identification Mark 1" {...formik.getFieldProps("identification_mark_1")} />
                   <Input label="Identification Mark 2" {...formik.getFieldProps("identification_mark_2")} />
                   <Input
@@ -377,7 +417,7 @@ const FitnessCertificate = () => {
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-400"
                     />
                   </div>
-                  <Input type="date" label="Date of Birth" required {...formik.getFieldProps("date_of_birth")} />
+                  <Input type="date" label="Date of Birth" {...formik.getFieldProps("date_of_birth")} />
                   <Input label="Certificate Age" required {...formik.getFieldProps("certificate_age")} />
                   <div className="md:col-span-3 space-y-4 pt-2">
                     <h4 className="text-gray-700 font-semibold text-base">Reason for:</h4>
@@ -400,10 +440,32 @@ const FitnessCertificate = () => {
               <section className="space-y-6">
                 <h3 className="text-sky-700 font-semibold text-lg">Section 2: Physical Examination</h3>
                 <div className="grid md:grid-cols-3 gap-6">
-                  <Input label="Height" {...formik.getFieldProps("height")} />
-                  <Input label="Weight" {...formik.getFieldProps("weight")} />
-                  <Input label="Blood Pressure" {...formik.getFieldProps("blood_pressure")} />
-                  <Input label="Pulse" {...formik.getFieldProps("pulse")} />
+                  <Input
+                    label="Height (cm)"
+                    type="number"
+                    min={30}
+                    max={250}
+                    {...formik.getFieldProps("height")}
+                  />
+                  <Input
+                    label="Weight (kg)"
+                    type="number"
+                    min={2}
+                    max={300}
+                    {...formik.getFieldProps("weight")}
+                  />
+                  <Input
+                    label="Blood Pressure (mmHg)"
+                    placeholder="120/80"
+                    {...formik.getFieldProps("blood_pressure")}
+                  />
+                  <Input
+                    label="Pulse (bpm)"
+                    type="number"
+                    min={30}
+                    max={220}
+                    {...formik.getFieldProps("pulse")}
+                  />
                   <Input label="Hearing" {...formik.getFieldProps("hearing")} />
                   <Input label="Refractive Error" {...formik.getFieldProps("refractive_error")} />
                   <Input label="Color Vision" {...formik.getFieldProps("color_vision")} />
@@ -443,15 +505,13 @@ const FitnessCertificate = () => {
                 </h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   {OPERATOR_CHECKS.map(({ key, label }) => (
-                    <CheckboxField
-                      key={key}
-                      label={label}
-                      checked={Boolean(formik.values[key])}
-                      onChange={(e) => formik.setFieldValue(key, e.target.checked)}
-                    />
+                    <Input key={key} label={label} {...formik.getFieldProps(key)} />
                   ))}
                 </div>
-                <Input label="Other Examination" {...formik.getFieldProps("op_other_examination")} />
+                <Input
+                  label="(c) Any other tests / Other Examination"
+                  {...formik.getFieldProps("op_other_examination")}
+                />
               </section>
             )}
 
@@ -466,18 +526,14 @@ const FitnessCertificate = () => {
                   <p className="text-sm text-gray-600">
                     Careful examination for skin diseases, personal hygiene (hair, nails, etc.), and Chest X-ray.
                   </p>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <CheckboxField
-                      label="Skin diseases"
-                      checked={formik.values.fh_skin_diseases}
-                      onChange={(e) => formik.setFieldValue("fh_skin_diseases", e.target.checked)}
-                    />
-                    <CheckboxField
-                      label="Personal hygiene (hair, nails, etc.)"
-                      checked={formik.values.fh_personal_hygiene}
-                      onChange={(e) => formik.setFieldValue("fh_personal_hygiene", e.target.checked)}
-                    />
-                  </div>
+                  <Input
+                    label="Skin diseases"
+                    {...formik.getFieldProps("fh_skin_diseases")}
+                  />
+                  <Input
+                    label="Personal hygiene (hair, nails, etc.)"
+                    {...formik.getFieldProps("fh_personal_hygiene")}
+                  />
                   <Input label="Chest X-ray" {...formik.getFieldProps("fh_chest_xray")} />
                 </div>
 
@@ -486,12 +542,9 @@ const FitnessCertificate = () => {
                   <p className="text-sm text-gray-600">
                     Examine and check for symptoms of respiratory diseases and Chest X-ray.
                   </p>
-                  <CheckboxField
+                  <Input
                     label="Respiratory diseases"
-                    checked={formik.values.welder_respiratory_diseases}
-                    onChange={(e) =>
-                      formik.setFieldValue("welder_respiratory_diseases", e.target.checked)
-                    }
+                    {...formik.getFieldProps("welder_respiratory_diseases")}
                   />
                   <Input label="Chest X-ray" {...formik.getFieldProps("welder_chest_xray")} />
                 </div>
@@ -523,6 +576,10 @@ const FitnessCertificate = () => {
                       value={formik.values.guardian_name}
                     />
                     <PreviewItem label="Sex" value={formik.values.sex} />
+                    <PreviewItem
+                      label="Medical Inspector / Doctor"
+                      value={resolveDoctorName(formik.values.doctor_id, formik.values.doctor_name)}
+                    />
                     <PreviewItem label="Date of Birth" value={formik.values.date_of_birth} />
                     <PreviewItem label="Certificate Age" value={formik.values.certificate_age} />
                     <p className="md:col-span-2">
@@ -533,10 +590,10 @@ const FitnessCertificate = () => {
                   </PreviewSection>
 
                   <PreviewSection title="Physical Examination">
-                    <PreviewItem label="Height" value={formik.values.height} />
-                    <PreviewItem label="Weight" value={formik.values.weight} />
-                    <PreviewItem label="Blood Pressure" value={formik.values.blood_pressure} />
-                    <PreviewItem label="Pulse" value={formik.values.pulse} />
+                    <PreviewItem label="Height (cm)" value={formik.values.height} />
+                    <PreviewItem label="Weight (kg)" value={formik.values.weight} />
+                    <PreviewItem label="Blood Pressure (mmHg)" value={formik.values.blood_pressure} />
+                    <PreviewItem label="Pulse (bpm)" value={formik.values.pulse} />
                     <PreviewItem label="Hearing" value={formik.values.hearing} />
                     <PreviewItem label="Refractive Error" value={formik.values.refractive_error} />
                     <PreviewItem label="Color Vision" value={formik.values.color_vision} />
@@ -555,30 +612,27 @@ const FitnessCertificate = () => {
 
                   <PreviewSection title="Additional Checks for Operator and Drivers">
                     {OPERATOR_CHECKS.map(({ key, label }) => (
-                      <PreviewChecked
-                        key={key}
-                        label={label}
-                        checked={Boolean(formik.values[key])}
-                      />
+                      <PreviewItem key={key} label={label} value={formik.values[key]} />
                     ))}
-                    <p className="md:col-span-2">
-                      <b>Other Examination:</b> {formik.values.op_other_examination || "-"}
-                    </p>
+                    <PreviewItem
+                      label="(c) Any other tests / Other Examination"
+                      value={formik.values.op_other_examination}
+                    />
                   </PreviewSection>
 
                   <PreviewSection title="Food Handlers">
-                    <PreviewChecked label="Skin diseases" checked={formik.values.fh_skin_diseases} />
-                    <PreviewChecked
+                    <PreviewItem label="Skin diseases" value={formik.values.fh_skin_diseases} />
+                    <PreviewItem
                       label="Personal hygiene (hair, nails, etc.)"
-                      checked={formik.values.fh_personal_hygiene}
+                      value={formik.values.fh_personal_hygiene}
                     />
                     <PreviewItem label="Chest X-ray" value={formik.values.fh_chest_xray} />
                   </PreviewSection>
 
                   <PreviewSection title="Welders">
-                    <PreviewChecked
+                    <PreviewItem
                       label="Respiratory diseases"
-                      checked={formik.values.welder_respiratory_diseases}
+                      value={formik.values.welder_respiratory_diseases}
                     />
                     <PreviewItem label="Chest X-ray" value={formik.values.welder_chest_xray} />
                   </PreviewSection>

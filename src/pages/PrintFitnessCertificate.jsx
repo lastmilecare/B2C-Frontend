@@ -18,41 +18,11 @@ const displayHistory = (value) => {
   return value;
 };
 
-const isChecked = (value) => value === true || value === "true" || value === 1;
-
-const Checkbox = ({ checked }) => (
-  <span
-    style={{
-      display: "inline-block",
-      width: "12px",
-      height: "12px",
-      border: "1px solid #000",
-      marginRight: "6px",
-      marginTop: "2px",
-      textAlign: "center",
-      fontSize: "10px",
-      lineHeight: "11px",
-      flexShrink: 0,
-      fontWeight: 700,
-    }}
-  >
-    {checked ? "✓" : ""}
-  </span>
-);
-
-const CheckLine = ({ checked, children }) => (
-  <p
-    style={{
-      margin: "0 0 5px",
-      textAlign: "justify",
-      display: "flex",
-      alignItems: "flex-start",
-    }}
-  >
-    <Checkbox checked={checked} />
-    <span style={{ flex: 1 }}>{children}</span>
-  </p>
-);
+const fieldText = (value) => {
+  if (value === true) return "Yes";
+  if (value === false || value === null || value === undefined) return "";
+  return value;
+};
 
 const TextLine = ({ children }) => (
   <p style={{ margin: "0 0 5px", textAlign: "justify" }}>{children}</p>
@@ -188,7 +158,11 @@ const PrintFitnessCertificate = forwardRef(({ data = {} }, ref) => {
       </style>
 
       {/* PAGE 1 — Certificate of Medical Examination */}
-      <div className="fitness-cert-page" style={pageStyle}>
+      <div
+        className="fitness-cert-page"
+        style={{ ...pageStyle, display: "flex", flexDirection: "column" }}
+      >
+        <div style={{ flex: "1 1 auto" }}>
         <div style={{ textAlign: "center", fontSize: "11px", marginBottom: "10px" }}>
           [(see rule 111 (c)]
         </div>
@@ -268,43 +242,49 @@ const PrintFitnessCertificate = forwardRef(({ data = {} }, ref) => {
           <span>(1) Refusal of certificate</span>
           {dotted(data.reason_refusal)}
         </div>
-        <div style={{ display: "flex", alignItems: "flex-end", marginBottom: "32px", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", marginBottom: "0", gap: "8px" }}>
           <span>(2) Certificate being revoked</span>
           {dotted(data.reason_revoked)}
         </div>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginTop: "44px",
-            gap: "20px",
-          }}
-        >
-          <div style={{ width: "50%", fontWeight: 700, fontSize: "11px", lineHeight: 1.4 }}>
-            Signature/Left hand Thumb impression of building worker
-          </div>
-          <div
-            style={{
-              width: "50%",
-              fontWeight: 700,
-              fontSize: "11px",
-              textAlign: "right",
-              lineHeight: 1.4,
-            }}
-          >
-            Signature with Seal Medical Inspector/ C.M.O
-          </div>
         </div>
 
-        <div style={{ marginTop: "36px", fontSize: "11px", lineHeight: 1.45 }}>
-          <div>
-            <span style={{ fontWeight: 700 }}>Note :</span> 1. Exact details of cause of physical
-            disability should be clearly stated.
+        <div style={{ marginTop: "auto", paddingTop: "24px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              marginBottom: "28px",
+              gap: "20px",
+            }}
+          >
+            <div style={{ width: "50%", fontWeight: 700, fontSize: "11px", lineHeight: 1.4 }}>
+              Signature/Left hand Thumb impression of building worker
+            </div>
+            <div
+              style={{
+                width: "50%",
+                fontWeight: 700,
+                fontSize: "11px",
+                textAlign: "right",
+                lineHeight: 1.4,
+              }}
+            >
+              <div style={{ marginBottom: "28px", minHeight: "16px" }}>
+                {val(data.doctor_name)}
+              </div>
+              Signature with Seal Medical Inspector/ C.M.O
+            </div>
           </div>
-          <div style={{ paddingLeft: "38px" }}>
-            2. Functional/productive abilities should also be stated if disability is stated.
+
+          <div style={{ fontSize: "11px", lineHeight: 1.45 }}>
+            <div>
+              <span style={{ fontWeight: 700 }}>Note :</span> 1. Exact details of cause of physical
+              disability should be clearly stated.
+            </div>
+            <div style={{ paddingLeft: "38px" }}>
+              2. Functional/productive abilities should also be stated if disability is stated.
+            </div>
           </div>
         </div>
       </div>
@@ -357,45 +337,49 @@ const PrintFitnessCertificate = forwardRef(({ data = {} }, ref) => {
           <div style={{ fontWeight: 700, textDecoration: "underline", marginBottom: "6px" }}>
             Additional checks for Operators &amp; Drivers (As Per Bocw Act &amp; Rules)
           </div>
-          <CheckLine checked={isChecked(data.op_general_physique)}>
-            <span style={{ fontWeight: 700 }}>(i) General Physique;</span>
-          </CheckLine>
-          <CheckLine checked={isChecked(data.op_vision)}>
+          <TextLine>
+            <span style={{ fontWeight: 700 }}>(i) General Physique;</span>{" "}
+            {underline(fieldText(data.op_general_physique), "120px")}
+          </TextLine>
+          <TextLine>
             <span style={{ fontWeight: 700 }}>(ii) Vision—</span> Total visual performance using
             standard orthorator like Titmus Vision Tester should be estimated and suitability for
-            placement ascertaines in accordance with the prescribed job standards.
-          </CheckLine>
-          <CheckLine checked={isChecked(data.op_hearing)}>
+            placement ascertaines in accordance with the prescribed job standards.{" "}
+            {underline(fieldText(data.op_vision), "120px")}
+          </TextLine>
+          <TextLine>
             <span style={{ fontWeight: 700 }}>(iii) Hearing—</span> Persons with normal hearing must
             be able to hear a forced whisper at twenty-four feet. Person using hearing aids must be
-            able to hear a warning shout under noisy working conditions.
-          </CheckLine>
-          <CheckLine checked={isChecked(data.op_breathing)}>
+            able to hear a warning shout under noisy working conditions.{" "}
+            {underline(fieldText(data.op_hearing), "120px")}
+          </TextLine>
+          <TextLine>
             <span style={{ fontWeight: 700 }}>(iv) Breathing—</span> Peak flow rate using standard
             peak flow meter and the average peak flow rate determined out of these readings of the
             test performed. The results recorded at pre-placement medical examination could be used
             as a standard for the same individual at the same altitude for reference during
-            subsequent examination.
-          </CheckLine>
-          <CheckLine checked={isChecked(data.op_upper_limbs)}>
+            subsequent examination. {underline(fieldText(data.op_breathing), "120px")}
+          </TextLine>
+          <TextLine>
             <span style={{ fontWeight: 700 }}>(v) Upper Limbs—</span> Adequate arm function and
-            grip (both arms).
-          </CheckLine>
-          <CheckLine checked={isChecked(data.op_lower_limbs)}>
+            grip (both arms). {underline(fieldText(data.op_upper_limbs), "120px")}
+          </TextLine>
+          <TextLine>
             <span style={{ fontWeight: 700 }}>(vi) Lower Limbs—</span> Adequate leg and foot
-            function.
-          </CheckLine>
-          <CheckLine checked={isChecked(data.op_spine)}>
+            function. {underline(fieldText(data.op_lower_limbs), "120px")}
+          </TextLine>
+          <TextLine>
             <span style={{ fontWeight: 700 }}>(vii) Spine—</span> Adequately flexible for the job
-            concerned.
-          </CheckLine>
-          <CheckLine checked={isChecked(data.op_general_mental_alertness)}>
+            concerned. {underline(fieldText(data.op_spine), "120px")}
+          </TextLine>
+          <TextLine>
             <span style={{ fontWeight: 700 }}>(viii) General—</span> Mental alertness and stability
-            with good eye, hand and foot coordination.
-          </CheckLine>
+            with good eye, hand and foot coordination.{" "}
+            {underline(fieldText(data.op_general_mental_alertness), "120px")}
+          </TextLine>
           <TextLine>
             <span style={{ fontWeight: 700 }}>(c) Any other tests</span> which the examining doctor
-            considers necessary. {underline(data.op_other_examination, "140px")}
+            considers necessary. {underline(fieldText(data.op_other_examination), "140px")}
           </TextLine>
         </div>
 
@@ -403,15 +387,16 @@ const PrintFitnessCertificate = forwardRef(({ data = {} }, ref) => {
           <div style={{ fontWeight: 700, textDecoration: "underline", marginBottom: "6px" }}>
             Additional checks for Food Handlers (Workmen involved in preparation &amp; supply)
           </div>
-          <CheckLine checked={isChecked(data.fh_skin_diseases)}>
-            Careful examination for skin diseases
-          </CheckLine>
-          <CheckLine checked={isChecked(data.fh_personal_hygiene)}>
-            Personal hygiene such as hair, nails etc.
-          </CheckLine>
+          <TextLine>
+            Careful examination for skin diseases {underline(fieldText(data.fh_skin_diseases), "120px")}
+          </TextLine>
+          <TextLine>
+            Personal hygiene such as hair, nails etc.{" "}
+            {underline(fieldText(data.fh_personal_hygiene), "120px")}
+          </TextLine>
           <TextLine>
             Chest X-ray if preliminary examination reveals chest congestion (Separate reports to be
-            attached, if conducted) {underline(data.fh_chest_xray, "120px")}
+            attached, if conducted) {underline(fieldText(data.fh_chest_xray), "120px")}
           </TextLine>
         </div>
 
@@ -419,12 +404,13 @@ const PrintFitnessCertificate = forwardRef(({ data = {} }, ref) => {
           <div style={{ fontWeight: 700, textDecoration: "underline", marginBottom: "6px" }}>
             Additional checks for Welders
           </div>
-          <CheckLine checked={isChecked(data.welder_respiratory_diseases)}>
-            Examine &amp; check for symptoms of respiratory diseases.
-          </CheckLine>
+          <TextLine>
+            Examine &amp; check for symptoms of respiratory diseases.{" "}
+            {underline(fieldText(data.welder_respiratory_diseases), "120px")}
+          </TextLine>
           <TextLine>
             If suspected Chest X-ray taken to confirm fitness (Separate reports to be attached, if
-            conducted) {underline(data.welder_chest_xray, "120px")}
+            conducted) {underline(fieldText(data.welder_chest_xray), "120px")}
           </TextLine>
         </div>
       </div>
