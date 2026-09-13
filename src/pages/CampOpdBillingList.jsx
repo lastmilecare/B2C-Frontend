@@ -123,7 +123,7 @@ const CampOpdBillingList = () => {
   const collectedBy = collectedByResponse?.data || [];
 
   const patients = data?.data || [];
-  const pagination = data?.pagination || { currentPage: page, totalRecords: 0 };
+  const pagination = data || { currentPage: page, totalRecords: 0 };
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "department") {
@@ -594,8 +594,8 @@ const CampOpdBillingList = () => {
         title="💳 Camp OPD Billing List"
         columns={columns}
         data={patients}
-        totalRows={pagination.totalRecords || 0}
-        currentPage={pagination.currentPage || page}
+        totalRows={pagination.total || 0}
+        currentPage={pagination.page || page}
         perPage={limit}
         onPageChange={(newPage) => setPage(newPage)}
         onPerPageChange={(newLimit) => {

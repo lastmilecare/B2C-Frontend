@@ -33,9 +33,23 @@ import { useParams } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { Picaso_Paymode_Options } from "../utils/constants";
 import { cookie } from "../utils/cookie";
-
+import { formatDate } from "../utils/helper";
 const OpdOhcForm = () => {
   const userId = cookie.get("user_id");
+  const tenantId = Number(cookie.get("tenantId"));
+
+  const referralConfig = {
+    1: {
+      label: "Refer By",
+      option: "Refer from Amp",
+      id: 1,
+    },
+    2: {
+      label: "Refer To",
+      option: "Refer To Medi Kavach",
+      id: 2,
+    },
+  };
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(1);
   const [editDataLoaded, setEditDataLoaded] = useState(false);
@@ -117,10 +131,14 @@ const OpdOhcForm = () => {
     useGetComboQuery("collectedBy");
   const { data: paymode, isLoading: paymodeComboLoading } =
     useGetComboQuery("paymode");
+  const { data: nursing, isLoading: nursingComboLoading } =
+    useGetComboQuery("nursing");
+  const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
+  const { data: radiology, isLoading: radiologyComboLoading } = useGetComboQuery("radiology");
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
-  const { refetch } = useGetOpdBillByIdQuery(billNo, {
+  const { data: opdBillData, refetch } = useGetOpdBillByIdQuery(billNo, {
     skip: !billNo,
   });
   const populatedUhidRef = useRef("");
@@ -141,6 +159,18 @@ const OpdOhcForm = () => {
       refetch();
     }
   }, [billNo]);
+
+  useEffect(() => {
+    const referTo =
+      opdBillData?.ReferTo ??
+      opdBillData?.refer_id ??
+      editData?.ReferTo ??
+      editData?.refer_id;
+
+    if (referTo === undefined || referTo === null) return;
+
+    formik.setFieldValue("ReferBy", String(referTo), false);
+  }, [opdBillData, editData]);
 
   const onPrintCS = (row) => {
     setPrintRow(row);
@@ -191,48 +221,77 @@ const OpdOhcForm = () => {
   }, [suggestions, selectedUhid, uhidSearch]);
   const { data: allServices = [] } = useGetServiceMastersQuery("");
   useEffect(() => {
-   
-
     if (editData && department && doctors && paymode) {
       setUhidSearch(editData.uhid || "");
       // setIsPaidManuallyEdited(true);
       setSelectedUhid(editData.uhid || "");
       populatedUhidRef.current = editData.uhid || "";
       const deptObj = department.find(
-        (d) => d.name === editData.department_name,
+        (d) =>
+          Number(d.id) === Number(editData.DepartmentID) ||
+          d.name?.trim().toLowerCase() ===
+            editData.department_name?.trim().toLowerCase(),
       );
+      if (deptObj) {
+        setDepCurrentId(Number(deptObj.id));
+      }
 
-      const doctorObj =
-        doctors?.find((d) => d.id === editData.DoctorId) ||
-        doctors?.find((d) => d.id === Number(editData.DoctorId)) ||
-        doctors?.find(
-          (d) =>
-            (d.name || d.doctor_name)?.trim().toLowerCase() ===
-            editData.doctor_name?.trim().toLowerCase(),
-        );
+      // const doctorObj =
+      //   doctors?.find((d) => d.id === editData.DoctorId) ||
+      //   doctors?.find((d) => d.id === Number(editData.DoctorId)) ||
+      //   doctors?.find(
+      //     (d) =>
+      //       (d.name || d.doctor_name)?.trim().toLowerCase() ===
+      //       editData.doctor_name?.trim().toLowerCase(),
+      //   );
 
-      const referObj =
-        doctors?.find((d) => d.id === editData.ReferTo) ||
-        doctors?.find((d) => d.id === Number(editData.ReferTo)) ||
-        doctors?.find(
+      const departmentId = Number(deptObj?.id || editData.DepartmentID);
+      const selectedDoctorId = Number(editData.DoctorId);
+
+      let doctorObj = null;
+
+      if (departmentId === 9) {
+        doctorObj = doctors?.find(
           (d) =>
+            Number(d.id) === selectedDoctorId ||
             (d.name || d.doctor_name)?.trim().toLowerCase() ===
-            editData.refer_to?.trim().toLowerCase(),
+              editData.doctor_name?.trim().toLowerCase(),
         );
+      } else if (departmentId === 3) {
+        doctorObj = nursing?.find(
+          (d) =>
+            Number(d.id) === selectedDoctorId ||
+            d.username?.trim().toLowerCase() ===
+              editData.doctor_name?.trim().toLowerCase(),
+        );
+      } else if (departmentId === 6) {
+        doctorObj = lab?.find(
+          (d) =>
+            Number(d.id) === selectedDoctorId ||
+            d.username?.trim().toLowerCase() ===
+              editData.doctor_name?.trim().toLowerCase(),
+        );
+      }
+      // const referObj =
+      //   doctors?.find((d) => d.id === editData.ReferTo) ||
+      //   doctors?.find((d) => d.id === Number(editData.ReferTo)) ||
+      //   doctors?.find(
+      //     (d) =>
+      //       (d.name || d.doctor_name)?.trim().toLowerCase() ===
+      //       editData.refer_to?.trim().toLowerCase(),
+      //   );
 
       const mode = editData.payment_mode?.toString().toLowerCase().trim();
 
       const payObj = Picaso_Paymode_Options.find(
         (p) => p.name?.toLowerCase().trim() === mode,
       );
-     const complaintData = editData.complaint
-  ? editData.complaint.split(",").map((c, index) => ({
-      id: index + 1,
-      name: c.trim(),
-    }))
-  : [];
-
-
+      const complaintData = editData.complaint
+        ? editData.complaint.split(",").map((c, index) => ({
+            id: index + 1,
+            name: c.trim(),
+          }))
+        : [];
 
       formik.setValues({
         ...formik.initialValues,
@@ -242,8 +301,13 @@ const OpdOhcForm = () => {
         Gender: editData.gender || "",
         Age: editData.age || "",
         Department: deptObj ? deptObj.id : 0,
-        Doctor: doctorObj?.id || "",
-        ReferBy: referObj?.id || "",
+        Doctor: doctorObj?.id || editData.DoctorId || "",
+        ReferBy:
+          editData.ReferTo !== undefined && editData.ReferTo !== null
+            ? String(editData.ReferTo)
+            : editData.refer_id !== undefined && editData.refer_id !== null
+              ? String(editData.refer_id)
+              : "",
         FinCategory: editData.patient_type || "",
         TotalAmount: editData.TotalServiceAmount || 0,
         PaidAmount: editData.PaidAmount || 0,
@@ -252,8 +316,8 @@ const OpdOhcForm = () => {
         CashAmount: editData.CashAmount || 0,
         CardAmount: editData.CardAmount || 0,
         // VisitType: editData.VisitType || "N/A",
-       ChiefComplaint: complaintData,
-          
+        ChiefComplaint: complaintData,
+        // lastVisitDate: formatDate(editData.lastVisitDate),
       });
       setEditDataLoaded(true);
       if (editData.opd_billing_data) {
@@ -275,8 +339,8 @@ const OpdOhcForm = () => {
         setSelectedServices(mapped);
       }
     }
-  }, [editData, department, doctors, paymode, allServices]);
-
+  }, [editData, department, doctors, nursing, lab, paymode, allServices]);
+  const [depCurrentId, setDepCurrentId] = useState(0);
   const parseDOB = (raw) => {
     if (!raw) return "";
 
@@ -315,7 +379,7 @@ const OpdOhcForm = () => {
       PicasoNo: values.UHID,
       Mobile: values.Mobile,
       ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
-      PatientType: values.FinCategory == "BPL" ? 1 : 2,
+      PatientType: values.FinCategory == "BPL" ? 2 : 1,
       PaidAmount: Number(values.PaidAmount || 0),
       CashAmount: Number(values.CashAmount || 0),
       CardAmount: Number(values.CardAmount || 0),
@@ -329,7 +393,7 @@ const OpdOhcForm = () => {
       HospitalID: selectedServices[0]?.HospitalID || 1,
       FinancialYearID: currentYear,
       CenterID: userId,
-      ReferTo: Number(values.ReferBy) || null,
+      ReferTo: values.ReferBy ? Number(values.ReferBy) : null,
       IsActive: true,
       complaint: chiefComplaintStr,
     };
@@ -439,9 +503,7 @@ const OpdOhcForm = () => {
           icon: "success",
         });
         handleFormReset();
-        navigate("/opd-ohc", {
-              state: { goToList: true }
-            });
+        navigate("/opd-ohc", { state: { goToList: true } });
       } catch (err) {
         healthAlert({
           title: "OPD Billing",
@@ -467,6 +529,7 @@ const OpdOhcForm = () => {
   }, [formik.errors]);
 
   useEffect(() => {
+    if (editData) return;
     if (!patientData) return;
     if (patientData.external_id !== selectedUhid) return;
     if (populatedUhidRef.current === selectedUhid) return;
@@ -481,31 +544,12 @@ const OpdOhcForm = () => {
         ? new Date(patientData.createdAt).toISOString().split("T")[0]
         : "",
       PreviousDue: previousFetchDue?.data?.PreviousDue || 0,
-      // VisitType: patientData?.VisitType || "N/A"
+      lastVisitDate: formatDate(patientData?.lastVisitDate) || "N/A",
     };
 
     if (patientData.dateOfBirthOrAge) {
-      /*
-      const dobValue = parseDOB(patientData.dateOfBirthOrAge);
-      updates.DOB = dobValue;
-
-      const dob = new Date(dobValue);
-      const today = new Date();
-      let years = today.getFullYear() - dob.getFullYear();
-      let months = today.getMonth() - dob.getMonth();
-      let days = today.getDate() - dob.getDate();
-
-      if (days < 0) {
-        months -= 1;
-        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-      }
-      if (months < 0) {
-        years -= 1;
-        months += 12;
-      }
-   */
       let years = patientData.iage || 0;
-      let months = patientData.imonths || 0;
+      let months = patientData.imonth || 0;
       let days = patientData.idays || 0;
       updates.Age = `${years}y ${months}m ${days}d`;
     }
@@ -531,18 +575,10 @@ const OpdOhcForm = () => {
     formik.setFieldValue("Age", ageString);
   };
 
-  // Future logic for the calcuation of due
-  // useEffect(() => {
-  //   const total = Number(formik.values.TotalAmount) || 0;
-  //   const paid = Number(formik.values.PaidAmount) || 0;
-  //   const due = total - paid;
-  //   formik.setFieldValue("DueAmount", due > 0 ? due.toFixed(2) : "0.00");
-  // }, [formik.values.TotalAmount, formik.values.PaidAmount]);
-
   useEffect(() => {
     if (editData && !editDataLoaded) {
-    return;
-  }
+      return;
+    }
     const total = Number(formik.values.TotalAmount) || 0;
     const paid = Number(formik.values.PaidAmount) || 0;
     const credit = Number(formik.values.CreditBalance) || 0;
@@ -553,15 +589,10 @@ const OpdOhcForm = () => {
       formik.setFieldValue("DueAmount", due.toFixed(2));
       const amountBeingPaid = paid.toString();
       if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
-        // Cash Payment
         formik.setFieldValue("CashAmount", amountBeingPaid);
         formik.setFieldValue("CardAmount", "0");
       } else if (formik.values.PayMode === "3") {
-        // Cash/Online Payment
-        // user manually fill karega
-        // kuch auto set nahi hoga
       } else {
-        // Card / UPI / Online
         formik.setFieldValue("CardAmount", amountBeingPaid);
         formik.setFieldValue("CashAmount", "0");
       }
@@ -569,15 +600,10 @@ const OpdOhcForm = () => {
       formik.setFieldValue("DueAmount", "0.00");
       const amountBeingPaid = paid.toString();
       if (formik.values.PayMode === "1" || formik.values.PayMode === "") {
-        // Cash Payment
         formik.setFieldValue("CashAmount", amountBeingPaid);
         formik.setFieldValue("CardAmount", "0");
       } else if (formik.values.PayMode === "3") {
-        // Cash/Online Payment
-        // user manually fill karega
-        // kuch auto set nahi hoga
       } else {
-        // Card / UPI / Online
         formik.setFieldValue("CardAmount", amountBeingPaid);
         formik.setFieldValue("CashAmount", "0");
       }
@@ -684,9 +710,21 @@ const OpdOhcForm = () => {
                       {suggestionsList.length > 0 && uhidSearch.length >= 2 && (
                         <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
                           {suggestionsList.map((item) => (
+                            // <li
+                            //   key={item.external_id}
+                            //   onClick={() => {
+                            //     setSelectedUhid(item.external_id);
+                            //     formik.setFieldValue("UHID", item.external_id);
+                            //     setUhidSearch(item.external_id);
+                            //     setSuggestionsList([]);
+                            //   }}
+                            //   className="px-3 py-2 hover:bg-sky-100 cursor-pointer"
+                            // >
                             <li
                               key={item.external_id}
-                              onClick={() => {
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+
                                 setSelectedUhid(item.external_id);
                                 formik.setFieldValue("UHID", item.external_id);
                                 setUhidSearch(item.external_id);
@@ -700,7 +738,6 @@ const OpdOhcForm = () => {
                         </ul>
                       )}
                     </div>
-
                     <DiseaseSelect
                       label="Complaint"
                       value={formik.values.ChiefComplaint}
@@ -710,7 +747,6 @@ const OpdOhcForm = () => {
                       required
                       allowManualAdd={true}
                     />
-
                     <Input
                       label="Name"
                       {...formik.getFieldProps("Name")}
@@ -728,14 +764,12 @@ const OpdOhcForm = () => {
                       className="bg-sky-50 cursor-not-allowed"
                       error={formik.touched.Mobile && formik.errors.Mobile}
                     />
-
                     <Input
                       label="Gender"
                       {...formik.getFieldProps("Gender")}
                       readOnly
                       className="bg-sky-50 cursor-not-allowed"
                     ></Input>
-
                     {/* <Input
                                               label="Date of Birth"
                                               type="date"
@@ -751,7 +785,6 @@ const OpdOhcForm = () => {
                       readOnly
                       className="bg-sky-50 cursor-not-allowed"
                     />
-
                     <Select
                       {...formik.getFieldProps("Department")}
                       label={
@@ -762,32 +795,82 @@ const OpdOhcForm = () => {
                       error={
                         formik.touched.Department && formik.errors.Department
                       }
+                      onChange={(e) => {
+                        const departmentId = Number(e.target.value);
+
+                        setDepCurrentId(departmentId);
+                        formik.setFieldValue("Department", e.target.value);
+                        formik.setFieldValue("Doctor", "");
+                      }}
                     >
                       <option value="">Select Department</option>
+
                       {department?.map((d) => (
                         <option key={d.id} value={d.id}>
                           {d.name}
                         </option>
                       ))}
                     </Select>
-
                     <Select
                       {...formik.getFieldProps("Doctor")}
                       label={
                         <span>
-                          Doctor <span className="text-red-500">*</span>
+                          {depCurrentId === 9
+                            ? "Consulting Doctor"
+                            : depCurrentId === 3
+                              ? "Nursing"
+                              : depCurrentId === 6
+                                ? "Lab"
+                                : depCurrentId === 13
+                                  ? "Radiology"
+                                  : "Doctor"}
+                          <span className="text-red-500"> *</span>
                         </span>
                       }
                       error={formik.touched.Doctor && formik.errors.Doctor}
                     >
-                      <option value="">Consulting Doctor</option>
-                      {doctors?.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name || d.doctor_name}
-                        </option>
-                      ))}
-                    </Select>
+                      <option value="">
+                        {depCurrentId === 9
+                          ? "Consulting Doctor"
+                          : depCurrentId === 3
+                            ? "Select Nursing"
+                            : depCurrentId === 6
+                              ? "Select Lab"
+                              : depCurrentId === 13
+                                ? "Select Radiology"
+                                : "Select"}
+                      </option>
 
+                      {/* Department 9 → Doctors */}
+                      {depCurrentId === 9 &&
+                        doctors?.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name || d.doctor_name}
+                          </option>
+                        ))}
+
+                      {/* Department 3 → Nursing */}
+                      {depCurrentId === 3 &&
+                        nursing?.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.username}
+                          </option>
+                        ))}
+
+                      {/* Department 6 → Lab */}
+                      {depCurrentId === 6 &&
+                        lab?.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.username}
+                          </option>
+                        ))}
+                        {depCurrentId === 13 &&
+                        radiology?.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.username}
+                          </option>
+                        ))}
+                    </Select>
                     <Input
                       {...formik.getFieldProps("FinCategory")}
                       className="bg-sky-50 cursor-not-allowed"
@@ -795,18 +878,39 @@ const OpdOhcForm = () => {
                       readOnly
                     ></Input>
 
-                    <Select
+                    {/* <Select
                       {...formik.getFieldProps("ReferBy")}
                       label="Refer To"
                     >
                       <option value="">Refer To</option>
+                      <option value="">None</option>
                       {doctors?.map((d) => (
                         <option key={d.id} value={d.id}>
                           {d.name || d.doctor_name}
                         </option>
                       ))}
-                    </Select>
+                    </Select> */}
+                    {referralConfig[tenantId] && (
+                      <Select
+                        {...formik.getFieldProps("ReferBy")}
+                        value={String(formik.values.ReferBy || "")}
+                        label={referralConfig[tenantId].label}
+                      >
+                        <option value="">
+                          {referralConfig[tenantId].label}
+                        </option>
 
+                        <option value={referralConfig[tenantId].id}>
+                          {referralConfig[tenantId].option}
+                        </option>
+                      </Select>
+                    )}
+                    <Input
+                      {...formik.getFieldProps("lastVisitDate")}
+                      className="bg-sky-50 cursor-not-allowed"
+                      label="Last Visit Date"
+                      readOnly
+                    ></Input>
                     {/* <Input
                 label="Visit Type"
                 {...formik.getFieldProps("VisitType")}
@@ -814,7 +918,6 @@ const OpdOhcForm = () => {
                 readOnly
               >
               </Input> */}
-
                     {/* <Input
                                               label="Last Visit Date"
                                               type="date"
@@ -834,7 +937,7 @@ const OpdOhcForm = () => {
                     department={formik.values.Department}
                     consultingDoctor={formik.values.Doctor}
                     payMode={formik.values.PayMode}
-                    type={formik.values.category}
+                    type={formik.values.FinCategory}
                     setBillingTotals={(total) => {
                       const amount = Number(total || 0);
                       formik.setFieldValue("TotalAmount", amount);
@@ -991,14 +1094,6 @@ const OpdOhcForm = () => {
                         formik.setFieldValue("PayMode", mode);
 
                         const currentPaid = formik.values.PaidAmount;
-
-                        // if (mode === "1") {
-                        //   formik.setFieldValue("CashAmount", currentPaid);
-                        //   formik.setFieldValue("CardAmount", "0");
-                        // } else {
-                        //   formik.setFieldValue("CardAmount", currentPaid);
-                        //   formik.setFieldValue("CashAmount", "0");
-                        // }
                         if (mode === "1") {
                           // Cash
                           formik.setFieldValue("CashAmount", currentPaid);
@@ -1012,6 +1107,7 @@ const OpdOhcForm = () => {
                           formik.setFieldValue("CardAmount", currentPaid);
                           formik.setFieldValue("CashAmount", "0");
                         }
+                        
                       }}
                     >
                       <option value="">Select Pay Mode</option>
@@ -1119,21 +1215,40 @@ const OpdOhcForm = () => {
                         </p>
 
                         <p>
-                          <b>Doctor:</b>{" "}
-                          {doctors?.find((d) => d.id == formik.values.Doctor)
-                            ?.name ||
-                            doctors?.find((d) => d.id == formik.values.Doctor)
-                              ?.doctor_name}
+                          <b>
+                            {depCurrentId === 9
+                              ? "Doctor:"
+                              : depCurrentId === 3
+                                ? "Nursing:"
+                                : depCurrentId === 6
+                                  ? "Lab:"
+                                  : "Doctor:"}
+                          </b>{" "}
+                          {depCurrentId === 9
+                            ? doctors?.find((d) => d.id == formik.values.Doctor)
+                                ?.name ||
+                              doctors?.find((d) => d.id == formik.values.Doctor)
+                                ?.doctor_name ||
+                              "-"
+                            : depCurrentId === 3
+                              ? nursing?.find(
+                                  (d) => d.id == formik.values.Doctor,
+                                )?.username || "-"
+                              : depCurrentId === 6
+                                ? lab?.find((d) => d.id == formik.values.Doctor)
+                                    ?.username || "-"
+                                : "-"}
                         </p>
 
                         <p>
-                          <b>Refer To:</b>{" "}
-                          {doctors?.find((d) => d.id == formik.values.ReferBy)
-                            ?.name ||
-                            doctors?.find((d) => d.id == formik.values.ReferBy)
-                              ?.doctor_name}
+                          <b>
+                            {referralConfig[tenantId]?.label || "Referral"}:
+                          </b>{" "}
+                          {referralConfig[tenantId]?.id ==
+                          Number(formik.values.ReferBy)
+                            ? referralConfig[tenantId]?.option
+                            : "-"}
                         </p>
-
                         <p>
                           <b>Previous Due:</b> Rs.{formik.values.PreviousDue}
                         </p>
@@ -1397,4 +1512,3 @@ const OpdOhcForm = () => {
 };
 
 export default OpdOhcForm;
-

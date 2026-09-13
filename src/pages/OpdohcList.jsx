@@ -17,9 +17,11 @@ import useDebounce from "../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { generateFileName, downloadBlob } from "../utils/helper";
 import { formatDate, formatTime } from "../utils/helper";
+import { cookie } from "../utils/cookie";
 const OpdBillingOhcList = () => {
+  const role = cookie.get("role");
   const [exportExcel] = useLazyExportOpdExcelQuery();
-
+  const [depCurrentVal, setDepCurrentVal] = useState();
   const navigate = useNavigate();
   const [deleteOpdBill] = useDeleteOpdBillMutation();
   const handleDelete = async (row) => {
@@ -62,6 +64,7 @@ const OpdBillingOhcList = () => {
     navigate(`/opd-ohc/${row.bill_no}`, {
       state: {
         editData: row,
+        goToForm: true,
       },
     });
   };
@@ -73,12 +76,13 @@ const OpdBillingOhcList = () => {
   });
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const today = new Date().toISOString().split("T")[0];
   const [tempFilters, setTempFilters] = useState({
     name: "",
     contactNumber: "",
     gender: "",
     category: "",
-    startDate: "",
+    startDate: today,
     endDate: "",
     external_id: "",
     idProof_number: "",
@@ -109,6 +113,7 @@ const OpdBillingOhcList = () => {
     useGetComboQuery("department");
   const { data: paymode, isLoading: paymodeComboLoading } =
     useGetComboQuery("paymode");
+
   const {
     data: collectedByResponse,
     isLoading: collectedComboLoading,
@@ -116,11 +121,19 @@ const OpdBillingOhcList = () => {
   } = useGetCollectedByQuery();
 
   const collectedBy = collectedByResponse?.data || [];
+  const { data: nursing, isLoading: nursingComboLoading } =
+    useGetComboQuery("nursing");
+  const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
+  const { data: radiology, isLoading: radiologyComboLoading } =
+    useGetComboQuery("radiology");
 
   const patients = data?.data || [];
   const pagination = data || { currentPage: page, totalRecords: 0 };
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "department") {
+      setDepCurrentVal(value);
+    }
     let finalValue = value;
     if (name === "contactNumber") {
       finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
@@ -129,6 +142,7 @@ const OpdBillingOhcList = () => {
     setTempFilters((prev) => ({
       ...prev,
       [name]: finalValue,
+      ...(name === "department" ? { doctor: "" } : {}),
     }));
   };
 
@@ -167,11 +181,14 @@ const OpdBillingOhcList = () => {
 
   const handleExport = async () => {
     try {
-      const blob = await exportExcel(filters).unwrap();
+      const blob = await exportExcel({
+        ...filters,
+        reportType: "list",
+      }).unwrap();
 
       const fileName = generateFileName("OpdBillingDetail", {
-        dateFrom: filters?.date_from,
-        dateTo: filters?.date_to,
+        dateFrom: filters?.startDate,
+        dateTo: filters?.endDate,
         extension: "xlsx",
       });
 
@@ -180,7 +197,6 @@ const OpdBillingOhcList = () => {
       const status = error?.status;
       const message = error?.data?.message || "Something went wrong";
 
-      // No data case
       if (status === 404) {
         return healthAlert({
           title: "No Data Found",
@@ -189,7 +205,6 @@ const OpdBillingOhcList = () => {
         });
       }
 
-      // Real error
       healthAlert({
         title: "Export Error",
         text: message,
@@ -259,18 +274,70 @@ const OpdBillingOhcList = () => {
       label: "Department",
       name: "department",
       type: "select",
-      options: department?.map((d) => ({ label: d.name, value: d.name })) || [],
-    },
-
-    {
-      label: "Doctor",
-      name: "doctor",
-      type: "select",
       options:
-        doctors?.map((d) => ({
-          label: d.name || d.doctor_name,
+        department?.map((d) => ({
+          label: d.name,
           value: d.name,
         })) || [],
+    },
+    {
+      label:
+        depCurrentVal === "DOCTORS"
+          ? "Consulting Doctor"
+          : depCurrentVal === "NURSING"
+            ? "Nursing"
+            : depCurrentVal === "LAB"
+              ? "Lab"
+              : depCurrentVal === "RADIOLOGY"
+                ? "Radiology"
+                : "Consultant",
+
+      name: "doctor",
+      type: "select",
+
+      options: [
+        {
+          label:
+            depCurrentVal === "DOCTORS"
+              ? "All Doctors"
+              : depCurrentVal === "NURSING"
+                ? "All Nursing"
+                : depCurrentVal === "LAB"
+                  ? "All Lab"
+                  : depCurrentVal === "RADIOLOGY"
+                    ? "All Radiology"
+                    : "Select Department First",
+
+          value: "",
+        },
+
+        ...(depCurrentVal === "DOCTORS"
+          ? (doctors || []).map((d) => ({
+              label: d.name || d.doctor_name,
+              value: d.name || d.doctor_name,
+            }))
+          : []),
+
+        ...(depCurrentVal === "NURSING"
+          ? (nursing || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+
+        ...(depCurrentVal === "LAB"
+          ? (lab || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+        ...(depCurrentVal === "RADIOLOGY"
+          ? (radiology || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+      ],
     },
 
     {
@@ -318,6 +385,11 @@ const OpdBillingOhcList = () => {
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
 
+  const truncateText = (text, maxLength = 30) => {
+    if (!text) return "-";
+
+    return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+  };
   const columns = [
     {
       name: "S.No",
@@ -361,9 +433,10 @@ const OpdBillingOhcList = () => {
     {
       name: "Age",
       title: "Patient Age",
-      selector: (row) => safeString(row?.age, "-"),
+      selector: (row) =>
+        `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
       sortable: true,
-      width: "50px",
+      width: "100px",
     },
     {
       name: "Gender",
@@ -393,7 +466,10 @@ const OpdBillingOhcList = () => {
     {
       name: "Total.Due (Rs.)",
       title: "Total Previous Due Amount",
-      selector: (row) => formatCurrency(calculateDue(patients, row.uhid)),
+      selector: (row) => {
+        const due = Number(calculateDue(patients, row.uhid)) || 0;
+        return formatCurrency(Math.max(0, due));
+      },
       sortable: true,
       width: "110px",
     },
@@ -432,7 +508,7 @@ const OpdBillingOhcList = () => {
       width: "80px",
     },
     {
-      name: "Dr.",
+      name: "Consultant",
       title: "Consultant Doctor",
       selector: (row) => safeString(row?.doctor_name, "-"),
       width: "100px",
@@ -441,15 +517,31 @@ const OpdBillingOhcList = () => {
       name: "Service",
       title: "Service Name",
       selector: (row) =>
-        safeString(
-          (row?.opd_billing_data || []).map((item, idx) => item?.ServiceName),
+        truncateText(
+          (row?.opd_billing_data || [])
+            .map((item) => item?.ServiceName)
+            .filter(Boolean)
+            .join(", "),
+          120,
         ),
       width: "120px",
     },
     {
       name: "Ref",
       title: "Referred By",
-      selector: (row) => safeString(row?.refer_to, "-"),
+      selector: (row) => {
+        const referTo = Number(row?.refer_id);
+
+        if (referTo === 1) {
+          return "Refer from Amp";
+        }
+
+        if (referTo === 2) {
+          return "Refer To Medi Kavach";
+        }
+
+        return "";
+      },
       width: "140px",
     },
 
@@ -543,13 +635,24 @@ const OpdBillingOhcList = () => {
           setLimit(newLimit);
           setPage(1);
         }}
-        enableActions
+        enableActions={role !== "DOCTOR"}
         isLoading={isLoading}
-        actionButtons={["edit", "delete", "print", "printCS"]}
+        actionButtons={
+          role !== "DOCTOR" ? ["edit", "delete", "print", "printCS"] : []
+        }
         onEdit={handleEdit}
         onDelete={handleDelete}
         onPrintCS={onPrintCS}
         onPrint={onPrintInvoice}
+        enableAdd
+        addButtonText="Add"
+        onAdd={() =>
+          navigate("/opd-ohc", {
+            state: {
+              goToForm: true,
+            },
+          })
+        }
       />
       {printRow && (
         <div style={{ display: "none" }}>

@@ -52,6 +52,17 @@ import PrescriptionListCamp from "../pages/PrescriptionCampList";
 import PrescriptionFormCamp from "../pages/PrescriptionCampForm";
 import PatientDetails from "../pages/PatientDetails";
 import OpdBillAnalysis from "../pages/OpdBillAnalysis";
+import DepartmentPage from "../pages/OhcDeparmentPage";
+import DepartmentList from "../pages/OhcDeparmentList";
+import DepartmentForm from "../pages/OhcDeparmentForm";
+import DesignationPage from "../pages/OhcDesignationPage";
+import DesignationList from "../pages/OhcDesignationList";
+import DesignationForm from "../pages/OhcDesignationForm";
+import AmbulancePage from "../pages/AmbulancePage";
+import AmbulanceServicePage from "../pages/AmbulanceServicePage";
+import OpdohcPrescriptionPage from "../pages/OhcPrescriptionpage";
+import ohcPrescriptionForm from "../pages/OhcPrescriptionForm";
+import ohcPrescriptionList from "../pages/OhcPrescriptionList";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -257,7 +268,7 @@ export const ROUTES = [
     permission: "update:prescription_form",
     showInSidebar: false,
   },
-{
+  {
     path: "/prescription-list-camp",
     component: PrescriptionListCamp,
     permission: "read:prescription_list",
@@ -471,22 +482,22 @@ export const ROUTES = [
     group: "Administration",
     showInSidebar: true,
   },
-//    {
-//     path: "/vitals",
-//     component: VitalsPage,
-//     permission: null,
-//     label: "Vitals",
-//     icon: "ShieldCheckIcon",
-//     group: "Clinical",
-//     showInSidebar: true,
-//   },
-//    {
-//   path: "/vitals/:id",
-//   component: VitalsPage,
-//   permission: null,
-//   showInSidebar: false,
-// },
-{
+  //    {
+  //     path: "/vitals",
+  //     component: VitalsPage,
+  //     permission: null,
+  //     label: "Vitals",
+  //     icon: "ShieldCheckIcon",
+  //     group: "Clinical",
+  //     showInSidebar: true,
+  //   },
+  //    {
+  //   path: "/vitals/:id",
+  //   component: VitalsPage,
+  //   permission: null,
+  //   showInSidebar: false,
+  // },
+  {
     path: "/items-master",
     component: ItemMaster,
     permission: "create:item_master",
@@ -505,12 +516,12 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-  path: "/patient-examination-details/:id",
-  component: PatientExaminationPage,
-  permission: "update:patient_examination_details_ohc",
-  showInSidebar: false,
-},
-   
+    path: "/patient-examination-details/:id",
+    component: PatientExaminationPage,
+    permission: "update:patient_examination_details_ohc",
+    showInSidebar: false,
+  },
+
   {
     path: "/staff-page-ohc",
     component: StaffPage,
@@ -521,13 +532,12 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-  path: "/staff-page-ohc/:id",
-  component: StaffPage,
-  permission: "update:ohc_staff_page",
-  showInSidebar: false,
-  
-},
-{
+    path: "/staff-page-ohc/:id",
+    component: StaffPage,
+    permission: "update:ohc_staff_page",
+    showInSidebar: false,
+  },
+  {
     path: "/ohc-centers",
     component: OhcCenterPage,
     permission: "create:ohc_center",
@@ -544,12 +554,12 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
-  path: "/ohc-centers/:id",
-  component: OhcCenterPage,
-  permission: "update:ohc_center",
-  showInSidebar: false,
-},
- {
+    path: "/ohc-centers/:id",
+    component: OhcCenterPage,
+    permission: "update:ohc_center",
+    showInSidebar: false,
+  },
+  {
     path: "/organization-profiles-list",
     component: OrganizationProfileList,
     permission: null,
@@ -571,7 +581,7 @@ export const ROUTES = [
     path: "/camp-opd-list",
     component: CampOpdBillingListCopy,
     permission: "create:camp_opd_form",
-    
+
     label: " Camp OPD List",
     icon: "ClipboardDocumentListIcon",
     group: "OPD",
@@ -581,31 +591,31 @@ export const ROUTES = [
     path: "/camp-opd-form",
     component: CampOpdForm,
     permission: "create:camp_opd_form",
-    
+
     showInSidebar: false,
   },
   {
     path: "/camp-opd-form/:ID",
     component: CampOpdForm,
     permission: "update:camp_opd_form",
-  
+
     showInSidebar: false,
   },
   {
     path: "/pharmacy-revenue",
     component: Revenue,
     permission: "create:pharmacy_revenue",
-    
+
     label: " Revenue",
     icon: "ClipboardDocumentListIcon",
     group: "Revenue",
     showInSidebar: true,
   },
-   {
+  {
     path: "/spectacle-revenue",
     component: SpectacleRevenue,
     permission: "create:spectacle_revenue",
-    
+
     label: " Revenue",
     icon: "ClipboardDocumentListIcon",
     group: "Revenue",
@@ -622,6 +632,12 @@ export const ROUTES = [
     showInSidebar: true,
   },
   {
+    path: "/opd-ohc/:ID",
+    component: OpdohcPage,
+    permission: null,
+    showInSidebar: false,
+  },
+  {
     path: "/test-packages-ohc",
     component: TestPackagePage,
     permission: "read:opd_revenue",
@@ -631,7 +647,7 @@ export const ROUTES = [
     group: "Test_Packages",
     showInSidebar: true,
   },
- {
+  {
     path: "/opd-revenue",
     component: OpdListRevenue,
     // permission: "read:opd_list",
@@ -641,7 +657,7 @@ export const ROUTES = [
     group: "Revenue",
     showInSidebar: true,
   },
-   {
+  {
     path: "/patient-details",
     component: PatientDetails,
     permission: "read:patient_details",
@@ -650,16 +666,131 @@ export const ROUTES = [
     group: "Patient Details",
     showInSidebar: true,
   },
+  // Using below mention module with different permissions need to add actuall one
+  {
+    path: "/ohc-department",
+    component: DepartmentPage,
+    // permission: "read:opd_list",
+    permission: "read:ohc_dashboard",
+    label: "Ohc Department",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/opd-department-list",
+    component: DepartmentList,
+    permission: "read:ohc_dashboard",
+    label: "Opd Department List",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/opd-department-form",
+    component: DepartmentForm,
+    permission: "read:ohc_dashboard",
+    label: "Opd Department Form",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/ohc-designation",
+    component: DesignationPage,
+    // permission: "read:opd_list",
+    permission: "read:ohc_dashboard",
+    label: "Ohc Designation",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/opd-designation-list",
+    component: DesignationList,
+    permission: "read:ohc_dashboard",
+    label: "Opd Designation List",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/opd-designation-form",
+    component: DesignationForm,
+    permission: "read:ohc_dashboard",
+    label: "Opd Designation Form",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
   {
     path: "/opd-analysis",
     component: OpdBillAnalysis,
     permission: "read:opd_analysis",
-    
-    
     label: "Opd Bill Analysis",
     icon: "ClipboardDocumentListIcon",
     group: "OPD",
     showInSidebar: true,
   },
-  
+  //Ambulance Module need to change permission with actual one
+  {
+    path: "/ambulance",
+    component: AmbulancePage,
+    // permission: "read:opd_list",
+    permission: "read:ohc_dashboard",
+    label: "Ohc Department",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/ambulance-service",
+    component: AmbulanceServicePage,
+    permission: "read:ohc_dashboard",
+    label: "Ambulance Service",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/ambulance/:id",
+    component: AmbulancePage,
+    // permission: "read:opd_list",
+    permission: "read:ohc_dashboard",
+    label: "Ambulance",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/ambulance-service/:id",
+    component: AmbulanceServicePage,
+    permission: "read:ohc_dashboard",
+    label: "Ambulance Service",
+    icon: "ClipboardDocumentListIcon",
+    group: "Revenue",
+    showInSidebar: true,
+  },
+  {
+    path: "/ohc-prescription-form",
+    component:OpdohcPrescriptionPage ,
+    // permission: "read:opd_list",
+    permission: null,
+    label: "OPD OHC",
+    icon: "ClipboardDocumentListIcon",
+    group: "OPD_OHC",
+    showInSidebar: true,
+  },
+  {
+    path: "/ohc-prescription-form",
+    component: ohcPrescriptionForm,
+    permission: "null",
+    showInSidebar: false,
+  },
+  {
+    path: "/ohc-prescription-form/:ID",
+    component: OpdohcPrescriptionPage,
+    permission: null,
+    showInSidebar: false,
+  },
 ];

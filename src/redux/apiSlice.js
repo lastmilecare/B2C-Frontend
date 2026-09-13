@@ -1307,6 +1307,29 @@ export const api = createApi({
       }),
       responseHandler: async (response) => response.text(),
     }),
+    previewFitnessCertificate: build.mutation({
+      query: (body) => ({
+        url: "/ohc-fitness/preview-certificate",
+        method: "POST",
+        data: body,
+      }),
+      responseHandler: async (response) => response.text(),
+    }),
+    previewFitnessCertificatePdf: build.mutation({
+      query: (body) => ({
+        url: "/ohc-fitness/preview-certificate-pdf",
+        method: "POST",
+        data: body,
+        responseType: "blob",
+      }),
+    }),
+    downloadFitnessCertificatePdf: build.mutation({
+      query: (id) => ({
+        url: `/ohc-fitness/${id}/pdf`,
+        method: "GET",
+        responseType: "blob",
+      }),
+    }),
 
     getLowStockItems: build.query({
       query: () => ({
@@ -1931,81 +1954,81 @@ export const api = createApi({
       providesTags: ["PatientTrend"],
     }),
     getCampPrescriptionsList: build.query({
-  query: ({
-    page = 1,
-    limit = 10,
-    Name_,
-    mobileno,
-    date_from,
-    date_to,
-    bill_no,
-    status,
-    ID,
-  } = {}) => ({
-    url: "/picasoid-prescription-camp",
-    method: "GET",
-    params: {
-      page,
-      limit,
-      Name_,
-      mobileno,
-      date_from,
-      date_to,
-      bill_no,
-      status,
-      ID,
-    },
-  }),
+      query: ({
+        page = 1,
+        limit = 10,
+        Name_,
+        mobileno,
+        date_from,
+        date_to,
+        bill_no,
+        status,
+        ID,
+      } = {}) => ({
+        url: "/picasoid-prescription-camp",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          Name_,
+          mobileno,
+          date_from,
+          date_to,
+          bill_no,
+          status,
+          ID,
+        },
+      }),
 
-  transformResponse: (response) => ({
-    data: response.data || [],
-    pagination: response.pagination || {},
-  }),
+      transformResponse: (response) => ({
+        data: response.data || [],
+        pagination: response.pagination || {},
+      }),
 
-  providesTags: ["Prescription"],
-}),
+      providesTags: ["Prescription"],
+    }),
 
-createCampPrescription: build.mutation({
-  query: (prescriptionData) => ({
-    url: "/picasoid-prescription-camp/create",
-    method: "POST",
-    data: prescriptionData,
-  }),
+    createCampPrescription: build.mutation({
+      query: (prescriptionData) => ({
+        url: "/picasoid-prescription-camp/create",
+        method: "POST",
+        data: prescriptionData,
+      }),
 
-  invalidatesTags: ["Prescription"],
-}),
+      invalidatesTags: ["Prescription"],
+    }),
 
-updateCampPrescription: build.mutation({
-  query: ({ id, ...body }) => ({
-    url: `/picasoid-prescription-camp/${id}`,
-    method: "PUT",
-    data: body,
-  }),
+    updateCampPrescription: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/picasoid-prescription-camp/${id}`,
+        method: "PUT",
+        data: body,
+      }),
 
-  invalidatesTags: ["Prescription"],
-}),
+      invalidatesTags: ["Prescription"],
+    }),
 
-toggleCampPrescriptionStatus: build.mutation({
-  query: (id) => ({
-    url: `/picasoid-prescription-camp/${id}/toggle-status`,
-    method: "PATCH",
-    data: {},
-  }),
+    toggleCampPrescriptionStatus: build.mutation({
+      query: (id) => ({
+        url: `/picasoid-prescription-camp/${id}/toggle-status`,
+        method: "PATCH",
+        data: {},
+      }),
 
-  invalidatesTags: ["Prescription"],
-}),
+      invalidatesTags: ["Prescription"],
+    }),
 
-exportCampPrescriptionsExcel: build.query({
-  query: (filters = {}) => ({
-    url: "/picasoid-prescription-camp/export/excel",
-    method: "GET",
-    params: filters,
-    responseType: "blob",
-  }),
+    exportCampPrescriptionsExcel: build.query({
+      query: (filters = {}) => ({
+        url: "/picasoid-prescription-camp/export/excel",
+        method: "GET",
+        params: filters,
+        responseType: "blob",
+      }),
 
-  keepUnusedDataFor: 0,
-}),
- getPatientDetails: build.query({
+      keepUnusedDataFor: 0,
+    }),
+    getPatientDetails: build.query({
       query: ({
         page = 1,
         limit = 10,
@@ -2044,6 +2067,252 @@ exportCampPrescriptionsExcel: build.query({
         },
       }),
       providesTags: ["Bill"],
+    }),
+    createDepartment: build.mutation({
+      query: (departmentData) => ({
+        url: "/departments",
+        method: "POST",
+        data: departmentData,
+      }),
+
+      invalidatesTags: ["Department"],
+    }),
+
+    updateDepartment: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/departments/${id}`,
+        method: "PATCH",
+        data: body,
+      }),
+
+      invalidatesTags: ["Department"],
+    }),
+
+    toggleDepartmentStatus: build.mutation({
+      query: (id) => ({
+        url: `/departments/${id}/toggle-status`,
+        method: "PATCH",
+        data: {},
+      }),
+
+      invalidatesTags: ["Department"],
+    }),
+
+    deleteDepartment: build.mutation({
+      query: (id) => ({
+        url: `/departments/${id}`,
+        method: "DELETE",
+      }),
+
+      invalidatesTags: ["Department"],
+    }),
+
+    getDepartmentList: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        code,
+        center_id,
+        startDate,
+        endDate,
+      } = {}) => ({
+        url: "/departments",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          name,
+          code,
+          center_id,
+          startDate,
+          endDate,
+        },
+      }),
+
+      transformResponse: (response) => ({
+        data: response?.data?.data || [],
+        pagination: response?.data?.pagination || {},
+      }),
+
+      providesTags: ["Department"],
+    }),
+
+    createDesignation: build.mutation({
+      query: (designationData) => ({
+        url: "/designation",
+        method: "POST",
+        data: designationData,
+      }),
+
+      invalidatesTags: ["Designation"],
+    }),
+
+    updateDesignation: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/designation/${id}`,
+        method: "PATCH",
+        data: body,
+      }),
+
+      invalidatesTags: ["Designation"],
+    }),
+
+    toggleDesignationStatus: build.mutation({
+      query: (id) => ({
+        url: `/designation/${id}/toggle-status`,
+        method: "PATCH",
+        data: {},
+      }),
+
+      invalidatesTags: ["Designation"],
+    }),
+
+    deleteDesignation: build.mutation({
+      query: (id) => ({
+        url: `/designation/${id}`,
+        method: "DELETE",
+      }),
+
+      invalidatesTags: ["Designation"],
+    }),
+
+    getDesignationList: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        code,
+        center_id,
+        startDate,
+        endDate,
+      } = {}) => ({
+        url: "/designation",
+        method: "GET",
+        params: {
+          page,
+          limit,
+          name,
+          code,
+          center_id,
+          startDate,
+          endDate,
+        },
+      }),
+
+      transformResponse: (response) => ({
+        data: response?.data?.data || [],
+        pagination: response?.data?.pagination || {},
+      }),
+
+      providesTags: ["Designation"],
+    }),
+    downloadBulkTemplate: build.mutation({
+      query: () => ({
+        url: "/patients/bulk-upload/template",
+        method: "GET",
+        responseType: "blob",
+        cache: "no-cache",
+      }),
+    }),
+
+    bulkUploadPatients: build.mutation({
+      query: (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        return {
+          url: "/patients/bulk-upload",
+          method: "POST",
+          data: formData,
+        };
+      },
+      invalidatesTags: ["Patients"],
+    }),
+    getAmbulances: build.query({
+      query: (params) => ({
+        url: "/ambulances",
+        params,
+      }),
+      providesTags: ["Ambulances"],
+    }),
+    searchAmbulance: build.query({
+      query: (q) => `/ambulances/search?q=${encodeURIComponent(q)}`,
+    }),
+    getAmbulance: build.query({
+      query: (id) => `/ambulances/${id}`,
+      providesTags: (_r, _e, id) => [{ type: "Ambulances", id }],
+    }),
+    createAmbulance: build.mutation({
+      query: (body) => ({
+        url: "/ambulances",
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Ambulances"],
+    }),
+    updateAmbulance: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/ambulances/${id}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["Ambulances", "AmbulanceServices"],
+    }),
+    deleteAmbulance: build.mutation({
+      query: (id) => ({
+        url: `/ambulances/${id}`,
+        method: "DELETE",
+        data: {},
+      }),
+      invalidatesTags: ["Ambulances"],
+    }),
+    getAmbulanceServices: build.query({
+      query: (params) => ({
+        url: "/ambulance-services",
+        params,
+      }),
+      providesTags: ["AmbulanceServices"],
+    }),
+    getAmbulanceService: build.query({
+      query: (id) => `/ambulance-services/${id}`,
+      providesTags: (_r, _e, id) => [{ type: "AmbulanceServices", id }],
+    }),
+    createAmbulanceService: build.mutation({
+      query: (body) => ({
+        url: "/ambulance-services",
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["AmbulanceServices", "Ambulances"],
+    }),
+    updateAmbulanceService: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/ambulance-services/${id}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["AmbulanceServices", "Ambulances"],
+    }),
+    deleteAmbulanceService: build.mutation({
+      query: (id) => ({
+        url: `/ambulance-services/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["AmbulanceServices", "Ambulances"],
+    }),
+    getOpdBillingCount: build.query({
+      query: () => ({
+        url: "/opd-billing/view/count",
+        method: "get",
+      }),
+      providesTags: ["Bill"],
+    }),
+    getFitnessCertificatesCount: build.query({
+      query: () => ({
+        url: "/ohc-fitness/count",
+        method: "GET",
+      }),
+      providesTags: ["Fitness"],
     }),
   }),
 });
@@ -2192,6 +2461,9 @@ export const {
   useDeletePatientMutation,
   useGetAllTemplatesQuery,
   usePreviewTemplateMutation,
+  usePreviewFitnessCertificateMutation,
+  usePreviewFitnessCertificatePdfMutation,
+  useDownloadFitnessCertificatePdfMutation,
   useGetLowStockItemsQuery,
   useGetPatientDueQuery,
   useUpdateTemplateMutation,
@@ -2261,6 +2533,31 @@ export const {
   useCreateCampPrescriptionMutation,
   useUpdateCampPrescriptionMutation,
   useToggleCampPrescriptionStatusMutation,
-  useLazyExportCampPrescriptionsExcelQuery,
   useGetPatientDetailsQuery,
+  useLazyExportCampPrescriptionsExcelQuery,
+  useCreateDepartmentMutation,
+  useUpdateDepartmentMutation,
+  useDeleteDepartmentMutation,
+  useToggleDepartmentStatusMutation,
+  useGetDepartmentListQuery,
+  useCreateDesignationMutation,
+  useUpdateDesignationMutation,
+  useDeleteDesignationMutation,
+  useToggleDesignationStatusMutation,
+  useGetDesignationListQuery,
+  useDownloadBulkTemplateMutation,
+  useBulkUploadPatientsMutation,
+  useGetAmbulancesQuery,
+  useSearchAmbulanceQuery,
+  useGetAmbulanceQuery,
+  useCreateAmbulanceMutation,
+  useUpdateAmbulanceMutation,
+  useDeleteAmbulanceMutation,
+  useGetAmbulanceServicesQuery,
+  useGetAmbulanceServiceQuery,
+  useCreateAmbulanceServiceMutation,
+  useUpdateAmbulanceServiceMutation,
+  useDeleteAmbulanceServiceMutation,
+  useGetOpdBillingCountQuery,
+  useGetFitnessCertificatesCountQuery
 } = api;

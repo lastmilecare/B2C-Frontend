@@ -1,74 +1,68 @@
-import React, { useState, useEffect } from "react";
-import OpdOhcForm from "./OpdohcForm";
-import OpdBillingOhcList from "./OpdohcList";
+import React, { useEffect, useState } from "react";
+
+import  AmbulanceForm from "./AmbulanceForm";
+import AmbulanceList from "./AmbulanceList";
+
 import { useLocation, useParams } from "react-router-dom";
 
 import {
   ClipboardDocumentIcon,
-  CreditCardIcon,
+  ListBulletIcon,
 } from "@heroicons/react/24/outline";
 
-const OpdohcPage = () => {
+const AmbulancePage = () => {
   const location = useLocation();
-  const { ID } = useParams();
+  const { id } = useParams();
 
   const [activeTab, setActiveTab] = useState("form");
 
   useEffect(() => {
     if (location.state?.goToList) {
       setActiveTab("list");
-    } else if (location.state?.goToForm || location.state?.editData || ID) {
+    } else if (location.state?.goToForm || id) {
       setActiveTab("form");
     }
-  }, [ID, location.state]);
+  }, [id, location.state]);
 
   return (
     <div className="max-w-[1400px] mx-auto mt-4">
-
-      
+      {/* TABS */}
       <div className="flex justify-center -mt-4 mb-6">
         <div className="flex bg-white shadow-md border border-gray-200 rounded-2xl overflow-hidden">
-
-        
+          {/* FORM TAB */}
           <button
+            type="button"
             onClick={() => setActiveTab("form")}
-            className={`px-8 py-2.5 text-sm font-semibold flex items-center gap-2 transition-all
-            ${
+            className={`px-8 py-2.5 text-sm font-semibold flex items-center gap-2 ${
               activeTab === "form"
-                ? "bg-emerald-500 text-white shadow-md"
+                ? "bg-emerald-500 text-white"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
             <ClipboardDocumentIcon className="w-4 h-4" />
-            Opd Form
+            Ambulance Form
           </button>
 
-         
+          {/* LIST TAB */}
           <button
+            type="button"
             onClick={() => setActiveTab("list")}
-            className={`px-8 py-2.5 text-sm font-semibold flex items-center gap-2 transition-all
-            ${
+            className={`px-8 py-2.5 text-sm font-semibold flex items-center gap-2 ${
               activeTab === "list"
-                ? "bg-emerald-500 text-white shadow-md"
+                ? "bg-emerald-500 text-white"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            <CreditCardIcon className="w-4 h-4" />
-            Opd List
+            <ListBulletIcon className="w-4 h-4" />
+            Ambulance List
           </button>
-
         </div>
       </div>
 
-     
-      {activeTab === "form" ? (
-        <OpdOhcForm />
-      ) : (
-        <OpdBillingOhcList />
-      )}
-
+      {/* CONTENT */}
+      {activeTab === "form" ? <AmbulanceForm /> : <AmbulanceList />}
     </div>
   );
 };
 
-export default OpdohcPage;
+export default AmbulancePage;

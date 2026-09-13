@@ -4,7 +4,7 @@ import DataTable from "react-data-table-component";
 import {
   EllipsisVerticalIcon,
   ArrowDownTrayIcon,
-   PlusIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import { healthAlert } from "../utils/healthSwal";
 import GlobalLoader from "./common/GlobalLoader";
@@ -36,7 +36,16 @@ const CommonList = ({
   enableAdd = false,
   addButtonText = "Add",
   onAdd = () => {},
-
+  enableAddBulkUpload = false,
+  addBulkUploadButtonText = "Add Bulk Upload",
+  onAddBulkUpload = () => {},
+  enableAddBulkUploadFormat = false,
+  addBulkUploadFormatButtonText = "Add Bulk Upload Format",
+  onAddBulkUploadFormat = () => {},
+  allowStaffActions = false,
+  statusOptions = [],
+  getRowStatus,
+  responsive = true,
 }) => {
   const [tempFilters, setTempFilters] = useState({});
   const [openMenuRow, setOpenMenuRow] = useState(null);
@@ -90,8 +99,16 @@ const CommonList = ({
       style: {
         fontSize: "11px",
         color: "#334155",
-        minHeight: "32px",
+        minHeight: "48px",
+        alignItems: "center",
         "&:hover": { backgroundColor: "#e0f2fe" },
+      },
+    },
+    cells: {
+      style: {
+        paddingTop: "6px",
+        paddingBottom: "6px",
+        alignItems: "center",
       },
     },
     pagination: {
@@ -101,7 +118,6 @@ const CommonList = ({
         padding: "4px",
       },
     },
-    
   };
 
   const visibleColumns = useMemo(
@@ -125,13 +141,15 @@ const CommonList = ({
   const enhancedColumns = useMemo(() => {
     if (!enableActions) return visibleColumns;
     const role = cookie.get("role");
-const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
-const filteredActionButtons = isAdmin
-  ? actionButtons
-  : actionButtons.filter((btn) => btn !== "edit" && btn !== "delete");
-   if (filteredActionButtons.length === 0) {
-    return visibleColumns;
-  }
+    const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
+    const filteredActionButtons = isAdmin
+      ? actionButtons
+      : allowStaffActions
+        ? actionButtons.filter((btn) => btn !== "delete")
+        : actionButtons.filter((btn) => btn !== "edit" && btn !== "delete");
+    if (filteredActionButtons.length === 0) {
+      return visibleColumns;
+    }
     const buttonConfig = {
       view: { label: "View", color: "text-sky-700", handler: onView },
       edit: { label: "Edit", color: "text-yellow-600", handler: onEdit },
@@ -149,7 +167,9 @@ const filteredActionButtons = isAdmin
       ...visibleColumns,
       {
         name: "Actions",
-        width: "70px",
+        width: "80px",
+        minWidth: "80px",
+        wrap: false,
         center: true,
         ignoreRowClick: true,
 
@@ -160,6 +180,8 @@ const filteredActionButtons = isAdmin
             buttonConfig={buttonConfig}
             openMenuRow={openMenuRow}
             setOpenMenuRow={setOpenMenuRow}
+            statusOptions={statusOptions}
+            getRowStatus={getRowStatus}
           />
         ),
       },
@@ -173,37 +195,72 @@ const filteredActionButtons = isAdmin
     onView,
     onPrint,
     onPrintCS,
+    onStatus,
     openMenuRow,
+    allowStaffActions,
+    statusOptions,
+    getRowStatus,
   ]);
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-3 border border-gray-100">   
-  <div className="flex items-center justify-between mb-3">
-  <h2 className="text-base font-semibold text-sky-700">
-    {title}
-  </h2>
+    <div className="bg-white shadow-md rounded-xl p-3 border border-gray-100">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-base font-semibold text-sky-700">{title}</h2>
 
-  {enableAdd && (
-    <button
-      onClick={onAdd}
-      className="inline-flex items-center gap-1 bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
-    >
-      <PlusIcon className="w-4 h-4" />
-      {addButtonText}
-    </button>
-  )}
-</div>
- <div className="flex flex-wrap justify-between items-center mb-3 gap-2">
-  {enableExport && (
-    <button
-      onClick={onExport}
-      className="inline-flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs"
-    >
-      <ArrowDownTrayIcon className="w-4 h-4" />
-      Export
-    </button>
-  )}
-</div>
+        <div className="flex items-center gap-2">
+          {enableAdd && (
+            <button
+              onClick={onAdd}
+              className="inline-flex items-center gap-1 bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
+            >
+              <PlusIcon className="w-4 h-4" />
+              {addButtonText}
+            </button>
+          )}
+
+          {enableAddBulkUpload && (
+            <button
+              onClick={onAddBulkUpload}
+              className="inline-flex items-center gap-1 bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
+            >
+              <PlusIcon className="w-4 h-4" />
+              {addBulkUploadButtonText}
+            </button>
+          )}
+
+          {enableAddBulkUploadFormat && (
+            <button
+              onClick={onAddBulkUploadFormat}
+              className="inline-flex items-center gap-1 bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700"
+            >
+              <PlusIcon className="w-4 h-4" />
+              {addBulkUploadFormatButtonText}
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-wrap justify-between items-center mb-3 gap-2">
+        {enableExport && (
+          <button
+            onClick={onExport}
+            className="inline-flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            Export
+          </button>
+        )}
+      </div>
+      <div className="flex flex-wrap justify-between items-center mb-3 gap-2">
+        {enableExport && (
+          <button
+            onClick={onExport}
+            className="inline-flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            Export
+          </button>
+        )}
+      </div>
 
       {filtersConfig.length > 0 && (
         <div className="w-full bg-sky-50 p-3 rounded-lg border border-sky-100 mb-3">
@@ -277,10 +334,8 @@ const filteredActionButtons = isAdmin
                 <ArrowDownTrayIcon className="w-4 h-4" />
                 Export
               </button>
-              
             )}
           </div>
-
         </div>
       )}
 
@@ -301,7 +356,7 @@ const filteredActionButtons = isAdmin
         highlightOnHover
         pointerOnHover
         customStyles={customStyles}
-        responsive
+        responsive={responsive}
         dense
       />
     </div>
@@ -316,8 +371,11 @@ const ActionMenu = ({
   buttonConfig,
   openMenuRow,
   setOpenMenuRow,
+  statusOptions = [],
+  getRowStatus,
 }) => {
   const isOpen = openMenuRow === row;
+  const currentStatus = getRowStatus ? getRowStatus(row) : row.status;
   const [menuStyle, setMenuStyle] = useState({});
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
@@ -385,6 +443,37 @@ const ActionMenu = ({
       {actionButtons.map((btnKey) => {
         const btn = buttonConfig[btnKey];
         if (!btn) return null;
+
+        if (btnKey === "status" && statusOptions.length > 0) {
+          return (
+            <div key={btnKey} className="border-t border-gray-100 pt-1 mt-1">
+              <p className="px-2 py-0.5 text-[10px] font-semibold uppercase text-gray-400">
+                {btn.label}
+              </p>
+              {statusOptions.map((option) => {
+                const isCurrent = currentStatus === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isCurrent) btn.handler(row, option.value);
+                      setOpenMenuRow(null);
+                    }}
+                    className={`block w-full text-left px-2 py-1 text-xs rounded ${
+                      isCurrent
+                        ? "bg-sky-100 text-sky-700 font-semibold"
+                        : "hover:bg-sky-50 text-gray-700"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          );
+        }
+
         return (
           <button
             key={btnKey}
