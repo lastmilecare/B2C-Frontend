@@ -73,7 +73,7 @@ const OpdBillAnalysis = () => {
     skip: debouncedUhid.length < 2,
   });
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(500);
+  const [limit, setLimit] = useState(10000);
   const [tempFilters, setTempFilters] = useState({
     name: "",
     contactNumber: "",
@@ -184,7 +184,7 @@ const OpdBillAnalysis = () => {
 
     setFilters(tempFilters);
     setPage(1);
-    setLimit(500);
+    setLimit(10000);
   };
 
   const handleExport = () => {
@@ -239,6 +239,7 @@ const OpdBillAnalysis = () => {
       "S.No",
       "T.No",
       "Bill No",
+      "Bill Date",
       "Center",
       "UHID",
       "Name",
@@ -257,7 +258,7 @@ const OpdBillAnalysis = () => {
       "Service",
       "Referred By",
       "Collected By",
-      "Bill Date",
+      
       ...(showPharmacy
         ? ["Pharmacy Bill No", "Pharmacy Item", "Pharmacy Amt", "Pharmacy Due"]
         : []),
@@ -580,7 +581,7 @@ const OpdBillAnalysis = () => {
 
     drawSummaryRow([
       {
-        label: "Total Online / UPI / Cost Free / Card",
+        label: "Total Online / UPI / Card",
         value: `Rs. ${summary?.totalUpiAmount || 0}`,
       },
     ]);
@@ -745,7 +746,7 @@ const OpdBillAnalysis = () => {
 
     drawSummaryRow([
       {
-        label: "Total Online / UPI / Cost Free / Card",
+        label: "Total Online / UPI / Card",
         value: `Rs. ${summary?.grandUpi || 0}`,
       },
     ]);
@@ -781,232 +782,804 @@ const OpdBillAnalysis = () => {
     doc.save(`OPD_Analysis_${Date.now()}.pdf`);
   };
 
-  const handleExportExcel = () => {
-    const todayDate = new Date().toLocaleDateString();
-    const loginUser = username || "Admin";
-    const HEADER_STYLE = {
-      fill: { patternType: "solid", fgColor: { rgb: "059669" } },
-      font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
-      alignment: { horizontal: "center", vertical: "center", wrapText: true },
-      border: {
-        top: { style: "thin", color: { rgb: "047857" } },
-        bottom: { style: "thin", color: { rgb: "047857" } },
-        left: { style: "thin", color: { rgb: "047857" } },
-        right: { style: "thin", color: { rgb: "047857" } },
-      },
-    };
-    const applyHeaderStyle = (sheet, rowIndex, colCount) => {
-      for (let c = 0; c < colCount; c++) {
-        const cellRef = XLSX.utils.encode_cell({ r: rowIndex, c });
-        if (!sheet[cellRef]) sheet[cellRef] = { t: "s", v: "" };
-        sheet[cellRef].s = HEADER_STYLE;
-      }
-    };
 
-    const tableColumn = [
-      "S.No",
-      "T.No",
-      "Bill No",
-      "Center",
-      "UHID",
-      "Name",
-      "Age",
-      "Gender",
-      "Address",
-      "Category",
-      "Mobile",
-      "Previous Due",
-      "Bill Amt",
-      "Total Amt",
-      "Paid Amt",
-      "Due Amt",
-      "Pay Mode",
-      "Doctor",
-      "Service",
-      "Referred By",
-      "Collected By",
-      "Bill Date",
-      ...(showPharmacy
-        ? ["Pharmacy Bill No", "Pharmacy Item", "Pharmacy Amt", "Pharmacy Due"]
-        : []),
-      ...(showSpectacle ? ["Specs Amt", "Specs Due"] : []),
-    ];
+const handleExportExcel = () => {
+  const todayDate = new Date().toLocaleDateString();
+  const loginUser = username || "Admin";
 
-    const tableRows = patients.map((row, index) => [
-      index + 1,
-      safeString(row?.token, "-"),
-      safeString(row?.bill_no, "-"),
-      safeString(row?.center_name, "-"),
-      safeString(row?.uhid, "-"),
-      safeString(row?.patient_name, "-"),
-      `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
-      safeString(row?.gender, "-"),
-      safeString(row?.localAddress, "-"),
-      safeString(row?.patient_type, "-"),
-      safeString(row?.contactNumber, "-"),
-      formatCurrency(
-        Math.max(0, Number(calculateDue(patients, row?.uhid)) || 0),
-      ),
-      formatCurrency(row?.NetServiceAmount),
-      formatCurrency(row?.NetServiceAmount),
-      formatCurrency(row?.NetPaidAmount),
-      formatCurrency(row?.NetDueAmount),
-      safeString(row?.payment_mode, "-"),
-      safeString(row?.doctor_name, "-"),
-      (row?.opd_billing_data || [])
-        .map((i) => i?.ServiceName)
-        .filter(Boolean)
-        .join(", ") || "-",
-      safeString(row?.refer_to, "-"),
-      safeString(row?.added_by, "-"),
-      row?.AddedDate ? formatDate(row.AddedDate) : "-",
-      ...(showPharmacy
-        ? [
-            safeString(row?.PharmaBillNo, "-"),
-            safeString(row?.PharmaItemName, "-"),
-            formatCurrency(row?.PharmaTotalAmount),
-            formatCurrency(row?.pharmaSummary?.totalDue),
-          ]
-        : []),
-      ...(showSpectacle
-        ? [
-            formatCurrency(row?.specTotalAmount),
-            formatCurrency(row?.specDueAmount),
-          ]
-        : []),
-    ]);
-    const detailRows = [];
+  // =========================================================
+  // SIMPLE STYLES ONLY
+  // Keeping styles minimum to reduce Excel file size
+  // =========================================================
 
-    let filterText = "";
-    if (filters?.startDate) filterText += `From: ${filters.startDate} `;
-    if (filters?.endDate) filterText += `To: ${filters.endDate}`;
-    if (filterText) detailRows.push([filterText]);
-    detailRows.push(tableColumn);
-    detailRows.push(...tableRows);
-
-    const detailSheet = XLSX.utils.aoa_to_sheet(detailRows);
-    const headerRowIndex = filterText ? 1 : 0;
-
-    applyHeaderStyle(detailSheet, headerRowIndex, tableColumn.length);
-    detailSheet["!cols"] = tableColumn.map((col) => ({
-      wch: Math.min(Math.max(col.length, 12), 40),
-    }));
-    detailSheet["!rows"] = detailSheet["!rows"] || [];
-    detailSheet["!rows"][headerRowIndex] = { hpt: 28 };
-
-    const summaryRows = [
-      ["OPD BILLING SUMMARY"],
-      [],
-      ["OPD SUMMARY"],
-      [
-        "Total Bill Amount",
-        `Rs. ${summary?.totalBillAmount || 0}`,
-        "Total Paid Amount",
-        `Rs. ${summary?.totalPaidAmount || 0}`,
-        "Total Due Amount",
-        `Rs. ${summary?.totalDueAmount || 0}`,
-        "Total Cash Amount",
-        `Rs. ${summary?.totalCashAmount || 0}`,
-      ],
-      [
-        "Total Online / UPI / Cost Free / Card",
-        `Rs. ${summary?.totalUpiAmount || 0}`,
-      ],
-      [],
-      ["PHARMACY SUMMARY"],
-      [
-        "Total Pharmacy Revenue",
-        `Rs. ${pharmacy?.pharmacyRevenue || 0}`,
-        "Pharmacy Paid Amount",
-        `Rs. ${pharmacy?.pharmacyPaid || 0}`,
-        "Pharmacy Due Amount",
-        `Rs. ${pharmacy?.pharmacyDue || 0}`,
-        "Pharmacy Cash Amount",
-        `Rs. ${pharmacy?.pharmacyCash || 0}`,
-      ],
-      [
-        "Pharmacy Online / UPI / Cost Free / Card Amount",
-        `Rs. ${pharmacy?.pharmacyUpi || 0}`,
-      ],
-    ];
-
-    if (showPharmacy) {
-      summaryRows.push(
-        [],
-        ["PHARMACY BILLING SUMMARY"],
-        [
-          "Pharmacy Total Sales",
-          `Rs. ${pharmaSummary?.totalSales || 0}`,
-          "Pharmacy Paid",
-          `Rs. ${pharmaSummary?.totalPaid || 0}`,
-          "Pharmacy Due",
-          `Rs. ${pharmaSummary?.totalDue || 0}`,
-          "Pharmacy Cash",
-          `Rs. ${pharmaSummary?.cashTotal || 0}`,
-        ],
-        [
-          "Pharmacy Online / UPI",
-          `Rs. ${pharmaSummary?.onlineTotal || 0}`,
-          "Pharmacy Cost Free",
-          `Rs. ${pharmaSummary?.costFreeTotal || 0}`,
-          "Pharmacy Discount",
-          `Rs. ${pharmaSummary?.totalDiscount || 0}`,
-          "Pharmacy Issue Qty",
-          pharmaSummary?.totalIssueQty || 0,
-        ],
-      );
-    }
-
-    if (showSpectacle) {
-      summaryRows.push(
-        [],
-        ["SPECTACLE SUMMARY"],
-        [
-          "Total Spectacle Revenue",
-          `Rs. ${spectacle?.spectacleRevenue || 0}`,
-          "Spectacle Paid Amount",
-          `Rs. ${spectacle?.spectaclePaid || 0}`,
-          "Spectacle Due Amount",
-          `Rs. ${spectacle?.spectacleDue || 0}`,
-          "Spectacle Cash Amount",
-          `Rs. ${spectacle?.spectacleCash || 0}`,
-        ],
-        [
-          "Spectacle Online / UPI / Cost Free / Card",
-          `Rs. ${spectacle?.spectacleUpi || 0}`,
-        ],
-      );
-    }
-
-    summaryRows.push(
-      [],
-      ["GRAND TOTAL"],
-      [
-        "Grand Total",
-        `Rs. ${summary?.grandTotal || 0}`,
-        "Total Paid",
-        `Rs. ${summary?.grandPaid || 0}`,
-        "Total Due",
-        `Rs. ${summary?.grandDue || 0}`,
-        "Total Cash",
-        `Rs. ${summary?.grandCash || 0}`,
-      ],
-      [
-        "Total Online / UPI / Cost Free / Card",
-        `Rs. ${summary?.grandUpi || 0}`,
-      ],
-      [],
-      ["Powered by Last Mile Care"],
-      [`Prepared By: ${loginUser}`, `Date: ${todayDate}`],
-    );
-
-    const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, detailSheet, "OPD Analysis");
-    XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
-
-    XLSX.writeFile(workbook, `OPD_Analysis_${Date.now()}.xlsx`);
+  const HEADER_STYLE = {
+    fill: {
+      patternType: "solid",
+      fgColor: { rgb: "059669" },
+    },
+    font: {
+      bold: true,
+      color: { rgb: "FFFFFF" },
+      sz: 10,
+    },
+    alignment: {
+      horizontal: "center",
+      vertical: "center",
+      wrapText: true,
+    },
   };
+
+  const TITLE_STYLE = {
+    fill: {
+      patternType: "solid",
+      fgColor: { rgb: "D1FAE5" },
+    },
+    font: {
+      bold: true,
+      color: { rgb: "065F46" },
+      sz: 14,
+    },
+    alignment: {
+      horizontal: "center",
+      vertical: "center",
+    },
+  };
+
+  const SECTION_STYLE = {
+    fill: {
+      patternType: "solid",
+      fgColor: { rgb: "E5E7EB" },
+    },
+    font: {
+      bold: true,
+      color: { rgb: "111827" },
+      sz: 10,
+    },
+    alignment: {
+      horizontal: "center",
+      vertical: "center",
+    },
+  };
+
+  const TOTAL_STYLE = {
+    fill: {
+      patternType: "solid",
+      fgColor: { rgb: "ECFDF5" },
+    },
+    font: {
+      bold: true,
+      color: { rgb: "065F46" },
+      sz: 10,
+    },
+    alignment: {
+      horizontal: "right",
+      vertical: "center",
+    },
+  };
+
+  const applyStyle = (sheet, cell, style) => {
+    if (sheet[cell]) {
+      sheet[cell].s = style;
+    }
+  };
+
+  const applyRowStyle = (sheet, rowIndex, startCol, endCol, style) => {
+    for (let c = startCol; c <= endCol; c++) {
+      const cellRef = XLSX.utils.encode_cell({
+        r: rowIndex,
+        c,
+      });
+
+      if (sheet[cellRef]) {
+        sheet[cellRef].s = style;
+      }
+    }
+  };
+
+  
+
+  const tableColumn = [
+    "S.No",
+    "T.No",
+    "Bill No",
+    "Bill Date",
+    "Center",
+    "UHID",
+    "Name",
+    "Age",
+    "Gender",
+    "Address",
+    "Category",
+    "Mobile",
+    "Previous Due",
+    "Bill Amt",
+    "Total Amt",
+    "Paid Amt",
+    "Due Amt",
+    "Pay Mode",
+    "Doctor",
+    "Service",
+    "Referred By",
+    "Collected By",
+
+    ...(showPharmacy
+      ? [
+          "Pharmacy Bill No",
+          "Pharmacy Item",
+          "Pharmacy Amt",
+          "Pharmacy Due",
+        ]
+      : []),
+
+    ...(showSpectacle
+      ? [
+          "Specs Amt",
+          "Specs Due",
+        ]
+      : []),
+  ];
+
+  
+
+  const tableRows = patients.map((row, index) => [
+    // S.No
+    index + 1,
+
+    // T.No
+    safeString(row?.token, "-"),
+
+    // Bill No
+    safeString(row?.bill_no, "-"),
+
+    // Bill Date
+    row?.AddedDate ? formatDate(row.AddedDate) : "-",
+
+    // Center
+    safeString(row?.center_name, "-"),
+
+    // UHID
+    safeString(row?.uhid, "-"),
+
+    // Name
+    safeString(row?.patient_name, "-"),
+
+    // Age
+    `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
+
+    // Gender
+    safeString(row?.gender, "-"),
+
+    // Address
+    safeString(row?.localAddress, "-"),
+
+    // Category
+    safeString(row?.patient_type, "-"),
+
+    // Mobile
+    safeString(row?.contactNumber, "-"),
+
+    // Previous Due
+    formatCurrency(
+      Math.max(
+        0,
+        Number(calculateDue(patients, row?.uhid)) || 0
+      )
+    ),
+
+    // Bill Amount
+    formatCurrency(row?.NetServiceAmount),
+
+    // Total Amount
+    formatCurrency(row?.NetServiceAmount),
+
+    // Paid Amount
+    formatCurrency(row?.NetPaidAmount),
+
+    // Due Amount
+    formatCurrency(row?.NetDueAmount),
+
+    // Payment Mode
+    safeString(row?.payment_mode, "-"),
+
+    // Doctor
+    safeString(row?.doctor_name, "-"),
+
+    // Service
+    (row?.opd_billing_data || [])
+      .map((item) => item?.ServiceName)
+      .filter(Boolean)
+      .join(", ") || "-",
+
+    // Referred By
+    safeString(row?.refer_to, "-"),
+
+    // Collected By
+    safeString(row?.added_by, "-"),
+
+    // =======================================================
+    // PHARMACY
+    // =======================================================
+
+    ...(showPharmacy
+      ? [
+          safeString(row?.PharmaBillNo, "-"),
+          safeString(row?.PharmaItemName, "-"),
+          formatCurrency(row?.PharmaTotalAmount),
+          formatCurrency(row?.pharmaSummary?.totalDue),
+        ]
+      : []),
+
+    // =======================================================
+    // SPECTACLE
+    // =======================================================
+
+    ...(showSpectacle
+      ? [
+          formatCurrency(row?.specTotalAmount),
+          formatCurrency(row?.specDueAmount),
+        ]
+      : []),
+  ]);
+
+  // =========================================================
+  // FILTER INFORMATION
+  // =========================================================
+
+  let filterText = "";
+
+  if (filters?.startDate) {
+    filterText += `From: ${filters.startDate}`;
+  }
+
+  if (filters?.endDate) {
+    filterText += `${filterText ? "   " : ""}To: ${filters.endDate}`;
+  }
+
+  // =========================================================
+  // DETAIL SHEET
+  // IMPORTANT:
+  // NO SUMMARY BELOW DATA
+  // This keeps the file smaller and cleaner.
+  // =========================================================
+
+  const detailRows = [];
+
+  if (filterText) {
+    detailRows.push([filterText]);
+    detailRows.push([]);
+  }
+
+  detailRows.push(tableColumn);
+  detailRows.push(...tableRows);
+
+  const detailSheet = XLSX.utils.aoa_to_sheet(detailRows);
+
+  // =========================================================
+  // DETAIL HEADER
+  // =========================================================
+
+  const headerRowIndex = filterText ? 2 : 0;
+
+  applyRowStyle(
+    detailSheet,
+    headerRowIndex,
+    0,
+    tableColumn.length - 1,
+    HEADER_STYLE
+  );
+
+  // =========================================================
+  // FILTER STYLE
+  // =========================================================
+
+  if (filterText) {
+    const filterCell = XLSX.utils.encode_cell({
+      r: 0,
+      c: 0,
+    });
+
+    applyStyle(detailSheet, filterCell, {
+      font: {
+        bold: true,
+        sz: 10,
+        color: { rgb: "374151" },
+      },
+    });
+  }
+
+  // =========================================================
+  // DETAIL COLUMN WIDTHS
+  // =========================================================
+
+  detailSheet["!cols"] = tableColumn.map((col) => {
+    let width = 14;
+
+    switch (col) {
+      case "S.No":
+        width = 8;
+        break;
+
+      case "T.No":
+        width = 10;
+        break;
+
+      case "Bill No":
+        width = 14;
+        break;
+
+      case "Bill Date":
+        width = 13;
+        break;
+
+      case "Center":
+        width = 18;
+        break;
+
+      case "UHID":
+        width = 18;
+        break;
+
+      case "Name":
+        width = 20;
+        break;
+
+      case "Age":
+        width = 14;
+        break;
+
+      case "Gender":
+        width = 10;
+        break;
+
+      case "Address":
+        width = 25;
+        break;
+
+      case "Category":
+        width = 12;
+        break;
+
+      case "Mobile":
+        width = 15;
+        break;
+
+      case "Previous Due":
+      case "Bill Amt":
+      case "Total Amt":
+      case "Paid Amt":
+      case "Due Amt":
+        width = 14;
+        break;
+
+      case "Pay Mode":
+        width = 16;
+        break;
+
+      case "Doctor":
+        width = 20;
+        break;
+
+      case "Service":
+        width = 30;
+        break;
+
+      case "Referred By":
+        width = 18;
+        break;
+
+      case "Collected By":
+        width = 18;
+        break;
+
+      case "Pharmacy Bill No":
+        width = 16;
+        break;
+
+      case "Pharmacy Item":
+        width = 25;
+        break;
+
+      case "Pharmacy Amt":
+      case "Pharmacy Due":
+      case "Specs Amt":
+      case "Specs Due":
+        width = 14;
+        break;
+
+      default:
+        width = 14;
+    }
+
+    return {
+      wch: width,
+    };
+  });
+
+  // =========================================================
+  // HEADER HEIGHT
+  // =========================================================
+
+  detailSheet["!rows"] = detailSheet["!rows"] || [];
+
+  detailSheet["!rows"][headerRowIndex] = {
+    hpt: 25,
+  };
+
+  // =========================================================
+  // FREEZE HEADER
+  // =========================================================
+
+  detailSheet["!freeze"] = {
+    xSplit: 0,
+    ySplit: headerRowIndex + 1,
+  };
+
+  // =========================================================
+  // BILLING SUMMARY
+  // SAME FORMAT / ORDER AS UI SUMMARY
+  // =========================================================
+
+  const summaryRows = [];
+
+  // =========================================================
+  // TITLE
+  // =========================================================
+
+  summaryRows.push([
+    "OPD BILLING SUMMARY",
+  ]);
+
+  summaryRows.push([
+    "Report Date",
+    todayDate,
+    "Prepared By",
+    loginUser,
+  ]);
+
+  if (filterText) {
+    summaryRows.push([
+      "Filter",
+      filterText,
+    ]);
+  }
+
+  summaryRows.push([]);
+
+  // =========================================================
+  // 1. OPD SUMMARY
+  // =========================================================
+
+  summaryRows.push([
+    "OPD SUMMARY",
+  ]);
+
+  summaryRows.push([
+    "Total Bill Amount",
+    `Rs. ${summary?.totalBillAmount || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Total Paid Amount",
+    `Rs. ${summary?.totalPaidAmount || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Total Due Amount",
+    `Rs. ${summary?.totalDueAmount || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Total Cash Amount",
+    `Rs. ${summary?.totalCashAmount || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Total Online / UPI / Card",
+    `Rs. ${summary?.totalUpiAmount || 0}`,
+  ]);
+
+  summaryRows.push([]);
+
+  // =========================================================
+  // 2. PHARMACY SUMMARY
+  // =========================================================
+
+  summaryRows.push([
+    "PHARMACY SUMMARY",
+  ]);
+
+  summaryRows.push([
+    "Total Pharmacy Revenue",
+    `Rs. ${pharmacy?.pharmacyRevenue || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Pharmacy Paid Amount",
+    `Rs. ${pharmacy?.pharmacyPaid || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Pharmacy Due Amount",
+    `Rs. ${pharmacy?.pharmacyDue || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Pharmacy Cash Amount",
+    `Rs. ${pharmacy?.pharmacyCash || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Pharmacy Online / UPI / Cost Free / Card Amount",
+    `Rs. ${pharmacy?.pharmacyUpi || 0}`,
+  ]);
+
+  summaryRows.push([]);
+
+
+
+  if (showPharmacy) {
+    summaryRows.push([
+      "PHARMACY BILLING SUMMARY",
+    ]);
+
+    summaryRows.push([
+      "Pharmacy Total Sales",
+      `Rs. ${pharmaSummary?.totalSales || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Pharmacy Paid",
+      `Rs. ${pharmaSummary?.totalPaid || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Pharmacy Due",
+      `Rs. ${pharmaSummary?.totalDue || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Pharmacy Cash",
+      `Rs. ${pharmaSummary?.cashTotal || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Pharmacy Online / UPI",
+      `Rs. ${pharmaSummary?.onlineTotal || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Pharmacy Cost Free",
+      `Rs. ${pharmaSummary?.costFreeTotal || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Pharmacy Discount",
+      `Rs. ${pharmaSummary?.totalDiscount || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Pharmacy Issue Qty",
+      pharmaSummary?.totalIssueQty || 0,
+    ]);
+
+    summaryRows.push([]);
+  }
+  if (showSpectacle) {
+    summaryRows.push([
+      "SPECTACLE SUMMARY",
+    ]);
+
+    summaryRows.push([
+      "Total Spectacle Revenue",
+      `Rs. ${spectacle?.spectacleRevenue || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Spectacle Paid Amount",
+      `Rs. ${spectacle?.spectaclePaid || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Spectacle Due Amount",
+      `Rs. ${spectacle?.spectacleDue || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Spectacle Cash Amount",
+      `Rs. ${spectacle?.spectacleCash || 0}`,
+    ]);
+
+    summaryRows.push([
+      "Spectacle Online / UPI / Cost Free / Card",
+      `Rs. ${spectacle?.spectacleUpi || 0}`,
+    ]);
+
+    summaryRows.push([]);
+  }
+  summaryRows.push([
+    "GRAND TOTAL",
+  ]);
+
+  summaryRows.push([
+    "Grand Total",
+    `Rs. ${summary?.grandTotal || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Total Paid",
+    `Rs. ${summary?.grandPaid || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Total Due",
+    `Rs. ${summary?.grandDue || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Total Cash",
+    `Rs. ${summary?.grandCash || 0}`,
+  ]);
+
+  summaryRows.push([
+    "Total Online / UPI / Card",
+    `Rs. ${summary?.grandUpi || 0}`,
+  ]);
+
+  summaryRows.push([]);
+
+ 
+  summaryRows.push([
+    "Powered by Last Mile Care",
+  ]);
+
+
+  const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+
+
+  summarySheet["!cols"] = [
+    { wch: 55 },
+    { wch: 25 },
+    { wch: 20 },
+    { wch: 20 },
+    { wch: 20 },
+  ];
+
+
+  const titleRow = 0;
+
+  const sectionRows = [
+    summaryRows.findIndex(
+      (row) => row?.[0] === "OPD SUMMARY"
+    ),
+
+    summaryRows.findIndex(
+      (row) => row?.[0] === "PHARMACY SUMMARY"
+    ),
+
+    summaryRows.findIndex(
+      (row) => row?.[0] === "PHARMACY BILLING SUMMARY"
+    ),
+
+    summaryRows.findIndex(
+      (row) => row?.[0] === "SPECTACLE SUMMARY"
+    ),
+
+    summaryRows.findIndex(
+      (row) => row?.[0] === "GRAND TOTAL"
+    ),
+  ].filter((rowIndex) => rowIndex >= 0);
+
+  const grandTotalSectionRow = summaryRows.findIndex(
+    (row) => row?.[0] === "GRAND TOTAL"
+  );
+
+  applyRowStyle(
+    summarySheet,
+    titleRow,
+    0,
+    summaryRows[titleRow].length - 1,
+    TITLE_STYLE
+  );
+
+  sectionRows.forEach((rowIndex) => {
+    applyRowStyle(
+      summarySheet,
+      rowIndex,
+      0,
+      summaryRows[rowIndex].length - 1,
+      SECTION_STYLE
+    );
+  });
+
+  if (grandTotalSectionRow >= 0) {
+    for (
+      let rowIndex = grandTotalSectionRow + 1;
+      rowIndex < summaryRows.length;
+      rowIndex++
+    ) {
+      const row = summaryRows[rowIndex];
+
+      if (
+        row &&
+        row.length > 0 &&
+        row[0] !== "Powered by Last Mile Care"
+      ) {
+        applyRowStyle(
+          summarySheet,
+          rowIndex,
+          1,
+          row.length - 1,
+          TOTAL_STYLE
+        );
+      }
+    }
+  }
+
+  summaryRows.forEach((row, rowIndex) => {
+    if (!row || row.length < 2) return;
+
+    const valueCell = XLSX.utils.encode_cell({
+      r: rowIndex,
+      c: 1,
+    });
+
+    if (summarySheet[valueCell]) {
+      summarySheet[valueCell].s = {
+        alignment: {
+          horizontal: "right",
+          vertical: "center",
+        },
+      };
+    }
+  });
+
+  summarySheet["!freeze"] = {
+    xSplit: 0,
+    ySplit: 5,
+  };
+
+  summarySheet["!merges"] = [
+    {
+      s: {
+        r: titleRow,
+        c: 0,
+      },
+      e: {
+        r: titleRow,
+        c: 4,
+      },
+    },
+
+    ...sectionRows.map((rowIndex) => ({
+      s: {
+        r: rowIndex,
+        c: 0,
+      },
+      e: {
+        r: rowIndex,
+        c: 4,
+      },
+    })),
+  ];
+
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    detailSheet,
+    "OPD Analysis"
+  );
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    summarySheet,
+    "Billing Summary"
+  );
+  XLSX.writeFile(
+    workbook,
+    `OPD_Analysis_${Date.now()}.xlsx`
+  );
+};
   const handleResetFilters = () => {
     setTempFilters({
       name: "",
@@ -1194,6 +1767,17 @@ const OpdBillAnalysis = () => {
       sortable: true,
       width: "70px",
     },
+     {
+      name: "Bill.Date",
+      width: "140px",
+      cell: (row) => (
+        <div className="flex flex-col text-xs">
+          <span className="font-medium text-slate-700">
+            {formatDate(row.AddedDate)}
+          </span>
+        </div>
+      ),
+    },
     {
       name: "Center",
       title: "Centre Name",
@@ -1323,17 +1907,7 @@ const OpdBillAnalysis = () => {
       width: "120px",
     },
 
-    {
-      name: "Bill.Date",
-      width: "140px",
-      cell: (row) => (
-        <div className="flex flex-col text-xs">
-          <span className="font-medium text-slate-700">
-            {formatDate(row.AddedDate)}
-          </span>
-        </div>
-      ),
-    },
+   
     ...(showPharmacy
       ? [
           {

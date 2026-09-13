@@ -475,7 +475,7 @@ const OpdBillingListCopy = () => {
     {
       name: "Bill.Amt (Rs.)",
       title: "Bill Amount",
-      selector: (row) => formatCurrency(row?.BillAmount ?? row?.PaidAmount),
+      selector: (row) => formatCurrency(row?.TotalServiceAmount),
       sortable: true,
       width: "100px",
     },
