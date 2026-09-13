@@ -40,6 +40,28 @@ import {
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+const STEP_FIELDS = {
+  1: [
+    "title",
+    "name",
+    "contactNumber",
+    "CO",
+    "gender",
+    "employeeId",
+    "occupation",
+    "department_id",
+    "designation_id",
+  ],
+  2: ["country", "localAddressState", "fincat", "pin"],
+  3: ["idProof_name", "idProof_number"],
+};
+
+const requiredSelect = (message) =>
+  Yup.mixed().test("required", message, (value) => {
+    if (value === 0) return true;
+    return value !== "" && value !== null && value !== undefined;
+  });
+
 const PatientRegistrationOhc = () => {
   const [searchDiseases] = useLazySearchDiseasesQuery();
   const [page, setPage] = useState(1);
@@ -110,61 +132,56 @@ const PatientRegistrationOhc = () => {
   );
   const designationsData = designationData?.data || [];
 
-  const nextStep = async () => {
+  const touchFields = (fields) => {
+    formik.setTouched(
+      fields.reduce(
+        (acc, field) => ({
+          ...acc,
+          [field]: true,
+        }),
+        {},
+      ),
+    );
+  };
+
+  const getFirstStepWithErrors = (errors) => {
+    const step = Object.entries(STEP_FIELDS).find(([, fields]) =>
+      fields.some((field) => errors[field]),
+    );
+    return step ? Number(step[0]) : null;
+  };
+
+  const validateCurrentStep = async (step) => {
     const errors = await formik.validateForm();
+    const fields = STEP_FIELDS[step] || [];
+    const stepErrors = fields.filter((field) => errors[field]);
 
-    if (
-      activeStep === 1 &&
-      (errors.title ||
-        errors.name ||
-        errors.contactNumber ||
-        errors.CO ||
-        errors.gender ||
-        errors.employeeId ||
-        errors.occupation)
-    ) {
-      formik.setTouched({
-        title: true,
-        name: true,
-        contactNumber: true,
-        CO: true,
-        gender: true,
-        employeeId: true,
-        occupation: true,
-      });
-      return;
+    if (stepErrors.length > 0) {
+      touchFields(stepErrors);
+      return false;
     }
 
-    if (
-      activeStep === 2 &&
-      (errors.country ||
-        errors.localAddressState ||
-        errors.fincat ||
-        // errors.ReferredBy ||
+    return true;
+  };
 
-        errors.pin)
-    ) {
-      formik.setTouched({
-        country: true,
-        localAddressState: true,
-        fincat: true,
-        // ReferredBy: true,
-
-        pin: true,
-      });
-
-      return;
-    }
-    if (activeStep === 3 && (errors.idProof_name || errors.idProof_number)) {
-      formik.setTouched({
-        idProof_name: true,
-        idProof_number: true,
-      });
-
-      return;
-    }
-
+  const nextStep = async () => {
+    const isValid = await validateCurrentStep(activeStep);
+    if (!isValid) return;
     setActiveStep((prev) => prev + 1);
+  };
+
+  const handleFinalSubmit = async () => {
+    const errors = await formik.validateForm();
+    const errorFields = Object.keys(errors);
+
+    if (errorFields.length > 0) {
+      const stepWithError = getFirstStepWithErrors(errors);
+      if (stepWithError) setActiveStep(stepWithError);
+      touchFields(errorFields);
+      return;
+    }
+
+    formik.handleSubmit();
   };
 
   const prevStep = () => setActiveStep((prev) => prev - 1);
@@ -225,8 +242,8 @@ const PatientRegistrationOhc = () => {
         is: (val) => !!val,
         then: (schema) => schema.required("Identification Number is required"),
       }),
-      department_id: Yup.string().required("Department is required"),
-      designation_id: Yup.string().required("Designation is required"),
+      department_id: requiredSelect("Department is required"),
+      designation_id: requiredSelect("Designation is required"),
     }),
 
     onSubmit: async (values) => {
@@ -347,8 +364,14 @@ const PatientRegistrationOhc = () => {
           employeeId: p.employeeId || "",
           // ReferredBy: p.ReferredBy || "",
           permanentAddress: p.permanentAddress || "",
-          department_id: p.department_id || "",
-          designation_id: p.designation_id || "",
+          department_id:
+            p.department_id != null && p.department_id !== ""
+              ? String(p.department_id)
+              : "",
+          designation_id:
+            p.designation_id != null && p.designation_id !== ""
+              ? String(p.designation_id)
+              : "",
         });
       };
 
@@ -399,8 +422,12 @@ const PatientRegistrationOhc = () => {
       employeeId: values.employeeId,
       // ReferredBy: values.ReferredBy || "",
       permanentAddress: values.permanentAddress,
-      department_id: values.department_id,
-      designation_id: values.designation_id,
+      department_id: values.department_id
+        ? String(values.department_id)
+        : "",
+      designation_id: values.designation_id
+        ? String(values.designation_id)
+        : "",
     };
 
     if (!isEdit) {
@@ -730,15 +757,17 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       }
                       onChange={(e) => {
                         const departmentId = e.target.value;
-
                         formik.setFieldValue("department_id", departmentId);
                         formik.setFieldValue("designation_id", "");
+                        formik.setFieldTouched("department_id", true, false);
+                        formik.setFieldTouched("designation_id", false, false);
                       }}
+                      onBlur={formik.handleBlur}
                     >
                       <option value="">Select Department</option>
 
                       {departments.map((item) => (
-                        <option key={item.id} value={item.id}>
+                        <option key={item.id} value={String(item.id)}>
                           {item.name || `Department #${item.id}`}
                         </option>
                       ))}
@@ -761,7 +790,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </option>
 
                       {designation.map((item) => (
-                        <option key={item.id} value={item.id}>
+                        <option key={item.id} value={String(item.id)}>
                           {item.name || `Designation #${item.id}`}
                         </option>
                       ))}
@@ -1182,7 +1211,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                   <Button
                     type="button"
                     variant="sky"
-                    onClick={formik.handleSubmit}
+                    onClick={handleFinalSubmit}
                   >
                     {" "}
                     <CheckCircleIcon className="w-5 h-5 inline mr-1" />

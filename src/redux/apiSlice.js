@@ -2256,7 +2256,7 @@ export const api = createApi({
         method: "PATCH",
         data: body,
       }),
-      invalidatesTags: ["Ambulances"],
+      invalidatesTags: ["Ambulances", "AmbulanceServices"],
     }),
     deleteAmbulance: build.mutation({
       query: (id) => ({
@@ -2289,7 +2289,7 @@ export const api = createApi({
       query: ({ id, ...body }) => ({
         url: `/ambulance-services/${id}`,
         method: "PATCH",
-        body,
+        data: body,
       }),
       invalidatesTags: ["AmbulanceServices", "Ambulances"],
     }),

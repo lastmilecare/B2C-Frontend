@@ -18,8 +18,12 @@ const PatientTable = ({
 
   onEdit,
   onDelete,
+  onStatus,
   onPrint,
   onPrintCS,
+  actionButtons: customActionButtons,
+  statusOptions = [],
+  getRowStatus,
   enableAdd = false,
   addButtonText = "Add",
   onAdd = () => {},
@@ -31,15 +35,18 @@ const PatientTable = ({
   addBulkUploadFormatButtonText = "Bulk Upload Format",
   onAddBulkUploadFormat = () => {},
   allowStaffEdit = false,
+  responsive = true,
 }) => {
   const role = cookie.get("role");
   const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
   const canStaffEdit = allowStaffEdit && role === "STAFF";
-  const actionButtons = isAdmin
-    ? ["edit", "delete"]
-    : canStaffEdit
-      ? ["edit"]
-      : [];
+  const actionButtons =
+    customActionButtons ??
+    (isAdmin
+      ? ["edit", "delete"]
+      : canStaffEdit
+        ? ["edit"]
+        : []);
   const enableActions = actionButtons.length > 0;
 
   return (
@@ -58,6 +65,9 @@ const PatientTable = ({
         actionButtons={actionButtons}
         onEdit={onEdit}
         onDelete={onDelete}
+        onStatus={onStatus}
+        statusOptions={statusOptions}
+        getRowStatus={getRowStatus}
         onPrint={onPrint}
         onPrintCS={onPrintCS}
         enableAdd={enableAdd}
@@ -70,6 +80,7 @@ const PatientTable = ({
         addBulkUploadFormatButtonText={addBulkUploadFormatButtonText}
         onAddBulkUploadFormat={onAddBulkUploadFormat}
         allowStaffActions={allowStaffEdit}
+        responsive={responsive}
       />
     </div>
   );
