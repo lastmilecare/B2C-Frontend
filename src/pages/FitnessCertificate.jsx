@@ -73,7 +73,7 @@ const validateOptionalNumber = (value, min, max, label) => {
 const initialValues = {
   project_name: "",
   certificate_number: "",
-  doctor_id: "",
+  doctor_id: 0,
   doctor_name: "",
   workman_name: "",
   trade: "",
@@ -268,6 +268,7 @@ const FitnessCertificate = () => {
 
   const certificatePreviewData = {
     ...formik.values,
+    doctor_id:Number(formik.values.doctor_id),
     project_name: formik.values.project_name || orgProfile.display_name || "",
     certificate_number: formik.values.certificate_number || "PREVIEW",
     doctor_name: resolveDoctorName(formik.values.doctor_id, formik.values.doctor_name),
