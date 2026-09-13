@@ -43,6 +43,9 @@ const CommonList = ({
   addBulkUploadFormatButtonText = "Add Bulk Upload Format",
   onAddBulkUploadFormat = () => {},
   allowStaffActions = false,
+  statusOptions = [],
+  getRowStatus,
+  responsive = true,
 }) => {
   const [tempFilters, setTempFilters] = useState({});
   const [openMenuRow, setOpenMenuRow] = useState(null);
@@ -96,8 +99,16 @@ const CommonList = ({
       style: {
         fontSize: "11px",
         color: "#334155",
-        minHeight: "32px",
+        minHeight: "48px",
+        alignItems: "center",
         "&:hover": { backgroundColor: "#e0f2fe" },
+      },
+    },
+    cells: {
+      style: {
+        paddingTop: "6px",
+        paddingBottom: "6px",
+        alignItems: "center",
       },
     },
     pagination: {
@@ -156,7 +167,9 @@ const CommonList = ({
       ...visibleColumns,
       {
         name: "Actions",
-        width: "70px",
+        width: "80px",
+        minWidth: "80px",
+        wrap: false,
         center: true,
         ignoreRowClick: true,
 
@@ -167,6 +180,8 @@ const CommonList = ({
             buttonConfig={buttonConfig}
             openMenuRow={openMenuRow}
             setOpenMenuRow={setOpenMenuRow}
+            statusOptions={statusOptions}
+            getRowStatus={getRowStatus}
           />
         ),
       },
@@ -180,8 +195,11 @@ const CommonList = ({
     onView,
     onPrint,
     onPrintCS,
+    onStatus,
     openMenuRow,
     allowStaffActions,
+    statusOptions,
+    getRowStatus,
   ]);
 
   return (
@@ -338,7 +356,7 @@ const CommonList = ({
         highlightOnHover
         pointerOnHover
         customStyles={customStyles}
-        responsive
+        responsive={responsive}
         dense
       />
     </div>
@@ -353,8 +371,11 @@ const ActionMenu = ({
   buttonConfig,
   openMenuRow,
   setOpenMenuRow,
+  statusOptions = [],
+  getRowStatus,
 }) => {
   const isOpen = openMenuRow === row;
+  const currentStatus = getRowStatus ? getRowStatus(row) : row.status;
   const [menuStyle, setMenuStyle] = useState({});
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
@@ -422,6 +443,37 @@ const ActionMenu = ({
       {actionButtons.map((btnKey) => {
         const btn = buttonConfig[btnKey];
         if (!btn) return null;
+
+        if (btnKey === "status" && statusOptions.length > 0) {
+          return (
+            <div key={btnKey} className="border-t border-gray-100 pt-1 mt-1">
+              <p className="px-2 py-0.5 text-[10px] font-semibold uppercase text-gray-400">
+                {btn.label}
+              </p>
+              {statusOptions.map((option) => {
+                const isCurrent = currentStatus === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isCurrent) btn.handler(row, option.value);
+                      setOpenMenuRow(null);
+                    }}
+                    className={`block w-full text-left px-2 py-1 text-xs rounded ${
+                      isCurrent
+                        ? "bg-sky-100 text-sky-700 font-semibold"
+                        : "hover:bg-sky-50 text-gray-700"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          );
+        }
+
         return (
           <button
             key={btnKey}
