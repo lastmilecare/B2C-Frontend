@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import FitnessCertificate from "./FitnessCertificate";
 import FitnessCertificateList from "./FitnessCertificateList";
 import { useLocation, useParams } from "react-router-dom";
+import { useGetOrgProfilesQuery } from "../redux/apiSlice";
+import { cookie } from "../utils/cookie";
 
 import {
   ClipboardDocumentIcon,
@@ -13,6 +15,37 @@ import {
 const FitnessCertificatePage = () => {
   const location = useLocation();
   const { id } = useParams();
+  const center_id = cookie.get("center_id");
+  const tenant_id = cookie.get("tenantId");
+
+  const orgFilters = useMemo(
+    () => ({
+      page: 1,
+      limit: 10,
+      tenant_id,
+      center_id,
+    }),
+    [tenant_id, center_id],
+  );
+
+  const { data: organisationData, isLoading: orgProfileLoading } =
+    useGetOrgProfilesQuery(orgFilters, { skip: !tenant_id });
+
+  const centerProfiles = organisationData?.data || [];
+  const needsTenantFallback =
+    !orgProfileLoading && tenant_id && centerProfiles.length === 0;
+
+  const { data: tenantOrgData } = useGetOrgProfilesQuery(
+    { page: 1, limit: 10, tenant_id },
+    { skip: !needsTenantFallback },
+  );
+
+  const orgProfile = useMemo(() => {
+    const profiles = centerProfiles.length
+      ? centerProfiles
+      : tenantOrgData?.data || [];
+    return profiles[0] || {};
+  }, [centerProfiles, tenantOrgData]);
 
   const [activeTab, setActiveTab] = useState("form");
 
@@ -82,7 +115,10 @@ const FitnessCertificatePage = () => {
       </div>
 
       {activeTab === "form" ? (
-        <FitnessCertificate />
+        <FitnessCertificate
+          orgProfile={orgProfile}
+          orgProfileLoading={orgProfileLoading}
+        />
       ) : (
         <FitnessCertificateList />
       )}
