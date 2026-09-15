@@ -36,18 +36,54 @@ const PatientTable = ({
   onAddBulkUploadFormat = () => {},
   allowStaffEdit = false,
   responsive = true,
+  onPrint,
+  onPrintCS,
+  enableAdd = false,
+  addButtonText = "Add",
+  onAdd = () => { },
+  allowStaffEdit = false,
 }) => {
   const role = cookie.get("role");
   const isAdmin = cookie.get("isAdmin") === "true" || role === "LMC_ADMIN";
   const canStaffEdit = allowStaffEdit && role === "STAFF";
-  const actionButtons =
-    customActionButtons ??
-    (isAdmin
-      ? ["edit", "delete"]
-      : canStaffEdit
-        ? ["edit"]
-        : []);
+  const actionButtons = isAdmin
+    ? ["edit", "delete"]
+    : canStaffEdit
+      ? ["edit"]
+      : [];
   const enableActions = actionButtons.length > 0;
+
+  return (
+
+    <div className="bg-white rounded-xl shadow border border-gray-100 p-4">
+
+      <CommonList
+        title={title}
+        columns={columns}
+        data={data}
+        totalRows={totalRows}
+        currentPage={currentPage}
+        perPage={perPage}
+        onPageChange={onPageChange}
+        onPerPageChange={onPerPageChange}
+        isLoading={isLoading}
+
+        enableActions={enableActions}
+        actionButtons={actionButtons}
+
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onPrint={onPrint}
+        onPrintCS={onPrintCS}
+        enableAdd={enableAdd}
+        addButtonText={addButtonText}
+        onAdd={onAdd}
+        allowStaffActions={allowStaffEdit}
+      />
+
+    </div>
+
+  );
 
   return (
     <div className="bg-white rounded-xl shadow border border-gray-100 p-4">
@@ -87,3 +123,4 @@ const PatientTable = ({
 };
 
 export default PatientTable;
+

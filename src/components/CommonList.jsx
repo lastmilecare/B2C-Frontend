@@ -46,6 +46,7 @@ const CommonList = ({
   statusOptions = [],
   getRowStatus,
   responsive = true,
+  allowStaffActions = false,
 }) => {
   const [tempFilters, setTempFilters] = useState({});
   const [openMenuRow, setOpenMenuRow] = useState(null);
@@ -505,3 +506,4 @@ const ActionMenu = ({
     </>
   );
 };
+
