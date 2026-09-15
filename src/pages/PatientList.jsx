@@ -327,6 +327,7 @@ const PatientListCopy = () => {
       />
 
       <PatientTable
+        allowStaffEdit
         title="Patient List"
         data={patients}
         columns={columns}
