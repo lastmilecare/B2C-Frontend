@@ -400,7 +400,7 @@ export const Dashboard = () => {
     labels: chiefComplaints.labels,
     datasets: [
       {
-        data: chiefComplaints.values,
+        data: chiefComplaints.percentages,
         backgroundColor: complaintColors.map((c) => c + "dd"),
         borderColor: "#fff",
         borderWidth: 2,
