@@ -211,7 +211,7 @@ export const Dashboard = () => {
   const tenantId = cookie.get("tenantId") || "N/A";
   const tenantName = tenantId == 1 ? "Honda" : "M3M";
   const opdChart = {
-    labels: data.labels,
+    labels: careFlow.labels,
     datasets: [
       {
         label: "New patients",
@@ -244,7 +244,7 @@ export const Dashboard = () => {
   };
 
   const workersChart = {
-    labels: data.labels,
+    labels: careFlow.labels,
     datasets: [
       {
         label: "Workers visited",
@@ -259,7 +259,7 @@ export const Dashboard = () => {
   };
 
   const careFlowChart = {
-    labels: data.labels,
+    labels: careFlow.labels,
     datasets: [
       {
         label: "Registration",

@@ -14,7 +14,6 @@ import {
   useCreateFitnessMutation,
   useUpdateFitnessMutation,
   useGetFitnessByIdQuery,
-  useGetOrgProfilesQuery,
   useGetComboQuery,
   usePreviewFitnessCertificatePdfMutation,
 } from "../redux/apiSlice";
@@ -22,7 +21,6 @@ import { healthAlerts } from "../utils/healthSwal";
 import { getApiErrorMessage, downloadBlob } from "../utils/helper";
 import { Input, Select, Button } from "../components/UIComponents";
 import { useNavigate, useParams } from "react-router-dom";
-import { cookie } from "../utils/cookie";
 
 const STEPS = [
   { id: 1, label: "Workman Details", icon: UserIcon },
@@ -143,27 +141,22 @@ const PreviewItem = ({ label, value }) => (
   </p>
 );
 
-const FitnessCertificate = () => {
+const FitnessCertificate = ({
+  orgProfile = {},
+  orgProfileLoading = false,
+}) => {
   const [activeStep, setActiveStep] = useState(1);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
-  const tenant_id = cookie.get("tenantId");
-  const center_id = cookie.get("center_id");
 
   const [createFitness] = useCreateFitnessMutation();
   const [updateFitness] = useUpdateFitnessMutation();
   const [previewPdf] = usePreviewFitnessCertificatePdfMutation();
   const { data: editData } = useGetFitnessByIdQuery(id, { skip: !id });
-  const { data: organisationData } = useGetOrgProfilesQuery({
-    page: 1,
-    limit: 10,
-    tenant_id,
-    center_id,
-  });
   const { data: doctors = [] } = useGetComboQuery("doctor");
 
-  const orgProfile = organisationData?.data?.[0] || {};
+  const projectNameFromOrg = orgProfile?.display_name || "";
 
   const resolveDoctorName = (doctorId, fallbackName = "") => {
     if (!doctorId) return fallbackName || "";
@@ -179,7 +172,7 @@ const FitnessCertificate = () => {
         const doctorName = resolveDoctorName(values.doctor_id, values.doctor_name);
         const payload = {
           ...values,
-          project_name: values.project_name || orgProfile.display_name || "",
+          project_name: values.project_name || projectNameFromOrg || "",
           doctor_id: values.doctor_id ? Number(values.doctor_id) : null,
           doctor_name: doctorName,
           height: values.height?.toString() || "",
@@ -204,17 +197,16 @@ const FitnessCertificate = () => {
   });
 
   useEffect(() => {
-    if (orgProfile.display_name && !formik.values.project_name) {
-      formik.setFieldValue("project_name", orgProfile.display_name);
-    }
-  }, [orgProfile.display_name]);
+    if (!projectNameFromOrg || id) return;
+    formik.setFieldValue("project_name", projectNameFromOrg);
+  }, [projectNameFromOrg, id]);
 
   useEffect(() => {
     if (!editData) return;
 
     formik.setValues({
       ...initialValues,
-      project_name: editData.project_name || orgProfile.display_name || "",
+      project_name: editData.project_name || projectNameFromOrg || "",
       certificate_number: editData.certificate_number || "",
       doctor_id: editData.doctor_id || "",
       doctor_name: editData.doctor_name || "",
@@ -264,12 +256,15 @@ const FitnessCertificate = () => {
       welder_respiratory_diseases: toTextField(editData.welder_respiratory_diseases),
       welder_chest_xray: editData.welder_chest_xray || "",
     });
-  }, [editData, orgProfile.display_name]);
+  }, [editData, projectNameFromOrg]);
+
+  const resolvedProjectName =
+    formik.values.project_name || projectNameFromOrg || "";
 
   const certificatePreviewData = {
     ...formik.values,
-    doctor_id:Number(formik.values.doctor_id),
-    project_name: formik.values.project_name || orgProfile.display_name || "",
+    doctor_id: Number(formik.values.doctor_id),
+    project_name: resolvedProjectName,
     certificate_number: formik.values.certificate_number || "PREVIEW",
     doctor_name: resolveDoctorName(formik.values.doctor_id, formik.values.doctor_name),
     height: formik.values.height?.toString() || "",
@@ -567,6 +562,13 @@ const FitnessCertificate = () => {
                 </div>
 
                 <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-6">
+                  <PreviewSection title="Project Details">
+                    <PreviewItem
+                      label="Name of the Project"
+                      value={orgProfileLoading ? "Loading..." : resolvedProjectName}
+                    />
+                  </PreviewSection>
+
                   <PreviewSection title="Workman Details">
                     <PreviewItem label="Name of the Workman" value={formik.values.workman_name} />
                     <PreviewItem label="Trade of the Workman" value={formik.values.trade} />
