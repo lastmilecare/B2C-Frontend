@@ -153,8 +153,14 @@ const FitnessCertificate = ({
   const [createFitness] = useCreateFitnessMutation();
   const [updateFitness] = useUpdateFitnessMutation();
   const [previewPdf] = usePreviewFitnessCertificatePdfMutation();
-  const { data: editData } = useGetFitnessByIdQuery(id, { skip: !id });
+  const { data: editData, refetch } = useGetFitnessByIdQuery(id, { skip: !id });
   const { data: doctors = [] } = useGetComboQuery("doctor");
+
+  useEffect(() => {
+    if (id) {
+      refetch();
+    }
+  }, [id]);
 
   const projectNameFromOrg = orgProfile?.display_name || "";
 

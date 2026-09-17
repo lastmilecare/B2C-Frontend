@@ -19,6 +19,7 @@ import autoTable from "jspdf-autotable";
 import { formatDate, formatTime } from "../utils/helper";
 import { cookie } from "../utils/cookie";
 import * as XLSX from "xlsx-js-style";
+
 const username = cookie.get("username");
 const OpdBillAnalysis = () => {
   const navigate = useNavigate();
@@ -129,6 +130,8 @@ const OpdBillAnalysis = () => {
   } = useGetCollectedByQuery();
   const { data: nursing, isLoading: nursingComboLoading } =
     useGetComboQuery("nursing");
+     const { data: radiology, isLoading: radiologyComboLoading } =
+        useGetComboQuery("radiology");
   const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
 
   const collectedBy = collectedByResponse?.data || [];
@@ -1648,7 +1651,7 @@ const handleExportExcel = () => {
           value: d.name,
         })) || [],
     },
-    {
+     {
       label:
         depCurrentVal === "DOCTORS"
           ? "Consulting Doctor"
@@ -1656,7 +1659,9 @@ const handleExportExcel = () => {
             ? "Nursing"
             : depCurrentVal === "LAB"
               ? "Lab"
-              : "Consultant",
+              : depCurrentVal === "RADIOLOGY"
+                ? "Radiology"
+                : "Consultant",
 
       name: "doctor",
       type: "select",
@@ -1670,7 +1675,9 @@ const handleExportExcel = () => {
                 ? "All Nursing"
                 : depCurrentVal === "LAB"
                   ? "All Lab"
-                  : "Select Department First",
+                  : depCurrentVal === "RADIOLOGY"
+                    ? "All Radiology"
+                    : "Select Department First",
 
           value: "",
         },
@@ -1691,6 +1698,12 @@ const handleExportExcel = () => {
 
         ...(depCurrentVal === "LAB"
           ? (lab || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+        ...(depCurrentVal === "RADIOLOGY"
+          ? (radiology || []).map((d) => ({
               label: d.username,
               value: d.username,
             }))

@@ -123,6 +123,8 @@ const OpdListRevenue = () => {
   } = useGetCollectedByQuery();
   const { data: nursing, isLoading: nursingComboLoading } =
     useGetComboQuery("nursing");
+     const { data: radiology, isLoading: radiologyComboLoading } =
+        useGetComboQuery("radiology");
   const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
 
   const collectedBy = collectedByResponse?.data || [];
@@ -280,7 +282,7 @@ const OpdListRevenue = () => {
           value: d.name,
         })) || [],
     },
-    {
+     {
       label:
         depCurrentVal === "DOCTORS"
           ? "Consulting Doctor"
@@ -288,7 +290,9 @@ const OpdListRevenue = () => {
             ? "Nursing"
             : depCurrentVal === "LAB"
               ? "Lab"
-              : "Consultant",
+              : depCurrentVal === "RADIOLOGY"
+                ? "Radiology"
+                : "Consultant",
 
       name: "doctor",
       type: "select",
@@ -302,7 +306,9 @@ const OpdListRevenue = () => {
                 ? "All Nursing"
                 : depCurrentVal === "LAB"
                   ? "All Lab"
-                  : "Select Department First",
+                  : depCurrentVal === "RADIOLOGY"
+                    ? "All Radiology"
+                    : "Select Department First",
 
           value: "",
         },
@@ -323,6 +329,12 @@ const OpdListRevenue = () => {
 
         ...(depCurrentVal === "LAB"
           ? (lab || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+        ...(depCurrentVal === "RADIOLOGY"
+          ? (radiology || []).map((d) => ({
               label: d.username,
               value: d.username,
             }))
