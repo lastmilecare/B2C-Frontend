@@ -134,13 +134,15 @@ const OpdOhcForm = () => {
   const { data: nursing, isLoading: nursingComboLoading } =
     useGetComboQuery("nursing");
   const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
-  const { data: radiology, isLoading: radiologyComboLoading } = useGetComboQuery("radiology");
+  const { data: radiology, isLoading: radiologyComboLoading } =
+    useGetComboQuery("radiology");
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
   const { data: opdBillData, refetch } = useGetOpdBillByIdQuery(billNo, {
     skip: !billNo,
   });
+  const [payModeFocused, setPayModeFocused] = useState(false);
   const populatedUhidRef = useRef("");
 
   const [printRow, setPrintRow] = useState(null);
@@ -864,7 +866,7 @@ const OpdOhcForm = () => {
                             {d.username}
                           </option>
                         ))}
-                        {depCurrentId === 13 &&
+                      {depCurrentId === 13 &&
                         radiology?.map((d) => (
                           <option key={d.id} value={d.id}>
                             {d.username}
@@ -1093,6 +1095,11 @@ const OpdOhcForm = () => {
                         onChange={(e) => {
                           const mode = e.target.value;
                           formik.setFieldValue("PayMode", mode);
+                          setPayModeFocused(true);
+
+                          setTimeout(() => {
+                            setPayModeFocused(false);
+                          }, 3000);
 
                           const currentPaid = formik.values.PaidAmount;
                           if (mode === "1") {
@@ -1118,14 +1125,24 @@ const OpdOhcForm = () => {
                         ))}
                       </Select>
                       {formik.values.PayMode && (
-                        <p className="text-red-600 text-xs mt-1 font-medium">
-                          Note: You have selected{" "}
-                          {Picaso_Paymode_Options.find(
-                            (mode) =>
-                              String(mode.id) === String(formik.values.PayMode),
-                          )?.name}{" "}
-                          as payment mode.
-                        </p>
+                        <div
+                          className={`mt-2 rounded-md border px-3 py-2 text-xs font-medium transition-all duration-300 ${
+                            payModeFocused
+                              ? "border-red-500 bg-red-50 text-red-700 ring-2 ring-red-200"
+                              : "border-gray-200 bg-gray-50 text-gray-600"
+                          }`}
+                        >
+                          ⚠️ Please verify payment mode:{" "}
+                          <span className="font-bold">
+                            {
+                              Picaso_Paymode_Options.find(
+                                (mode) =>
+                                  String(mode.id) ===
+                                  String(formik.values.PayMode),
+                              )?.name
+                            }
+                          </span>
+                        </div>
                       )}
                     </div>
 

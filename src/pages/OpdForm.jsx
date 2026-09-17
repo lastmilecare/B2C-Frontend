@@ -134,7 +134,8 @@ const OpdFormCopy = () => {
   const { data: nursing, isLoading: nursingComboLoading } =
     useGetComboQuery("nursing");
   const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
-  const { data: radiology, isLoading: radiologyComboLoading } = useGetComboQuery("radiology");
+  const { data: radiology, isLoading: radiologyComboLoading } =
+    useGetComboQuery("radiology");
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
@@ -142,7 +143,7 @@ const OpdFormCopy = () => {
     skip: !billNo,
   });
   const populatedUhidRef = useRef("");
-
+const [payModeFocused, setPayModeFocused] = useState(false);
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
   useEffect(() => {
@@ -230,7 +231,7 @@ const OpdFormCopy = () => {
         (d) =>
           Number(d.id) === Number(editData.DepartmentID) ||
           d.name?.trim().toLowerCase() ===
-          editData.department_name?.trim().toLowerCase(),
+            editData.department_name?.trim().toLowerCase(),
       );
       if (deptObj) {
         setDepCurrentId(Number(deptObj.id));
@@ -255,21 +256,21 @@ const OpdFormCopy = () => {
           (d) =>
             Number(d.id) === selectedDoctorId ||
             (d.name || d.doctor_name)?.trim().toLowerCase() ===
-            editData.doctor_name?.trim().toLowerCase(),
+              editData.doctor_name?.trim().toLowerCase(),
         );
       } else if (departmentId === 3) {
         doctorObj = nursing?.find(
           (d) =>
             Number(d.id) === selectedDoctorId ||
             d.username?.trim().toLowerCase() ===
-            editData.doctor_name?.trim().toLowerCase(),
+              editData.doctor_name?.trim().toLowerCase(),
         );
       } else if (departmentId === 6) {
         doctorObj = lab?.find(
           (d) =>
             Number(d.id) === selectedDoctorId ||
             d.username?.trim().toLowerCase() ===
-            editData.doctor_name?.trim().toLowerCase(),
+              editData.doctor_name?.trim().toLowerCase(),
         );
       }
       // const referObj =
@@ -288,9 +289,9 @@ const OpdFormCopy = () => {
       );
       const complaintData = editData.complaint
         ? editData.complaint.split(",").map((c, index) => ({
-          id: index + 1,
-          name: c.trim(),
-        }))
+            id: index + 1,
+            name: c.trim(),
+          }))
         : [];
 
       formik.setValues({
@@ -607,10 +608,10 @@ const OpdFormCopy = () => {
       return;
     }
     if (formik.values.PayMode === "5") {
-  formik.setFieldValue("PaidAmount", 0);
-  formik.setFieldValue("CashAmount", 0);
-  formik.setFieldValue("CardAmount", 0);
-}
+      formik.setFieldValue("PaidAmount", 0);
+      formik.setFieldValue("CashAmount", 0);
+      formik.setFieldValue("CardAmount", 0);
+    }
     const total = Number(formik.values.TotalAmount) || 0;
     const paid = Number(formik.values.PaidAmount) || 0;
     const credit = Number(formik.values.CreditBalance) || 0;
@@ -674,8 +675,9 @@ const OpdFormCopy = () => {
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                  }`}
+                className={`h-2 w-12 rounded-full ${
+                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                }`}
               />
             ))}
           </div>
@@ -694,10 +696,11 @@ const OpdFormCopy = () => {
                 disabled
                 onClick={() => setActiveStep(step.id)}
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold 
-                                      ${activeStep === step.id
-                    ? "bg-white text-sky-600 shadow"
-                    : "text-gray-400"
-                  }`}
+                                      ${
+                                        activeStep === step.id
+                                          ? "bg-white text-sky-600 shadow"
+                                          : "text-gray-400"
+                                      }`}
               >
                 <step.icon className="w-4 h-4" />
 
@@ -1137,6 +1140,11 @@ const OpdFormCopy = () => {
                         onChange={(e) => {
                           const mode = e.target.value;
                           formik.setFieldValue("PayMode", mode);
+                          setPayModeFocused(true);
+
+                          setTimeout(() => {
+                            setPayModeFocused(false);
+                          }, 3000);
                           if (mode === "5") {
                             formik.setFieldValue("PaidAmount", 0);
                             formik.setFieldValue("CashAmount", 0);
@@ -1167,14 +1175,24 @@ const OpdFormCopy = () => {
                         ))}
                       </Select>
                       {formik.values.PayMode && (
-                        <p className="text-red-600 text-xs mt-1 font-medium">
-                          Note: You have selected{" "}
-                          {Picaso_Paymode_Options.find(
-                            (mode) =>
-                              String(mode.id) === String(formik.values.PayMode),
-                          )?.name}{" "}
-                          as payment mode.
-                        </p>
+                        <div
+                          className={`mt-2 rounded-md border px-3 py-2 text-xs font-medium transition-all duration-300 ${
+                            payModeFocused
+                              ? "border-red-500 bg-red-50 text-red-700 ring-2 ring-red-200"
+                              : "border-gray-200 bg-gray-50 text-gray-600"
+                          }`}
+                        >
+                          ⚠️ Please verify payment mode:{" "}
+                          <span className="font-bold">
+                            {
+                              Picaso_Paymode_Options.find(
+                                (mode) =>
+                                  String(mode.id) ===
+                                  String(formik.values.PayMode),
+                              )?.name
+                            }
+                          </span>
+                        </div>
                       )}
                     </div>
 
@@ -1286,17 +1304,17 @@ const OpdFormCopy = () => {
                           </b>{" "}
                           {depCurrentId === 9
                             ? doctors?.find((d) => d.id == formik.values.Doctor)
-                              ?.name ||
-                            doctors?.find((d) => d.id == formik.values.Doctor)
-                              ?.doctor_name ||
-                            "-"
+                                ?.name ||
+                              doctors?.find((d) => d.id == formik.values.Doctor)
+                                ?.doctor_name ||
+                              "-"
                             : depCurrentId === 3
                               ? nursing?.find(
-                                (d) => d.id == formik.values.Doctor,
-                              )?.username || "-"
+                                  (d) => d.id == formik.values.Doctor,
+                                )?.username || "-"
                               : depCurrentId === 6
                                 ? lab?.find((d) => d.id == formik.values.Doctor)
-                                  ?.username || "-"
+                                    ?.username || "-"
                                 : "-"}
                         </p>
 
@@ -1305,7 +1323,7 @@ const OpdFormCopy = () => {
                             {referralConfig[tenantId]?.label || "Referral"}:
                           </b>{" "}
                           {referralConfig[tenantId]?.id ==
-                            Number(formik.values.ReferBy)
+                          Number(formik.values.ReferBy)
                             ? referralConfig[tenantId]?.option
                             : "-"}
                         </p>
