@@ -1128,43 +1128,55 @@ const OpdFormCopy = () => {
                       label="Due Amount"
                     />
 
-                    <Select
-                      {...formik.getFieldProps("PayMode")}
-                      label="Payment Mode"
-                      required
-                      error={formik.touched.PayMode && formik.errors.PayMode}
-                      onChange={(e) => {
-                        const mode = e.target.value;
-                        formik.setFieldValue("PayMode", mode);
-                        if (mode === "5") {
-                          formik.setFieldValue("PaidAmount", 0);
-                          formik.setFieldValue("CashAmount", 0);
-                          formik.setFieldValue("CardAmount", 0);
-                          return;
-                        }
-                        const currentPaid = formik.values.PaidAmount;
-                        if (mode === "1") {
-                          // Cash
-                          formik.setFieldValue("CashAmount", currentPaid);
-                          formik.setFieldValue("CardAmount", "0");
-                        } else if (mode === "3") {
-                          // Cash/Online
-                          formik.setFieldValue("CashAmount", "");
-                          formik.setFieldValue("CardAmount", "");
-                        } else {
-                          // Card / UPI
-                          formik.setFieldValue("CardAmount", currentPaid);
-                          formik.setFieldValue("CashAmount", "0");
-                        }
-                      }}
-                    >
-                      <option value="">Select Pay Mode</option>
-                      {Picaso_Paymode_Options.map((mode) => (
-                        <option key={mode.id} value={mode.id}>
-                          {mode.name}
-                        </option>
-                      ))}
-                    </Select>
+                    <div className="w-full">
+                      <Select
+                        {...formik.getFieldProps("PayMode")}
+                        label="Payment Mode"
+                        required
+                        error={formik.touched.PayMode && formik.errors.PayMode}
+                        onChange={(e) => {
+                          const mode = e.target.value;
+                          formik.setFieldValue("PayMode", mode);
+                          if (mode === "5") {
+                            formik.setFieldValue("PaidAmount", 0);
+                            formik.setFieldValue("CashAmount", 0);
+                            formik.setFieldValue("CardAmount", 0);
+                            return;
+                          }
+                          const currentPaid = formik.values.PaidAmount;
+                          if (mode === "1") {
+                            // Cash
+                            formik.setFieldValue("CashAmount", currentPaid);
+                            formik.setFieldValue("CardAmount", "0");
+                          } else if (mode === "3") {
+                            // Cash/Online
+                            formik.setFieldValue("CashAmount", "");
+                            formik.setFieldValue("CardAmount", "");
+                          } else {
+                            // Card / UPI
+                            formik.setFieldValue("CardAmount", currentPaid);
+                            formik.setFieldValue("CashAmount", "0");
+                          }
+                        }}
+                      >
+                        <option value="">Select Pay Mode</option>
+                        {Picaso_Paymode_Options.map((mode) => (
+                          <option key={mode.id} value={mode.id}>
+                            {mode.name}
+                          </option>
+                        ))}
+                      </Select>
+                      {formik.values.PayMode && (
+                        <p className="text-red-600 text-xs mt-1 font-medium">
+                          Note: You have selected{" "}
+                          {Picaso_Paymode_Options.find(
+                            (mode) =>
+                              String(mode.id) === String(formik.values.PayMode),
+                          )?.name}{" "}
+                          as payment mode.
+                        </p>
+                      )}
+                    </div>
 
                     <Input
                       {...formik.getFieldProps("CashAmount")}
