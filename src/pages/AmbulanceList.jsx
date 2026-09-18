@@ -10,7 +10,7 @@ import {
   useSearchAmbulanceQuery,
 } from "../redux/apiSlice";
 import { healthAlert } from "../utils/healthSwal";
-import { formatDate, formatTime } from "../utils/helper";
+import { formatDate, formatTime, getApiErrorMessage } from "../utils/helper";
 
 const AmbulanceList = () => {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const AmbulanceList = () => {
     skip: debouncedSearch.length < 2,
   });
 
-  const { data, isLoading } = useGetAmbulancesQuery({
+  const { data, isLoading, refetch } = useGetAmbulancesQuery({
     page,
     limit,
     ...filters,
@@ -104,20 +104,25 @@ const AmbulanceList = () => {
   };
 
   const handleDelete = async (row) => {
-    if (!window.confirm(`Delete ambulance ${row.unique_name}?`)) return;
+    const confirmed = await healthAlert({
+      title: "Delete ambulance?",
+      text: `Delete ambulance ${row.unique_name || row.company_name}?`,
+      type: "confirm",
+    });
+
+    if (!confirmed?.isConfirmed) return;
 
     try {
       await deleteAmbulance(row.id).unwrap();
+      await refetch();
       healthAlert({
         title: "Success",
         text: "Ambulance deleted successfully",
-        icon: "success",
       });
     } catch (err) {
       healthAlert({
         title: "Error",
-        text: err?.data?.message || "Delete failed",
-        icon: "error",
+        text: getApiErrorMessage(err, "Delete failed"),
       });
     }
   };

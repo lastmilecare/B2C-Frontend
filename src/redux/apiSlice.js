@@ -34,6 +34,8 @@ export const api = createApi({
     "Patient",
     "Prescription",
     "PackageManagement",
+    "Ambulances",
+    "AmbulanceServices",
   ],
   endpoints: (build) => ({
     login: build.mutation({
@@ -2262,9 +2264,8 @@ export const api = createApi({
       query: (id) => ({
         url: `/ambulances/${id}`,
         method: "DELETE",
-        data: {},
       }),
-      invalidatesTags: ["Ambulances"],
+      invalidatesTags: ["Ambulances", "AmbulanceServices"],
     }),
     getAmbulanceServices: build.query({
       query: (params) => ({
