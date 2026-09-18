@@ -72,6 +72,7 @@ const FitnessCertificateList = () => {
     );
   });
 
+  
   const onDownloadPdf = async (row) => {
     try {
       setDownloadingId(row.id);
