@@ -71,6 +71,8 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
         : "text-gray-500 hover:text-emerald-600 hover:bg-gray-50"
     }`;
 
+  const isOhcTenant = tenantType === "ohc";
+
   // ── Reusable collapsible group ───────────────────────────────────────────
   const MenuGroup = ({ menuKey, icon: Icon, label, children }) => (
     <div className="space-y-1">
@@ -99,6 +101,59 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
       </AnimatePresence>
     </div>
   );
+
+  const inventoryMenu =
+    can("read:sales_record") && (
+      <MenuGroup
+        menuKey="inventory"
+        icon={ArchiveBoxIcon}
+        label="Inventory"
+      >
+        {can("create:purchased_entry") && (
+          <NavLink
+            to="/purchased-entry"
+            className={subNavItem}
+            onClick={() => setIsOpen(false)}
+          >
+            Purchase Entry
+          </NavLink>
+        )}
+        {can("create:billing") && (
+          <NavLink
+            to="/billing"
+            className={subNavItem}
+            onClick={() => setIsOpen(false)}
+          >
+            Medicine Billing
+          </NavLink>
+        )}
+        {can("read:expiry_items") && (
+          <NavLink
+            to="/expiry-items"
+            className={subNavItem}
+            onClick={() => setIsOpen(false)}
+          >
+            Expiry Items
+          </NavLink>
+        )}
+        {can("create:camp_billing") && (
+          <NavLink
+            to="/camp-billing"
+            className={subNavItem}
+            onClick={() => setIsOpen(false)}
+          >
+            Camp Billing
+          </NavLink>
+        )}
+        <NavLink
+          to="/sales-record"
+          className={subNavItem}
+          onClick={() => setIsOpen(false)}
+        >
+          Sales Record
+        </NavLink>
+      </MenuGroup>
+    );
 
   return (
     <motion.aside
@@ -239,59 +294,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
           </MenuGroup>
         )}
 
-        {/* ── Inventory / Pharmacy ──────────────────────────── */}
-        {can("read:sales_record") && (
-          <MenuGroup
-            menuKey="inventory"
-            icon={ArchiveBoxIcon}
-            label="Inventory"
-          >
-            {can("create:purchased_entry") && (
-              <NavLink
-                to="/purchased-entry"
-                className={subNavItem}
-                onClick={() => setIsOpen(false)}
-              >
-                Purchase Entry
-              </NavLink>
-            )}
-            {can("create:billing") && (
-              <NavLink
-                to="/billing"
-                className={subNavItem}
-                onClick={() => setIsOpen(false)}
-              >
-                Medicine Billing
-              </NavLink>
-            )}
-            {can("read:expiry_items") && (
-              <NavLink
-                to="/expiry-items"
-                className={subNavItem}
-                onClick={() => setIsOpen(false)}
-              >
-                Expiry Items
-              </NavLink>
-            )}
-            {can("create:camp_billing") && (
-              <NavLink
-                to="/camp-billing"
-                className={subNavItem}
-                onClick={() => setIsOpen(false)}
-              >
-                Camp Billing
-              </NavLink>
-            )}
-
-            <NavLink
-              to="/sales-record"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Sales Record
-            </NavLink>
-          </MenuGroup>
-        )}
+        {!isOhcTenant && inventoryMenu}
         {/* ── Camp Opd ──────────────────────────── */}
         {can("create:camp_opd_form") && (
           <MenuGroup
@@ -695,6 +698,8 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
           </MenuGroup>
         )}
+
+        {isOhcTenant && inventoryMenu}
       </nav>
     </motion.aside>
   );

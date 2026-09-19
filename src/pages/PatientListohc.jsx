@@ -4,6 +4,7 @@ import {
   useSearchUHIDQuery,
   useDownloadBulkTemplateMutation,
   useBulkUploadPatientsMutation,
+  useDeletePatientMutation,
 } from "../redux/apiSlice";
 import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
@@ -39,6 +40,7 @@ const PatientListohc = () => {
 
   const [downloadTemplate] = useDownloadBulkTemplateMutation();
   const [bulkUpload] = useBulkUploadPatientsMutation();
+  const [deletePatient] = useDeletePatientMutation();
   const [filters, setFilters] = useState({});
 
   const { data, isLoading, refetch } = useGetPatientsQuery({
@@ -172,6 +174,23 @@ const PatientListohc = () => {
     { label: "Date to", name: "endDate", type: "date" },
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
+  const handleDelete = async (row) => {
+    try {
+      await deletePatient(row.id).unwrap();
+
+      healthAlert({
+        title: "Success",
+        text: "Patient Deleted Successfully",
+        icon: "success",
+      });
+    } catch (err) {
+      healthAlert({
+        title: "Error",
+        text: err?.data?.message || "Delete failed",
+        icon: "error",
+      });
+    }
+  };
 
   const columns = [
     {
@@ -299,7 +318,7 @@ const PatientListohc = () => {
         onEdit={(row) => {
           navigate(`/PatientRegistrationOhc/${row.id}`);
         }}
-        onDelete={(row) => {}}
+        onDelete={handleDelete}
         enableAdd
         addButtonText="Add"
         onAdd={() =>
