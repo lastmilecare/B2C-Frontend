@@ -12,7 +12,6 @@ const AppLoader = () => {
     Object.values(state.api.mutations || {}).some(m => m?.status === "pending")
   );
 
- 
   const [show, setShow] = useState(false);
 
   useEffect(() => {
