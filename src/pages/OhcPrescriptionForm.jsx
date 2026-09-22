@@ -15,6 +15,7 @@ import useDebounce from "../hooks/useDebounce";
 import {
   useSearchOpdBillNoQuery,
   useGetOpdBillByIdQuery,
+  useGetMediceneListQuery,
   useUpdatePrescriptionMutation,
   useGetComboQuery,
 } from "../redux/apiSlice";
@@ -27,7 +28,7 @@ import { MEDICINE_FREQUENCIES } from "../utils/constants";
 import { useCreatePrescriptionMutation } from "../redux/apiSlice";
 import { formatISO } from "date-fns";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { Input, Select, Button } from "../components/FormControls";
+import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { useSelector } from "react-redux";
 import { cookie } from "../utils/cookie";
 const parseChiefComplaintNames = (value) => {
@@ -92,10 +93,14 @@ const OhcPrescriptionForm = () => {
     setActiveStep((prev) => prev - 1);
   };
   const [billSearch, setBillSearch] = useState("");
+  const [medicineSearch, setMedicineSearch] = useState("");
   const debouncedUhid = useDebounce(billSearch, 500);
+  const debouncedMedicine = useDebounce(medicineSearch, 500);
   const [selectedBill, setSelectedBill] = useState("");
+  const [selectedMedicine, setSelectedMedicine] = useState("");
   const [suggestionsList, setSuggestionsList] = useState([]);
   const [prescriptionList, setPrescriptionList] = useState([]);
+  const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const populatedUhidRef = useRef("");
   const [createPrescription, { isLoading }] = useCreatePrescriptionMutation();
   const { ID: id } = useParams();
@@ -133,6 +138,15 @@ const OhcPrescriptionForm = () => {
     selectedBill ? String(selectedBill) : skipToken,
   );
 
+  const { data: medicineResponse } = useGetMediceneListQuery(
+    { searchTerm: debouncedMedicine || skipToken },
+    { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
+  );
+  const medicineList = React.useMemo(
+    () => medicineResponse?.data || [],
+    [medicineResponse],
+  );
+
   const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedUhid, {
     skip: debouncedUhid.length < 1,
   });
@@ -148,6 +162,25 @@ const OhcPrescriptionForm = () => {
       setSuggestionsList(suggestions);
     }
   }, [suggestions, selectedBill, billSearch]);
+
+  useEffect(() => {
+    if (selectedMedicine) return;
+    if (!debouncedMedicine) {
+      if (medicineSuggestions.length > 0) setMedicineSuggestions([]);
+      return;
+    }
+
+    if (medicineList && medicineList.length > 0) {
+      const currentDataStr = JSON.stringify(medicineList);
+      const existingDataStr = JSON.stringify(medicineSuggestions);
+
+      if (currentDataStr !== existingDataStr) {
+        setMedicineSuggestions(medicineList);
+      }
+    } else if (medicineList.length === 0 && medicineSuggestions.length > 0) {
+      setMedicineSuggestions([]);
+    }
+  }, [medicineList, debouncedMedicine, selectedMedicine]);
 
   const buildPrescriptionPayload = (values, prescriptionList) => {
     // const addedDate = formatISO(new Date());
@@ -472,6 +505,9 @@ const OhcPrescriptionForm = () => {
       preferredtime: "",
       duration: "",
     });
+    setMedicineSearch("");
+    setSelectedMedicine(null);
+    setMedicineSuggestions([]);
   };
   const handleDeletePrescription = (index) => {
     setPrescriptionList((prev) => prev.filter((_, i) => i !== index));
@@ -787,16 +823,56 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <Input
-                    {...formik.getFieldProps("medicine")}
-                    placeholder="Medicine"
-                    disabled={!formik.values.billno}
-                    label={
-                      <span>
-                        Medicine <span className="text-red-500">*</span>
-                      </span>
-                    }
-                  />
+                  <div className="relative">
+                    <label className="text-sm text-gray-600 block mb-1">
+                      Medicine <span className="text-red-500">*</span>
+                    </label>
+
+                    <input
+                      type="text"
+                      className={`${baseInput} 
+                  ${!formik.values.billno ? "bg-sky-50 cursor-not-allowed" : ""}`}
+                      placeholder="Search Medicine"
+                      value={medicineSearch}
+                      disabled={!formik.values.billno}
+                      onChange={(e) => {
+                        setMedicineSearch(e.target.value);
+                        setSelectedMedicine(null);
+                        formik.setFieldValue("medicine", e.target.value);
+                      }}
+                      autoComplete="off"
+                    />
+
+                    {medicineSuggestions.length > 0 && !selectedMedicine && (
+                      <ul className="absolute z-20 bg-white border rounded-md shadow-md w-full max-h-48 overflow-auto">
+                        {medicineSuggestions.map((item) => (
+                          <li
+                            key={item.id}
+                            onClick={() => {
+                              setSelectedMedicine(item);
+                              setMedicineSearch(item.descriptions);
+                              formik.setFieldValue(
+                                "medicine",
+                                item.descriptions,
+                              );
+                              formik.setFieldValue("medicineId", item.id);
+                              formik.setFieldValue(
+                                "typemedicine",
+                                item.itemType?.Descriptions || "",
+                              );
+                              setMedicineSuggestions([]);
+                            }}
+                            className="px-3 py-2 hover:bg-sky-100 cursor-pointer text-sm"
+                          >
+                            {item.descriptions}
+                            <span className="text-xs text-gray-400 ml-2">
+                              ({item.itemType?.Code})
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
 
                   <Input
                     {...formik.getFieldProps("typemedicine")}
@@ -1207,6 +1283,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         duration: "",
                       });
 
+                      setMedicineSearch("");
+                      setSelectedMedicine("");
+                      setMedicineSuggestions([]);
                       setPrescriptionList([]);
                     }
                     if (activeStep === 5) {
@@ -1215,6 +1294,10 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       setBillSearch("");
                       setSelectedBill("");
                       setSuggestionsList([]);
+
+                      setMedicineSearch("");
+                      setSelectedMedicine("");
+                      setMedicineSuggestions([]);
 
                       setPrescriptionList([]);
 
