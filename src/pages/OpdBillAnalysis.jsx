@@ -259,6 +259,7 @@ const OpdBillAnalysis = () => {
       "Pay Mode",
       "Doctor",
       "Service",
+      "Chief Complaint",
       "Referred By",
       "Collected By",
       
@@ -317,6 +318,8 @@ const OpdBillAnalysis = () => {
         .filter(Boolean)
         .join(", ") || "-",
 
+      safeString(row?.complaint, "-"),
+
       safeString(row?.refer_to, "-"),
 
       safeString(row?.added_by, "-"),
@@ -368,6 +371,7 @@ const OpdBillAnalysis = () => {
       25, // Pay Mode
       27, // Doctor
       50, // Service
+      30, // Chief Complaint
       22, // Referred By
       25, // Collected By
       20, // Bill Date
@@ -902,6 +906,7 @@ const handleExportExcel = () => {
     "Pay Mode",
     "Doctor",
     "Service",
+    "Chief Complaint",
     "Referred By",
     "Collected By",
 
@@ -992,6 +997,9 @@ const handleExportExcel = () => {
       .map((item) => item?.ServiceName)
       .filter(Boolean)
       .join(", ") || "-",
+
+    // Chief Complaint
+    safeString(row?.complaint, "-"),
 
     // Referred By
     safeString(row?.refer_to, "-"),
@@ -1164,6 +1172,10 @@ const handleExportExcel = () => {
 
       case "Service":
         width = 30;
+        break;
+
+      case "Chief Complaint":
+        width = 25;
         break;
 
       case "Referred By":

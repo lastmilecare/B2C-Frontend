@@ -47,7 +47,6 @@ const STEP_FIELDS = {
     "contactNumber",
     "CO",
     "gender",
-    "employeeId",
     "occupation",
     "department_id",
     "designation_id",
@@ -231,7 +230,7 @@ const PatientRegistrationOhc = () => {
       localAddressState: Yup.string().required("State is required"),
       occupation: Yup.string().required("Occupation is required"),
       CO: Yup.string().required("Co is required"),
-      employeeId: Yup.string().required("EmployeeId is required"),
+      employeeId: Yup.string(),
       pin: Yup.string()
         .required("Pin Code is required")
         .matches(/^[0-9]{6}$/, "Pin Code must be 6 digits"),
@@ -419,7 +418,7 @@ const PatientRegistrationOhc = () => {
       title: values.title,
       co: values.CO,
       relationship: values.relationship,
-      employeeId: values.employeeId,
+      employeeId: values.employeeId?.trim() || null,
       // ReferredBy: values.ReferredBy || "",
       permanentAddress: values.permanentAddress,
       department_id: values.department_id
@@ -729,7 +728,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     <Input
                       {...formik.getFieldProps("employeeId")}
                       label="Employee Id"
-                      required
                       error={
                         formik.touched.employeeId && formik.errors.employeeId
                       }

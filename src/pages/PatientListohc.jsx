@@ -248,11 +248,22 @@ const PatientListohc = () => {
 
     {
       name: "Age",
-      cell: (row) => (
-        <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-          {row.age} yrs
-        </span>
-      ),
+      center: true,
+      width: "140px",
+      minWidth: "140px",
+      maxWidth: "140px",
+      cell: (row) => {
+        const hasAge =
+          row.iage != null || row.imonth != null || row.idays != null;
+
+        return (
+          <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+            {hasAge
+              ? `${row.iage || 0} y ${row.imonth || 0} m ${row.idays || 0} d`
+              : "N/A"}
+          </span>
+        );
+      },
     },
 
     {

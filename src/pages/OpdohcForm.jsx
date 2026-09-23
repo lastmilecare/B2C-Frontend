@@ -363,6 +363,9 @@ const OpdOhcForm = () => {
   const buildPayload = (values) => {
     const pData = patientData || editData;
     if (!pData || !selectedServices.length) return null;
+    const addedBy = editData
+      ? editData.added_by_id ?? editData.AddedBy ?? opdBillData?.AddedBy ?? userId
+      : userId;
     const finalAmount = selectedServices.reduce(
       (sum, s) =>
         sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
@@ -387,7 +390,7 @@ const OpdOhcForm = () => {
       CardAmount: Number(values.CardAmount || 0),
       PayMode: Number(values.PayMode),
       DueAmount: Number(values.DueAmount || 0),
-      AddedBy: userId,
+      AddedBy: addedBy,
       DepartmentID: values.Department,
       ConsultantDoctorID: Number(values.Doctor),
       DoctorId: Number(values.Doctor),
@@ -417,7 +420,7 @@ const OpdOhcForm = () => {
       Isdiscount: false,
       DiscountBy: 0,
       DoctorID: Number(values.Doctor),
-      AddedBy: userId,
+      AddedBy: addedBy,
       MonthID: currentMonth,
       IsActive: true,
     }));
