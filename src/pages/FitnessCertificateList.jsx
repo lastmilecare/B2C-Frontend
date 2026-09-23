@@ -53,6 +53,7 @@ const FitnessCertificateList = () => {
     id: item.id,
     certNo: item.certificate_number,
     workmanName: item.workman_name,
+    vendorName: item.vendor_name || "-",
     trade: item.trade,
     sex: item.sex,
     createdAt: item.created_at?.split("T")[0],
@@ -109,6 +110,7 @@ const FitnessCertificateList = () => {
   const columns = [
     { name: "Certificate No", selector: (row) => row.certNo },
     { name: "Workman Name", selector: (row) => row.workmanName },
+    { name: "Vendor Name", selector: (row) => row.vendorName },
     { name: "Trade", selector: (row) => row.trade },
     { name: "Sex", selector: (row) => row.sex },
     { name: "Created On", selector: (row) => row.createdAt },
