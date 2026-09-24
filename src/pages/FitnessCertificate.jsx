@@ -73,6 +73,7 @@ const initialValues = {
   certificate_number: "",
   doctor_id: 0,
   doctor_name: "",
+  vendor_id: "",
   workman_name: "",
   trade: "",
   identification_mark_1: "",
@@ -155,6 +156,7 @@ const FitnessCertificate = ({
   const [previewPdf] = usePreviewFitnessCertificatePdfMutation();
   const { data: editData, refetch } = useGetFitnessByIdQuery(id, { skip: !id });
   const { data: doctors = [] } = useGetComboQuery("doctor");
+  const { data: vendors = [] } = useGetComboQuery("ohc-vendor");
 
   useEffect(() => {
     if (id) {
@@ -181,6 +183,7 @@ const FitnessCertificate = ({
           project_name: values.project_name || projectNameFromOrg || "",
           doctor_id: values.doctor_id ? Number(values.doctor_id) : null,
           doctor_name: doctorName,
+          vendor_id: values.vendor_id ? Number(values.vendor_id) : null,
           height: values.height?.toString() || "",
           weight: values.weight?.toString() || "",
           pulse: values.pulse?.toString() || "",
@@ -216,6 +219,7 @@ const FitnessCertificate = ({
       certificate_number: editData.certificate_number || "",
       doctor_id: editData.doctor_id || "",
       doctor_name: editData.doctor_name || "",
+      vendor_id: editData.vendor_id ? String(editData.vendor_id) : "",
       workman_name: editData.workman_name || "",
       trade: editData.trade || "",
       identification_mark_1: editData.identification_mark_1 || "",
@@ -391,6 +395,14 @@ const FitnessCertificate = ({
                     {doctors.map((doctor) => (
                       <option key={doctor.id} value={doctor.id}>
                         {doctor.name || doctor.doctor_name}
+                      </option>
+                    ))}
+                  </Select>
+                  <Select label="Vendor Name" {...formik.getFieldProps("vendor_id")}>
+                    <option value="">Select Vendor</option>
+                    {vendors.map((vendor) => (
+                      <option key={vendor.id} value={vendor.id}>
+                        {vendor.name}
                       </option>
                     ))}
                   </Select>

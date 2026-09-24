@@ -23,6 +23,7 @@ import {
   useUpdatePatientMutation,
   useGetDepartmentListQuery,
   useGetDesignationListQuery,
+  useGetComboQuery,
 } from "../redux/apiSlice";
 import DiseaseSelect from "../components/DiseaseSelect";
 import { useLocationData } from "../services/locationApi";
@@ -108,6 +109,7 @@ const PatientRegistrationOhc = () => {
     },
   );
 
+  const { data: vendors = [] } = useGetComboQuery("ohc-vendor");
   const departmentsData = data?.data || [];
 
   const departments = [...departmentsData].sort((a, b) =>
@@ -216,6 +218,7 @@ const PatientRegistrationOhc = () => {
       permanentAddress: "",
       department_id: "",
       designation_id: "",
+      vendor_id: "",
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
@@ -371,6 +374,10 @@ const PatientRegistrationOhc = () => {
             p.designation_id != null && p.designation_id !== ""
               ? String(p.designation_id)
               : "",
+          vendor_id:
+            p.vendor_id != null && p.vendor_id !== ""
+              ? String(p.vendor_id)
+              : "",
         });
       };
 
@@ -427,6 +434,7 @@ const PatientRegistrationOhc = () => {
       designation_id: values.designation_id
         ? String(values.designation_id)
         : "",
+      vendor_id: values.vendor_id ? Number(values.vendor_id) : null,
     };
 
     if (!isEdit) {
@@ -452,6 +460,7 @@ const PatientRegistrationOhc = () => {
         occupation: "",
         department_id: "",
         designation_id: "",
+        vendor_id: "",
       });
     }
 
@@ -523,6 +532,9 @@ const PatientRegistrationOhc = () => {
 
   const selectedDesignation = designation.find(
     (item) => String(item.id) === String(formik.values.designation_id),
+  );
+  const selectedVendor = vendors.find(
+    (item) => String(item.id) === String(formik.values.vendor_id),
   );
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -732,6 +744,17 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                         formik.touched.employeeId && formik.errors.employeeId
                       }
                     />
+                    <Select
+                      {...formik.getFieldProps("vendor_id")}
+                      label="Vendor Name"
+                    >
+                      <option value="">Select Vendor</option>
+                      {vendors.map((vendor) => (
+                        <option key={vendor.id} value={String(vendor.id)}>
+                          {vendor.name}
+                        </option>
+                      ))}
+                    </Select>
                     <Select
                       {...formik.getFieldProps("occupation")}
                       label="Occupation"
@@ -1065,6 +1088,10 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
 
                       <p>
                         <b>Employee ID:</b> {formik.values.employeeId || "-"}
+                      </p>
+
+                      <p>
+                        <b>Vendor Name:</b> {selectedVendor?.name || "-"}
                       </p>
 
                       <p>
