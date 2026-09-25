@@ -964,17 +964,18 @@ const GRNFormCopy = () => {
                     label="Free Qty (Strips)"
                     {...formik.getFieldProps("FreeRecvQty")}
                   />
-                  <NumericInput
-                    label="CP / Strip"
-                    required
-                    error={formik.touched.CP && formik.errors.CP}
-                    {...formik.getFieldProps("CP")}
-                  />
+
                   <NumericInput
                     label="MRP / Strip"
                     required
                     error={formik.touched.MRP && formik.errors.MRP}
                     {...formik.getFieldProps("MRP")}
+                  />
+                  <NumericInput
+                    label="CP / Strip"
+                    required
+                    error={formik.touched.CP && formik.errors.CP}
+                    {...formik.getFieldProps("CP")}
                   />
                   <NumericInput
                     label="Discount %"

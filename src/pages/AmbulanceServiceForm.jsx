@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowPathIcon,
   CheckCircleIcon,
@@ -8,46 +8,55 @@ import {
   HeartIcon,
   MapPinIcon,
   UserIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 import {
   useCreateAmbulanceServiceMutation,
   useGetAmbulanceServiceQuery,
   useGetAmbulancesQuery,
   useUpdateAmbulanceServiceMutation,
-} from '../redux/apiSlice';
-import { Input, Select, Button } from '../components/UIComponents';
-import { healthAlerts } from '../utils/healthSwal';
-import { getApiErrorMessage } from '../utils/helper';
+} from "../redux/apiSlice";
+import { Input, Select, Button } from "../components/UIComponents";
+import { healthAlerts } from "../utils/healthSwal";
+import { getApiErrorMessage } from "../utils/helper";
 
 const STEPS = [
-  { id: 1, label: 'Trip Details', icon: MapPinIcon },
-  { id: 2, label: 'Patient Details', icon: UserIcon },
-  { id: 3, label: 'Confirm', icon: DocumentCheckIcon },
+  { id: 1, label: "Trip Details", icon: MapPinIcon },
+  { id: 2, label: "Patient Details", icon: UserIcon },
+  { id: 3, label: "Confirm", icon: DocumentCheckIcon },
 ];
 
 const initialForm = {
-  ambulance_id: '',
-  start_point: '',
-  end_point: '',
-  pickup_address: '',
-  drop_address: '',
-  patient_name: '',
-  patient_mobile: '',
-  major_symptom: '',
-  patient_type: 'outsider',
-  status: 'pending',
+  ambulance_id: "",
+  start_point: "",
+  end_point: "",
+  pickup_address: "",
+  drop_address: "",
+  patient_name: "",
+  patient_mobile: "",
+  major_symptom: "",
+  patient_type: "outsider",
+  status: "pending",
+  odometer_start: "",
+  odometer_end: "",
 };
 
 const AmbulanceServiceForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isEdit = Boolean(id && id !== 'new');
+  const isEdit = Boolean(id && id !== "new");
   const [activeStep, setActiveStep] = useState(1);
 
-  const { data: service, isLoading } = useGetAmbulanceServiceQuery(id, { skip: !isEdit });
-  const { data: ambulanceData } = useGetAmbulancesQuery({ page: 1, limit: 100 });
-  const [createService, { isLoading: isCreating }] = useCreateAmbulanceServiceMutation();
-  const [updateService, { isLoading: isUpdating }] = useUpdateAmbulanceServiceMutation();
+  const { data: service, isLoading } = useGetAmbulanceServiceQuery(id, {
+    skip: !isEdit,
+  });
+  const { data: ambulanceData } = useGetAmbulancesQuery({
+    page: 1,
+    limit: 100,
+  });
+  const [createService, { isLoading: isCreating }] =
+    useCreateAmbulanceServiceMutation();
+  const [updateService, { isLoading: isUpdating }] =
+    useUpdateAmbulanceServiceMutation();
   const [form, setForm] = useState(initialForm);
 
   const ambulances = ambulanceData?.data || [];
@@ -55,16 +64,18 @@ const AmbulanceServiceForm = () => {
   useEffect(() => {
     if (service) {
       setForm({
-        ambulance_id: service.ambulance_id || '',
-        start_point: service.start_point || '',
-        end_point: service.end_point || '',
-        pickup_address: service.pickup_address || '',
-        drop_address: service.drop_address || '',
-        patient_name: service.patient_name || '',
-        patient_mobile: service.patient_mobile || '',
-        major_symptom: service.major_symptom || '',
-        patient_type: service.patient_type || 'outsider',
-        status: service.status || 'pending',
+        ambulance_id: service.ambulance_id || "",
+        start_point: service.start_point || "",
+        end_point: service.end_point || "",
+        pickup_address: service.pickup_address || "",
+        drop_address: service.drop_address || "",
+        patient_name: service.patient_name || "",
+        patient_mobile: service.patient_mobile || "",
+        major_symptom: service.major_symptom || "",
+        patient_type: service.patient_type || "outsider",
+        status: service.status || "pending",
+        odometer_start: service.odometer_start ?? "",
+        odometer_end: service.odometer_end ?? "",
       });
     }
   }, [service]);
@@ -73,8 +84,8 @@ const AmbulanceServiceForm = () => {
     const { name, value } = e.target;
     let finalValue = value;
 
-    if (name === 'patient_mobile') {
-      finalValue = value.replace(/[^0-9]/g, '').slice(0, 10);
+    if (name === "patient_mobile") {
+      finalValue = value.replace(/[^0-9]/g, "").slice(0, 10);
     }
 
     setForm((prev) => ({ ...prev, [name]: finalValue }));
@@ -86,18 +97,32 @@ const AmbulanceServiceForm = () => {
 
   const validateStep = (step) => {
     if (step === 1) {
-      if (!form.ambulance_id) return 'Please select an ambulance';
-      if (!form.start_point.trim()) return 'Start point is required';
-      if (!form.end_point.trim()) return 'End point is required';
-      if (!form.pickup_address.trim()) return 'Pickup address is required';
-      if (!form.drop_address.trim()) return 'Drop address is required';
+      if (!form.ambulance_id) return "Please select an ambulance";
+      if (!form.start_point.trim()) return "Start point is required";
+      if (!form.end_point.trim()) return "End point is required";
+      if (!form.pickup_address.trim()) return "Pickup address is required";
+      if (!form.drop_address.trim()) return "Drop address is required";
+      if (form.odometer_start === "") {
+        return "Odometer start is required";
+      }
+
+      if (form.odometer_end === "") {
+        return "Odometer end is required";
+      }
+
+      const odometerStart = Number(form.odometer_start);
+      const odometerEnd = Number(form.odometer_end);
+
+      if (odometerEnd < odometerStart) {
+        return "Odometer end cannot be less than odometer start";
+      }
       return null;
     }
 
     if (step === 2) {
-      if (!form.patient_name.trim()) return 'Patient name is required';
+      if (!form.patient_name.trim()) return "Patient name is required";
       if (form.patient_mobile && form.patient_mobile.length !== 10) {
-        return 'Patient mobile must be 10 digits';
+        return "Patient mobile must be 10 digits";
       }
       return null;
     }
@@ -120,11 +145,13 @@ const AmbulanceServiceForm = () => {
     if (activeStep === 1) {
       setForm((prev) => ({
         ...prev,
-        ambulance_id: '',
-        start_point: '',
-        end_point: '',
-        pickup_address: '',
-        drop_address: '',
+        ambulance_id: "",
+        start_point: "",
+        end_point: "",
+        pickup_address: "",
+        drop_address: "",
+        odometer_start: "",
+        odometer_end: "",
       }));
       return;
     }
@@ -132,15 +159,20 @@ const AmbulanceServiceForm = () => {
     if (activeStep === 2) {
       setForm((prev) => ({
         ...prev,
-        patient_name: '',
-        patient_mobile: '',
-        major_symptom: '',
-        patient_type: 'outsider',
-        status: 'pending',
+        patient_name: "",
+        patient_mobile: "",
+        major_symptom: "",
+        patient_type: "outsider",
+        status: "pending",
       }));
     }
   };
-
+  const tripDistance =
+    form.odometer_start !== "" &&
+    form.odometer_end !== "" &&
+    Number(form.odometer_end) >= Number(form.odometer_start)
+      ? Number(form.odometer_end) - Number(form.odometer_start)
+      : "";
   const handleSubmit = async () => {
     const stepOneError = validateStep(1);
     const stepTwoError = validateStep(2);
@@ -148,29 +180,36 @@ const AmbulanceServiceForm = () => {
       healthAlerts.warning(stepOneError || stepTwoError);
       return;
     }
-
+    debugger;
     const payload = {
       ...form,
       patient_mobile: form.patient_mobile || undefined,
       major_symptom: form.major_symptom || undefined,
+      trip_distance: tripDistance,
+      odometer_start: Number(form.odometer_start),
+      odometer_end: Number(form.odometer_end),
     };
 
     try {
       if (isEdit) {
         await updateService({ id, ...payload }).unwrap();
-        healthAlerts.success('Service updated successfully', 'Updated');
+        healthAlerts.success("Service updated successfully", "Updated");
       } else {
         await createService(payload).unwrap();
-        healthAlerts.success('Ambulance service booked', 'Created');
+        healthAlerts.success("Ambulance service booked", "Created");
       }
-      navigate('/ambulance-service', { state: { goToList: true } });
+      navigate("/ambulance-service", { state: { goToList: true } });
     } catch (err) {
-      healthAlerts.error(getApiErrorMessage(err, 'Save failed'), 'Error');
+      healthAlerts.error(getApiErrorMessage(err, "Save failed"), "Error");
     }
   };
 
   const formatLabel = (value) =>
-    value ? String(value).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : '-';
+    value
+      ? String(value)
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase())
+      : "-";
 
   if (isEdit && isLoading) {
     return <div className="p-8 text-center text-slate-500">Loading...</div>;
@@ -184,7 +223,7 @@ const AmbulanceServiceForm = () => {
             <span className="bg-blue-100 p-2 rounded-xl">
               <HeartIcon className="w-6 h-6 text-blue-600" />
             </span>
-            {isEdit ? 'Edit Ambulance Service' : 'Book Ambulance Service'}
+            {isEdit ? "Edit Ambulance Service" : "Book Ambulance Service"}
           </h1>
 
           <div className="flex gap-2">
@@ -192,7 +231,7 @@ const AmbulanceServiceForm = () => {
               <div
                 key={step.id}
                 className={`h-2 w-12 rounded-full ${
-                  activeStep >= step.id ? 'bg-sky-600' : 'bg-blue-100'
+                  activeStep >= step.id ? "bg-sky-600" : "bg-blue-100"
                 }`}
               />
             ))}
@@ -208,8 +247,8 @@ const AmbulanceServiceForm = () => {
                 disabled
                 className={`flex-1 py-4 flex items-center justify-center gap-2 text-sm font-semibold ${
                   activeStep === step.id
-                    ? 'text-sky-600 border-b-2 border-sky-600'
-                    : 'text-gray-400'
+                    ? "text-sky-600 border-b-2 border-sky-600"
+                    : "text-gray-400"
                 }`}
               >
                 <step.icon className="w-4 h-4" />
@@ -221,7 +260,9 @@ const AmbulanceServiceForm = () => {
           <form onSubmit={(e) => e.preventDefault()} className="p-9 space-y-8">
             {activeStep === 1 && (
               <section className="bg-sky-50/40 p-6 rounded-xl border border-sky-100 space-y-6">
-                <h3 className="text-sky-700 font-semibold text-lg">Trip Information</h3>
+                <h3 className="text-sky-700 font-semibold text-lg">
+                  Trip Information
+                </h3>
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="md:col-span-3">
                     <Select
@@ -234,7 +275,8 @@ const AmbulanceServiceForm = () => {
                       <option value="">Choose ambulance</option>
                       {ambulances.map((amb) => (
                         <option key={amb.id} value={amb.id}>
-                          {amb.unique_name} — {amb.company_name} ({amb.number_plate}) [{amb.status}]
+                          {amb.unique_name} — {amb.company_name} (
+                          {amb.number_plate}) [{amb.status}]
                         </option>
                       ))}
                     </Select>
@@ -258,7 +300,8 @@ const AmbulanceServiceForm = () => {
 
                   <div className="md:col-span-3">
                     <label className="text-sm text-gray-600 block mb-1 font-medium">
-                      Pickup Location Address <span className="text-red-500">*</span>
+                      Pickup Location Address{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       name="pickup_address"
@@ -272,7 +315,8 @@ const AmbulanceServiceForm = () => {
 
                   <div className="md:col-span-3">
                     <label className="text-sm text-gray-600 block mb-1 font-medium">
-                      Drop Location Address <span className="text-red-500">*</span>
+                      Drop Location Address{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       name="drop_address"
@@ -284,12 +328,44 @@ const AmbulanceServiceForm = () => {
                     />
                   </div>
                 </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <Input
+                    label="Odometer Start (KM)"
+                    name="odometer_start"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={form.odometer_start}
+                    onChange={handleChange}
+                    required
+                  />
+
+                  <Input
+                    label="Odometer End (KM)"
+                    name="odometer_end"
+                    type="number"
+                    min={form.odometer_start || 0}
+                    step="0.1"
+                    value={form.odometer_end}
+                    onChange={handleChange}
+                  />
+
+                  <Input
+                    label="Trip Distance (KM)"
+                    name="trip_distance"
+                    type="number"
+                    value={tripDistance}
+                    readOnly
+                  />
+                </div>
               </section>
             )}
 
             {activeStep === 2 && (
               <section className="bg-sky-50/40 p-6 rounded-xl border border-sky-100 space-y-6">
-                <h3 className="text-sky-700 font-semibold text-lg">Patient Information</h3>
+                <h3 className="text-sky-700 font-semibold text-lg">
+                  Patient Information
+                </h3>
                 <div className="grid md:grid-cols-3 gap-6">
                   <Input
                     label="Patient Name"
@@ -314,8 +390,8 @@ const AmbulanceServiceForm = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="outsider">Outsider Patient</option>
                     <option value="company">Company Patient</option>
+                    <option value="outsider">Outsider Patient</option>
                   </Select>
 
                   <div className="md:col-span-3">
@@ -355,20 +431,54 @@ const AmbulanceServiceForm = () => {
                   Confirm Service Details
                 </h3>
                 <p>
-                  <b>Ambulance:</b>{' '}
+                  <b>Ambulance:</b>{" "}
                   {selectedAmbulance
                     ? `${selectedAmbulance.unique_name} — ${selectedAmbulance.company_name}`
-                    : '-'}
+                    : "-"}
                 </p>
-                <p><b>Start Point:</b> {form.start_point || '-'}</p>
-                <p><b>End Point:</b> {form.end_point || '-'}</p>
-                <p><b>Pickup Address:</b> {form.pickup_address || '-'}</p>
-                <p><b>Drop Address:</b> {form.drop_address || '-'}</p>
-                <p><b>Patient Name:</b> {form.patient_name || '-'}</p>
-                <p><b>Patient Mobile:</b> {form.patient_mobile || '-'}</p>
-                <p><b>Patient Type:</b> {formatLabel(form.patient_type)}</p>
-                <p><b>Major Symptom:</b> {form.major_symptom || '-'}</p>
-                {isEdit && <p><b>Status:</b> {formatLabel(form.status)}</p>}
+                <p>
+                  <b>Start Point:</b> {form.start_point || "-"}
+                </p>
+                <p>
+                  <b>End Point:</b> {form.end_point || "-"}
+                </p>
+                <p>
+                  <b>Pickup Address:</b> {form.pickup_address || "-"}
+                </p>
+                <p>
+                  <b>Drop Address:</b> {form.drop_address || "-"}
+                </p>
+                <p>
+                  <b>Odometer Start:</b>{" "}
+                  {form.odometer_start ? `${form.odometer_start} KM` : "-"}
+                </p>
+
+                <p>
+                  <b>Odometer End:</b>{" "}
+                  {form.odometer_end ? `${form.odometer_end} KM` : "-"}
+                </p>
+
+                <p>
+                  <b>Trip Distance:</b>{" "}
+                  {tripDistance !== "" ? `${tripDistance.toFixed(1)} KM` : "-"}
+                </p>
+                <p>
+                  <b>Patient Name:</b> {form.patient_name || "-"}
+                </p>
+                <p>
+                  <b>Patient Mobile:</b> {form.patient_mobile || "-"}
+                </p>
+                <p>
+                  <b>Patient Type:</b> {formatLabel(form.patient_type)}
+                </p>
+                <p>
+                  <b>Major Symptom:</b> {form.major_symptom || "-"}
+                </p>
+                {isEdit && (
+                  <p>
+                    <b>Status:</b> {formatLabel(form.status)}
+                  </p>
+                )}
               </div>
             )}
 
@@ -392,7 +502,11 @@ const AmbulanceServiceForm = () => {
                 <Button
                   type="button"
                   variant="gray"
-                  onClick={() => navigate('/ambulance-service', { state: { goToList: true } })}
+                  onClick={() =>
+                    navigate("/ambulance-service", {
+                      state: { goToList: true },
+                    })
+                  }
                 >
                   Cancel
                 </Button>
@@ -409,7 +523,7 @@ const AmbulanceServiceForm = () => {
                     disabled={isCreating || isUpdating}
                   >
                     <CheckCircleIcon className="w-5 h-5 inline mr-1" />
-                    {isEdit ? 'Update Service' : 'Book Service'}
+                    {isEdit ? "Update Service" : "Book Service"}
                   </Button>
                 )}
               </div>
