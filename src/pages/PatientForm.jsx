@@ -151,6 +151,7 @@ const PatientRegistrationCopy = () => {
       employeeId: 0,
       ReferredBy: "",
       isCampRegistration: false,
+      ageNumber: "",
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
@@ -415,19 +416,11 @@ const PatientRegistrationCopy = () => {
       setActiveStep(1);
     }
   };
-
-  const handleDOBChange = (e) => {
-    const dob = e.target.value;
-    formik.setFieldValue("dob", dob);
-    if (!dob) {
-      formik.setFieldValue("age", "");
-      return;
-    }
-    const birth = new Date(dob);
-    const today = new Date();
+  const calculateAgeParts = (birth, today = new Date()) => {
     let years = today.getFullYear() - birth.getFullYear();
     let months = today.getMonth() - birth.getMonth();
     let days = today.getDate() - birth.getDate();
+
     if (days < 0) {
       months -= 1;
       days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
@@ -436,7 +429,54 @@ const PatientRegistrationCopy = () => {
       years -= 1;
       months += 12;
     }
+    return { years, months, days };
+  };
+
+  const setAgeFieldsFromDOB = (date) => {
+    if (!date) {
+      formik.setFieldValue("dob", "");
+      formik.setFieldValue("age", "");
+      formik.setFieldValue("ageNumber", "");
+      return;
+    }
+
+    const formattedDate = `${date.getFullYear()}-${String(
+      date.getMonth() + 1,
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+    const { years, months, days } = calculateAgeParts(date);
+
+    formik.setFieldValue("dob", formattedDate);
     formik.setFieldValue("age", `${years}y ${months}m ${days}d`);
+    formik.setFieldValue("ageNumber", String(years)); // keep in sync
+  };
+
+  // NEW: age (years) -> dob
+  const handleAgeNumberChange = (e) => {
+    const raw = e.target.value.replace(/[^0-9]/g, "");
+    formik.setFieldValue("ageNumber", raw);
+
+    if (!raw) {
+      formik.setFieldValue("dob", "");
+      formik.setFieldValue("age", "");
+      return;
+    }
+
+    const years = parseInt(raw, 10) || 0;
+    const today = new Date();
+    // today's date, minus N years — matches your "09/25/2026 - 35" example
+    const derivedDOB = new Date(
+      today.getFullYear() - years,
+      today.getMonth(),
+      today.getDate(),
+    );
+
+    const formattedDate = `${derivedDOB.getFullYear()}-${String(
+      derivedDOB.getMonth() + 1,
+    ).padStart(2, "0")}-${String(derivedDOB.getDate()).padStart(2, "0")}`;
+
+    formik.setFieldValue("dob", formattedDate);
+    formik.setFieldValue("age", `${years}y 0m 0d`);
   };
   const TITLE_GENDER_MAP = {
     Mr: "Male",
@@ -537,7 +577,14 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       required
                       error={formik.touched.name && formik.errors.name}
                     />
-
+                    <Input
+                      label="Enter Age (Years)"
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={3}
+                      value={formik.values.ageNumber}
+                      onChange={handleAgeNumberChange}
+                    />
                     <div className="flex flex-col">
                       <label className="text-sm font-medium text-gray-700 mb-1">
                         Date of Birth
@@ -549,47 +596,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                             ? new Date(formik.values.dob + "T00:00:00")
                             : null
                         }
-                        onChange={(date) => {
-                          if (!date) {
-                            formik.setFieldValue("dob", "");
-                            formik.setFieldValue("age", "");
-                            return;
-                          }
-
-                          const formattedDate = `${date.getFullYear()}-${String(
-                            date.getMonth() + 1,
-                          ).padStart(
-                            2,
-                            "0",
-                          )}-${String(date.getDate()).padStart(2, "0")}`;
-                          formik.setFieldValue("dob", formattedDate);
-
-                          const birth = new Date(date);
-                          const today = new Date();
-
-                          let years = today.getFullYear() - birth.getFullYear();
-                          let months = today.getMonth() - birth.getMonth();
-                          let days = today.getDate() - birth.getDate();
-
-                          if (days < 0) {
-                            months -= 1;
-                            days += new Date(
-                              today.getFullYear(),
-                              today.getMonth(),
-                              0,
-                            ).getDate();
-                          }
-
-                          if (months < 0) {
-                            years -= 1;
-                            months += 12;
-                          }
-
-                          formik.setFieldValue(
-                            "age",
-                            `${years}y ${months}m ${days}d`,
-                          );
-                        }}
+                        onChange={(date) => setAgeFieldsFromDOB(date)}
                         dateFormat="dd/MM/yyyy"
                         placeholderText="DD/MM/YYYY"
                         maxDate={new Date()}
@@ -599,8 +606,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                         yearDropdownItemNumber={100}
                         wrapperClassName="w-full"
                         popperClassName="z-50"
-                        className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
-    outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                        className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
                       />
                     </div>
 
