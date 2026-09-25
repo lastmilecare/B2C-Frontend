@@ -180,7 +180,6 @@ const AmbulanceServiceForm = () => {
       healthAlerts.warning(stepOneError || stepTwoError);
       return;
     }
-    debugger;
     const payload = {
       ...form,
       patient_mobile: form.patient_mobile || undefined,

@@ -33,7 +33,6 @@ import { Referral_Options } from "../utils/constants";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-
 const PatientRegistrationCopy = () => {
   const [searchDiseases] = useLazySearchDiseasesQuery();
   const { id } = useParams();
@@ -62,40 +61,40 @@ const PatientRegistrationCopy = () => {
   const [activeStep, setActiveStep] = useState(1);
   const isPageLoading = isLoading || isFetching;
   const isSubmitting = isCreating || isUpdating;
-  const { data: relationshipCombo = [] } =
-    useGetComboQuery("b2c-relationship");
+  const { data: relationshipCombo = [] } = useGetComboQuery("b2c-relationship");
 
-  const { data: occupationCombo = [] } =
-    useGetComboQuery("b2c-occupation");
+  const { data: occupationCombo = [] } = useGetComboQuery("b2c-occupation");
 
   const nextStep = async () => {
     const errors = await formik.validateForm();
 
     if (
       activeStep === 1 &&
-      (errors.title || errors.name || errors.contactNumber || errors.CO || errors.gender)
+      (errors.title ||
+        errors.name ||
+        errors.contactNumber ||
+        errors.CO ||
+        errors.gender)
     ) {
       formik.setTouched({
         title: true,
         name: true,
         contactNumber: true,
         CO: true,
-        gender: true
+        gender: true,
       });
       return;
     }
 
     if (
       activeStep === 2 &&
-      (
-        errors.country ||
+      (errors.country ||
         errors.localAddressState ||
         errors.localAddress ||
         errors.fincat ||
         errors.ReferredBy ||
-        errors.occupation 
-        // errors.pin
-      )
+        errors.occupation)
+      // errors.pin
     ) {
       formik.setTouched({
         country: true,
@@ -109,16 +108,8 @@ const PatientRegistrationCopy = () => {
 
       return;
     }
-    if (
-      activeStep === 3 &&
-      (
-
-        errors.idProof_name ||
-        errors.idProof_number
-      )
-    ) {
+    if (activeStep === 3 && (errors.idProof_name || errors.idProof_number)) {
       formik.setTouched({
-
         idProof_name: true,
         idProof_number: true,
       });
@@ -176,22 +167,17 @@ const PatientRegistrationCopy = () => {
       CO: Yup.string().required("Co is required"),
       // employeeId: Yup.string().required("EmployeeId is required")
       pin: Yup.string()
-       
+
         .matches(/^[0-9]{6}$/, "Pin Code must be 6 digits"),
       ReferredBy: Yup.string().required("Referred By is required"),
-      idProof_name: Yup.string().required(
-        "Identification Type is required"
-      ),
+      idProof_name: Yup.string().required("Identification Type is required"),
 
       idProof_number: Yup.string().when("idProof_name", {
-  is: (val) => val && val !== "N/A",
-  then: (schema) =>
-    schema.required("Identification Number is required"),
-  otherwise: (schema) => schema.notRequired(),
-}),
-      localAddress: Yup.string().required(
-        "Local Address is required"
-      ),
+        is: (val) => val && val !== "N/A",
+        then: (schema) => schema.required("Identification Number is required"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+      localAddress: Yup.string().required("Local Address is required"),
     }),
 
     onSubmit: async (values) => {
@@ -262,13 +248,13 @@ const PatientRegistrationCopy = () => {
             formattedDiseases =
               diseaseList
                 .filter((d) =>
-                  p.disease_ids?.map(Number).includes(Number(d.id))
+                  p.disease_ids?.map(Number).includes(Number(d.id)),
                 )
                 .map((d) => ({
                   id: d.id,
                   name: d.name,
                 })) || [];
-          } catch (error) { }
+          } catch (error) {}
         }
 
         formik.setValues({
@@ -276,9 +262,7 @@ const PatientRegistrationCopy = () => {
           name: p.name || "",
           dob: p.dateOfBirthOrAge?.split("T")[0] || "",
           age:
-            (Number(p.age) > 0 ||
-              Number(p.imonth) > 0 ||
-              Number(p.idays) > 0)
+            Number(p.age) > 0 || Number(p.imonth) > 0 || Number(p.idays) > 0
               ? `${p.age || 0}y ${p.imonth || 0}m ${p.idays || 0}d`
               : "",
           CO: p.co || "",
@@ -316,20 +300,17 @@ const PatientRegistrationCopy = () => {
     }
   }, [patientApiResponse, isEdit]);
   // const referralOptions = Referral_Options.map((option) => option.value);
-  const referralOptions = Referral_Options
-  .filter((option) => {
+  const referralOptions = Referral_Options.filter((option) => {
     if (option.tenantIds) {
       const isAllowedTenant = option.tenantIds.includes(Number(tenantId));
 
-      const isExistingValue =
-        formik.values.ReferredBy === option.value;
+      const isExistingValue = formik.values.ReferredBy === option.value;
 
       return isAllowedTenant || isExistingValue;
     }
 
     return true;
-  })
-  .map((option) => option.value);
+  }).map((option) => option.value);
   const buildPayload = (values) => {
     if (!values) return null;
     const ageValue = values?.age?.split(" ") ?? [];
@@ -457,7 +438,12 @@ const PatientRegistrationCopy = () => {
     }
     formik.setFieldValue("age", `${years}y ${months}m ${days}d`);
   };
-
+  const TITLE_GENDER_MAP = {
+    Mr: "Male",
+    Mrs: "Female",
+    Miss: "Female",
+    Master: "Male",
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
       {(isEdit && isPageLoading) || isSubmitting ? <GlobalLoader /> : null}
@@ -475,8 +461,9 @@ const PatientRegistrationCopy = () => {
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${activeStep >= s ? "bg-sky-600" : "bg-gray-200"
-                  }`}
+                className={`h-2 w-12 rounded-full ${
+                  activeStep >= s ? "bg-sky-600" : "bg-gray-200"
+                }`}
               />
             ))}
           </div>
@@ -513,21 +500,34 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
             >
               {activeStep === 1 && (
                 <section>
-                 
-  <h3 className="text-lg font-semibold text-sky-700 flex items-center gap-2">
-    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
-    Basic Details
-  </h3>
+                  <h3 className="text-lg font-semibold text-sky-700 flex items-center gap-2">
+                    <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>
+                    Basic Details
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <Select
                       {...formik.getFieldProps("title")}
                       label="Title"
                       required
                       error={formik.touched.title && formik.errors.title}
+                      onChange={(e) => {
+                        const title = e.target.value;
+
+                        formik.setFieldValue("title", title);
+
+                        const mappedGender = TITLE_GENDER_MAP[title];
+
+                        if (mappedGender) {
+                          formik.setFieldValue("gender", mappedGender);
+                        }
+                      }}
                     >
                       <option value="">Select</option>
+
                       {TITLES.map((t) => (
-                        <option key={t}>{t}</option>
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
                       ))}
                     </Select>
 
@@ -544,7 +544,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </label>
 
                       <DatePicker
-
                         selected={
                           formik.values.dob
                             ? new Date(formik.values.dob + "T00:00:00")
@@ -557,10 +556,12 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                             return;
                           }
 
-
                           const formattedDate = `${date.getFullYear()}-${String(
-                            date.getMonth() + 1
-                          ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+                            date.getMonth() + 1,
+                          ).padStart(
+                            2,
+                            "0",
+                          )}-${String(date.getDate()).padStart(2, "0")}`;
                           formik.setFieldValue("dob", formattedDate);
 
                           const birth = new Date(date);
@@ -575,7 +576,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                             days += new Date(
                               today.getFullYear(),
                               today.getMonth(),
-                              0
+                              0,
                             ).getDate();
                           }
 
@@ -586,7 +587,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
 
                           formik.setFieldValue(
                             "age",
-                            `${years}y ${months}m ${days}d`
+                            `${years}y ${months}m ${days}d`,
                           );
                         }}
                         dateFormat="dd/MM/yyyy"
@@ -623,10 +624,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     >
                       <option value="">Select</option>
                       {relationshipCombo?.map((relation) => (
-                        <option
-                          key={relation.ID}
-                          value={relation.ID}
-                        >
+                        <option key={relation.ID} value={relation.ID}>
                           {relation.Code}
                         </option>
                       ))}
@@ -665,23 +663,23 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     <Input
                       {...formik.getFieldProps("employeeId")}
                       label="Employee Id"
-                    // required
-                    // error={formik.touched.employeeId && formik.errors.employeeId}
+                      // required
+                      // error={formik.touched.employeeId && formik.errors.employeeId}
                     />
                     <div className="md:col-span-3 flex items-center mt-2">
-  <label className="flex items-center gap-3 cursor-pointer select-none">
-    <input
-      type="checkbox"
-      name="isCampRegistration"
-      checked={formik.values.isCampRegistration}
-      onChange={formik.handleChange}
-      className="h-5 w-5 accent-emerald-600 cursor-pointer rounded border-gray-300 focus:ring-2 focus:ring-emerald-500"
-    />
-    <span className="text-sm font-medium text-slate-700">
-      Patient Registration for Camp
-    </span>
-  </label>
-</div>
+                      <label className="flex items-center gap-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          name="isCampRegistration"
+                          checked={formik.values.isCampRegistration}
+                          onChange={formik.handleChange}
+                          className="h-5 w-5 accent-emerald-600 cursor-pointer rounded border-gray-300 focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <span className="text-sm font-medium text-slate-700">
+                          Patient Registration for Camp
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </section>
               )}
@@ -789,10 +787,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     >
                       <option value="">Select</option>
                       {occupationCombo?.map((e) => (
-                        <option
-                          key={e.OccupationID}
-                          value={e.OccupationID}
-                        >
+                        <option key={e.OccupationID} value={e.OccupationID}>
                           {e.Descriptions}
                         </option>
                       ))}
@@ -821,7 +816,10 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       maxLength={6}
                       value={formik.values.pin}
                       onChange={(e) => {
-                        const onlyNumbers = e.target.value.replace(/[^0-9]/g, "");
+                        const onlyNumbers = e.target.value.replace(
+                          /[^0-9]/g,
+                          "",
+                        );
                         formik.setFieldValue("pin", onlyNumbers);
                       }}
                       // error={formik.touched.pin && formik.errors.pin}
@@ -894,33 +892,33 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     />
 
                     <Select
-  label="Identification Type"
-  name="idProof_name"
-  value={formik.values.idProof_name}
-  onChange={(e) => {
-    const value = e.target.value;
+                      label="Identification Type"
+                      name="idProof_name"
+                      value={formik.values.idProof_name}
+                      onChange={(e) => {
+                        const value = e.target.value;
 
-    formik.setFieldValue("idProof_name", value);
+                        formik.setFieldValue("idProof_name", value);
 
-    if (value === "N/A") {
-      formik.setFieldValue("idProof_number", "N/A");
-    } else if (formik.values.idProof_number === "N/A") {
-      formik.setFieldValue("idProof_number", "");
-    }
-  }}
-  required
-  error={
-    formik.touched.idProof_name &&
-    formik.errors.idProof_name
-  }
->
-  <option value="">Select</option>
-  {IDENTIFICATION_TYPES.map((b) => (
-    <option key={b.value} value={b.value}>
-      {b.label}
-    </option>
-  ))}
-</Select>
+                        if (value === "N/A") {
+                          formik.setFieldValue("idProof_number", "N/A");
+                        } else if (formik.values.idProof_number === "N/A") {
+                          formik.setFieldValue("idProof_number", "");
+                        }
+                      }}
+                      required
+                      error={
+                        formik.touched.idProof_name &&
+                        formik.errors.idProof_name
+                      }
+                    >
+                      <option value="">Select</option>
+                      {IDENTIFICATION_TYPES.map((b) => (
+                        <option key={b.value} value={b.value}>
+                          {b.label}
+                        </option>
+                      ))}
+                    </Select>
 
                     {formik.values.idProof_name && (
                       <Input
@@ -979,11 +977,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </p> */}
 
                       <p>
-                        <b>Relationship:</b> {
-                          relationshipCombo?.find(
-                            (r) => String(r.ID) === String(formik.values.relationship)
-                          )?.Code || "-"
-                        }
+                        <b>Relationship:</b>{" "}
+                        {relationshipCombo?.find(
+                          (r) =>
+                            String(r.ID) === String(formik.values.relationship),
+                        )?.Code || "-"}
                       </p>
 
                       <p>
@@ -1003,17 +1001,19 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                         </p>
 
                         <p>
-                          <b>Occupation:</b>{
-                            occupationCombo?.find(
-                              (o) => String(o.OccupationID) === String(formik.values.occupation)
-                            )?.Descriptions || "-"
-                          }
+                          <b>Occupation:</b>
+                          {occupationCombo?.find(
+                            (o) =>
+                              String(o.OccupationID) ===
+                              String(formik.values.occupation),
+                          )?.Descriptions || "-"}
                         </p>
 
                         <p>
                           <b>Country:</b>{" "}
                           {countries.find(
-                            (c) => String(c.id) === String(formik.values.country)
+                            (c) =>
+                              String(c.id) === String(formik.values.country),
                           )?.name || "-"}
                         </p>
 
@@ -1022,7 +1022,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                           {states.find(
                             (s) =>
                               String(s.id) ===
-                              String(formik.values.localAddressState)
+                              String(formik.values.localAddressState),
                           )?.name || "-"}
                         </p>
 
@@ -1031,7 +1031,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                           {districts.find(
                             (d) =>
                               String(d.id) ===
-                              String(formik.values.localAddressDistrict)
+                              String(formik.values.localAddressDistrict),
                           )?.name || "-"}
                         </p>
 
@@ -1069,8 +1069,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                         </p>
 
                         <p>
-                          <b>Blood Group:</b>{" "}
-                          {formik.values.blood_group || "-"}
+                          <b>Blood Group:</b> {formik.values.blood_group || "-"}
                         </p>
 
                         <p>
@@ -1085,7 +1084,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </div>
                     </div>
 
-
                     <div className="border-t pt-3 text-sm">
                       <p>
                         <b>Diseases:</b>{" "}
@@ -1095,7 +1093,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </p>
                     </div>
 
-{/* 
+                    {/* 
                     <div className="border-t pt-3 text-sm">
                       <p>
 
@@ -1106,7 +1104,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                   </div>
                 </section>
               )}
-
 
               <div className="flex justify-between pt-6 border-t border-black flex-wrap gap-3">
                 <div className="flex gap-2">

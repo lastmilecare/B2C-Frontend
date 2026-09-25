@@ -180,6 +180,10 @@ export const ROLES = [
     label: "RADIOLOGY",
     value: "RADIOLOGY",
   },
+  {
+    label: "OPHTHALMOLOGY",
+    value: "OPHTHALMOLOGY",
+  },
 
 ];
 export const DEPARTMENT_OPTIONS = [

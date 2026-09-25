@@ -136,6 +136,8 @@ const OpdFormCopy = () => {
   const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
   const { data: radiology, isLoading: radiologyComboLoading } =
     useGetComboQuery("radiology");
+  const { data: ophthalmology, isLoading: ophthalmologyComboLoading } =
+    useGetComboQuery("ophthalmology");
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
@@ -143,7 +145,7 @@ const OpdFormCopy = () => {
     skip: !billNo,
   });
   const populatedUhidRef = useRef("");
-const [payModeFocused, setPayModeFocused] = useState(false);
+  const [payModeFocused, setPayModeFocused] = useState(false);
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
   useEffect(() => {
@@ -363,7 +365,10 @@ const [payModeFocused, setPayModeFocused] = useState(false);
     const pData = patientData || editData;
     if (!pData || !selectedServices.length) return null;
     const addedBy = editData
-      ? editData.added_by_id ?? editData.AddedBy ?? opdBillData?.AddedBy ?? userId
+      ? (editData.added_by_id ??
+        editData.AddedBy ??
+        opdBillData?.AddedBy ??
+        userId)
       : userId;
     const finalAmount = selectedServices.reduce(
       (sum, s) =>
@@ -869,7 +874,9 @@ const [payModeFocused, setPayModeFocused] = useState(false);
                                 ? "Lab"
                                 : depCurrentId === 13
                                   ? "Radiology"
-                                  : "Doctor"}
+                                  : depCurrentId === 7
+                                    ? "Ophthalmology"
+                                    : "Doctor"}
                           <span className="text-red-500"> *</span>
                         </span>
                       }
@@ -882,9 +889,11 @@ const [payModeFocused, setPayModeFocused] = useState(false);
                             ? "Select Nursing"
                             : depCurrentId === 6
                               ? "Select Lab"
-                              : depCurrentId === 13
-                                ? "Select Radiology"
-                                : "Select"}
+                              : depCurrentId === 7
+                                ? "Select Ophthalmology"
+                                : depCurrentId === 13
+                                  ? "Select Radiology"
+                                  : "Select"}
                       </option>
 
                       {/* Department 9 → Doctors */}
@@ -906,6 +915,12 @@ const [payModeFocused, setPayModeFocused] = useState(false);
                       {/* Department 6 → Lab */}
                       {depCurrentId === 6 &&
                         lab?.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.username}
+                          </option>
+                        ))}
+                      {depCurrentId === 7 &&
+                        ophthalmology?.map((d) => (
                           <option key={d.id} value={d.id}>
                             {d.username}
                           </option>

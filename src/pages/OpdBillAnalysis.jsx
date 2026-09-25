@@ -130,10 +130,11 @@ const OpdBillAnalysis = () => {
   } = useGetCollectedByQuery();
   const { data: nursing, isLoading: nursingComboLoading } =
     useGetComboQuery("nursing");
-     const { data: radiology, isLoading: radiologyComboLoading } =
-        useGetComboQuery("radiology");
+  const { data: radiology, isLoading: radiologyComboLoading } =
+    useGetComboQuery("radiology");
   const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
-
+  const { data: ophthalmology, isLoading: ophthalmologyComboLoading } =
+    useGetComboQuery("ophthalmology");
   const collectedBy = collectedByResponse?.data || [];
 
   const patients = data?.mergedData || [];
@@ -262,7 +263,7 @@ const OpdBillAnalysis = () => {
       "Chief Complaint",
       "Referred By",
       "Collected By",
-      
+
       ...(showPharmacy
         ? ["Pharmacy Bill No", "Pharmacy Item", "Pharmacy Amt", "Pharmacy Due"]
         : []),
@@ -789,812 +790,720 @@ const OpdBillAnalysis = () => {
     doc.save(`OPD_Analysis_${Date.now()}.pdf`);
   };
 
+  const handleExportExcel = () => {
+    const todayDate = new Date().toLocaleDateString();
+    const loginUser = username || "Admin";
 
-const handleExportExcel = () => {
-  const todayDate = new Date().toLocaleDateString();
-  const loginUser = username || "Admin";
+    // =========================================================
+    // SIMPLE STYLES ONLY
+    // Keeping styles minimum to reduce Excel file size
+    // =========================================================
 
-  // =========================================================
-  // SIMPLE STYLES ONLY
-  // Keeping styles minimum to reduce Excel file size
-  // =========================================================
-
-  const HEADER_STYLE = {
-    fill: {
-      patternType: "solid",
-      fgColor: { rgb: "059669" },
-    },
-    font: {
-      bold: true,
-      color: { rgb: "FFFFFF" },
-      sz: 10,
-    },
-    alignment: {
-      horizontal: "center",
-      vertical: "center",
-      wrapText: true,
-    },
-  };
-
-  const TITLE_STYLE = {
-    fill: {
-      patternType: "solid",
-      fgColor: { rgb: "D1FAE5" },
-    },
-    font: {
-      bold: true,
-      color: { rgb: "065F46" },
-      sz: 14,
-    },
-    alignment: {
-      horizontal: "center",
-      vertical: "center",
-    },
-  };
-
-  const SECTION_STYLE = {
-    fill: {
-      patternType: "solid",
-      fgColor: { rgb: "E5E7EB" },
-    },
-    font: {
-      bold: true,
-      color: { rgb: "111827" },
-      sz: 10,
-    },
-    alignment: {
-      horizontal: "center",
-      vertical: "center",
-    },
-  };
-
-  const TOTAL_STYLE = {
-    fill: {
-      patternType: "solid",
-      fgColor: { rgb: "ECFDF5" },
-    },
-    font: {
-      bold: true,
-      color: { rgb: "065F46" },
-      sz: 10,
-    },
-    alignment: {
-      horizontal: "right",
-      vertical: "center",
-    },
-  };
-
-  const applyStyle = (sheet, cell, style) => {
-    if (sheet[cell]) {
-      sheet[cell].s = style;
-    }
-  };
-
-  const applyRowStyle = (sheet, rowIndex, startCol, endCol, style) => {
-    for (let c = startCol; c <= endCol; c++) {
-      const cellRef = XLSX.utils.encode_cell({
-        r: rowIndex,
-        c,
-      });
-
-      if (sheet[cellRef]) {
-        sheet[cellRef].s = style;
-      }
-    }
-  };
-
-  
-
-  const tableColumn = [
-    "S.No",
-    "T.No",
-    "Bill No",
-    "Bill Date",
-    "Center",
-    "UHID",
-    "Name",
-    "Age",
-    "Gender",
-    "Address",
-    "Category",
-    "Mobile",
-    "Previous Due",
-    "Bill Amt",
-    "Total Amt",
-    "Paid Amt",
-    "Due Amt",
-    "Pay Mode",
-    "Doctor",
-    "Service",
-    "Chief Complaint",
-    "Referred By",
-    "Collected By",
-
-    ...(showPharmacy
-      ? [
-          "Pharmacy Bill No",
-          "Pharmacy Item",
-          "Pharmacy Amt",
-          "Pharmacy Due",
-        ]
-      : []),
-
-    ...(showSpectacle
-      ? [
-          "Specs Amt",
-          "Specs Due",
-        ]
-      : []),
-  ];
-
-  
-
-  const tableRows = patients.map((row, index) => [
-    // S.No
-    index + 1,
-
-    // T.No
-    safeString(row?.token, "-"),
-
-    // Bill No
-    safeString(row?.bill_no, "-"),
-
-    // Bill Date
-    row?.AddedDate ? formatDate(row.AddedDate) : "-",
-
-    // Center
-    safeString(row?.center_name, "-"),
-
-    // UHID
-    safeString(row?.uhid, "-"),
-
-    // Name
-    safeString(row?.patient_name, "-"),
-
-    // Age
-    `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
-
-    // Gender
-    safeString(row?.gender, "-"),
-
-    // Address
-    safeString(row?.localAddress, "-"),
-
-    // Category
-    safeString(row?.patient_type, "-"),
-
-    // Mobile
-    safeString(row?.contactNumber, "-"),
-
-    // Previous Due
-    formatCurrency(
-      Math.max(
-        0,
-        Number(calculateDue(patients, row?.uhid)) || 0
-      )
-    ),
-
-    // Bill Amount
-    formatCurrency(row?.NetServiceAmount),
-
-    // Total Amount
-    formatCurrency(row?.NetServiceAmount),
-
-    // Paid Amount
-    formatCurrency(row?.NetPaidAmount),
-
-    // Due Amount
-    formatCurrency(row?.NetDueAmount),
-
-    // Payment Mode
-    safeString(row?.payment_mode, "-"),
-
-    // Doctor
-    safeString(row?.doctor_name, "-"),
-
-    // Service
-    (row?.opd_billing_data || [])
-      .map((item) => item?.ServiceName)
-      .filter(Boolean)
-      .join(", ") || "-",
-
-    // Chief Complaint
-    safeString(row?.complaint, "-"),
-
-    // Referred By
-    safeString(row?.refer_to, "-"),
-
-    // Collected By
-    safeString(row?.added_by, "-"),
-
-    // =======================================================
-    // PHARMACY
-    // =======================================================
-
-    ...(showPharmacy
-      ? [
-          safeString(row?.PharmaBillNo, "-"),
-          safeString(row?.PharmaItemName, "-"),
-          formatCurrency(row?.PharmaTotalAmount),
-          formatCurrency(row?.pharmaSummary?.totalDue),
-        ]
-      : []),
-
-    // =======================================================
-    // SPECTACLE
-    // =======================================================
-
-    ...(showSpectacle
-      ? [
-          formatCurrency(row?.specTotalAmount),
-          formatCurrency(row?.specDueAmount),
-        ]
-      : []),
-  ]);
-
-  // =========================================================
-  // FILTER INFORMATION
-  // =========================================================
-
-  let filterText = "";
-
-  if (filters?.startDate) {
-    filterText += `From: ${filters.startDate}`;
-  }
-
-  if (filters?.endDate) {
-    filterText += `${filterText ? "   " : ""}To: ${filters.endDate}`;
-  }
-
-  // =========================================================
-  // DETAIL SHEET
-  // IMPORTANT:
-  // NO SUMMARY BELOW DATA
-  // This keeps the file smaller and cleaner.
-  // =========================================================
-
-  const detailRows = [];
-
-  if (filterText) {
-    detailRows.push([filterText]);
-    detailRows.push([]);
-  }
-
-  detailRows.push(tableColumn);
-  detailRows.push(...tableRows);
-
-  const detailSheet = XLSX.utils.aoa_to_sheet(detailRows);
-
-  // =========================================================
-  // DETAIL HEADER
-  // =========================================================
-
-  const headerRowIndex = filterText ? 2 : 0;
-
-  applyRowStyle(
-    detailSheet,
-    headerRowIndex,
-    0,
-    tableColumn.length - 1,
-    HEADER_STYLE
-  );
-
-  // =========================================================
-  // FILTER STYLE
-  // =========================================================
-
-  if (filterText) {
-    const filterCell = XLSX.utils.encode_cell({
-      r: 0,
-      c: 0,
-    });
-
-    applyStyle(detailSheet, filterCell, {
+    const HEADER_STYLE = {
+      fill: {
+        patternType: "solid",
+        fgColor: { rgb: "059669" },
+      },
       font: {
         bold: true,
+        color: { rgb: "FFFFFF" },
         sz: 10,
-        color: { rgb: "374151" },
       },
-    });
-  }
+      alignment: {
+        horizontal: "center",
+        vertical: "center",
+        wrapText: true,
+      },
+    };
 
-  // =========================================================
-  // DETAIL COLUMN WIDTHS
-  // =========================================================
+    const TITLE_STYLE = {
+      fill: {
+        patternType: "solid",
+        fgColor: { rgb: "D1FAE5" },
+      },
+      font: {
+        bold: true,
+        color: { rgb: "065F46" },
+        sz: 14,
+      },
+      alignment: {
+        horizontal: "center",
+        vertical: "center",
+      },
+    };
 
-  detailSheet["!cols"] = tableColumn.map((col) => {
-    let width = 14;
+    const SECTION_STYLE = {
+      fill: {
+        patternType: "solid",
+        fgColor: { rgb: "E5E7EB" },
+      },
+      font: {
+        bold: true,
+        color: { rgb: "111827" },
+        sz: 10,
+      },
+      alignment: {
+        horizontal: "center",
+        vertical: "center",
+      },
+    };
 
-    switch (col) {
-      case "S.No":
-        width = 8;
-        break;
+    const TOTAL_STYLE = {
+      fill: {
+        patternType: "solid",
+        fgColor: { rgb: "ECFDF5" },
+      },
+      font: {
+        bold: true,
+        color: { rgb: "065F46" },
+        sz: 10,
+      },
+      alignment: {
+        horizontal: "right",
+        vertical: "center",
+      },
+    };
 
-      case "T.No":
-        width = 10;
-        break;
+    const applyStyle = (sheet, cell, style) => {
+      if (sheet[cell]) {
+        sheet[cell].s = style;
+      }
+    };
 
-      case "Bill No":
-        width = 14;
-        break;
+    const applyRowStyle = (sheet, rowIndex, startCol, endCol, style) => {
+      for (let c = startCol; c <= endCol; c++) {
+        const cellRef = XLSX.utils.encode_cell({
+          r: rowIndex,
+          c,
+        });
 
-      case "Bill Date":
-        width = 13;
-        break;
+        if (sheet[cellRef]) {
+          sheet[cellRef].s = style;
+        }
+      }
+    };
 
-      case "Center":
-        width = 18;
-        break;
+    const tableColumn = [
+      "S.No",
+      "T.No",
+      "Bill No",
+      "Bill Date",
+      "Center",
+      "UHID",
+      "Name",
+      "Age",
+      "Gender",
+      "Address",
+      "Category",
+      "Mobile",
+      "Previous Due",
+      "Bill Amt",
+      "Total Amt",
+      "Paid Amt",
+      "Due Amt",
+      "Pay Mode",
+      "Doctor",
+      "Service",
+      "Chief Complaint",
+      "Referred By",
+      "Collected By",
 
-      case "UHID":
-        width = 18;
-        break;
+      ...(showPharmacy
+        ? ["Pharmacy Bill No", "Pharmacy Item", "Pharmacy Amt", "Pharmacy Due"]
+        : []),
 
-      case "Name":
-        width = 20;
-        break;
+      ...(showSpectacle ? ["Specs Amt", "Specs Due"] : []),
+    ];
 
-      case "Age":
-        width = 14;
-        break;
+    const tableRows = patients.map((row, index) => [
+      // S.No
+      index + 1,
 
-      case "Gender":
-        width = 10;
-        break;
+      // T.No
+      safeString(row?.token, "-"),
 
-      case "Address":
-        width = 25;
-        break;
+      // Bill No
+      safeString(row?.bill_no, "-"),
 
-      case "Category":
-        width = 12;
-        break;
+      // Bill Date
+      row?.AddedDate ? formatDate(row.AddedDate) : "-",
 
-      case "Mobile":
-        width = 15;
-        break;
+      // Center
+      safeString(row?.center_name, "-"),
 
-      case "Previous Due":
-      case "Bill Amt":
-      case "Total Amt":
-      case "Paid Amt":
-      case "Due Amt":
-        width = 14;
-        break;
+      // UHID
+      safeString(row?.uhid, "-"),
 
-      case "Pay Mode":
-        width = 16;
-        break;
+      // Name
+      safeString(row?.patient_name, "-"),
 
-      case "Doctor":
-        width = 20;
-        break;
+      // Age
+      `${row?.iage ?? 0}y ${row?.imonth ?? 0}m ${row?.idays ?? 0}d`,
 
-      case "Service":
-        width = 30;
-        break;
+      // Gender
+      safeString(row?.gender, "-"),
 
-      case "Chief Complaint":
-        width = 25;
-        break;
+      // Address
+      safeString(row?.localAddress, "-"),
 
-      case "Referred By":
-        width = 18;
-        break;
+      // Category
+      safeString(row?.patient_type, "-"),
 
-      case "Collected By":
-        width = 18;
-        break;
+      // Mobile
+      safeString(row?.contactNumber, "-"),
 
-      case "Pharmacy Bill No":
-        width = 16;
-        break;
+      // Previous Due
+      formatCurrency(
+        Math.max(0, Number(calculateDue(patients, row?.uhid)) || 0),
+      ),
 
-      case "Pharmacy Item":
-        width = 25;
-        break;
+      // Bill Amount
+      formatCurrency(row?.NetServiceAmount),
 
-      case "Pharmacy Amt":
-      case "Pharmacy Due":
-      case "Specs Amt":
-      case "Specs Due":
-        width = 14;
-        break;
+      // Total Amount
+      formatCurrency(row?.NetServiceAmount),
 
-      default:
-        width = 14;
+      // Paid Amount
+      formatCurrency(row?.NetPaidAmount),
+
+      // Due Amount
+      formatCurrency(row?.NetDueAmount),
+
+      // Payment Mode
+      safeString(row?.payment_mode, "-"),
+
+      // Doctor
+      safeString(row?.doctor_name, "-"),
+
+      // Service
+      (row?.opd_billing_data || [])
+        .map((item) => item?.ServiceName)
+        .filter(Boolean)
+        .join(", ") || "-",
+
+      // Chief Complaint
+      safeString(row?.complaint, "-"),
+
+      // Referred By
+      safeString(row?.refer_to, "-"),
+
+      // Collected By
+      safeString(row?.added_by, "-"),
+
+      // =======================================================
+      // PHARMACY
+      // =======================================================
+
+      ...(showPharmacy
+        ? [
+            safeString(row?.PharmaBillNo, "-"),
+            safeString(row?.PharmaItemName, "-"),
+            formatCurrency(row?.PharmaTotalAmount),
+            formatCurrency(row?.pharmaSummary?.totalDue),
+          ]
+        : []),
+
+      // =======================================================
+      // SPECTACLE
+      // =======================================================
+
+      ...(showSpectacle
+        ? [
+            formatCurrency(row?.specTotalAmount),
+            formatCurrency(row?.specDueAmount),
+          ]
+        : []),
+    ]);
+
+    // =========================================================
+    // FILTER INFORMATION
+    // =========================================================
+
+    let filterText = "";
+
+    if (filters?.startDate) {
+      filterText += `From: ${filters.startDate}`;
     }
 
-    return {
-      wch: width,
+    if (filters?.endDate) {
+      filterText += `${filterText ? "   " : ""}To: ${filters.endDate}`;
+    }
+
+    // =========================================================
+    // DETAIL SHEET
+    // IMPORTANT:
+    // NO SUMMARY BELOW DATA
+    // This keeps the file smaller and cleaner.
+    // =========================================================
+
+    const detailRows = [];
+
+    if (filterText) {
+      detailRows.push([filterText]);
+      detailRows.push([]);
+    }
+
+    detailRows.push(tableColumn);
+    detailRows.push(...tableRows);
+
+    const detailSheet = XLSX.utils.aoa_to_sheet(detailRows);
+
+    // =========================================================
+    // DETAIL HEADER
+    // =========================================================
+
+    const headerRowIndex = filterText ? 2 : 0;
+
+    applyRowStyle(
+      detailSheet,
+      headerRowIndex,
+      0,
+      tableColumn.length - 1,
+      HEADER_STYLE,
+    );
+
+    // =========================================================
+    // FILTER STYLE
+    // =========================================================
+
+    if (filterText) {
+      const filterCell = XLSX.utils.encode_cell({
+        r: 0,
+        c: 0,
+      });
+
+      applyStyle(detailSheet, filterCell, {
+        font: {
+          bold: true,
+          sz: 10,
+          color: { rgb: "374151" },
+        },
+      });
+    }
+
+    // =========================================================
+    // DETAIL COLUMN WIDTHS
+    // =========================================================
+
+    detailSheet["!cols"] = tableColumn.map((col) => {
+      let width = 14;
+
+      switch (col) {
+        case "S.No":
+          width = 8;
+          break;
+
+        case "T.No":
+          width = 10;
+          break;
+
+        case "Bill No":
+          width = 14;
+          break;
+
+        case "Bill Date":
+          width = 13;
+          break;
+
+        case "Center":
+          width = 18;
+          break;
+
+        case "UHID":
+          width = 18;
+          break;
+
+        case "Name":
+          width = 20;
+          break;
+
+        case "Age":
+          width = 14;
+          break;
+
+        case "Gender":
+          width = 10;
+          break;
+
+        case "Address":
+          width = 25;
+          break;
+
+        case "Category":
+          width = 12;
+          break;
+
+        case "Mobile":
+          width = 15;
+          break;
+
+        case "Previous Due":
+        case "Bill Amt":
+        case "Total Amt":
+        case "Paid Amt":
+        case "Due Amt":
+          width = 14;
+          break;
+
+        case "Pay Mode":
+          width = 16;
+          break;
+
+        case "Doctor":
+          width = 20;
+          break;
+
+        case "Service":
+          width = 30;
+          break;
+
+        case "Chief Complaint":
+          width = 25;
+          break;
+
+        case "Referred By":
+          width = 18;
+          break;
+
+        case "Collected By":
+          width = 18;
+          break;
+
+        case "Pharmacy Bill No":
+          width = 16;
+          break;
+
+        case "Pharmacy Item":
+          width = 25;
+          break;
+
+        case "Pharmacy Amt":
+        case "Pharmacy Due":
+        case "Specs Amt":
+        case "Specs Due":
+          width = 14;
+          break;
+
+        default:
+          width = 14;
+      }
+
+      return {
+        wch: width,
+      };
+    });
+
+    // =========================================================
+    // HEADER HEIGHT
+    // =========================================================
+
+    detailSheet["!rows"] = detailSheet["!rows"] || [];
+
+    detailSheet["!rows"][headerRowIndex] = {
+      hpt: 25,
     };
-  });
 
-  // =========================================================
-  // HEADER HEIGHT
-  // =========================================================
+    // =========================================================
+    // FREEZE HEADER
+    // =========================================================
 
-  detailSheet["!rows"] = detailSheet["!rows"] || [];
+    detailSheet["!freeze"] = {
+      xSplit: 0,
+      ySplit: headerRowIndex + 1,
+    };
 
-  detailSheet["!rows"][headerRowIndex] = {
-    hpt: 25,
-  };
+    // =========================================================
+    // BILLING SUMMARY
+    // SAME FORMAT / ORDER AS UI SUMMARY
+    // =========================================================
 
-  // =========================================================
-  // FREEZE HEADER
-  // =========================================================
+    const summaryRows = [];
 
-  detailSheet["!freeze"] = {
-    xSplit: 0,
-    ySplit: headerRowIndex + 1,
-  };
+    // =========================================================
+    // TITLE
+    // =========================================================
 
-  // =========================================================
-  // BILLING SUMMARY
-  // SAME FORMAT / ORDER AS UI SUMMARY
-  // =========================================================
+    summaryRows.push(["OPD BILLING SUMMARY"]);
 
-  const summaryRows = [];
+    summaryRows.push(["Report Date", todayDate, "Prepared By", loginUser]);
 
-  // =========================================================
-  // TITLE
-  // =========================================================
+    if (filterText) {
+      summaryRows.push(["Filter", filterText]);
+    }
 
-  summaryRows.push([
-    "OPD BILLING SUMMARY",
-  ]);
+    summaryRows.push([]);
 
-  summaryRows.push([
-    "Report Date",
-    todayDate,
-    "Prepared By",
-    loginUser,
-  ]);
+    // =========================================================
+    // 1. OPD SUMMARY
+    // =========================================================
 
-  if (filterText) {
+    summaryRows.push(["OPD SUMMARY"]);
+
     summaryRows.push([
-      "Filter",
-      filterText,
-    ]);
-  }
-
-  summaryRows.push([]);
-
-  // =========================================================
-  // 1. OPD SUMMARY
-  // =========================================================
-
-  summaryRows.push([
-    "OPD SUMMARY",
-  ]);
-
-  summaryRows.push([
-    "Total Bill Amount",
-    `Rs. ${summary?.totalBillAmount || 0}`,
-  ]);
-
-  summaryRows.push([
-    "Total Paid Amount",
-    `Rs. ${summary?.totalPaidAmount || 0}`,
-  ]);
-
-  summaryRows.push([
-    "Total Due Amount",
-    `Rs. ${summary?.totalDueAmount || 0}`,
-  ]);
-
-  summaryRows.push([
-    "Total Cash Amount",
-    `Rs. ${summary?.totalCashAmount || 0}`,
-  ]);
-
-  summaryRows.push([
-    "Total Online / UPI / Card",
-    `Rs. ${summary?.totalUpiAmount || 0}`,
-  ]);
-
-  summaryRows.push([]);
-
-  // =========================================================
-  // 2. PHARMACY SUMMARY
-  // =========================================================
-
-  summaryRows.push([
-    "PHARMACY SUMMARY",
-  ]);
-
-  summaryRows.push([
-    "Total Pharmacy Revenue",
-    `Rs. ${pharmacy?.pharmacyRevenue || 0}`,
-  ]);
-
-  summaryRows.push([
-    "Pharmacy Paid Amount",
-    `Rs. ${pharmacy?.pharmacyPaid || 0}`,
-  ]);
-
-  summaryRows.push([
-    "Pharmacy Due Amount",
-    `Rs. ${pharmacy?.pharmacyDue || 0}`,
-  ]);
-
-  summaryRows.push([
-    "Pharmacy Cash Amount",
-    `Rs. ${pharmacy?.pharmacyCash || 0}`,
-  ]);
-
-  summaryRows.push([
-    "Pharmacy Online / UPI / Cost Free / Card Amount",
-    `Rs. ${pharmacy?.pharmacyUpi || 0}`,
-  ]);
-
-  summaryRows.push([]);
-
-
-
-  if (showPharmacy) {
-    summaryRows.push([
-      "PHARMACY BILLING SUMMARY",
+      "Total Bill Amount",
+      `Rs. ${summary?.totalBillAmount || 0}`,
     ]);
 
     summaryRows.push([
-      "Pharmacy Total Sales",
-      `Rs. ${pharmaSummary?.totalSales || 0}`,
+      "Total Paid Amount",
+      `Rs. ${summary?.totalPaidAmount || 0}`,
     ]);
 
     summaryRows.push([
-      "Pharmacy Paid",
-      `Rs. ${pharmaSummary?.totalPaid || 0}`,
+      "Total Due Amount",
+      `Rs. ${summary?.totalDueAmount || 0}`,
     ]);
 
     summaryRows.push([
-      "Pharmacy Due",
-      `Rs. ${pharmaSummary?.totalDue || 0}`,
+      "Total Cash Amount",
+      `Rs. ${summary?.totalCashAmount || 0}`,
     ]);
 
     summaryRows.push([
-      "Pharmacy Cash",
-      `Rs. ${pharmaSummary?.cashTotal || 0}`,
-    ]);
-
-    summaryRows.push([
-      "Pharmacy Online / UPI",
-      `Rs. ${pharmaSummary?.onlineTotal || 0}`,
-    ]);
-
-    summaryRows.push([
-      "Pharmacy Cost Free",
-      `Rs. ${pharmaSummary?.costFreeTotal || 0}`,
-    ]);
-
-    summaryRows.push([
-      "Pharmacy Discount",
-      `Rs. ${pharmaSummary?.totalDiscount || 0}`,
-    ]);
-
-    summaryRows.push([
-      "Pharmacy Issue Qty",
-      pharmaSummary?.totalIssueQty || 0,
+      "Total Online / UPI / Card",
+      `Rs. ${summary?.totalUpiAmount || 0}`,
     ]);
 
     summaryRows.push([]);
-  }
-  if (showSpectacle) {
+
+    // =========================================================
+    // 2. PHARMACY SUMMARY
+    // =========================================================
+
+    summaryRows.push(["PHARMACY SUMMARY"]);
+
     summaryRows.push([
-      "SPECTACLE SUMMARY",
+      "Total Pharmacy Revenue",
+      `Rs. ${pharmacy?.pharmacyRevenue || 0}`,
     ]);
 
     summaryRows.push([
-      "Total Spectacle Revenue",
-      `Rs. ${spectacle?.spectacleRevenue || 0}`,
+      "Pharmacy Paid Amount",
+      `Rs. ${pharmacy?.pharmacyPaid || 0}`,
     ]);
 
     summaryRows.push([
-      "Spectacle Paid Amount",
-      `Rs. ${spectacle?.spectaclePaid || 0}`,
+      "Pharmacy Due Amount",
+      `Rs. ${pharmacy?.pharmacyDue || 0}`,
     ]);
 
     summaryRows.push([
-      "Spectacle Due Amount",
-      `Rs. ${spectacle?.spectacleDue || 0}`,
+      "Pharmacy Cash Amount",
+      `Rs. ${pharmacy?.pharmacyCash || 0}`,
     ]);
 
     summaryRows.push([
-      "Spectacle Cash Amount",
-      `Rs. ${spectacle?.spectacleCash || 0}`,
-    ]);
-
-    summaryRows.push([
-      "Spectacle Online / UPI / Cost Free / Card",
-      `Rs. ${spectacle?.spectacleUpi || 0}`,
+      "Pharmacy Online / UPI / Cost Free / Card Amount",
+      `Rs. ${pharmacy?.pharmacyUpi || 0}`,
     ]);
 
     summaryRows.push([]);
-  }
-  summaryRows.push([
-    "GRAND TOTAL",
-  ]);
 
-  summaryRows.push([
-    "Grand Total",
-    `Rs. ${summary?.grandTotal || 0}`,
-  ]);
+    if (showPharmacy) {
+      summaryRows.push(["PHARMACY BILLING SUMMARY"]);
 
-  summaryRows.push([
-    "Total Paid",
-    `Rs. ${summary?.grandPaid || 0}`,
-  ]);
+      summaryRows.push([
+        "Pharmacy Total Sales",
+        `Rs. ${pharmaSummary?.totalSales || 0}`,
+      ]);
 
-  summaryRows.push([
-    "Total Due",
-    `Rs. ${summary?.grandDue || 0}`,
-  ]);
+      summaryRows.push([
+        "Pharmacy Paid",
+        `Rs. ${pharmaSummary?.totalPaid || 0}`,
+      ]);
 
-  summaryRows.push([
-    "Total Cash",
-    `Rs. ${summary?.grandCash || 0}`,
-  ]);
+      summaryRows.push(["Pharmacy Due", `Rs. ${pharmaSummary?.totalDue || 0}`]);
 
-  summaryRows.push([
-    "Total Online / UPI / Card",
-    `Rs. ${summary?.grandUpi || 0}`,
-  ]);
+      summaryRows.push([
+        "Pharmacy Cash",
+        `Rs. ${pharmaSummary?.cashTotal || 0}`,
+      ]);
 
-  summaryRows.push([]);
+      summaryRows.push([
+        "Pharmacy Online / UPI",
+        `Rs. ${pharmaSummary?.onlineTotal || 0}`,
+      ]);
 
- 
-  summaryRows.push([
-    "Powered by Last Mile Care",
-  ]);
+      summaryRows.push([
+        "Pharmacy Cost Free",
+        `Rs. ${pharmaSummary?.costFreeTotal || 0}`,
+      ]);
 
+      summaryRows.push([
+        "Pharmacy Discount",
+        `Rs. ${pharmaSummary?.totalDiscount || 0}`,
+      ]);
 
-  const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+      summaryRows.push([
+        "Pharmacy Issue Qty",
+        pharmaSummary?.totalIssueQty || 0,
+      ]);
 
+      summaryRows.push([]);
+    }
+    if (showSpectacle) {
+      summaryRows.push(["SPECTACLE SUMMARY"]);
 
-  summarySheet["!cols"] = [
-    { wch: 55 },
-    { wch: 25 },
-    { wch: 20 },
-    { wch: 20 },
-    { wch: 20 },
-  ];
+      summaryRows.push([
+        "Total Spectacle Revenue",
+        `Rs. ${spectacle?.spectacleRevenue || 0}`,
+      ]);
 
+      summaryRows.push([
+        "Spectacle Paid Amount",
+        `Rs. ${spectacle?.spectaclePaid || 0}`,
+      ]);
 
-  const titleRow = 0;
+      summaryRows.push([
+        "Spectacle Due Amount",
+        `Rs. ${spectacle?.spectacleDue || 0}`,
+      ]);
 
-  const sectionRows = [
-    summaryRows.findIndex(
-      (row) => row?.[0] === "OPD SUMMARY"
-    ),
+      summaryRows.push([
+        "Spectacle Cash Amount",
+        `Rs. ${spectacle?.spectacleCash || 0}`,
+      ]);
 
-    summaryRows.findIndex(
-      (row) => row?.[0] === "PHARMACY SUMMARY"
-    ),
+      summaryRows.push([
+        "Spectacle Online / UPI / Cost Free / Card",
+        `Rs. ${spectacle?.spectacleUpi || 0}`,
+      ]);
 
-    summaryRows.findIndex(
-      (row) => row?.[0] === "PHARMACY BILLING SUMMARY"
-    ),
+      summaryRows.push([]);
+    }
+    summaryRows.push(["GRAND TOTAL"]);
 
-    summaryRows.findIndex(
-      (row) => row?.[0] === "SPECTACLE SUMMARY"
-    ),
+    summaryRows.push(["Grand Total", `Rs. ${summary?.grandTotal || 0}`]);
 
-    summaryRows.findIndex(
-      (row) => row?.[0] === "GRAND TOTAL"
-    ),
-  ].filter((rowIndex) => rowIndex >= 0);
+    summaryRows.push(["Total Paid", `Rs. ${summary?.grandPaid || 0}`]);
 
-  const grandTotalSectionRow = summaryRows.findIndex(
-    (row) => row?.[0] === "GRAND TOTAL"
-  );
+    summaryRows.push(["Total Due", `Rs. ${summary?.grandDue || 0}`]);
 
-  applyRowStyle(
-    summarySheet,
-    titleRow,
-    0,
-    summaryRows[titleRow].length - 1,
-    TITLE_STYLE
-  );
+    summaryRows.push(["Total Cash", `Rs. ${summary?.grandCash || 0}`]);
 
-  sectionRows.forEach((rowIndex) => {
+    summaryRows.push([
+      "Total Online / UPI / Card",
+      `Rs. ${summary?.grandUpi || 0}`,
+    ]);
+
+    summaryRows.push([]);
+
+    summaryRows.push(["Powered by Last Mile Care"]);
+
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+
+    summarySheet["!cols"] = [
+      { wch: 55 },
+      { wch: 25 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+    ];
+
+    const titleRow = 0;
+
+    const sectionRows = [
+      summaryRows.findIndex((row) => row?.[0] === "OPD SUMMARY"),
+
+      summaryRows.findIndex((row) => row?.[0] === "PHARMACY SUMMARY"),
+
+      summaryRows.findIndex((row) => row?.[0] === "PHARMACY BILLING SUMMARY"),
+
+      summaryRows.findIndex((row) => row?.[0] === "SPECTACLE SUMMARY"),
+
+      summaryRows.findIndex((row) => row?.[0] === "GRAND TOTAL"),
+    ].filter((rowIndex) => rowIndex >= 0);
+
+    const grandTotalSectionRow = summaryRows.findIndex(
+      (row) => row?.[0] === "GRAND TOTAL",
+    );
+
     applyRowStyle(
       summarySheet,
-      rowIndex,
+      titleRow,
       0,
-      summaryRows[rowIndex].length - 1,
-      SECTION_STYLE
+      summaryRows[titleRow].length - 1,
+      TITLE_STYLE,
     );
-  });
 
-  if (grandTotalSectionRow >= 0) {
-    for (
-      let rowIndex = grandTotalSectionRow + 1;
-      rowIndex < summaryRows.length;
-      rowIndex++
-    ) {
-      const row = summaryRows[rowIndex];
-
-      if (
-        row &&
-        row.length > 0 &&
-        row[0] !== "Powered by Last Mile Care"
-      ) {
-        applyRowStyle(
-          summarySheet,
-          rowIndex,
-          1,
-          row.length - 1,
-          TOTAL_STYLE
-        );
-      }
-    }
-  }
-
-  summaryRows.forEach((row, rowIndex) => {
-    if (!row || row.length < 2) return;
-
-    const valueCell = XLSX.utils.encode_cell({
-      r: rowIndex,
-      c: 1,
+    sectionRows.forEach((rowIndex) => {
+      applyRowStyle(
+        summarySheet,
+        rowIndex,
+        0,
+        summaryRows[rowIndex].length - 1,
+        SECTION_STYLE,
+      );
     });
 
-    if (summarySheet[valueCell]) {
-      summarySheet[valueCell].s = {
-        alignment: {
-          horizontal: "right",
-          vertical: "center",
-        },
-      };
+    if (grandTotalSectionRow >= 0) {
+      for (
+        let rowIndex = grandTotalSectionRow + 1;
+        rowIndex < summaryRows.length;
+        rowIndex++
+      ) {
+        const row = summaryRows[rowIndex];
+
+        if (row && row.length > 0 && row[0] !== "Powered by Last Mile Care") {
+          applyRowStyle(summarySheet, rowIndex, 1, row.length - 1, TOTAL_STYLE);
+        }
+      }
     }
-  });
 
-  summarySheet["!freeze"] = {
-    xSplit: 0,
-    ySplit: 5,
+    summaryRows.forEach((row, rowIndex) => {
+      if (!row || row.length < 2) return;
+
+      const valueCell = XLSX.utils.encode_cell({
+        r: rowIndex,
+        c: 1,
+      });
+
+      if (summarySheet[valueCell]) {
+        summarySheet[valueCell].s = {
+          alignment: {
+            horizontal: "right",
+            vertical: "center",
+          },
+        };
+      }
+    });
+
+    summarySheet["!freeze"] = {
+      xSplit: 0,
+      ySplit: 5,
+    };
+
+    summarySheet["!merges"] = [
+      {
+        s: {
+          r: titleRow,
+          c: 0,
+        },
+        e: {
+          r: titleRow,
+          c: 4,
+        },
+      },
+
+      ...sectionRows.map((rowIndex) => ({
+        s: {
+          r: rowIndex,
+          c: 0,
+        },
+        e: {
+          r: rowIndex,
+          c: 4,
+        },
+      })),
+    ];
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, detailSheet, "OPD Analysis");
+
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "Billing Summary");
+    XLSX.writeFile(workbook, `OPD_Analysis_${Date.now()}.xlsx`);
   };
-
-  summarySheet["!merges"] = [
-    {
-      s: {
-        r: titleRow,
-        c: 0,
-      },
-      e: {
-        r: titleRow,
-        c: 4,
-      },
-    },
-
-    ...sectionRows.map((rowIndex) => ({
-      s: {
-        r: rowIndex,
-        c: 0,
-      },
-      e: {
-        r: rowIndex,
-        c: 4,
-      },
-    })),
-  ];
-
-  const workbook = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(
-    workbook,
-    detailSheet,
-    "OPD Analysis"
-  );
-
-  XLSX.utils.book_append_sheet(
-    workbook,
-    summarySheet,
-    "Billing Summary"
-  );
-  XLSX.writeFile(
-    workbook,
-    `OPD_Analysis_${Date.now()}.xlsx`
-  );
-};
   const handleResetFilters = () => {
     setTempFilters({
       name: "",
@@ -1663,7 +1572,7 @@ const handleExportExcel = () => {
           value: d.name,
         })) || [],
     },
-     {
+    {
       label:
         depCurrentVal === "DOCTORS"
           ? "Consulting Doctor"
@@ -1671,6 +1580,8 @@ const handleExportExcel = () => {
             ? "Nursing"
             : depCurrentVal === "LAB"
               ? "Lab"
+              : depCurrentVal === "OPHTHALMOLOGY"
+              ? "OPHTHALMOLOGY"
               : depCurrentVal === "RADIOLOGY"
                 ? "Radiology"
                 : "Consultant",
@@ -1687,6 +1598,8 @@ const handleExportExcel = () => {
                 ? "All Nursing"
                 : depCurrentVal === "LAB"
                   ? "All Lab"
+                  : depCurrentVal === "OPHTHALMOLOGY"
+                  ? "All Ophthalmology"
                   : depCurrentVal === "RADIOLOGY"
                     ? "All Radiology"
                     : "Select Department First",
@@ -1716,6 +1629,12 @@ const handleExportExcel = () => {
           : []),
         ...(depCurrentVal === "RADIOLOGY"
           ? (radiology || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+           ...(depCurrentVal === "OPHTHALMOLOGY"
+          ? (ophthalmology || []).map((d) => ({
               label: d.username,
               value: d.username,
             }))
@@ -1792,7 +1711,7 @@ const handleExportExcel = () => {
       sortable: true,
       width: "70px",
     },
-     {
+    {
       name: "Bill.Date",
       width: "140px",
       cell: (row) => (
@@ -1932,7 +1851,6 @@ const handleExportExcel = () => {
       width: "120px",
     },
 
-   
     ...(showPharmacy
       ? [
           {

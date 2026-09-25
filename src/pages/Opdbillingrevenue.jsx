@@ -123,10 +123,11 @@ const OpdListRevenue = () => {
   } = useGetCollectedByQuery();
   const { data: nursing, isLoading: nursingComboLoading } =
     useGetComboQuery("nursing");
-     const { data: radiology, isLoading: radiologyComboLoading } =
-        useGetComboQuery("radiology");
+  const { data: radiology, isLoading: radiologyComboLoading } =
+    useGetComboQuery("radiology");
   const { data: lab, isLoading: labComboLoading } = useGetComboQuery("lab");
-
+  const { data: ophthalmology, isLoading: ophthalmologyComboLoading } =
+    useGetComboQuery("ophthalmology");
   const collectedBy = collectedByResponse?.data || [];
 
   const patients = data?.data || [];
@@ -181,39 +182,39 @@ const OpdListRevenue = () => {
     setPage(1);
   };
 
- const handleExport = async () => {
-  try {
-    const blob = await exportExcel({
-      ...filters,
-      reportType: "revenue",
-    }).unwrap();
+  const handleExport = async () => {
+    try {
+      const blob = await exportExcel({
+        ...filters,
+        reportType: "revenue",
+      }).unwrap();
 
-    const fileName = generateFileName("OpdBillingRevenue", {
-      dateFrom: filters?.startDate,
-      dateTo: filters?.endDate,
-      extension: "xlsx",
-    });
+      const fileName = generateFileName("OpdBillingRevenue", {
+        dateFrom: filters?.startDate,
+        dateTo: filters?.endDate,
+        extension: "xlsx",
+      });
 
-    downloadBlob(blob, fileName);
-  } catch (error) {
-    const status = error?.status;
-    const message = error?.data?.message || "Something went wrong";
+      downloadBlob(blob, fileName);
+    } catch (error) {
+      const status = error?.status;
+      const message = error?.data?.message || "Something went wrong";
 
-    if (status === 404) {
-      return healthAlert({
-        title: "No Data Found",
+      if (status === 404) {
+        return healthAlert({
+          title: "No Data Found",
+          text: message,
+          icon: "info",
+        });
+      }
+
+      healthAlert({
+        title: "Export Error",
         text: message,
-        icon: "info",
+        icon: "error",
       });
     }
-
-    healthAlert({
-      title: "Export Error",
-      text: message,
-      icon: "error",
-    });
-  }
-};
+  };
 
   const handleResetFilters = () => {
     setTempFilters({
@@ -282,7 +283,7 @@ const OpdListRevenue = () => {
           value: d.name,
         })) || [],
     },
-     {
+    {
       label:
         depCurrentVal === "DOCTORS"
           ? "Consulting Doctor"
@@ -290,9 +291,11 @@ const OpdListRevenue = () => {
             ? "Nursing"
             : depCurrentVal === "LAB"
               ? "Lab"
-              : depCurrentVal === "RADIOLOGY"
-                ? "Radiology"
-                : "Consultant",
+              : depCurrentVal === "OPHTHALMOLOGY"
+                ? "OPHTHALMOLOGY"
+                : depCurrentVal === "RADIOLOGY"
+                  ? "Radiology"
+                  : "Consultant",
 
       name: "doctor",
       type: "select",
@@ -306,9 +309,11 @@ const OpdListRevenue = () => {
                 ? "All Nursing"
                 : depCurrentVal === "LAB"
                   ? "All Lab"
-                  : depCurrentVal === "RADIOLOGY"
-                    ? "All Radiology"
-                    : "Select Department First",
+                  : depCurrentVal === "OPHTHALMOLOGY"
+                    ? "All Ophthalmology"
+                    : depCurrentVal === "RADIOLOGY"
+                      ? "All Radiology"
+                      : "Select Department First",
 
           value: "",
         },
@@ -335,6 +340,12 @@ const OpdListRevenue = () => {
           : []),
         ...(depCurrentVal === "RADIOLOGY"
           ? (radiology || []).map((d) => ({
+              label: d.username,
+              value: d.username,
+            }))
+          : []),
+        ...(depCurrentVal === "OPHTHALMOLOGY"
+          ? (ophthalmology || []).map((d) => ({
               label: d.username,
               value: d.username,
             }))
