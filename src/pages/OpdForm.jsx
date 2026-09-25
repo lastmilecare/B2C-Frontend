@@ -460,6 +460,7 @@ const OpdFormCopy = () => {
       PayMode: "",
       CashAmount: 0,
       CardAmount: 0,
+      visitCountLast10Days: 0,
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -554,6 +555,7 @@ const OpdFormCopy = () => {
         : "",
       PreviousDue: previousFetchDue?.data?.PreviousDue || 0,
       lastVisitDate: formatDate(patientData?.lastVisitDate) || "N/A",
+      visitCountLast10Days: patientData?.visitCountLast10Days || "N/A",
     };
 
     if (patientData.dateOfBirthOrAge) {
@@ -972,21 +974,12 @@ const OpdFormCopy = () => {
                       label="Last Visit Date"
                       readOnly
                     ></Input>
-                    {/* <Input
-                label="Visit Type"
-                {...formik.getFieldProps("VisitType")}
-                className="bg-gray-100 cursor-not-allowed"
-                readOnly
-              >
-              </Input> */}
-                    {/* <Input
-                                              label="Last Visit Date"
-                                              type="date"
-                                              {...formik.getFieldProps("LastVisitDate")}
-                                              max={new Date().toISOString().split("T")[0]}
-                                              className="bg-sky-50 cursor-not-allowed"
-                                              readOnly
-                                          /> */}
+                    <Input
+                      {...formik.getFieldProps("visitCountLast10Days")}
+                      className="bg-sky-50 cursor-not-allowed"
+                      label="Visit Count Last 10Days"
+                      readOnly
+                    ></Input>
                   </div>
                 </section>
               )}
