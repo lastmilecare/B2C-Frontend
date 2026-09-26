@@ -145,6 +145,7 @@ const OpdFormCopy = () => {
     skip: !billNo,
   });
   const populatedUhidRef = useRef("");
+  const paidAmountInputId = "opd-billing-paid-amount";
   const [payModeFocused, setPayModeFocused] = useState(false);
   const [printRow, setPrintRow] = useState(null);
   const printRef = useRef();
@@ -1086,16 +1087,23 @@ const OpdFormCopy = () => {
                       label="Total Amount"
                     />
                     <Input
+                      id={paidAmountInputId}
                       label="Paid Amount"
                       inputMode="numeric"
                       type="text"
                       value={formik.values.PaidAmount}
+                      className={
+                        payModeFocused && formik.values.PayMode
+                          ? "border-amber-500 bg-amber-50 ring-2 ring-amber-300"
+                          : ""
+                      }
                       onChange={(e) => {
                         const onlyNumbers = e.target.value.replace(
                           /[^0-9]/g,
                           "",
                         );
                         setIsPaidManuallyEdited(true);
+                        setPayModeFocused(false);
                         formik.setFieldValue(
                           "PaidAmount",
                           Number(onlyNumbers || 0),
@@ -1151,11 +1159,20 @@ const OpdFormCopy = () => {
                         onChange={(e) => {
                           const mode = e.target.value;
                           formik.setFieldValue("PayMode", mode);
-                          setPayModeFocused(true);
+                          setPayModeFocused(!!mode);
 
                           setTimeout(() => {
                             setPayModeFocused(false);
                           }, 3000);
+                          if (mode && mode !== "5") {
+                            setTimeout(() => {
+                              const el = document.getElementById(
+                                paidAmountInputId,
+                              );
+                              el?.focus();
+                              el?.select();
+                            }, 0);
+                          }
                           if (mode === "5") {
                             formik.setFieldValue("PaidAmount", 0);
                             formik.setFieldValue("CashAmount", 0);

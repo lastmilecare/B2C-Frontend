@@ -250,6 +250,7 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
               "Pulse",
               "SpO₂",
               "Temp",
+              "Glucose",
               "Height",
               "Weight",
             ].map((h) => (
@@ -261,13 +262,14 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
         </thead>
         <tbody style={{ height: "30px" }}>
           <tr>
-            <td style={tdCenter}>{data?.bpSystolic}</td>
-            <td style={tdCenter}>{data?.bpDiastolic}</td>
-            <td style={tdCenter}>{data?.pulseRate}</td>
-            <td style={tdCenter}>{data?.spo2}</td>
-            <td style={tdCenter}>{data?.temperature}</td>
-            <td style={tdCenter}>{data?.height}</td>
-            <td style={tdCenter}>{data?.weight}</td>
+            <td style={tdCenter}>{data?.bpSystolic ?? "-"}</td>
+            <td style={tdCenter}>{data?.bpDiastolic ?? "-"}</td>
+            <td style={tdCenter}>{data?.pulseRate ?? "-"}</td>
+            <td style={tdCenter}>{data?.spo2 ?? "-"}</td>
+            <td style={tdCenter}>{data?.temperature ?? "-"}</td>
+            <td style={tdCenter}>{data?.glucose ?? "-"}</td>
+            <td style={tdCenter}>{data?.height ?? "-"}</td>
+            <td style={tdCenter}>{data?.weight ?? "-"}</td>
           </tr>
         </tbody>
       </table>

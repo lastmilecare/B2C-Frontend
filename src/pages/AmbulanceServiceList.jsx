@@ -25,26 +25,46 @@ const STATUS_COLORS = {
   inactive: "bg-gray-100 text-gray-600",
 };
 
+const displayText = (value, fallback = "—") => {
+  if (value === null || value === undefined || String(value).trim() === "") {
+    return fallback;
+  }
+  return String(value);
+};
+
 const StatusBadge = ({ status }) => (
   <span
-    className={`inline-flex items-center whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold capitalize ${
+    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold capitalize ${
       STATUS_COLORS[status] || STATUS_COLORS.inactive
     }`}
   >
-    {status.replace("_", " ")}
+    {(status || "inactive").replace("_", " ")}
   </span>
 );
 
 const TypeBadge = ({ type }) => (
   <span
-    className={`inline-flex items-center whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold capitalize ${
+    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold capitalize ${
       type === "company"
         ? "bg-green-100 text-green-700"
         : "bg-purple-100 text-purple-700"
     }`}
   >
-    {type}
+    {displayText(type, "—")}
   </span>
+);
+
+const LabeledLines = ({ lines }) => (
+  <div className="flex flex-col gap-1 py-2 text-xs leading-snug text-slate-700">
+    {lines.map(({ label, value, title }) => (
+      <div key={label} className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 items-start">
+        <span className="text-slate-500 font-medium whitespace-nowrap">{label}</span>
+        <span className="truncate" title={title || value}>
+          {value}
+        </span>
+      </div>
+    ))}
+  </div>
 );
 
 const AmbulanceServiceList = () => {
@@ -193,17 +213,18 @@ const AmbulanceServiceList = () => {
   const columns = [
     {
       name: "Patient",
-      minWidth: "190px",
+      minWidth: "200px",
+      grow: 1.2,
       wrap: false,
       cell: (row) => (
-        <div className="flex items-center gap-2.5 py-1">
-          <Avatar name={row.patient_name} />
-          <div className="min-w-0 leading-tight">
+        <div className="flex items-center gap-3 py-2 min-h-[52px]">
+          <Avatar name={displayText(row.patient_name, "Patient")} />
+          <div className="min-w-0">
             <p className="font-semibold text-gray-800 truncate">
-              {row.patient_name}
+              {displayText(row.patient_name, "No name")}
             </p>
-            <p className="text-xs text-gray-500 whitespace-nowrap">
-              {row.patient_mobile || "No mobile"}
+            <p className="text-xs text-gray-500">
+              {displayText(row.patient_mobile, "No mobile")}
             </p>
           </div>
         </div>
@@ -211,140 +232,117 @@ const AmbulanceServiceList = () => {
     },
     {
       name: "Ambulance",
-      minWidth: "150px",
+      minWidth: "160px",
+      grow: 1,
       wrap: false,
       cell: (row) => (
-        <div className="py-1 text-xs min-w-0">
-          <p
-            className="font-medium truncate max-w-[140px]"
-            title={row.ambulance?.unique_name}
-          >
-            {row.ambulance?.unique_name || "-"}
-          </p>
-          <p
-            className="text-slate-500 truncate max-w-[140px]"
-            title={row.ambulance?.number_plate}
-          >
-            {row.ambulance?.number_plate || "—"}
-          </p>
-        </div>
+        <LabeledLines
+          lines={[
+            {
+              label: "ID:",
+              value: displayText(row.ambulance?.unique_name),
+              title: row.ambulance?.unique_name,
+            },
+            {
+              label: "Plate:",
+              value: displayText(row.ambulance?.number_plate),
+              title: row.ambulance?.number_plate,
+            },
+          ]}
+        />
       ),
     },
     {
       name: "Route",
-      minWidth: "170px",
+      minWidth: "180px",
+      grow: 1.2,
       wrap: false,
       cell: (row) => (
-        <div className="py-1 text-xs leading-snug">
-          <p className="truncate max-w-[160px]" title={row.start_point}>
-            <span className="text-slate-500">From:</span> {row.start_point}
-          </p>
-          <p className="truncate max-w-[160px]" title={row.end_point}>
-            <span className="text-slate-500">To:</span> {row.end_point}
-          </p>
-        </div>
+        <LabeledLines
+          lines={[
+            {
+              label: "From:",
+              value: displayText(row.start_point),
+              title: row.start_point,
+            },
+            {
+              label: "To:",
+              value: displayText(row.end_point),
+              title: row.end_point,
+            },
+          ]}
+        />
       ),
     },
     {
-      name: "Odometer Reading",
-      minWidth: "210px",
-      wrap: false,
-      cell: (row) => {
-        const formatValue = (value) =>
-          value !== null && value !== undefined && value !== "" ? value : "N/A";
-
-        return (
-          <div className="py-1 text-xs space-y-0.5">
-            <p
-              className="flex items-center gap-1 min-w-0"
-              title={String(formatValue(row.odometer_start))}
-            >
-              <span className="shrink-0">📍</span>
-              <span className="text-gray-500 shrink-0">Start:</span>
-              <span className="truncate">
-                {formatValue(row.odometer_start)}
-              </span>
-            </p>
-
-            <p
-              className="flex items-center gap-1 min-w-0"
-              title={String(formatValue(row.odometer_end))}
-            >
-              <span className="shrink-0">🏁</span>
-              <span className="text-gray-500 shrink-0">End:</span>
-              <span className="truncate">{formatValue(row.odometer_end)}</span>
-            </p>
-
-            <p
-              className="flex items-center gap-1 min-w-0"
-              title={String(formatValue(row.trip_distance))}
-            >
-              <span className="shrink-0">📏</span>
-              <span className="text-gray-500 shrink-0">Dis:</span>
-              <span className="truncate">{formatValue(row.trip_distance)}</span>
-            </p>
-          </div>
-        );
-      },
-    },
-    {
       name: "Pickup / Drop",
-      minWidth: "210px",
+      minWidth: "200px",
+      grow: 1.4,
       wrap: false,
       cell: (row) => (
-        <div className="py-1 text-xs space-y-0.5">
-          <p
-            className="flex items-center gap-1 min-w-0"
-            title={row.pickup_address}
-          >
-            <span className="shrink-0">📍</span>
-            <span className="truncate">{row.pickup_address}</span>
-          </p>
-          <p
-            className="flex items-center gap-1 min-w-0"
-            title={row.drop_address}
-          >
-            <span className="shrink-0">🏥</span>
-            <span className="truncate">{row.drop_address}</span>
-          </p>
-        </div>
+        <LabeledLines
+          lines={[
+            {
+              label: "Pickup:",
+              value: displayText(row.pickup_address),
+              title: row.pickup_address,
+            },
+            {
+              label: "Drop:",
+              value: displayText(row.drop_address),
+              title: row.drop_address,
+            },
+          ]}
+        />
       ),
     },
     {
       name: "Symptom",
-      minWidth: "100px",
+      minWidth: "110px",
+      grow: 0.8,
       wrap: false,
+      center: true,
       cell: (row) => (
         <span
-          className="block text-xs text-slate-600 truncate max-w-[100px]"
-          title={row.major_symptom || "N/A"}
+          className="text-xs text-slate-600 text-center block max-w-[120px] truncate mx-auto"
+          title={displayText(row.major_symptom, "N/A")}
         >
-          {row.major_symptom || "N/A"}
+          {displayText(row.major_symptom, "N/A")}
         </span>
       ),
     },
     {
       name: "Type",
       minWidth: "100px",
-      wrap: false,
-      center: true,
-      cell: (row) => <TypeBadge type={row.patient_type} />,
-    },
-    {
-      name: "Status",
-      minWidth: "115px",
+      grow: 0.6,
       wrap: false,
       center: true,
       cell: (row) => (
-        <StatusBadge status={row.ambulance?.status || "available"} />
+        <div className="flex justify-center py-2">
+          <TypeBadge type={row.patient_type} />
+        </div>
+      ),
+    },
+    {
+      name: "Status",
+      minWidth: "110px",
+      grow: 0.7,
+      wrap: false,
+      center: true,
+      cell: (row) => (
+        <div className="flex justify-center py-2">
+          <StatusBadge status={row.ambulance?.status || "available"} />
+        </div>
       ),
     },
     {
       name: "Date & Time",
-      minWidth: "125px",
+      minWidth: "130px",
+      grow: 0.8,
       wrap: false,
+      center: true,
       cell: (row) => (
-        <div className="py-1 text-xs leading-tight whitespace-nowrap">
+        <div className="py-2 text-xs leading-tight text-center">
           <p className="font-medium text-slate-700">
             {formatDate(row.createdAt)}
           </p>
@@ -355,7 +353,7 @@ const AmbulanceServiceList = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-[100%] mx-auto px-1">
       <h1 className="text-2xl font-semibold text-gray-700 mb-6">
         Ambulance Services
       </h1>
