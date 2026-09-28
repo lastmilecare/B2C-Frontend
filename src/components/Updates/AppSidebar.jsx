@@ -43,6 +43,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     campopd: false,
     Revenue: false,
     PatientDetails: false,
+    DailyRevenueReport: false,
   });
 
   const toggleSubMenu = (menu) => {
@@ -102,58 +103,53 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     </div>
   );
 
-  const inventoryMenu =
-    can("read:sales_record") && (
-      <MenuGroup
-        menuKey="inventory"
-        icon={ArchiveBoxIcon}
-        label="Inventory"
-      >
-        {can("create:purchased_entry") && (
-          <NavLink
-            to="/purchased-entry"
-            className={subNavItem}
-            onClick={() => setIsOpen(false)}
-          >
-            Purchase Entry
-          </NavLink>
-        )}
-        {can("create:billing") && (
-          <NavLink
-            to="/billing"
-            className={subNavItem}
-            onClick={() => setIsOpen(false)}
-          >
-            Medicine Billing
-          </NavLink>
-        )}
-        {can("read:expiry_items") && (
-          <NavLink
-            to="/expiry-items"
-            className={subNavItem}
-            onClick={() => setIsOpen(false)}
-          >
-            Expiry Items
-          </NavLink>
-        )}
-        {can("create:camp_billing") && (
-          <NavLink
-            to="/camp-billing"
-            className={subNavItem}
-            onClick={() => setIsOpen(false)}
-          >
-            Camp Billing
-          </NavLink>
-        )}
+  const inventoryMenu = can("read:sales_record") && (
+    <MenuGroup menuKey="inventory" icon={ArchiveBoxIcon} label="Inventory">
+      {can("create:purchased_entry") && (
         <NavLink
-          to="/sales-record"
+          to="/purchased-entry"
           className={subNavItem}
           onClick={() => setIsOpen(false)}
         >
-          Sales Record
+          Purchase Entry
         </NavLink>
-      </MenuGroup>
-    );
+      )}
+      {can("create:billing") && (
+        <NavLink
+          to="/billing"
+          className={subNavItem}
+          onClick={() => setIsOpen(false)}
+        >
+          Medicine Billing
+        </NavLink>
+      )}
+      {can("read:expiry_items") && (
+        <NavLink
+          to="/expiry-items"
+          className={subNavItem}
+          onClick={() => setIsOpen(false)}
+        >
+          Expiry Items
+        </NavLink>
+      )}
+      {can("create:camp_billing") && (
+        <NavLink
+          to="/camp-billing"
+          className={subNavItem}
+          onClick={() => setIsOpen(false)}
+        >
+          Camp Billing
+        </NavLink>
+      )}
+      <NavLink
+        to="/sales-record"
+        className={subNavItem}
+        onClick={() => setIsOpen(false)}
+      >
+        Sales Record
+      </NavLink>
+    </MenuGroup>
+  );
 
   return (
     <motion.aside
@@ -237,7 +233,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               </NavLink>
             )}
             {can("read:opd_analysis") && (
-             <NavLink
+              <NavLink
                 to="/opd-analysis"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
@@ -323,21 +319,23 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             )}
           </MenuGroup>
         )}
-          {can("read:patient_details") && (
-          <MenuGroup menuKey="PatientDetails" icon={UserCircleIcon} label="Patient Details">
+        {can("read:patient_details") && (
+          <MenuGroup
+            menuKey="PatientDetails"
+            icon={UserCircleIcon}
+            label="Patient Details"
+          >
             {can("read:patient_details") && (
               <NavLink
                 to="/patient-details"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-              Patient Details
+                Patient Details
               </NavLink>
-              )}  
-
-        
+            )}
           </MenuGroup>
-         )}
+        )}
 
         {/*----- Revenue--------*/}
 
@@ -369,6 +367,15 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 onClick={() => setIsOpen(false)}
               >
                 Opd Revenue
+              </NavLink>
+            )}
+            {can("read:opd_revenue") && (
+              <NavLink
+                to="/daily-revenue-report"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Daily Revenue Reports
               </NavLink>
             )}
           </MenuGroup>
@@ -541,7 +548,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             >
               OPD Health Checkup
             </NavLink>
-             <NavLink
+            <NavLink
               to="/ohc-prescription-form"
               className={subNavItem}
               onClick={() => setIsOpen(false)}

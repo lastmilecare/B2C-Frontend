@@ -63,6 +63,7 @@ import AmbulanceServicePage from "../pages/AmbulanceServicePage";
 import OpdohcPrescriptionPage from "../pages/OhcPrescriptionpage";
 import ohcPrescriptionForm from "../pages/OhcPrescriptionForm";
 import ohcPrescriptionList from "../pages/OhcPrescriptionList";
+import DailyRevenueReportPage from "../pages/DailyRevenueReportPage";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -791,6 +792,21 @@ export const ROUTES = [
     path: "/ohc-prescription-form/:ID",
     component: OpdohcPrescriptionPage,
     permission: null,
+    showInSidebar: false,
+  },
+  {
+    path: "/daily-revenue-report",
+    component: DailyRevenueReportPage,
+    permission: null,
+    label: "Daily Revenue Report",
+    icon: "DocumentTextIcon",
+    group: "Prescription",
+    showInSidebar: true,
+  },
+  {
+    path: "/daily-revenue-report/:id",
+    component: DailyRevenueReportPage,
+    permission: "null",
     showInSidebar: false,
   },
 ];

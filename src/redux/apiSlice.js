@@ -2315,6 +2315,104 @@ export const api = createApi({
       }),
       providesTags: ["Fitness"],
     }),
+    getDailyRevenueReports: build.query({
+      query: ({ page = 1, limit = 10, ...filters } = {}) => ({
+        url: "/daily-revenue-reports",
+        method: "GET",
+        params: { page, limit, ...filters },
+      }),
+      providesTags: (result) =>
+        result?.data?.length
+          ? [
+              ...result.data.map(({ id }) => ({ type: "Daily Revenue", id })),
+              { type: "Daily Revenue", id: "LIST" },
+            ]
+          : [{ type: "Daily Revenue", id: "LIST" }],
+    }),
+
+    getDailyRevenueReport: build.query({
+      query: (id) => ({
+        url: `/daily-revenue-reports/${id}`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, id) => [{ type: "Daily Revenue", id }],
+    }),
+
+    getDailyRevenuePreview: build.mutation({
+      query: (body) => ({
+        url: "/daily-revenue-reports/preview",
+        method: "POST",
+        data: body,
+      }),
+    }),
+
+    createDailyRevenueReport: build.mutation({
+      query: (body) => ({
+        url: "/daily-revenue-reports",
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: [{ type: "Daily Revenue", id: "LIST" }],
+    }),
+
+    updateDailyRevenueReport: build.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/daily-revenue-reports/${id}`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Daily Revenue", id },
+        { type: "Daily Revenue", id: "LIST" },
+      ],
+    }),
+
+    deleteDailyRevenueReport: build.mutation({
+      query: (id) => ({
+        url: `/daily-revenue-reports/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Daily Revenue", id },
+        { type: "Daily Revenue", id: "LIST" },
+      ],
+    }),
+
+    sendDailyRevenueReport: build.mutation({
+      query: (id) => ({
+        url: `/daily-revenue-reports/${id}/send`,
+        method: "POST",
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Daily Revenue", id },
+        { type: "Daily Revenue", id: "LIST" },
+      ],
+    }),
+
+    downloadDailyRevenueReportPdf: build.mutation({
+      query: (id) => ({
+        url: `/daily-revenue-reports/${id}/pdf`,
+        method: "GET",
+        responseType: "blob",
+      }),
+    }),
+
+    getRevenueOpeningBalance: build.query({
+      query: () => ({
+        url: "/daily-revenue-reports/opening-balance",
+        method: "GET",
+      }),
+      providesTags: [{ type: "Revenue Opening Balance", id: "CURRENT" }],
+    }),
+
+    upsertRevenueOpeningBalance: build.mutation({
+      query: (body) => ({
+        url: "/daily-revenue-reports/opening-balance",
+        method: "PUT",
+        data: body,
+      }),
+      invalidatesTags: [{ type: "Revenue Opening Balance", id: "CURRENT" }],
+    }),
   }),
 });
 
@@ -2560,5 +2658,16 @@ export const {
   useUpdateAmbulanceServiceMutation,
   useDeleteAmbulanceServiceMutation,
   useGetOpdBillingCountQuery,
-  useGetFitnessCertificatesCountQuery
+  useGetFitnessCertificatesCountQuery,
+  useGetDailyRevenuePreviewQuery,
+  useGetDailyRevenueReportsQuery,
+  useGetDailyRevenueReportQuery,
+  useGetDailyRevenuePreviewMutation,
+  useCreateDailyRevenueReportMutation,
+  useUpdateDailyRevenueReportMutation,
+  useDeleteDailyRevenueReportMutation,
+  useSendDailyRevenueReportMutation,
+  useDownloadDailyRevenueReportPdfMutation,
+  useGetRevenueOpeningBalanceQuery,
+  useUpsertRevenueOpeningBalanceMutation,
 } = api;
