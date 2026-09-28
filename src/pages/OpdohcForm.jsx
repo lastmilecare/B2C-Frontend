@@ -143,6 +143,7 @@ const OpdOhcForm = () => {
     skip: !billNo,
   });
   const [payModeFocused, setPayModeFocused] = useState(false);
+  const paidAmountInputId = "opd-ohc-paid-amount";
   const populatedUhidRef = useRef("");
 
   const [printRow, setPrintRow] = useState(null);
@@ -1033,16 +1034,23 @@ const OpdOhcForm = () => {
                       label="Total Amount"
                     />
                     <Input
+                      id={paidAmountInputId}
                       label="Paid Amount"
                       inputMode="numeric"
                       type="text"
                       value={formik.values.PaidAmount}
+                      className={
+                        payModeFocused && formik.values.PayMode
+                          ? "border-sky-500 bg-sky-50 ring-2 ring-sky-300"
+                          : ""
+                      }
                       onChange={(e) => {
                         const onlyNumbers = e.target.value.replace(
                           /[^0-9]/g,
                           "",
                         );
                         setIsPaidManuallyEdited(true);
+                        setPayModeFocused(false);
                         formik.setFieldValue(
                           "PaidAmount",
                           Number(onlyNumbers || 0),
@@ -1098,11 +1106,21 @@ const OpdOhcForm = () => {
                         onChange={(e) => {
                           const mode = e.target.value;
                           formik.setFieldValue("PayMode", mode);
-                          setPayModeFocused(true);
+                          setPayModeFocused(!!mode);
 
                           setTimeout(() => {
                             setPayModeFocused(false);
                           }, 3000);
+
+                          if (mode) {
+                            setTimeout(() => {
+                              const el = document.getElementById(
+                                paidAmountInputId,
+                              );
+                              el?.focus();
+                              el?.select();
+                            }, 0);
+                          }
 
                           const currentPaid = formik.values.PaidAmount;
                           if (mode === "1") {
