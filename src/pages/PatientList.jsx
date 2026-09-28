@@ -283,6 +283,25 @@ const PatientListCopy = () => {
       },
     },
     {
+      name: "Is Camp Registration",
+      center: true,
+      width: "140px",
+      minWidth: "140px",
+      maxWidth: "140px",
+      cell: (row) => {
+        const isCamp =
+          row.isCampRegistration === true;
+        return isCamp ? (
+          <span
+            className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-700 text-sm font-bold"
+            title="Camp registration"
+          >
+            ✓
+          </span>
+        ) : null;
+      },
+    },
+    {
       name: "Referred By",
       width: "160px",
       minWidth: "160px",
