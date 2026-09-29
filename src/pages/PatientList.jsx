@@ -298,7 +298,9 @@ const PatientListCopy = () => {
           >
             ✓
           </span>
-        ) : null;
+        ) : (
+      <span className="text-gray-500 text-sm font-medium">-</span>
+    );
       },
     },
     {

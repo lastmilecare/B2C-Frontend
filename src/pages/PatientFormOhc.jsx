@@ -48,7 +48,6 @@ const STEP_FIELDS = {
     "contactNumber",
     "CO",
     "gender",
-    "occupation",
     "department_id",
     "designation_id",
   ],
@@ -219,6 +218,7 @@ const PatientRegistrationOhc = () => {
       department_id: "",
       designation_id: "",
       vendor_id: "",
+      ageNumber: "",
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
@@ -231,18 +231,20 @@ const PatientRegistrationOhc = () => {
       fincat: Yup.string().required("Fin Category is required"),
       country: Yup.string().required("Country is required"),
       localAddressState: Yup.string().required("State is required"),
-      occupation: Yup.string().required("Occupation is required"),
+      occupation: Yup.string(),
       CO: Yup.string().required("Co is required"),
       employeeId: Yup.string(),
-      pin: Yup.string()
-        .required("Pin Code is required")
-        .matches(/^[0-9]{6}$/, "Pin Code must be 6 digits"),
+      pin: Yup.string().matches(/^[0-9]{6}$/, {
+        message: "Pin Code must be 6 digits",
+        excludeEmptyString: true,
+      }),
       // ReferredBy: Yup.string().required("Referred By is required"),
       idProof_name: Yup.string().required("Identification Type is required"),
 
       idProof_number: Yup.string().when("idProof_name", {
-        is: (val) => !!val,
+        is: (val) => val && val !== "N/A",
         then: (schema) => schema.required("Identification Number is required"),
+        otherwise: (schema) => schema.notRequired(),
       }),
       department_id: requiredSelect("Department is required"),
       designation_id: requiredSelect("Designation is required"),
@@ -342,7 +344,17 @@ const PatientRegistrationOhc = () => {
           title: p.title || "",
           name: p.name || "",
           dob: p.dateOfBirthOrAge?.split("T")[0] || "",
-          age: p.age ? `${p.age}y ${p.imonth || 0}m ${p.idays || 0}d` : "",
+          age:
+            Number(p.age) > 0 ||
+            Number(p.iage) > 0 ||
+            Number(p.imonth) > 0 ||
+            Number(p.idays) > 0
+              ? `${p.age || p.iage || 0}y ${p.imonth || 0}m ${p.idays || 0}d`
+              : "",
+          ageNumber:
+            Number(p.age) > 0 || Number(p.iage) > 0
+              ? String(p.age || p.iage)
+              : "",
           CO: p.co || "",
           relationship: p.relationship || "",
           gender: p.gender || "",
@@ -452,6 +464,7 @@ const PatientRegistrationOhc = () => {
         name: "",
         dob: "",
         age: "",
+        ageNumber: "",
         CO: "",
         relationship: "",
         gender: "",
@@ -504,18 +517,11 @@ const PatientRegistrationOhc = () => {
     }
   };
 
-  const handleDOBChange = (e) => {
-    const dob = e.target.value;
-    formik.setFieldValue("dob", dob);
-    if (!dob) {
-      formik.setFieldValue("age", "");
-      return;
-    }
-    const birth = new Date(dob);
-    const today = new Date();
+  const calculateAgeParts = (birth, today = new Date()) => {
     let years = today.getFullYear() - birth.getFullYear();
     let months = today.getMonth() - birth.getMonth();
     let days = today.getDate() - birth.getDate();
+
     if (days < 0) {
       months -= 1;
       days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
@@ -524,7 +530,52 @@ const PatientRegistrationOhc = () => {
       years -= 1;
       months += 12;
     }
+    return { years, months, days };
+  };
+
+  const setAgeFieldsFromDOB = (date) => {
+    if (!date) {
+      formik.setFieldValue("dob", "");
+      formik.setFieldValue("age", "");
+      formik.setFieldValue("ageNumber", "");
+      return;
+    }
+
+    const formattedDate = `${date.getFullYear()}-${String(
+      date.getMonth() + 1,
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+    const { years, months, days } = calculateAgeParts(date);
+
+    formik.setFieldValue("dob", formattedDate);
     formik.setFieldValue("age", `${years}y ${months}m ${days}d`);
+    formik.setFieldValue("ageNumber", String(years));
+  };
+
+  const handleAgeNumberChange = (e) => {
+    const raw = e.target.value.replace(/[^0-9]/g, "");
+    formik.setFieldValue("ageNumber", raw);
+
+    if (!raw) {
+      formik.setFieldValue("dob", "");
+      formik.setFieldValue("age", "");
+      return;
+    }
+
+    const years = parseInt(raw, 10) || 0;
+    const today = new Date();
+    const derivedDOB = new Date(
+      today.getFullYear() - years,
+      today.getMonth(),
+      today.getDate(),
+    );
+
+    const formattedDate = `${derivedDOB.getFullYear()}-${String(
+      derivedDOB.getMonth() + 1,
+    ).padStart(2, "0")}-${String(derivedDOB.getDate()).padStart(2, "0")}`;
+
+    formik.setFieldValue("dob", formattedDate);
+    formik.setFieldValue("age", `${years}y 0m 0d`);
   };
   const selectedDepartment = departments.find(
     (item) => String(item.id) === String(formik.values.department_id),
@@ -536,6 +587,14 @@ const PatientRegistrationOhc = () => {
   const selectedVendor = vendors.find(
     (item) => String(item.id) === String(formik.values.vendor_id),
   );
+
+  const TITLE_GENDER_MAP = {
+    Mr: "Male",
+    Mrs: "Female",
+    Miss: "Female",
+    Master: "Male",
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
       {(isEdit && isPageLoading) || isSubmitting ? <GlobalLoader /> : null}
@@ -603,10 +662,23 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       label="Title"
                       required
                       error={formik.touched.title && formik.errors.title}
+                      onChange={(e) => {
+                        const title = e.target.value;
+
+                        formik.setFieldValue("title", title);
+
+                        const mappedGender = TITLE_GENDER_MAP[title];
+
+                        if (mappedGender) {
+                          formik.setFieldValue("gender", mappedGender);
+                        }
+                      }}
                     >
                       <option value="">Select</option>
                       {TITLES.map((t) => (
-                        <option key={t}>{t}</option>
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
                       ))}
                     </Select>
 
@@ -615,6 +687,15 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       label="Full Name"
                       required
                       error={formik.touched.name && formik.errors.name}
+                    />
+
+                    <Input
+                      label="Enter Age (Years)"
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={3}
+                      value={formik.values.ageNumber}
+                      onChange={handleAgeNumberChange}
                     />
 
                     <div className="flex flex-col">
@@ -628,47 +709,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                             ? new Date(formik.values.dob + "T00:00:00")
                             : null
                         }
-                        onChange={(date) => {
-                          if (!date) {
-                            formik.setFieldValue("dob", "");
-                            formik.setFieldValue("age", "");
-                            return;
-                          }
-
-                          const formattedDate = `${date.getFullYear()}-${String(
-                            date.getMonth() + 1,
-                          ).padStart(
-                            2,
-                            "0",
-                          )}-${String(date.getDate()).padStart(2, "0")}`;
-                          formik.setFieldValue("dob", formattedDate);
-
-                          const birth = new Date(date);
-                          const today = new Date();
-
-                          let years = today.getFullYear() - birth.getFullYear();
-                          let months = today.getMonth() - birth.getMonth();
-                          let days = today.getDate() - birth.getDate();
-
-                          if (days < 0) {
-                            months -= 1;
-                            days += new Date(
-                              today.getFullYear(),
-                              today.getMonth(),
-                              0,
-                            ).getDate();
-                          }
-
-                          if (months < 0) {
-                            years -= 1;
-                            months += 12;
-                          }
-
-                          formik.setFieldValue(
-                            "age",
-                            `${years}y ${months}m ${days}d`,
-                          );
-                        }}
+                        onChange={(date) => setAgeFieldsFromDOB(date)}
                         dateFormat="dd/MM/yyyy"
                         placeholderText="DD/MM/YYYY"
                         maxDate={new Date()}
@@ -678,8 +719,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                         yearDropdownItemNumber={100}
                         wrapperClassName="w-full"
                         popperClassName="z-50"
-                        className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm
-    outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                        className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
                       />
                     </div>
 
@@ -758,7 +798,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     <Select
                       {...formik.getFieldProps("occupation")}
                       label="Occupation"
-                      required
                       error={
                         formik.touched.occupation && formik.errors.occupation
                       }
@@ -931,7 +970,6 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       label="Pin Code"
                       type="tel"
                       inputMode="numeric"
-                      required
                       maxLength={6}
                       value={formik.values.pin}
                       onChange={(e) => {
@@ -1011,8 +1049,20 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     />
 
                     <Select
-                      {...formik.getFieldProps("idProof_name")}
                       label="Identification Type"
+                      name="idProof_name"
+                      value={formik.values.idProof_name}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        formik.setFieldValue("idProof_name", value);
+
+                        if (value === "N/A") {
+                          formik.setFieldValue("idProof_number", "N/A");
+                        } else if (formik.values.idProof_number === "N/A") {
+                          formik.setFieldValue("idProof_number", "");
+                        }
+                      }}
                       required
                       error={
                         formik.touched.idProof_name &&
@@ -1030,10 +1080,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                     {formik.values.idProof_name && (
                       <Input
                         label="Identification Number"
-                        required
+                        required={formik.values.idProof_name !== "N/A"}
                         value={formik.values.idProof_number}
                         onChange={formik.handleChange}
                         name="idProof_number"
+                        readOnly={formik.values.idProof_name === "N/A"}
                         error={
                           formik.touched.idProof_number &&
                           formik.errors.idProof_number
