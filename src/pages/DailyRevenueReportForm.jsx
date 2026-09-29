@@ -13,6 +13,7 @@ import {
   useGetDailyRevenueReportQuery,
   useSendDailyRevenueReportMutation,
   useUpdateDailyRevenueReportMutation,
+  useGetDailyRevenueReportPreviewQuery,
 } from "../redux/apiSlice";
 import { healthAlerts } from "../utils/healthSwal";
 import { getApiErrorMessage } from "../utils/helper";
@@ -54,17 +55,19 @@ const DailyRevenueReportForm = () => {
   const isEdit = Boolean(id && id !== "new");
   const [activeTab, setActiveTab] = useState(1);
   const [form, setForm] = useState(initialForm);
+  const [livePreview, setLivePreview] = useState(null);
 
   const { data: report, isLoading } = useGetDailyRevenueReportQuery(id, {
     skip: !isEdit,
   });
-  const { data: preview } = useGetDailyRevenuePreviewMutation(
-    {
-      report_date: form.report_date,
-      ...form,
-    },
-    { skip: activeTab !== 2 },
-  );
+
+  const { data: savedPreview, isFetching: savedPreviewLoading } =
+    useGetDailyRevenueReportPreviewQuery(id, {
+      skip: !isEdit || activeTab !== 2,
+    });
+
+  const [fetchPreview, { isLoading: previewLoading }] =
+    useGetDailyRevenuePreviewMutation();
 
   const [createReport, { isLoading: creating }] =
     useCreateDailyRevenueReportMutation();
@@ -72,6 +75,19 @@ const DailyRevenueReportForm = () => {
     useUpdateDailyRevenueReportMutation();
   const [sendReport, { isLoading: sending }] =
     useSendDailyRevenueReportMutation();
+
+  const buildPayload = () => ({
+    report_date: form.report_date,
+    opd: Number(form.opd) || 0,
+    ipd: Number(form.ipd) || 0,
+    b2b_patients: Number(form.b2b_patients) || 0,
+    in_house: Object.fromEntries(
+      Object.entries(form.in_house).map(([k, v]) => [k, Number(v) || 0]),
+    ),
+    third_party: Object.fromEntries(
+      Object.entries(form.third_party).map(([k, v]) => [k, Number(v) || 0]),
+    ),
+  });
 
   useEffect(() => {
     if (report) {
@@ -81,10 +97,30 @@ const DailyRevenueReportForm = () => {
         ipd: report.ipd ?? "",
         b2b_patients: report.b2b_patients ?? "",
         in_house: { ...emptyLines(IN_HOUSE_FIELDS), ...report.in_house },
-        third_party: { ...emptyLines(THIRD_PARTY_FIELDS), ...report.third_party },
+        third_party: {
+          ...emptyLines(THIRD_PARTY_FIELDS),
+          ...report.third_party,
+        },
       });
     }
   }, [report]);
+
+  useEffect(() => {
+    if (activeTab !== 2 || (isEdit && id)) {
+      return;
+    }
+
+    const loadPreview = async () => {
+      try {
+        const result = await fetchPreview(buildPayload()).unwrap();
+        setLivePreview(result);
+      } catch (err) {
+        healthAlerts.error(getApiErrorMessage(err, "Preview failed"), "Error");
+      }
+    };
+
+    loadPreview();
+  }, [activeTab, isEdit, id, form, fetchPreview]);
 
   const totalPatients = useMemo(() => {
     const a = Number(form.opd) || 0;
@@ -105,19 +141,6 @@ const DailyRevenueReportForm = () => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-
-  const buildPayload = () => ({
-    report_date: form.report_date,
-    opd: Number(form.opd) || 0,
-    ipd: Number(form.ipd) || 0,
-    b2b_patients: Number(form.b2b_patients) || 0,
-    in_house: Object.fromEntries(
-      Object.entries(form.in_house).map(([k, v]) => [k, Number(v) || 0]),
-    ),
-    third_party: Object.fromEntries(
-      Object.entries(form.third_party).map(([k, v]) => [k, Number(v) || 0]),
-    ),
-  });
 
   const saveDraft = async () => {
     const payload = buildPayload();
@@ -152,7 +175,8 @@ const DailyRevenueReportForm = () => {
     }
   };
 
-  const summary = preview || report;
+  const previewData = isEdit ? savedPreview : livePreview;
+  const summary = previewData || report;
 
   if (isEdit && isLoading) {
     return <div className="p-8 text-center text-slate-500">Loading...</div>;
@@ -233,32 +257,63 @@ const DailyRevenueReportForm = () => {
                     Patient registration
                   </h3>
                   <div className="grid md:grid-cols-3 gap-6">
-                    <Input label="OPD" name="opd" type="number" value={form.opd} onChange={handleChange} />
-                    <Input label="IPD" name="ipd" type="number" value={form.ipd} onChange={handleChange} />
-                    <Input label="B2B" name="b2b_patients" type="number" value={form.b2b_patients} onChange={handleChange} />
+                    <Input
+                      label="OPD"
+                      name="opd"
+                      type="number"
+                      value={form.opd}
+                      onChange={handleChange}
+                    />
+                    <Input
+                      label="IPD"
+                      name="ipd"
+                      type="number"
+                      value={form.ipd}
+                      onChange={handleChange}
+                    />
+                    <Input
+                      label="B2B"
+                      name="b2b_patients"
+                      type="number"
+                      value={form.b2b_patients}
+                      onChange={handleChange}
+                    />
                   </div>
                 </section>
 
                 <div className="grid lg:grid-cols-2 gap-6">
-                  <LineSection title="In house revenue" fields={IN_HOUSE_FIELDS} section="in_house" form={form} onChange={handleLineChange} />
-                  <LineSection title="Third party revenue" fields={THIRD_PARTY_FIELDS} section="third_party" form={form} onChange={handleLineChange} />
+                  <LineSection
+                    title="In house revenue"
+                    fields={IN_HOUSE_FIELDS}
+                    section="in_house"
+                    form={form}
+                    onChange={handleLineChange}
+                  />
+                  <LineSection
+                    title="Third party revenue"
+                    fields={THIRD_PARTY_FIELDS}
+                    section="third_party"
+                    form={form}
+                    onChange={handleLineChange}
+                  />
                 </div>
 
-                {summary && (
-                  <SummaryReadOnly summary={summary} />
-                )}
+                {summary && <SummaryReadOnly summary={summary} />}
               </>
             )}
 
             {activeTab === 2 && (
-              <div className="bg-sky-50 p-6 rounded-xl border space-y-3">
+              <div className="bg-sky-50 p-6 rounded-xl border space-y-4">
                 <h3 className="font-semibold text-sky-700 flex items-center gap-2">
                   <ClipboardDocumentIcon className="w-5 h-5" />
-                  Client PDF preview
+                  Preview &amp; send
                 </h3>
-                <p className="text-sm text-slate-600">
-                  Same layout as Excel. Use your existing jspdf / xlsx-js-style export here.
-                </p>
+                {(previewLoading || savedPreviewLoading) && (
+                  <p className="text-sm text-slate-500">Loading preview…</p>
+                )}
+                {previewData?.delivery && (
+                  <DeliveryReadOnly delivery={previewData.delivery} />
+                )}
                 {summary && <SummaryReadOnly summary={summary} />}
               </div>
             )}
@@ -275,15 +330,29 @@ const DailyRevenueReportForm = () => {
               </Button>
               <div className="flex gap-3 flex-wrap">
                 {activeTab === 1 && (
-                  <Button type="button" variant="gray" onClick={() => setForm(initialForm)}>
+                  <Button
+                    type="button"
+                    variant="gray"
+                    onClick={() => setForm(initialForm)}
+                  >
                     <ArrowPathIcon className="w-5 h-5 inline mr-1" />
                     Reset
                   </Button>
                 )}
-                <Button type="button" variant="sky" onClick={saveDraft} disabled={creating || updating}>
+                <Button
+                  type="button"
+                  variant="sky"
+                  onClick={saveDraft}
+                  disabled={creating || updating}
+                >
                   Save draft
                 </Button>
-                <Button type="button" variant="sky" onClick={saveAndSend} disabled={creating || updating || sending}>
+                <Button
+                  type="button"
+                  variant="sky"
+                  onClick={saveAndSend}
+                  disabled={creating || updating || sending}
+                >
                   <CheckCircleIcon className="w-5 h-5 inline mr-1" />
                   Save &amp; send to client
                 </Button>
@@ -313,6 +382,29 @@ const LineSection = ({ title, fields, section, form, onChange }) => (
       ))}
     </div>
   </section>
+);
+
+const DeliveryReadOnly = ({ delivery }) => (
+  <div className="text-sm bg-white rounded-lg border p-4 space-y-1">
+    <p>
+      <span className="text-slate-500 font-medium">To: </span>
+      {delivery.client_email || (
+        <span className="text-red-600">
+          Not set — save in opening balance settings
+        </span>
+      )}
+    </p>
+    {delivery.email_cc && (
+      <p>
+        <span className="text-slate-500 font-medium">CC: </span>
+        {delivery.email_cc}
+      </p>
+    )}
+    <p>
+      <span className="text-slate-500 font-medium">Subject: </span>
+      {delivery.email_subject}
+    </p>
+  </div>
 );
 
 const SummaryReadOnly = ({ summary }) => (

@@ -2413,6 +2413,12 @@ export const api = createApi({
       }),
       invalidatesTags: [{ type: "Revenue Opening Balance", id: "CURRENT" }],
     }),
+    getDailyRevenueReportPreview: build.query({
+      query: (id) => ({
+        url: `/daily-revenue-reports/${id}/preview`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -2670,4 +2676,5 @@ export const {
   useDownloadDailyRevenueReportPdfMutation,
   useGetRevenueOpeningBalanceQuery,
   useUpsertRevenueOpeningBalanceMutation,
+  useGetDailyRevenueReportPreviewQuery,
 } = api;
