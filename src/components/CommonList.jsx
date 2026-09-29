@@ -27,6 +27,7 @@ const CommonList = ({
   onExport = () => {},
   onPrint = () => {},
   onPrintCS = () => {},
+  onSend = () => {},
   isLoading = false,
   filtersConfig = [],
   onFilterApply = () => {},
@@ -161,6 +162,7 @@ const CommonList = ({
         handler: onPrintCS,
       },
       status: { label: "Status", color: "", handler: onStatus },
+      send: { label: "Send", color: "text-emerald-700", handler: onSend },
     };
 
     return [
@@ -196,6 +198,7 @@ const CommonList = ({
     onPrint,
     onPrintCS,
     onStatus,
+    onSend,
     openMenuRow,
     allowStaffActions,
     statusOptions,

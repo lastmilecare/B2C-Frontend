@@ -21,6 +21,7 @@ const PatientTable = ({
   onStatus,
   onPrint,
   onPrintCS,
+  onSend,
   actionButtons: customActionButtons,
   statusOptions = [],
   getRowStatus,
@@ -70,6 +71,7 @@ const PatientTable = ({
         getRowStatus={getRowStatus}
         onPrint={onPrint}
         onPrintCS={onPrintCS}
+        onSend={onSend}
         enableAdd={enableAdd}
         addButtonText={addButtonText}
         onAdd={onAdd}

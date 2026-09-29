@@ -42,8 +42,8 @@ const DailyRevenueReportList = () => {
     limit,
     ...filters,
   });
-  const [sendReport] = useSendDailyRevenueReportMutation();
-
+  const [sendReport, { isLoading: isSending }] =
+    useSendDailyRevenueReportMutation();
   const reports = data?.data || [];
   const pagination = data?.pagination || {};
 
@@ -66,11 +66,41 @@ const DailyRevenueReportList = () => {
     setPage(1);
   };
 
+  const filtersConfig = [
+    {
+      label: "Status",
+      name: "status",
+      type: "select",
+      options: [
+        { label: "Draft", value: "draft" },
+        { label: "Sent", value: "sent" },
+      ],
+    },
+    { label: "Date from", name: "startDate", type: "date" },
+    { label: "Date to", name: "endDate", type: "date" },
+  ];
+
+  const openReport = (row) => {
+    navigate(`/daily-revenue-report/${row.id}`);
+  };
+
   const handleSend = async (row) => {
-    const ok = window.confirm(
-      `Send report for ${formatDate(row.report_date)} to client?`,
-    );
-    if (!ok) return;
+    if (row.status === "sent") {
+      healthAlert({
+        title: "Already sent",
+        text: "This report was already emailed to the client.",
+        icon: "info",
+      });
+      return;
+    }
+
+    const result = await healthAlert({
+      title: "Send report?",
+      text: `Email the daily revenue report for ${formatDate(row.report_date)} to the client?`,
+      type: "confirm",
+    });
+    if (!result.isConfirmed) return;
+
     try {
       await sendReport(row.id).unwrap();
       healthAlert({
@@ -87,28 +117,18 @@ const DailyRevenueReportList = () => {
     }
   };
 
-  const filtersConfig = [
-    {
-      label: "Status",
-      name: "status",
-      type: "select",
-      options: [
-        { label: "Draft", value: "draft" },
-        { label: "Sent", value: "sent" },
-      ],
-    },
-    { label: "Date from", name: "startDate", type: "date" },
-    { label: "Date to", name: "endDate", type: "date" },
-  ];
-
   const columns = [
     {
       name: "Report date",
       minWidth: "130px",
       cell: (row) => (
-        <p className="py-2 font-medium text-slate-700">
+        <button
+          type="button"
+          onClick={() => openReport(row)}
+          className="py-2 font-medium text-sky-700 hover:text-sky-900 hover:underline text-left"
+        >
           {formatDate(row.report_date)}
-        </p>
+        </button>
       ),
     },
     {
@@ -183,15 +203,14 @@ const DailyRevenueReportList = () => {
             setLimit(l);
             setPage(1);
           }}
-          isLoading={isLoading}
-          actionButtons={["edit", "custom"]}
-          onEdit={(row) => navigate(`/daily-client-revenue/${row.id}`)}
-          onCustomAction={(row) => handleSend(row)}
-          customActionLabel="Send"
-          customActionHidden={(row) => row.status === "sent"}
+          isLoading={isLoading || isSending}
+          allowStaffEdit
+          actionButtons={["edit", "send"]}
+          onEdit={openReport}
+          onSend={handleSend}
           enableAdd
           addButtonText="New report"
-          onAdd={() => navigate("/daily-client-revenue/new")}
+          onAdd={() => navigate("/daily-revenue-report/new")}
         />
       </div>
     </div>

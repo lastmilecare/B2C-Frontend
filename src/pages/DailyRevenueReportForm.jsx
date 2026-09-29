@@ -128,7 +128,7 @@ const DailyRevenueReportForm = () => {
       } else {
         const created = await createReport(payload).unwrap();
         healthAlerts.success("Report saved", "Created");
-        navigate(`/daily-client-revenue/${created.id}`);
+        navigate(`/daily-revenue-report/${created.id}`);
       }
     } catch (err) {
       healthAlerts.error(getApiErrorMessage(err, "Save failed"), "Error");
@@ -146,7 +146,7 @@ const DailyRevenueReportForm = () => {
       }
       await sendReport(reportId).unwrap();
       healthAlerts.success("Report sent to client", "Sent");
-      navigate("/daily-client-revenue", { state: { goToList: true } });
+      navigate("/daily-revenue-report", { state: { goToList: true } });
     } catch (err) {
       healthAlerts.error(getApiErrorMessage(err, "Send failed"), "Error");
     }
@@ -264,7 +264,13 @@ const DailyRevenueReportForm = () => {
             )}
 
             <div className="flex justify-between items-center pt-6 border-t flex-wrap gap-3">
-              <Button type="button" variant="gray" onClick={() => navigate("/daily-client-revenue")}>
+              <Button
+                type="button"
+                variant="gray"
+                onClick={() =>
+                  navigate("/daily-revenue-report", { state: { goToList: true } })
+                }
+              >
                 Cancel
               </Button>
               <div className="flex gap-3 flex-wrap">

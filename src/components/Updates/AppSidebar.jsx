@@ -369,7 +369,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Opd Revenue
               </NavLink>
             )}
-            {can("read:opd_revenue") && (
+            {can("read:staff_form") && (
               <NavLink
                 to="/daily-revenue-report"
                 className={subNavItem}

@@ -806,7 +806,7 @@ export const ROUTES = [
   {
     path: "/daily-revenue-report/:id",
     component: DailyRevenueReportPage,
-    permission: "null",
+    permission: "read:staff_form",
     showInSidebar: false,
   },
 ];
