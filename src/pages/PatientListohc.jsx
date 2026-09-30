@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   useGetPatientsQuery,
   useSearchUHIDQuery,
   useDownloadBulkTemplateMutation,
   useBulkUploadPatientsMutation,
   useDeletePatientMutation,
+  useGetComboQuery,
 } from "../redux/apiSlice";
 import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
@@ -51,6 +52,27 @@ const PatientListohc = () => {
 
   const patients = data?.data || [];
   const pagination = data?.pagination || {};
+
+  const { data: vendors = [] } = useGetComboQuery("ohc-vendor");
+  const vendorNameById = useMemo(() => {
+    const map = {};
+    vendors.forEach((vendor) => {
+      map[vendor.id] = vendor.name;
+      map[String(vendor.id)] = vendor.name;
+    });
+    return map;
+  }, [vendors]);
+
+  const resolveVendorName = (row) => {
+    const vendorId = row.vendor_id ?? row.vendorId;
+    if (vendorId == null || vendorId === "") return "—";
+    return (
+      vendorNameById[vendorId] ||
+      vendorNameById[String(vendorId)] ||
+      vendorNameById[Number(vendorId)] ||
+      "—"
+    );
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -287,6 +309,22 @@ const PatientListohc = () => {
           </span>
         );
       },
+    },
+
+    {
+      name: "Vendor",
+      center: true,
+      width: "180px",
+      minWidth: "180px",
+      maxWidth: "200px",
+      wrap: true,
+      cell: (row) => (
+        <div className="w-full flex justify-center items-center px-1">
+          <span className="text-xs text-slate-700 text-center leading-snug break-words">
+            {resolveVendorName(row)}
+          </span>
+        </div>
+      ),
     },
 
     {
