@@ -17,7 +17,7 @@ import {
   useGetLowStockItemsQuery,
   useGetPatientsTrendQuery,
   useGetOpdBillingCountQuery,
-  useGetAmbulanceServicesQuery
+  useGetAmbulanceServicesQuery,
 } from "../redux/apiSlice";
 import { Tabs, TabsList, TabsTrigger } from "../components/ui-chart/tabs";
 import { cookie } from "../utils/cookie";
@@ -70,17 +70,17 @@ const AppDashboard = () => {
 
   const { data: patientData } = useGetPatientsQuery({
     page: 1,
-    limit: 10000,
+    limit: 3000,
   });
 
   const { data: opdData } = useGetOpdBillingQuery({
     page: 1,
-    limit: 10000,
+    limit: 3000,
   });
 
   const { data: prescriptionData } = useGetPrescriptionsListQuery({
     page: 1,
-    limit: 10000,
+    limit: 3000,
   });
 
   const { data: lowStockData, isLoading: stockLoading } =
@@ -269,7 +269,7 @@ const AppDashboard = () => {
     isLoading: opdBillingCountLoading,
     isFetching: opdBillingCountFetching,
   } = useGetOpdBillingCountQuery();
-  
+
   const { data: ambulanceData, isLoading: ambulanceLoading } =
     useGetAmbulanceServicesQuery({ page: 1, limit: 10000 });
   const patientDashboard = useMemo(
@@ -450,7 +450,6 @@ const AppDashboard = () => {
     OHC_THEME.slate, // Other
   ];
 
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -458,7 +457,6 @@ const AppDashboard = () => {
       transition={{ duration: 0.4 }}
       className="space-y-10"
     >
-
       <div className="bg-gradient-to-r from-emerald-600 via-emerald-350 to-emerald-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
         <div>
           <h2 className="text-2xl font-bold">
@@ -604,30 +602,33 @@ const AppDashboard = () => {
           </h2>
         </motion.div>
       </div>
-      <div className="flex flex-wrap items-center gap-3 justify-between">
-        <Tabs value={period} onValueChange={setPeriod}>
-          <TabsList className="bg-emerald-700/60 text-white">
-            <TabsTrigger
-              value="day"
-              className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
-            >
-              Day
-            </TabsTrigger>
-            <TabsTrigger
-              value="month"
-              className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
-            >
-              Month
-            </TabsTrigger>
-            <TabsTrigger
-              value="year"
-              className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
-            >
-              Year
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+      {showGraph && (
+        <div className="flex flex-wrap items-center gap-3 justify-between">
+          <Tabs value={period} onValueChange={setPeriod}>
+            <TabsList className="bg-emerald-700/60 text-white">
+              <TabsTrigger
+                value="day"
+                className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
+              >
+                Day
+              </TabsTrigger>
+              <TabsTrigger
+                value="month"
+                className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
+              >
+                Month
+              </TabsTrigger>
+              <TabsTrigger
+                value="year"
+                className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
+              >
+                Year
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-6">
         {/* Patient Trend */}
         {showGraph && (
@@ -643,7 +644,9 @@ const AppDashboard = () => {
                 </p>
               </div>
 
-              <div className="text-sm text-gray-500">Last 7 Days (above mentioned filters not applied on this)</div>
+              <div className="text-sm text-gray-500">
+                Last 7 Days (above mentioned filters not applied on this)
+              </div>
             </div>
 
             <div className="w-full h-[320px]">
@@ -751,35 +754,39 @@ const AppDashboard = () => {
             </div>
           </div>
         )}
-        <ChartCard
-          title="Patients Visited"
-          subtitle="Footfall volume — vertical bars for precise count comparison"
-        >
-          <div className="h-[220px]">
-            <Bar
-              data={workersChart}
-              options={barChartOptions(false, "workers")}
+        {showGraph && (
+          <ChartCard
+            title="Patients Visited"
+            subtitle="Footfall volume — vertical bars for precise count comparison"
+          >
+            <div className="h-[220px]">
+              <Bar
+                data={workersChart}
+                options={barChartOptions(false, "workers")}
+              />
+            </div>
+            <ChartLegend
+              items={[{ color: OHC_THEME.emeraldMd, label: "Workers visited" }]}
             />
-          </div>
-          <ChartLegend
-            items={[{ color: OHC_THEME.emeraldMd, label: "Workers visited" }]}
-          />
-        </ChartCard>
-        <ChartCard
-          title="Care Flow Pipeline"
-          subtitle="Registration → OPD → Prescription per period bucket (ideal for client EOD/ EOM review)"
-        >
-          <div className="h-[260px]">
-            <Bar data={careFlowChart} options={careFlowOptions} />
-          </div>
-          <ChartLegend
-            items={[
-              { color: OHC_THEME.emerald, label: "Worker registration" },
-              { color: OHC_THEME.teal, label: "OPD visit" },
-              { color: OHC_THEME.sky, label: "Prescription issued" },
-            ]}
-          />
-        </ChartCard>
+          </ChartCard>
+        )}
+        {showGraph && (
+          <ChartCard
+            title="Care Flow Pipeline"
+            subtitle="Registration → OPD → Prescription per period bucket (ideal for client EOD/ EOM review)"
+          >
+            <div className="h-[260px]">
+              <Bar data={careFlowChart} options={careFlowOptions} />
+            </div>
+            <ChartLegend
+              items={[
+                { color: OHC_THEME.emerald, label: "Worker registration" },
+                { color: OHC_THEME.teal, label: "OPD visit" },
+                { color: OHC_THEME.sky, label: "Prescription issued" },
+              ]}
+            />
+          </ChartCard>
+        )}
         {showGraph && (
           <ChartCard
             title="OPD Data Analysis"
@@ -796,21 +803,24 @@ const AppDashboard = () => {
             />
           </ChartCard>
         )}
-
-        <ChartCard
-          title="Prescriptions Trend"
-          subtitle="Issued after doctor assessment in OPD flow"
-        >
-          <div className="h-[220px]">
-            <Line
-              data={prescriptionChart}
-              options={lineChartOptions("Prescriptions")}
+        {showGraph && (
+          <ChartCard
+            title="Prescriptions Trend"
+            subtitle="Issued after doctor assessment in OPD flow"
+          >
+            <div className="h-[220px]">
+              <Line
+                data={prescriptionChart}
+                options={lineChartOptions("Prescriptions")}
+              />
+            </div>
+            <ChartLegend
+              items={[
+                { color: OHC_THEME.indigo, label: "Prescriptions issued" },
+              ]}
             />
-          </div>
-          <ChartLegend
-            items={[{ color: OHC_THEME.indigo, label: "Prescriptions issued" }]}
-          />
-        </ChartCard>
+          </ChartCard>
+        )}
         <div
           className={`bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6 ${
             !can("read:patient_list") ? "opacity-50" : ""
