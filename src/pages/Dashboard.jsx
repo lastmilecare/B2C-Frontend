@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+"use client";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, Navigate } from "react-router-dom";
 import {
@@ -15,29 +16,45 @@ import {
   useGetPrescriptionsListQuery,
   useGetLowStockItemsQuery,
   useGetPatientsTrendQuery,
+  useGetOpdBillingCountQuery,
+  useGetAmbulanceServicesQuery
 } from "../redux/apiSlice";
-
+import { Tabs, TabsList, TabsTrigger } from "../components/ui-chart/tabs";
 import { cookie } from "../utils/cookie";
 import { useSelector } from "react-redux";
-
+import { getDashboardData } from "../lib/ohc-data";
+import { ChartLegend, ChartCard } from "../components/chart-ui";
+import {
+  barChartOptions,
+  doughnutChartOptions,
+  gradientBarColors,
+  lineChartOptions,
+  OHC_THEME,
+} from "../lib/chart-config";
 import {
   ResponsiveContainer,
   ComposedChart,
-  Bar,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
+  Tooltip as RechartsTooltip,
+  Legend as RechartsLegend,
+  Bar as RechartsBar,
+  Line as RechartsLine,
 } from "recharts";
+import { getOpdDashboardData } from "../utils/dashboard/opdTransformer";
+import { getPatientDashboardData } from "../utils/dashboard/patientTransformer";
 
-/* =========================================================
-   DUMMY PATIENT TREND DATA
-   Replace this later with API response
-========================================================= */
+import {
+  getPrescriptionDashboardData,
+  getChiefComplaintsData,
+} from "../utils/dashboard/prescriptionTransformer";
+import { getCareFlowDashboardData } from "../utils/dashboard/careFlowTransformer";
+import { Bar, Doughnut, Line } from "react-chartjs-2";
 
 const AppDashboard = () => {
+  const [period, setPeriod] = useState("month");
+  const [center, setCenter] = useState("All");
   const navigate = useNavigate();
 
   const { permissions } = useSelector((state) => state.auth);
@@ -51,44 +68,33 @@ const AppDashboard = () => {
   const getDisabledClass = (permission) =>
     can(permission) ? "" : "opacity-50 cursor-not-allowed pointer-events-none";
 
-  /* =========================================================
-     API
-  ========================================================= */
-
   const { data: patientData } = useGetPatientsQuery({
     page: 1,
-    limit: 1000,
+    limit: 10000,
   });
 
   const { data: opdData } = useGetOpdBillingQuery({
     page: 1,
-    limit: 1000,
+    limit: 10000,
   });
 
   const { data: prescriptionData } = useGetPrescriptionsListQuery({
     page: 1,
-    limit: 1000,
+    limit: 10000,
   });
 
   const { data: lowStockData, isLoading: stockLoading } =
     useGetLowStockItemsQuery();
   const { data: patientTrendData } = useGetPatientsTrendQuery();
+
   const patients = patientData?.data || [];
   const opd = opdData?.data || [];
   const prescriptions = prescriptionData?.data || [];
-
-  /* =========================================================
-     TODAY COUNTS
-  ========================================================= */
 
   const today = new Date().toDateString();
 
   const todayPatients = patients.filter(
     (p) => new Date(p.createdAt).toDateString() === today,
-  ).length;
-
-  const todayOpd = opd.filter(
-    (o) => new Date(o.AddedDate).toDateString() === today,
   ).length;
 
   const todayOpdCount = new Set(
@@ -98,9 +104,6 @@ const AppDashboard = () => {
       .filter(Boolean),
   ).size;
 
-  const todayPrescription = prescriptions.filter(
-    (p) => new Date(p.addedDate).toDateString() === today,
-  ).length;
   const todayPrescriptionCount = new Set(
     prescriptions
       .filter((o) => new Date(o.addedDate).toDateString() === today)
@@ -119,7 +122,14 @@ const AppDashboard = () => {
 
   const tenantId = cookie.get("tenantId") || "N/A";
 
-  const tenantName = tenantId == 2 ? "Amp" : "Honda";
+  const tenantName =
+    tenantId == 1
+      ? "Honda"
+      : tenantId == 2
+        ? "AMP"
+        : tenantId == 3
+          ? "M3M"
+          : "";
   const showGraph =
     role === "LMC_ADMIN" || role === "CENTER_ADMIN" || role === "STAFF";
   /* =========================================================
@@ -254,6 +264,193 @@ const AppDashboard = () => {
     return <Navigate to="/unauthorized" replace />;
   }
 
+  const {
+    data: opdBillingCountData,
+    isLoading: opdBillingCountLoading,
+    isFetching: opdBillingCountFetching,
+  } = useGetOpdBillingCountQuery();
+  
+  const { data: ambulanceData, isLoading: ambulanceLoading } =
+    useGetAmbulanceServicesQuery({ page: 1, limit: 10000 });
+  const patientDashboard = useMemo(
+    () => getPatientDashboardData(patientData, period),
+    [patientData, period],
+  );
+
+  const opdDashboard = useMemo(
+    () => getOpdDashboardData(opdBillingCountData, period),
+    [opdBillingCountData, period],
+  );
+  const prescriptionDashboard = useMemo(
+    () => getPrescriptionDashboardData(prescriptionData, period),
+    [prescriptionData, period],
+  );
+  const careFlow = useMemo(
+    () =>
+      getCareFlowDashboardData({
+        patientData,
+        opdData: opdBillingCountData,
+        prescriptionData,
+        period,
+      }),
+    [patientData, opdBillingCountData, prescriptionData, period],
+  );
+  const chiefComplaints = useMemo(
+    () => getChiefComplaintsData(prescriptionData),
+    [prescriptionData],
+  );
+  const data = useMemo(
+    () =>
+      getDashboardData(
+        period,
+        center,
+        patientDashboard,
+        opdDashboard,
+        prescriptionDashboard,
+        chiefComplaints,
+      ),
+    [
+      period,
+      center,
+      patientDashboard,
+      opdDashboard,
+      prescriptionDashboard,
+      chiefComplaints,
+    ],
+  );
+  const opdChart = {
+    labels: careFlow.labels,
+    datasets: [
+      {
+        label: "New patients",
+        data: data.opd.newPatients,
+        borderColor: OHC_THEME.emerald,
+        backgroundColor: OHC_THEME.emeraldFill,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: OHC_THEME.emerald,
+        pointBorderColor: "#fff",
+        pointBorderWidth: 1.5,
+        borderWidth: 2.5,
+      },
+      {
+        label: "Follow-up",
+        data: data.opd.followUp,
+        borderColor: OHC_THEME.teal,
+        backgroundColor: OHC_THEME.tealFill,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: OHC_THEME.teal,
+        pointBorderColor: "#fff",
+        pointBorderWidth: 1.5,
+        borderWidth: 2.5,
+        borderDash: [6, 4],
+      },
+    ],
+  };
+
+  const workersChart = {
+    labels: careFlow.labels,
+    datasets: [
+      {
+        label: "Workers visited",
+        data: data.workersVisited,
+        backgroundColor: gradientBarColors(data.workersVisited),
+        borderColor: OHC_THEME.emerald,
+        borderWidth: 0.5,
+        borderRadius: 6,
+        borderSkipped: false,
+      },
+    ],
+  };
+
+  const careFlowChart = {
+    labels: careFlow.labels,
+    datasets: [
+      {
+        label: "Registration",
+        data: careFlow.registrations,
+        backgroundColor: OHC_THEME.emerald + "cc",
+        borderColor: OHC_THEME.emerald,
+        borderWidth: 0.5,
+        borderRadius: 4,
+      },
+      {
+        label: "OPD visit",
+        data: careFlow.opdVisits,
+        backgroundColor: OHC_THEME.teal + "cc",
+        borderColor: OHC_THEME.teal,
+        borderWidth: 0.5,
+        borderRadius: 4,
+      },
+      {
+        label: "Prescription",
+        data: careFlow.prescriptions,
+        backgroundColor: OHC_THEME.sky + "cc",
+        borderColor: OHC_THEME.sky,
+        borderWidth: 0.5,
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  const careFlowOptions = {
+    ...barChartOptions(false, "cases"),
+    plugins: {
+      ...barChartOptions(false, "cases").plugins,
+      legend: { display: false },
+      tooltip: {
+        ...barChartOptions(false, "cases").plugins?.tooltip,
+        mode: "index",
+      },
+    },
+    scales: {
+      x: {
+        ...barChartOptions().scales?.x,
+        stacked: false,
+        grid: { display: false },
+      },
+      y: {
+        ...barChartOptions().scales?.y,
+        stacked: false,
+      },
+    },
+  };
+
+  const prescriptionChart = {
+    labels: prescriptionDashboard?.trend?.labels ?? [],
+    datasets: [
+      {
+        label: "Prescriptions",
+        data: prescriptionDashboard?.trend?.counts ?? [],
+        borderColor: OHC_THEME.indigo,
+        backgroundColor: "rgba(79,70,229,0.12)",
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        borderWidth: 2.5,
+      },
+    ],
+  };
+
+  const complaintColors = [
+    OHC_THEME.emerald, // Fever
+    OHC_THEME.teal, // Cough
+    OHC_THEME.sky, // Headache
+    OHC_THEME.indigo, // Fatigue
+    OHC_THEME.amber, // Vomiting
+    OHC_THEME.rose, // Nausea
+    OHC_THEME.slate, // Abdominal Pain
+    OHC_THEME.emerald, // Back Pain
+    OHC_THEME.teal, // Chest Pain
+    OHC_THEME.sky, // Injury
+    OHC_THEME.indigo, // Diarrhea
+    OHC_THEME.slate, // Other
+  ];
+
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -261,9 +458,6 @@ const AppDashboard = () => {
       transition={{ duration: 0.4 }}
       className="space-y-10"
     >
-      {/* =====================================================
-          WELCOME HEADER
-      ====================================================== */}
 
       <div className="bg-gradient-to-r from-emerald-600 via-emerald-350 to-emerald-600 text-white rounded-2xl p-8 flex justify-between items-center shadow-lg">
         <div>
@@ -290,10 +484,6 @@ const AppDashboard = () => {
           </button>
         </div>
       </div>
-
-      {/* =====================================================
-          MODULES
-      ====================================================== */}
 
       <div className="grid grid-cols-4 gap-6 overflow-visible">
         {modules.map((m) => (
@@ -335,13 +525,7 @@ const AppDashboard = () => {
         ))}
       </div>
 
-      {/* =====================================================
-          SUMMARY CARDS
-      ====================================================== */}
-
       <div className="grid grid-cols-4 gap-6">
-        {/* Today's Patients */}
-
         <motion.div
           whileHover={can("read:patient_list") ? { scale: 1.03 } : {}}
           className={`rounded-xl p-6 shadow-sm
@@ -420,11 +604,30 @@ const AppDashboard = () => {
           </h2>
         </motion.div>
       </div>
-
-      {/* =====================================================
-          PATIENT REGISTRATION TREND
-      ====================================================== */}
-
+      <div className="flex flex-wrap items-center gap-3 justify-between">
+        <Tabs value={period} onValueChange={setPeriod}>
+          <TabsList className="bg-emerald-700/60 text-white">
+            <TabsTrigger
+              value="day"
+              className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
+            >
+              Day
+            </TabsTrigger>
+            <TabsTrigger
+              value="month"
+              className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
+            >
+              Month
+            </TabsTrigger>
+            <TabsTrigger
+              value="year"
+              className="data-[state=active]:bg-white data-[state=active]:text-emerald-700"
+            >
+              Year
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
       <div className="grid grid-cols-2 gap-6">
         {/* Patient Trend */}
         {showGraph && (
@@ -440,7 +643,7 @@ const AppDashboard = () => {
                 </p>
               </div>
 
-              <div className="text-sm text-gray-500">Last 7 Days</div>
+              <div className="text-sm text-gray-500">Last 7 Days (above mentioned filters not applied on this)</div>
             </div>
 
             <div className="w-full h-[320px]">
@@ -460,7 +663,7 @@ const AppDashboard = () => {
 
                   <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
 
-                  <Tooltip
+                  <RechartsTooltip
                     content={({ active, payload, label }) => {
                       if (!active || !payload || !payload.length) {
                         return null;
@@ -515,10 +718,10 @@ const AppDashboard = () => {
                     }}
                   />
 
-                  <Legend />
+                  <RechartsLegend />
 
                   {/* APL */}
-                  <Bar
+                  <RechartsBar
                     dataKey="APL"
                     name="APL Patients"
                     fill="#10b981"
@@ -526,7 +729,7 @@ const AppDashboard = () => {
                   />
 
                   {/* BPL */}
-                  <Bar
+                  <RechartsBar
                     dataKey="BPL"
                     name="BPL Patients"
                     fill="#f59e0b"
@@ -534,7 +737,7 @@ const AppDashboard = () => {
                   />
 
                   {/* TOTAL */}
-                  <Line
+                  <RechartsLine
                     type="monotone"
                     dataKey="Total"
                     name="Total Patients"
@@ -548,10 +751,66 @@ const AppDashboard = () => {
             </div>
           </div>
         )}
-        {/* =====================================================
-            RECENT PATIENTS
-        ====================================================== */}
+        <ChartCard
+          title="Patients Visited"
+          subtitle="Footfall volume — vertical bars for precise count comparison"
+        >
+          <div className="h-[220px]">
+            <Bar
+              data={workersChart}
+              options={barChartOptions(false, "workers")}
+            />
+          </div>
+          <ChartLegend
+            items={[{ color: OHC_THEME.emeraldMd, label: "Workers visited" }]}
+          />
+        </ChartCard>
+        <ChartCard
+          title="Care Flow Pipeline"
+          subtitle="Registration → OPD → Prescription per period bucket (ideal for client EOD/ EOM review)"
+        >
+          <div className="h-[260px]">
+            <Bar data={careFlowChart} options={careFlowOptions} />
+          </div>
+          <ChartLegend
+            items={[
+              { color: OHC_THEME.emerald, label: "Worker registration" },
+              { color: OHC_THEME.teal, label: "OPD visit" },
+              { color: OHC_THEME.sky, label: "Prescription issued" },
+            ]}
+          />
+        </ChartCard>
+        {showGraph && (
+          <ChartCard
+            title="OPD Data Analysis"
+            subtitle="New vs follow-up patients — line chart for trend clarity"
+          >
+            <div className="h-[220px]">
+              <Line data={opdChart} options={lineChartOptions("Patients")} />
+            </div>
+            <ChartLegend
+              items={[
+                { color: OHC_THEME.emerald, label: "New patients" },
+                { color: OHC_THEME.teal, label: "Follow-up" },
+              ]}
+            />
+          </ChartCard>
+        )}
 
+        <ChartCard
+          title="Prescriptions Trend"
+          subtitle="Issued after doctor assessment in OPD flow"
+        >
+          <div className="h-[220px]">
+            <Line
+              data={prescriptionChart}
+              options={lineChartOptions("Prescriptions")}
+            />
+          </div>
+          <ChartLegend
+            items={[{ color: OHC_THEME.indigo, label: "Prescriptions issued" }]}
+          />
+        </ChartCard>
         <div
           className={`bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6 ${
             !can("read:patient_list") ? "opacity-50" : ""
@@ -582,7 +841,7 @@ const AppDashboard = () => {
             LOW STOCK MEDICINES
         ====================================================== */}
 
-        <div
+        {/* <div
           className={`bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6 ${
             !can("read:sales_record") ? "opacity-50" : ""
           }`}
@@ -632,7 +891,7 @@ const AppDashboard = () => {
               Access Denied
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </motion.div>
   );

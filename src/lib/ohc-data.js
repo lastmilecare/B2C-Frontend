@@ -110,14 +110,14 @@ function reorderTests(base, center) {
 }
 
 export function getDashboardData(
-  period,
-  center,
-  patientDashboard,
-  opdDashboard,
-  prescriptionDashboard,
-  ambulanceDashboard,
-  chiefComplaints,
-  fitnessCertificateDashboard,
+  period={},
+  center={},
+  patientDashboard={},
+  opdDashboard={},
+  prescriptionDashboard={},
+  ambulanceDashboard={},
+  chiefComplaints={},
+  fitnessCertificateDashboard = {},
 ) {
   const base = PERIOD_BASE[period];
   const labels = PERIOD_LABELS[period];
