@@ -17,10 +17,7 @@ import { healthAlert } from "../utils/healthSwal";
 import PharmaBillPrint from "./PharmaBillPrint";
 import { useReactToPrint } from "react-to-print";
 import Avatar from "../components/common/Avatar";
-import {
-  formatDate,
-  formatTime,
-} from "../utils/helper";
+import { formatDate } from "../utils/helper";
 const username = cookie.get("username");
 
 const CampBillingListCopy = () => {
@@ -295,23 +292,17 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicinecampBillMutation();
         parseCurrency(row.DueAmount || 0),
       width: "80px",
     },
-   
-      {
-                      name: "Added On",
-                    width: "95px",
-                      cell: (row) => (
-                        <div className="flex flex-col text-xs">
-                          <span className="font-medium text-slate-700">
-                           {formatDate(row.AddedDate)}
-                          </span>
-                
-                          {/* <span className="text-slate-400">
-                           {formatTime(row.AddedDate)}
-                          </span> */}
-                        </div>
-                      ),
-                    },
-    
+    {
+      name: "Added On",
+      width: "105px",
+      cell: (row) => (
+        <div className="flex flex-col text-xs">
+          <span className="font-medium text-slate-700">
+            {formatDate(row.AddedDate)}
+          </span>
+        </div>
+      ),
+    },
     {
       name: "id",
       selector: (row) => row.ID,
