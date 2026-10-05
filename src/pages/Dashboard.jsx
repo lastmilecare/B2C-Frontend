@@ -80,7 +80,7 @@ const AppDashboard = () => {
 
   const { data: prescriptionData } = useGetPrescriptionsListQuery({
     page: 1,
-    limit: 3000,
+    limit: 200,
   });
 
   const { data: lowStockData, isLoading: stockLoading } =
@@ -645,7 +645,7 @@ const AppDashboard = () => {
               </div>
 
               <div className="text-sm text-gray-500">
-                Last 7 Days (above mentioned filters not applied on this)
+                Last 30 Days (above mentioned filters not applied on this)
               </div>
             </div>
 
@@ -662,7 +662,17 @@ const AppDashboard = () => {
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
-                  <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                  {/* <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                   */}
+
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11 }}
+                    interval="preserveStartEnd"
+                    angle={-35}
+                    textAnchor="end"
+                    height={55}
+                  />
 
                   <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
 
@@ -803,7 +813,7 @@ const AppDashboard = () => {
             />
           </ChartCard>
         )}
-        {showGraph && (
+        {/* {showGraph && (
           <ChartCard
             title="Prescriptions Trend"
             subtitle="Issued after doctor assessment in OPD flow"
@@ -820,7 +830,7 @@ const AppDashboard = () => {
               ]}
             />
           </ChartCard>
-        )}
+        )} */}
         <div
           className={`bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6 ${
             !can("read:patient_list") ? "opacity-50" : ""
