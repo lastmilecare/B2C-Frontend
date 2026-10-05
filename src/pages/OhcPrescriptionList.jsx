@@ -242,6 +242,13 @@ const OhcPrescriptionList = () => {
       grow: 2,
       wrap: true,
     },
+    {
+      name: "Chief Complaint",
+      title: "Chief Complaint",
+      selector: (row) => safeString(row?.chiefComplaints),
+      grow: 2,
+      wrap: true,
+    },
 
     {
       name: "Added On",

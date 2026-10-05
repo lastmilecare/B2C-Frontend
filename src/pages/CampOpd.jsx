@@ -30,6 +30,9 @@ import { useReactToPrint } from "react-to-print";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { formatDateOnly } from "../utils/helper";
 import { Picaso_Paymode_Options } from "../utils/constants";
 import { cookie } from "../utils/cookie";
 
@@ -112,7 +115,7 @@ const CampOpdForm = () => {
   const location = useLocation();
   const editData = location.state?.editData;
   const { ID: billNo } = useParams();
-  const { refetch } = useGetcampOpdBillByIdQuery(billNo, {
+  const { data: billById, refetch } = useGetcampOpdBillByIdQuery(billNo, {
     skip: !billNo,
   });
   const populatedUhidRef = useRef("");
@@ -236,6 +239,20 @@ const CampOpdForm = () => {
         ChiefComplaint: editData.complaint
           ? editData.complaint.split(",").map((c) => ({ name: c.trim() }))
           : [],
+        campDate: (() => {
+          const raw =
+            editData.CampDate ??
+            editData.campDate ??
+            billById?.CampDate ??
+            billById?.campDate;
+          if (!raw) return "";
+          const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+          const d = new Date(raw);
+          return Number.isNaN(d.getTime())
+            ? ""
+            : d.toISOString().split("T")[0];
+        })(),
       });
       if (editData.opd_billing_data) {
         const mapped = editData.opd_billing_data.map((s) => {
@@ -256,7 +273,21 @@ const CampOpdForm = () => {
         setSelectedServices(mapped);
       }
     }
-  }, [editData, department, doctors, paymode, allServices]);
+  }, [editData, department, doctors, paymode, allServices, billById]);
+
+  useEffect(() => {
+    if (!billById) return;
+    const raw = billById.CampDate ?? billById.campDate;
+    if (!raw) return;
+    const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const val = m
+      ? `${m[1]}-${m[2]}-${m[3]}`
+      : (() => {
+          const d = new Date(raw);
+          return Number.isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
+        })();
+    if (val) formik.setFieldValue("campDate", val);
+  }, [billById]);
 
   const parseDOB = (raw) => {
     if (!raw) return "";
@@ -315,6 +346,7 @@ const CampOpdForm = () => {
       ReferTo: Number(values.ReferBy) || null,
       IsActive: true,
       complaint: chiefComplaintStr,
+      CampDate: values.campDate || null,
     };
 
     const details = selectedServices.map((s) => ({
@@ -371,6 +403,7 @@ const CampOpdForm = () => {
       PayMode: "",
       CashAmount: 0,
       CardAmount: 0,
+      campDate: "",
     },
     validationSchema: Yup.object({
       UHID: Yup.string().required("UHID is required"),
@@ -459,6 +492,9 @@ const CampOpdForm = () => {
       Gender: patientData.gender || "",
       Mobile: patientData.contactNumber || "",
       FinCategory: patientData.category || "",
+      campDate: patientData.campDate
+        ? new Date(patientData.campDate).toISOString().split("T")[0]
+        : "",
       LastVisitDate: patientData.createdAt
         ? new Date(patientData.createdAt).toISOString().split("T")[0]
         : "",
@@ -690,6 +726,36 @@ const CampOpdForm = () => {
                       required
                       allowManualAdd={true}
                     />
+
+                    <div className="flex flex-col">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        Camp Date
+                      </label>
+                      <DatePicker
+                        selected={
+                          formik.values.campDate
+                            ? new Date(formik.values.campDate + "T00:00:00")
+                            : null
+                        }
+                        onChange={(date) =>
+                          formik.setFieldValue(
+                            "campDate",
+                            date ? formatDateOnly(date) : "",
+                          )
+                        }
+                        dateFormat="dd/MM/yyyy"
+                        placeholderText="DD/MM/YYYY"
+                        maxDate={new Date()}
+                        showMonthDropdown
+                        showYearDropdown
+                        scrollableYearDropdown
+                        yearDropdownItemNumber={100}
+                        wrapperClassName="w-full"
+                        popperClassName="z-50"
+                        className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                        isClearable
+                      />
+                    </div>
 
                     <Input
                       label="Name"

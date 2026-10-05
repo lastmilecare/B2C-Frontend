@@ -13,8 +13,8 @@ import { useNavigate } from "react-router-dom";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlerts, healthAlert } from "../utils/healthSwal";
 import { generateFileName, downloadBlob } from "../utils/helper";
+import { formatDate, formatTimeVal } from "../utils/helper";
 import Avatar from "../components/common/Avatar";
-import { formatDate, formatTimeVal} from "../utils/helper";
 import { cookie } from "../utils/cookie";
 const PrescriptionListCopy = () => {
   const role = cookie.get("role");
@@ -172,66 +172,31 @@ setFilters(cleanedFilters);
       sortable: true,
       width: "110px",
     },
-//     {
-//       name: "Patient",
-//       // center: true,
-//       // minWidth: "50px",
-//       width: "250px",
-// style: {
-//     justifyContent: "flex-start", // Cell content ko left align karne ke liye
-//   },
-//   headerStyle: {
-//     justifyContent: "flex-start", // Header text "Patient" ko bhi left align karne ke liye
-//   },
-//       cell: (row) => (
-//         <div className="flex items-center gap-3">
-//           <div className="relative">
-//             <Avatar name={row.patientName} gender={row.gender} age={row.age} />
-
-//             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
-//           </div>
-
-//           <div className="leading-tight">
-//             <p className="font-semibold text-gray-800">
-//               {row.patientName || "-"}
-//             </p>
-
-//             <p className="text-xs text-gray-500">
-//               UHID : {row.picasoId || "-"}
-//             </p>
-//           </div>
-//         </div>
-//       ),
-//     },
-{
-  name: "Patient",
-  center: true,
-  width: "250px",
-
-  cell: (row) => (
-    <div className="flex items-center gap-3 w-[250px] mx-auto text-left">
-      <div className="relative shrink-0">
-        <Avatar name={row.patientName} gender={row.gender} age={row.age} />
-
-        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
-      </div>
-
-      <div className="leading-tight min-w-0 flex-1">
-        <p className="font-semibold text-gray-800 truncate">
-          {row.patientName || "-"}
-        </p>
-
-        <p className="text-xs text-gray-500 truncate">
-          UHID : {row.picasoId || "-"}
-        </p>
-      </div>
-    </div>
-  ),
-},
+    {
+      name: "Patient",
+      center: true,
+      width: "250px",
+      cell: (row) => (
+        <div className="flex items-center gap-3 w-[250px] mx-auto text-left">
+          <div className="relative shrink-0">
+            <Avatar name={row.patientName} gender={row.gender} age={row.age} />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+          </div>
+          <div className="leading-tight min-w-0 flex-1">
+            <p className="font-semibold text-gray-800 truncate">
+              {row.patientName || "-"}
+            </p>
+            <p className="text-xs text-gray-500 truncate">
+              UHID : {row.picasoId || "-"}
+            </p>
+          </div>
+        </div>
+      ),
+    },
     {
       name: "Age",
       center: true,
-       width: "150px",
+      width: "150px",
       cell: (row) => (
         <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
           {`${row.age ? `${row.age}` : "N/A"}`}
@@ -243,17 +208,14 @@ setFilters(cleanedFilters);
       center: true,
       cell: (row) => {
         const gender = row.gender?.toLowerCase();
-
         return (
           <span
             className={`px-2 py-1 text-xs rounded-full font-medium
-
    ${
      gender === "male"
        ? "bg-blue-100 text-blue-700"
        : "bg-pink-100 text-pink-700"
    }
-
    `}
           >
             {gender === "male" ? "👨 Male" : "👩 Female"}
@@ -266,18 +228,22 @@ setFilters(cleanedFilters);
       center: true,
       title: "Mobile Number",
       selector: (row) => safeString(row?.contactNo, "-"),
-
       grow: 1,
     },
-   {
-  name: "Address",
-  title: "Address",
-  selector: (row) => row.address || "-",
-  grow: 2,
-  wrap: true,
-} ,
-    
-
+    {
+      name: "Address",
+      title: "Address",
+      selector: (row) => row.address || "-",
+      grow: 2,
+      wrap: true,
+    },
+    {
+      name: "Chief Complaint",
+      title: "Chief Complaint",
+      selector: (row) => safeString(row?.chiefComplaints),
+      grow: 2,
+      wrap: true,
+    },
     {
       name: "Added On",
       center: true,
@@ -286,7 +252,6 @@ setFilters(cleanedFilters);
           <span className="font-medium text-slate-700">
             {formatDate(row.addedDate)}
           </span>
-
           <span className="text-slate-400">{formatTimeVal(row.addedDate)}</span>
         </div>
       ),
@@ -296,13 +261,10 @@ setFilters(cleanedFilters);
       center: true,
       cell: (row) => {
         const active = row.isActive;
-
         return (
           <span
             className={`px-2 py-1 rounded-full text-xs font-semibold
-
    ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}
-
    `}
           >
             {active ? "Active" : "Inactive"}

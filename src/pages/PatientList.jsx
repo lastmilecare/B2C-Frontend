@@ -285,22 +285,34 @@ const PatientListCopy = () => {
     {
       name: "Is Camp Registration",
       center: true,
-      width: "140px",
-      minWidth: "140px",
-      maxWidth: "140px",
+      width: "180px",
+      minWidth: "180px",
+      maxWidth: "180px",
       cell: (row) => {
-        const isCamp =
-          row.isCampRegistration === true;
-        return isCamp ? (
-          <span
-            className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-700 text-sm font-bold"
-            title="Camp registration"
-          >
-            ✓
-          </span>
-        ) : (
-      <span className="text-gray-500 text-sm font-medium">-</span>
-    );
+        const isCamp = row.isCampRegistration === true;
+        if (!isCamp) {
+          return <span className="text-gray-500 text-sm font-medium">-</span>;
+        }
+        const campDateRaw = row.campDate ?? row.CampDate;
+        const campDateLabel =
+          campDateRaw && formatDate(campDateRaw) !== "-"
+            ? formatDate(campDateRaw)
+            : null;
+        return (
+          <div className="flex flex-col items-center gap-1">
+            <span
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-700 text-sm font-bold"
+              title="Camp registration"
+            >
+              ✓
+            </span>
+            {campDateLabel && (
+              <span className="text-xs text-slate-600 whitespace-nowrap">
+                {campDateLabel}
+              </span>
+            )}
+          </div>
+        );
       },
     },
     {

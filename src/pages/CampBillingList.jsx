@@ -198,8 +198,8 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicinecampBillMutation();
     value: u.id,
   })) || [],
     },
-    { label: "Date from", name: "startDate", type: "date" },
-    { label: "Date to", name: "endDate", type: "date" },
+    { label: "Camp Date From", name: "startDate", type: "date" },
+    { label: "Camp Date To", name: "endDate", type: "date" },
   ];
   const columns = [
     {
@@ -240,6 +240,15 @@ const [softDeleteMedicineBill] = useSoftDeleteMedicinecampBillMutation();
       name: "Opd Bill No",
       selector: (row) => row.OPDBillNo,
       width: "80px",
+    },
+    {
+      name: "Camp Date",
+      center: true,
+      width: "100px",
+      selector: (row) => {
+        const raw = row?.CampDate ?? row?.campDate;
+        return raw ? formatDate(raw) : "-";
+      },
     },
     {
       name: "Qty",
