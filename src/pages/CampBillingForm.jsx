@@ -15,14 +15,17 @@ import {
 import {
   useLazyGetBillingByBillNoQuery,
   useGetComboQuery,
-  useGetOpdBillByIdQuery,
-  useSearchOpdBillNoQuery,
+  // useGetOpdBillByIdQuery,
+  // useSearchOpdBillNoQuery,
+  useSearchcampOpdBillNoQuery,
   useGetMediceneListQuery,
   useGetStockDetailsQuery,
   useCreateMedicinecampBillMutation,
   useUpdateMedicinecampBillMutation,
   useGetMedicinecampBillByIdQuery,
-  useGetPrescriptionsListQuery,
+  useGetCampPrescriptionsListQuery,
+  useGetcampOpdBillByIdQuery
+  // useGetPrescriptionsListQuery,
 } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
@@ -77,7 +80,7 @@ const CampBillingFormCopy = ({ refetchList }) => {
   const debouncedUhid = useDebounce(billSearch, 500);
   const debouncedMedicine = useDebounce(medicineSearch, 500);
   const [selectedBill, setSelectedBill] = useState("");
-  const { data: patientData } = useGetOpdBillByIdQuery(
+  const { data: patientData } = useGetcampOpdBillByIdQuery(
     selectedBill ? String(selectedBill) : skipToken,
   );
   const [selectedMedicine, setSelectedMedicine] = useState("");
@@ -101,7 +104,7 @@ const CampBillingFormCopy = ({ refetchList }) => {
     () => medicineResponse?.data || [],
     [medicineResponse],
   );
-  const { data: suggestions = [] } = useSearchOpdBillNoQuery(debouncedUhid, {
+  const { data: suggestions = [] } = useSearchcampOpdBillNoQuery(debouncedUhid, {
     skip: debouncedUhid.length < 1 || id,
   });
   const { data: paymodes } = useGetComboQuery("paymode");
@@ -117,7 +120,7 @@ const CampBillingFormCopy = ({ refetchList }) => {
     data: prescriptionResponse,
     isFetching: prescriptionLoading,
     refetch: refetchPrescription,
-  } = useGetPrescriptionsListQuery(
+  } = useGetCampPrescriptionsListQuery(
     {
       bill_no: prescriptionBillNo,
       page: 1,
