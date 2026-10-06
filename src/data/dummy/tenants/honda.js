@@ -1,4 +1,4 @@
-import { defaultDateRange } from "../../../utils/client-dashboard/filterBar";
+import { defaultDateRange } from "../../../utils/client-dashboard/FilterBar";
 import { monthSeries, spread, sum } from "../allocate";
 import {
   selectComplaints,
