@@ -10,6 +10,7 @@ export function FilterBar({ filters, values, onChange }) {
       <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted">
         <Filter className="h-3.5 w-3.5" />
         Filters
+        
       </span>
       {filters.map((f) => {
         if (f.type === "dateRange") {
