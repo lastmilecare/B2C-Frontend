@@ -176,11 +176,14 @@ const CampOpdBillingList = () => {
 
   const handleExport = async () => {
     try {
-      const blob = await exportExcel(filters).unwrap();
+      const blob = await exportExcel({
+        ...filters,
+        reportType: "list",
+      }).unwrap();
 
       const fileName = generateFileName("OpdBillingDetail", {
-        dateFrom: filters?.date_from,
-        dateTo: filters?.date_to,
+        dateFrom: filters?.startDate,
+        dateTo: filters?.endDate,
         extension: "xlsx",
       });
 
@@ -357,8 +360,8 @@ const CampOpdBillingList = () => {
       ],
     },
 
-    { label: "Date from ", name: "startDate", type: "date" },
-    { label: "Date to", name: "endDate", type: "date" },
+    { label: "Camp Date From", name: "startDate", type: "date" },
+    { label: "Camp Date To", name: "endDate", type: "date" },
     { label: "Unique Id", name: "idProof_number", type: "text" },
   ];
   const truncateText = (text, maxLength = 30) => {
@@ -385,6 +388,16 @@ const CampOpdBillingList = () => {
       selector: (row) => safeString(row?.bill_no, "-"),
       sortable: true,
       width: "70px",
+    },
+    {
+      name: "Camp Date",
+      title: "Camp Date",
+      center: true,
+      width: "100px",
+      selector: (row) => {
+        const raw = row?.CampDate ?? row?.campDate;
+        return raw ? formatDate(raw) : "-";
+      },
     },
     {
       name: "Center",

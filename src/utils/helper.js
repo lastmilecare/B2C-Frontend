@@ -161,6 +161,22 @@ const correctServerDate = (value) => {
 };
 
 export const formatDate = (value) => {
+  if (value === null || value === undefined || value === "") return "-";
+
+  const isoOnly =
+    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.trim());
+  if (isoOnly) {
+    const [y, m, d] = value.trim().split("-").map(Number);
+    const local = new Date(y, m - 1, d);
+    if (!Number.isNaN(local.getTime())) {
+      return local.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    }
+  }
+
   const date = correctServerDate(value);
 
   if (!date) return "-";

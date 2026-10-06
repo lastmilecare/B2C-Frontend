@@ -32,6 +32,7 @@ import { cookie } from "../utils/cookie";
 import { Referral_Options } from "../utils/constants";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { formatDateOnly } from "../utils/helper";
 
 const PatientRegistrationCopy = () => {
   const [searchDiseases] = useLazySearchDiseasesQuery();
@@ -151,6 +152,7 @@ const PatientRegistrationCopy = () => {
       employeeId: 0,
       ReferredBy: "",
       isCampRegistration: false,
+      campDate: "",
       ageNumber: "",
     },
     enableReinitialize: true,
@@ -291,6 +293,9 @@ const PatientRegistrationCopy = () => {
           relationship: String(p.relationship || ""),
           occupation: String(p.occupation || ""),
           isCampRegistration: p.isCampRegistration ?? false,
+          campDate: p.campDate
+            ? new Date(p.campDate).toISOString().split("T")[0]
+            : "",
         });
       };
 
@@ -352,6 +357,7 @@ const PatientRegistrationCopy = () => {
       employeeId: values.employeeId,
       ReferredBy: values.ReferredBy || "",
       isCampRegistration: values.isCampRegistration,
+      campDate: values.campDate || null,
     };
 
     if (!isEdit) {
@@ -375,6 +381,7 @@ const PatientRegistrationCopy = () => {
         contactNumber: "",
         employeeId: "",
         isCampRegistration: false,
+        campDate: "",
       });
     }
 
@@ -672,13 +679,49 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       // required
                       // error={formik.touched.employeeId && formik.errors.employeeId}
                     />
+                    {formik.values.isCampRegistration && (
+                      <div className="flex flex-col">
+                        <label className="text-sm font-medium text-gray-700 mb-1">
+                          Camp Date
+                        </label>
+                        <DatePicker
+                          selected={
+                            formik.values.campDate
+                              ? new Date(formik.values.campDate + "T00:00:00")
+                              : null
+                          }
+                          onChange={(date) =>
+                            formik.setFieldValue(
+                              "campDate",
+                              date ? formatDateOnly(date) : "",
+                            )
+                          }
+                          dateFormat="dd/MM/yyyy"
+                          placeholderText="DD/MM/YYYY"
+                          maxDate={new Date()}
+                          showMonthDropdown
+                          showYearDropdown
+                          scrollableYearDropdown
+                          yearDropdownItemNumber={100}
+                          wrapperClassName="w-full"
+                          popperClassName="z-50"
+                          className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                          isClearable
+                        />
+                      </div>
+                    )}
                     <div className="md:col-span-3 flex items-center mt-2">
                       <label className="flex items-center gap-3 cursor-pointer select-none">
                         <input
                           type="checkbox"
                           name="isCampRegistration"
                           checked={formik.values.isCampRegistration}
-                          onChange={formik.handleChange}
+                          onChange={(e) => {
+                            formik.handleChange(e);
+                            if (!e.target.checked) {
+                              formik.setFieldValue("campDate", "");
+                            }
+                          }}
                           className="h-5 w-5 accent-emerald-600 cursor-pointer rounded border-gray-300 focus:ring-2 focus:ring-emerald-500"
                         />
                         <span className="text-sm font-medium text-slate-700">

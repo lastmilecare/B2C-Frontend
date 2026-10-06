@@ -16,7 +16,6 @@ import {
   useLazyGetBillingByBillNoQuery,
   useGetComboQuery,
   // useGetOpdBillByIdQuery,
-  // useSearchOpdBillNoQuery,
   useSearchcampOpdBillNoQuery,
   useGetMediceneListQuery,
   useGetStockDetailsQuery,
@@ -25,14 +24,15 @@ import {
   useGetMedicinecampBillByIdQuery,
   useGetCampPrescriptionsListQuery,
   useGetcampOpdBillByIdQuery
-  // useGetPrescriptionsListQuery,
 } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
 import { Input, Select, Button, baseInput } from "../components/UIComponents";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { cleanCurrency, getPharmaSellingFromCP, formatDateOnly } from "../utils/helper";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { cleanCurrency, getPharmaSellingFromCP } from "../utils/helper";
 import { Picaso_Paymode_Options } from "../utils/constants";
 import * as Yup from "yup";
 const CampBillingFormCopy = ({ refetchList }) => {
@@ -200,6 +200,7 @@ const CampBillingFormCopy = ({ refetchList }) => {
       cardAmount: 0,
       chequeAmount: 0,
       payableAmount: 0,
+      campDate: "",
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -242,6 +243,7 @@ const CampBillingFormCopy = ({ refetchList }) => {
         finYearId: Number(values.finYearId || 1),
 
         AddedBy: Number(values.AddedBy || 1),
+        campDate: values.campDate || null,
         items: values.items.map((i) => ({
           itemId: Number(i.itemId || 0),
           stockId: Number(i.stockId || 0),
@@ -374,6 +376,9 @@ const CampBillingFormCopy = ({ refetchList }) => {
       payMode: String(header.PayMode || ""),
       cashAmount: Number(header.CashAmount || 0),
       cardAmount: Number(header.CardAmount || 0),
+      campDate: header.CampDate
+        ? new Date(header.CampDate).toISOString().split("T")[0]
+        : "",
 
       items: mappedItems,
     });
@@ -403,6 +408,12 @@ const CampBillingFormCopy = ({ refetchList }) => {
       ConsultantDoctorID: patientData.ConsultantDoctorID,
       CenterID: patientData.CenterID,
       PatientID: patientData.PatientID,
+      campDate:
+        patientData.CampDate || patientData.campDate
+          ? new Date(patientData.CampDate || patientData.campDate)
+              .toISOString()
+              .split("T")[0]
+          : "",
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
@@ -792,6 +803,35 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       {...formik.getFieldProps("FinCategory")}
                       readOnly
                     />
+                    <div className="flex flex-col">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        Camp Date
+                      </label>
+                      <DatePicker
+                        selected={
+                          formik.values.campDate
+                            ? new Date(formik.values.campDate + "T00:00:00")
+                            : null
+                        }
+                        onChange={(date) =>
+                          formik.setFieldValue(
+                            "campDate",
+                            date ? formatDateOnly(date) : "",
+                          )
+                        }
+                        dateFormat="dd/MM/yyyy"
+                        placeholderText="DD/MM/YYYY"
+                        maxDate={new Date()}
+                        showMonthDropdown
+                        showYearDropdown
+                        scrollableYearDropdown
+                        yearDropdownItemNumber={100}
+                        wrapperClassName="w-full"
+                        popperClassName="z-50"
+                        className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                        isClearable
+                      />
+                    </div>
                   </div>
                 </section>
               )}
@@ -1720,3 +1760,4 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 };
 
 export default CampBillingFormCopy;
+

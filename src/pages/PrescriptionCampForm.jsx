@@ -30,6 +30,9 @@ import { MEDICINE_FREQUENCIES } from "../utils/constants";
 import { formatISO } from "date-fns";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { formatDateOnly } from "../utils/helper";
 import { useSelector } from "react-redux";
 import { cookie } from "../utils/cookie";
 const parseChiefComplaintNames = (value) => {
@@ -204,6 +207,7 @@ const PrescriptionFormCamp = () => {
       weight: values.weight ? Number(values.weight) : null,
       glucose: values.glucose ? Number(values.glucose) : null,
       chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
+      campDate: values.campDate || null,
       history: values.history || "",
       
       treatmentPlan: "",
@@ -267,6 +271,7 @@ const PrescriptionFormCamp = () => {
       duration: "",
       medicineId: "",
       ChiefComplaint: [],
+      campDate: "",
       otherinstrution: "",
       labs: "",
       otherlabs: "",
@@ -396,6 +401,12 @@ const PrescriptionFormCamp = () => {
       ConsultantDoctorID: patientData.ConsultantDoctorID,
       CenterID: patientData.CenterID,
       PatientID: patientData.PatientID,
+      campDate:
+        patientData.CampDate || patientData.campDate
+          ? new Date(patientData.CampDate || patientData.campDate)
+              .toISOString()
+              .split("T")[0]
+          : "",
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
@@ -447,6 +458,9 @@ const PrescriptionFormCamp = () => {
       AddedBy: row.addedBy ?? "",
       billno: billNumber || "",
       ChiefComplaint: mappedComplaints,
+      campDate: row.campDate
+        ? new Date(row.campDate).toISOString().split("T")[0]
+        : "",
       otherinstrution: row.otherInstructions ?? "",
       labs: row.labs ?? "",
       otherlabs: row.otherLabs ?? "",
@@ -775,6 +789,35 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     }
                     required
                   />
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700 mb-1">
+                      Camp Date
+                    </label>
+                    <DatePicker
+                      selected={
+                        formik.values.campDate
+                          ? new Date(formik.values.campDate + "T00:00:00")
+                          : null
+                      }
+                      onChange={(date) =>
+                        formik.setFieldValue(
+                          "campDate",
+                          date ? formatDateOnly(date) : "",
+                        )
+                      }
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText="DD/MM/YYYY"
+                      maxDate={new Date()}
+                      showMonthDropdown
+                      showYearDropdown
+                      scrollableYearDropdown
+                      yearDropdownItemNumber={100}
+                      wrapperClassName="w-full"
+                      popperClassName="z-50"
+                      className="w-full border border-gray-300 px-3 py-2 rounded-md text-sm outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                      isClearable
+                    />
+                  </div>
                   <Input
                     {...formik.getFieldProps("labs")}
                     placeholder="Labs"
