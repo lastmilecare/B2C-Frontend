@@ -63,6 +63,9 @@ import AmbulanceServicePage from "../pages/AmbulanceServicePage";
 import OpdohcPrescriptionPage from "../pages/OhcPrescriptionpage";
 import ohcPrescriptionForm from "../pages/OhcPrescriptionForm";
 import ohcPrescriptionList from "../pages/OhcPrescriptionList";
+import AmpDashboard from "../clients/amp/AmpDashboardPage";
+import HondaDashboard from "../clients/honda/HondaDashboardPage";
+
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -791,6 +794,18 @@ export const ROUTES = [
     path: "/ohc-prescription-form/:ID",
     component: OpdohcPrescriptionPage,
     permission: null,
+    showInSidebar: false,
+  },
+  {
+    path: "/honda-dashboard",
+    component: HondaDashboard,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/amp-dashboard",
+    component: AmpDashboard,
+    permission: "read:client_dashboard",
     showInSidebar: false,
   },
 ];
