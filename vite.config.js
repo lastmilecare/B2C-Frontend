@@ -17,7 +17,7 @@ export default defineConfig({
   preview: {
     host: '0.0.0.0', // required
     port: 8002,
-    allowedHosts: ['test1.lastmilecare.in'],
+    allowedHosts: ['portal.lastmilecare.in'],
   },
 })
 
