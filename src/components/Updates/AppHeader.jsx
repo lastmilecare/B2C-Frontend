@@ -11,7 +11,6 @@ import {
 } from "@heroicons/react/24/outline";
 import HelpPdf from "../../assets/LMC B2C DOC.pdf";
 
-
 const AppHeader = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
