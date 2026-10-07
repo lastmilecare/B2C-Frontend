@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
+import { expenseMockHandlers } from '../mocks/expenseMockApi';
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
   async ({ url, method, data, params, responseType }) => {
@@ -24,7 +25,19 @@ const axiosBaseQuery =
     }
   };
 const VITE_AUTH_URL = import.meta.env.VITE_AUTH_URL;
-
+const runMock = (handler, api, extra = {}) => {
+  try {
+    const data = handler({ getState: api.getState, ...extra });
+    return { data };
+  } catch (e) {
+    return {
+      error: {
+        status: e.status || 500,
+        data: { message: e.data?.message || e.message },
+      },
+    };
+  }
+};
 export const api = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({ baseUrl: "/api" }),
@@ -2315,6 +2328,76 @@ export const api = createApi({
       }),
       providesTags: ["Fitness"],
     }),
+    // Expense Management
+    getExpenseTemplates: build.query({
+      queryFn: (_, api) => runMock(expenseMockHandlers.getTemplates, api),
+      providesTags: ["ExpenseTemplate"],
+    }),
+
+    getExpenseReports: build.query({
+      queryFn: (params, api) =>
+        runMock(expenseMockHandlers.listReports, api, params),
+      providesTags: (result) =>
+        result?.data?.length
+          ? [
+              ...result.data.map(({ id }) => ({ type: "ExpenseReport", id })),
+              { type: "ExpenseReport", id: "LIST" },
+            ]
+          : [{ type: "ExpenseReport", id: "LIST" }],
+    }),
+
+    getExpenseReport: build.query({
+      queryFn: (id, api) => runMock(expenseMockHandlers.getReport, api, { id }),
+      providesTags: (_, __, id) => [{ type: "ExpenseReport", id }],
+    }),
+
+    searchExpenseReports: build.query({
+      queryFn: (q, api) =>
+        runMock(expenseMockHandlers.searchReports, api, { q }),
+    }),
+
+    createExpenseReport: build.mutation({
+      queryFn: (body, api) =>
+        runMock(expenseMockHandlers.createReport, api, { body }),
+      invalidatesTags: [{ type: "ExpenseReport", id: "LIST" }],
+    }),
+
+    updateExpenseReport: build.mutation({
+      queryFn: ({ id, ...body }, api) =>
+        runMock(expenseMockHandlers.updateReport, api, { id, body }),
+      invalidatesTags: (_, __, { id }) => [
+        { type: "ExpenseReport", id },
+        { type: "ExpenseReport", id: "LIST" },
+      ],
+    }),
+
+    deleteExpenseReport: build.mutation({
+      queryFn: (id, api) =>
+        runMock(expenseMockHandlers.deleteReport, api, { id }),
+      invalidatesTags: [{ type: "ExpenseReport", id: "LIST" }],
+    }),
+    getExpenseSheet: build.query({
+    query: (reportType) => `/expense-sheets/${reportType}`,
+    providesTags: (_, __, reportType) => [{ type: 'ExpenseSheet', id: reportType }],
+  }),
+
+  getExpenseSheetSummary: build.query({
+    query: (reportType) => `/expense-sheets/${reportType}/summary`,
+    providesTags: (_, __, reportType) => [{ type: 'ExpenseSheet', id: `${reportType}-summary` }],
+  }),
+
+  saveExpenseSheet: build.mutation({
+    query: (body) => ({
+      url: `/expense-sheets/${body.report_type}`,
+      method: 'PUT',
+      body,
+    }),
+    invalidatesTags: (_, __, body) => [
+      { type: 'ExpenseSheet', id: body.report_type },
+      { type: 'ExpenseSheet', id: `${body.report_type}-summary` },
+      { type: 'ExpenseSheet', id: 'total_exp_summary' },
+    ],
+  }),
   }),
 });
 
@@ -2560,5 +2643,15 @@ export const {
   useUpdateAmbulanceServiceMutation,
   useDeleteAmbulanceServiceMutation,
   useGetOpdBillingCountQuery,
-  useGetFitnessCertificatesCountQuery
+  useGetFitnessCertificatesCountQuery,
+  useGetExpenseTemplatesQuery,
+  useGetExpenseReportsQuery,
+  useGetExpenseReportQuery,
+  useSearchExpenseReportsQuery,
+  useCreateExpenseReportMutation,
+  useUpdateExpenseReportMutation,
+  useDeleteExpenseReportMutation,
+  useGetExpenseSheetQuery,
+  useGetExpenseSheetSummaryQuery,
+  useSaveExpenseSheetMutation,
 } = api;

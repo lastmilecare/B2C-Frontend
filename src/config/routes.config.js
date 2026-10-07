@@ -65,6 +65,16 @@ import ohcPrescriptionForm from "../pages/OhcPrescriptionForm";
 import ohcPrescriptionList from "../pages/OhcPrescriptionList";
 import AmpDashboard from "../clients/amp/AmpDashboardPage";
 import HondaDashboard from "../clients/honda/HondaDashboardPage";
+import ExpensePage from "../pages/expenses/ExpensePage";
+import {
+  AmpOperatingExpensePage,
+  HondaComplianceExpensePage,
+  HondaSalaryExpensePage,
+  HondaMiscExpensePage,
+  HondaSatelliteExpensePage,
+  HondaVendorExpensePage,
+  HondaTotalExpPage,
+} from "../pages/expenses/expenseRouteComponents";
 
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -776,7 +786,7 @@ export const ROUTES = [
   },
   {
     path: "/ohc-prescription-form",
-    component:OpdohcPrescriptionPage ,
+    component: OpdohcPrescriptionPage,
     // permission: "read:opd_list",
     permission: null,
     label: "OPD OHC",
@@ -805,6 +815,54 @@ export const ROUTES = [
   {
     path: "/amp-dashboard",
     component: AmpDashboard,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions",
+    component: ExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/compliances/*",
+    component: HondaComplianceExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/misc/*",
+    component: HondaMiscExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/satellite/*",
+    component: HondaSatelliteExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/salaries/*",
+    component: HondaSalaryExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/vendor-payments/*",
+    component: HondaVendorExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/total-exp/*",
+    component: HondaTotalExpPage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/*",
+    component: AmpOperatingExpensePage,
     permission: "read:client_dashboard",
     showInSidebar: false,
   },

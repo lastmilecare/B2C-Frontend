@@ -44,6 +44,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     Revenue: false,
     PatientDetails: false,
     ClientDashboard: false,
+    ExpenseTransactions: false,
   });
 
   const toggleSubMenu = (menu) => {
@@ -529,6 +530,87 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               onClick={() => setIsOpen(false)}
             >
               AMP Dashboard
+            </NavLink>
+          </MenuGroup>
+        )}
+        {/* {can("read:client_dashboard") && (
+          <MenuGroup
+            menuKey="ExpenseTransactions"
+            icon={BuildingOffice2Icon}
+            label="Expense Transactions"
+          >
+            <NavLink
+              to="/expense-transactions"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Expense Transactions Sheet
+            </NavLink>
+          </MenuGroup>
+        )} */}
+        {can("read:client_dashboard") && (
+          <MenuGroup
+            menuKey="ExpenseTransactions"
+            icon={BuildingOffice2Icon}
+            label="Expense Transactions"
+          >
+            <NavLink
+              to="/expense-transactions"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+              end
+            >
+              Operating expenses sheet
+            </NavLink>
+          </MenuGroup>
+        )}
+        {can("read:client_dashboard") && (
+          <MenuGroup
+            menuKey="ExpenseTransactions"
+            icon={BuildingOffice2Icon}
+            label="Expense Transactions"
+          >
+            <NavLink
+              to="/expense-transactions/compliances"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Compliances
+            </NavLink>
+            <NavLink
+              to="/expense-transactions/misc"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              MISC
+            </NavLink>
+            <NavLink
+              to="/expense-transactions/satellite"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Satelite center
+            </NavLink>
+            <NavLink
+              to="/expense-transactions/salaries"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Salary details
+            </NavLink>
+            <NavLink
+              to="/expense-transactions/vendor-payments"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Vendor vs revenue
+            </NavLink>
+            <NavLink
+              to="/expense-transactions/total-exp"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Total Exp
             </NavLink>
           </MenuGroup>
         )}

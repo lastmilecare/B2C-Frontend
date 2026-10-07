@@ -344,3 +344,26 @@ export const formatDateTime2 = (value) => {
 
   return `${formattedDate} ${formattedTime}`;
 };
+
+export const formatINR = (amount) => {
+  const n = Number(amount) || 0;
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(n);
+};
+
+export const formatPeriodLabel = (periodMonth) => {
+  if (!periodMonth) return '-';
+  const d = new Date(periodMonth);
+  if (Number.isNaN(d.getTime())) return periodMonth;
+  return d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+};
+
+export const toPeriodMonth = (year, monthIndex) => {
+  const y = Number(year);
+  const m = Number(monthIndex);
+  const mm = String(m + 1).padStart(2, '0');
+  return `${y}-${mm}-01`;
+};
