@@ -318,6 +318,18 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Camp OPD List
               </NavLink>
             )}
+            {can("read:opd_analysis") && (
+              <NavLink
+                to="/camp-opd-analysis"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Camp OPD Bill Analysis{" "}
+                <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                  Beta
+                </span>
+              </NavLink>
+            )}
           </MenuGroup>
         )}
         {can("read:patient_details") && (
@@ -591,7 +603,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             >
               Consumables
             </NavLink>
-            
+
             <NavLink
               to="/expense-transactions/satellite"
               className={subNavItem}
