@@ -7,8 +7,8 @@
  *     ...
  *   } from './expenses/expenseRouteComponents';
  */
-import ExpensePage from './ExpensePage';
-import { EXPENSE_REPORT_TYPES } from './expenseConfig';
+import ExpensePage from "./ExpensePage";
+import { EXPENSE_REPORT_TYPES } from "./expenseConfig";
 
 export const AmpOperatingExpensePage = () => (
   <ExpensePage
@@ -26,6 +26,12 @@ export const HondaComplianceExpensePage = () => (
 
 export const HondaMiscExpensePage = () => (
   <ExpensePage reportType={EXPENSE_REPORT_TYPES.MISC} moduleTitle="MISC" />
+);
+export const HondaConsumablesExpensePage = () => (
+  <ExpensePage
+    reportType={EXPENSE_REPORT_TYPES.CONSUMABLES}
+    moduleTitle="Consumables"
+  />
 );
 
 export const HondaSatelliteExpensePage = () => (

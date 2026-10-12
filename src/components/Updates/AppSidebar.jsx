@@ -585,6 +585,14 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
               MISC
             </NavLink>
             <NavLink
+              to="/expense-transactions/consumables"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Consumables
+            </NavLink>
+            
+            <NavLink
               to="/expense-transactions/satellite"
               className={subNavItem}
               onClick={() => setIsOpen(false)}

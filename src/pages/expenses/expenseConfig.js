@@ -2,6 +2,7 @@ export const EXPENSE_REPORT_TYPES = {
   MONTHLY_OPERATING: 'monthly_operating_expense',
   COMPLIANCE_FEES: 'compliance_fees',
   MISC: 'misc_expenses',
+  CONSUMABLES: 'consumables_expenses',
   SATELLITE: 'satellite_centre',
   SALARY: 'salary_by_person',
   VENDOR: 'vendor_payment_revenue',
@@ -30,6 +31,12 @@ export const EXPENSE_ROUTE_REGISTRY = {
       reportType: EXPENSE_REPORT_TYPES.MISC,
       menuLabel: 'MISC',
       permission: 'expenses.misc',
+    },
+    {
+      path: 'consumables',
+      reportType: EXPENSE_REPORT_TYPES.CONSUMABLES,
+      menuLabel: 'Consumables',
+      permission: 'expenses.consumables',
     },
     {
       path: 'satellite',

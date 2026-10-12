@@ -56,7 +56,10 @@ const AppDashboard = () => {
   const [period, setPeriod] = useState("month");
   const [center, setCenter] = useState("All");
   const navigate = useNavigate();
-
+  const role = cookie.get("role") || "N/A";
+  const showGraph =
+    role === "LMC_ADMIN" || role === "CENTER_ADMIN" || role === "STAFF";
+  const showGraphToAdmin = role === "LMC_ADMIN" || role === "CENTER_ADMIN";
   const { permissions } = useSelector((state) => state.auth);
 
   const can = (permission) => {
@@ -118,7 +121,6 @@ const AppDashboard = () => {
   const recentPatients = patients.slice(0, 10);
 
   const username = cookie.get("name") || "User";
-  const role = cookie.get("role") || "N/A";
 
   const tenantId = cookie.get("tenantId") || "N/A";
 
@@ -130,8 +132,7 @@ const AppDashboard = () => {
         : tenantId == 3
           ? "M3M"
           : "";
-  const showGraph =
-    role === "LMC_ADMIN" || role === "CENTER_ADMIN" || role === "STAFF";
+
   /* =========================================================
      LOW STOCK PAGINATION
   ========================================================= */
@@ -263,15 +264,16 @@ const AppDashboard = () => {
   if (!can("read:dashboard")) {
     return <Navigate to="/unauthorized" replace />;
   }
-
   const {
     data: opdBillingCountData,
     isLoading: opdBillingCountLoading,
     isFetching: opdBillingCountFetching,
-  } = useGetOpdBillingCountQuery();
-
+  } = useGetOpdBillingCountQuery(undefined, {
+    skip: !showGraphToAdmin,
+  });
   const { data: ambulanceData, isLoading: ambulanceLoading } =
     useGetAmbulanceServicesQuery({ page: 1, limit: 10000 });
+
   const patientDashboard = useMemo(
     () => getPatientDashboardData(patientData, period),
     [patientData, period],
@@ -281,6 +283,7 @@ const AppDashboard = () => {
     () => getOpdDashboardData(opdBillingCountData, period),
     [opdBillingCountData, period],
   );
+  
   const prescriptionDashboard = useMemo(
     () => getPrescriptionDashboardData(prescriptionData, period),
     [prescriptionData, period],
@@ -780,7 +783,7 @@ const AppDashboard = () => {
             />
           </ChartCard>
         )}
-        {showGraph && (
+        {showGraphToAdmin && (
           <ChartCard
             title="Care Flow Pipeline"
             subtitle="Registration → OPD → Prescription per period bucket (ideal for client EOD/ EOM review)"
@@ -797,7 +800,7 @@ const AppDashboard = () => {
             />
           </ChartCard>
         )}
-        {showGraph && (
+        {showGraphToAdmin && (
           <ChartCard
             title="OPD Data Analysis"
             subtitle="New vs follow-up patients — line chart for trend clarity"

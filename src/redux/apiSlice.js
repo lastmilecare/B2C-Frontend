@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
-import { expenseMockHandlers } from '../mocks/expenseMockApi';
+import { expenseMockHandlers } from "../mocks/expenseMockApi";
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
   async ({ url, method, data, params, responseType }) => {
@@ -2328,12 +2328,6 @@ export const api = createApi({
       }),
       providesTags: ["Fitness"],
     }),
-    // Expense Management
-    getExpenseTemplates: build.query({
-      queryFn: (_, api) => runMock(expenseMockHandlers.getTemplates, api),
-      providesTags: ["ExpenseTemplate"],
-    }),
-
     getExpenseReports: build.query({
       queryFn: (params, api) =>
         runMock(expenseMockHandlers.listReports, api, params),
@@ -2377,27 +2371,31 @@ export const api = createApi({
       invalidatesTags: [{ type: "ExpenseReport", id: "LIST" }],
     }),
     getExpenseSheet: build.query({
-    query: (reportType) => `/expense-sheets/${reportType}`,
-    providesTags: (_, __, reportType) => [{ type: 'ExpenseSheet', id: reportType }],
-  }),
-
-  getExpenseSheetSummary: build.query({
-    query: (reportType) => `/expense-sheets/${reportType}/summary`,
-    providesTags: (_, __, reportType) => [{ type: 'ExpenseSheet', id: `${reportType}-summary` }],
-  }),
-
-  saveExpenseSheet: build.mutation({
-    query: (body) => ({
-      url: `/expense-sheets/${body.report_type}`,
-      method: 'PUT',
-      body,
+      query: (reportType) => `/expense-sheets/${reportType}`,
+      providesTags: (_, __, reportType) => [
+        { type: "ExpenseSheet", id: reportType },
+      ],
     }),
-    invalidatesTags: (_, __, body) => [
-      { type: 'ExpenseSheet', id: body.report_type },
-      { type: 'ExpenseSheet', id: `${body.report_type}-summary` },
-      { type: 'ExpenseSheet', id: 'total_exp_summary' },
-    ],
-  }),
+
+    getExpenseSheetSummary: build.query({
+      query: (reportType) => `/expense-sheets/${reportType}/summary`,
+      providesTags: (_, __, reportType) => [
+        { type: "ExpenseSheet", id: `${reportType}-summary` },
+      ],
+    }),
+
+    saveExpenseSheet: build.mutation({
+      query: (body) => ({
+        url: `/expense-sheets/${body.report_type}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (_, __, body) => [
+        { type: "ExpenseSheet", id: body.report_type },
+        { type: "ExpenseSheet", id: `${body.report_type}-summary` },
+        { type: "ExpenseSheet", id: "total_exp_summary" },
+      ],
+    }),
   }),
 });
 

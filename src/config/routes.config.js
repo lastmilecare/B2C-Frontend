@@ -74,6 +74,7 @@ import {
   HondaSatelliteExpensePage,
   HondaVendorExpensePage,
   HondaTotalExpPage,
+  HondaConsumablesExpensePage,
 } from "../pages/expenses/expenseRouteComponents";
 
 export const ROUTES = [
@@ -833,6 +834,12 @@ export const ROUTES = [
   {
     path: "/expense-transactions/misc/*",
     component: HondaMiscExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/consumables/*",
+    component: HondaConsumablesExpensePage,
     permission: "read:client_dashboard",
     showInSidebar: false,
   },

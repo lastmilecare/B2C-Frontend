@@ -1,30 +1,34 @@
-import React, { useState } from 'react';
-import { useNavigate,useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowPathIcon,
   CheckCircleIcon,
   ClipboardDocumentIcon,
   CurrencyRupeeIcon,
-  PencilSquareIcon
-} from '@heroicons/react/24/outline';
-import { Button, Select } from '../../components/UIComponents';
+  PencilSquareIcon,
+  ArrowDownTrayIcon 
+} from "@heroicons/react/24/outline";
+import { Button, Select } from "../../components/UIComponents";
 import {
   useGetExpenseSheetQuery,
   useSaveExpenseSheetMutation,
-} from '../../redux/apiSlice';
-import { healthAlerts } from '../../utils/healthSwal';
-import { getApiErrorMessage } from '../../utils/helper';
-import { formatINR } from './expenseFormatters';
-import CategoryByMonthGrid from './layouts/CategoryByMonthGrid';
-import MonthByCategoryGrid from './layouts/MonthByCategoryGrid';
-import PersonByMonthGrid from './layouts/PersonByMonthGrid';
-import VendorMonthGrid from './layouts/VendorMonthGrid';
-import { useExpenseSheetState } from './useExpenseSheetState';
-import SheetToolbars from './SheetToolbars';
+} from "../../redux/apiSlice";
+import { healthAlerts } from "../../utils/healthSwal";
+import { getApiErrorMessage } from "../../utils/helper";
+import { formatINR } from "./expenseFormatters";
+import CategoryByMonthGrid from "./layouts/CategoryByMonthGrid";
+import MonthByCategoryGrid from "./layouts/MonthByCategoryGrid";
+import PersonByMonthGrid from "./layouts/PersonByMonthGrid";
+import VendorMonthGrid from "./layouts/VendorMonthGrid";
+import { useExpenseSheetState } from "./useExpenseSheetState";
+import SheetToolbars from "./SheetToolbars";
+import { exportSheetToCsv } from "./expenseCsvExport";
+
 const ExpenseForm = ({ reportType }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const isEditMode = location.state?.mode === 'edit' || location.state?.mode !== 'create';
+  const isEditMode =
+    location.state?.mode === "edit" || location.state?.mode !== "create";
   const [activeStep, setActiveStep] = useState(1);
 
   const { data: sheetData, isLoading } = useGetExpenseSheetQuery(reportType, {
@@ -57,28 +61,32 @@ const ExpenseForm = ({ reportType }) => {
   if (!reportType || !definition) {
     return (
       <div className="p-8 text-center text-red-600">
-        Unknown sheet. Check <code>reportType</code> and expenseSheetDefinitions.js.
+        Unknown sheet. Check <code>reportType</code> and
+        expenseSheetDefinitions.js.
       </div>
     );
   }
 
-  if (definition.entry_mode === 'readonly') {
+  if (definition.entry_mode === "readonly") {
     return (
       <div className="p-8 text-center text-slate-600">
-        This sheet is read-only. Use <strong>Total Exp</strong> report route instead.
+        This sheet is read-only. Use <strong>Total Exp</strong> report route
+        instead.
       </div>
     );
   }
 
   if (isLoading || !state) {
-    return <div className="p-8 text-center text-slate-500">Loading sheet...</div>;
+    return (
+      <div className="p-8 text-center text-slate-500">Loading sheet...</div>
+    );
   }
 
   const moduleTitle = definition.module_title;
 
   const renderGrid = () => {
     switch (definition.layout) {
-      case 'category_by_month':
+      case "category_by_month":
         return (
           <CategoryByMonthGrid
             definition={definition}
@@ -88,7 +96,7 @@ const ExpenseForm = ({ reportType }) => {
             onRemarkChange={setRemark}
           />
         );
-      case 'month_by_category':
+      case "month_by_category":
         return (
           <MonthByCategoryGrid
             definition={definition}
@@ -96,7 +104,7 @@ const ExpenseForm = ({ reportType }) => {
             onCellChange={setMonthCategoryCell}
           />
         );
-      case 'person_by_month':
+      case "person_by_month":
         return (
           <PersonByMonthGrid
             definition={definition}
@@ -105,7 +113,7 @@ const ExpenseForm = ({ reportType }) => {
             onCellChange={setPersonCell}
           />
         );
-      case 'vendor_month_blocks':
+      case "vendor_month_blocks":
         return (
           <VendorMonthGrid
             definition={definition}
@@ -118,16 +126,26 @@ const ExpenseForm = ({ reportType }) => {
     }
   };
 
+  const handleExportCsv = () => {
+    exportSheetToCsv(definition, state, definition.report_type);
+    healthAlerts.success(
+      "CSV file downloaded (includes unsaved changes on screen)",
+      "Export",
+    );
+  };
+
   const handleSubmit = async () => {
     try {
       await saveSheet(savePayload).unwrap();
       healthAlerts.success(
-        isEditMode || hasSavedData ? 'Sheet updated successfully' : 'Sheet saved successfully',
-        'Saved',
+        isEditMode || hasSavedData
+          ? "Sheet updated successfully"
+          : "Sheet saved successfully",
+        "Saved",
       );
-      navigate('..', { state: { goToList: true }, relative: 'path' });
+      navigate("..", { state: { goToList: true }, relative: "path" });
     } catch (err) {
-      healthAlerts.error(getApiErrorMessage(err, 'Save failed'), 'Error');
+      healthAlerts.error(getApiErrorMessage(err, "Save failed"), "Error");
     }
   };
 
@@ -148,13 +166,20 @@ const ExpenseForm = ({ reportType }) => {
             )}
           </h1>
           <div className="flex gap-2">
-            <div className={`h-2 w-12 rounded-full ${activeStep >= 1 ? 'bg-sky-600' : 'bg-blue-100'}`} />
-            <div className={`h-2 w-12 rounded-full ${activeStep >= 2 ? 'bg-sky-600' : 'bg-blue-100'}`} />
+            <div
+              className={`h-2 w-12 rounded-full ${activeStep >= 1 ? "bg-sky-600" : "bg-blue-100"}`}
+            />
+            <div
+              className={`h-2 w-12 rounded-full ${activeStep >= 2 ? "bg-sky-600" : "bg-blue-100"}`}
+            />
           </div>
         </div>
 
         <div className="overflow-hidden rounded-3xl border bg-white shadow-xl">
-          <form onSubmit={(e) => e.preventDefault()} className="space-y-6 p-4 lg:p-8">
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="space-y-6 p-4 lg:p-8"
+          >
             {activeStep === 1 && (
               <>
                 <div className="mb-4 max-w-xs">
@@ -188,39 +213,79 @@ const ExpenseForm = ({ reportType }) => {
                   <ClipboardDocumentIcon className="h-5 w-5" />
                   Confirm save
                 </h3>
-                <p><b>Sheet:</b> {moduleTitle}</p>
-                <p><b>Status:</b> {state.status}</p>
-                <p><b>Period range:</b> {periodRangeLabel}</p>
-                <p><b>Grand total (all cells):</b> {formatINR(grandTotal)}</p>
+                <p>
+                  <b>Sheet:</b> {moduleTitle}
+                </p>
+                <p>
+                  <b>Status:</b> {state.status}
+                </p>
+                <p>
+                  <b>Period range:</b> {periodRangeLabel}
+                </p>
+                <p>
+                  <b>Grand total (all cells):</b> {formatINR(grandTotal)}
+                </p>
               </div>
             )}
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
               <div className="flex gap-3">
                 {activeStep > 1 && (
-                  <Button type="button" variant="gray" onClick={() => setActiveStep(1)}>Back</Button>
+                  <Button
+                    type="button"
+                    variant="gray"
+                    onClick={() => setActiveStep(1)}
+                  >
+                    Back
+                  </Button>
                 )}
                 {activeStep === 1 && (
-                  <Button type="button" variant="gray" onClick={resetGrid}>
-                    <ArrowPathIcon className="mr-1 inline h-5 w-5" />
-                    Clear all
-                  </Button>
+                  <>
+                    <Button type="button" variant="gray" onClick={resetGrid}>
+                      <ArrowPathIcon className="mr-1 inline h-5 w-5" />
+                      Clear all
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="gray"
+                      onClick={handleExportCsv}
+                    >
+                      <ArrowDownTrayIcon className="mr-1 inline h-5 w-5" />
+                      Export CSV
+                    </Button>
+                  </>
                 )}
               </div>
               <div className="flex gap-3">
                 <Button
                   type="button"
                   variant="gray"
-                  onClick={() => navigate('..', { state: { goToList: true }, relative: 'path' })}
+                  onClick={() =>
+                    navigate("..", {
+                      state: { goToList: true },
+                      relative: "path",
+                    })
+                  }
                 >
                   Cancel
                 </Button>
                 {activeStep === 1 ? (
-                  <Button type="button" variant="sky" onClick={() => setActiveStep(2)}>Continue</Button>
+                  <Button
+                    type="button"
+                    variant="sky"
+                    onClick={() => setActiveStep(2)}
+                  >
+                    Continue
+                  </Button>
                 ) : (
-                  <Button type="button" variant="sky" onClick={handleSubmit} disabled={isSaving}>
+                  <Button
+                    type="button"
+                    variant="sky"
+                    onClick={handleSubmit}
+                    disabled={isSaving}
+                  >
                     <CheckCircleIcon className="mr-1 inline h-5 w-5" />
-                    {hasSavedData || isEditMode ? 'Update sheet' : 'Save sheet'}
+                    {hasSavedData || isEditMode ? "Update sheet" : "Save sheet"}
                   </Button>
                 )}
               </div>

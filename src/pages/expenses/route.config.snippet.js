@@ -37,6 +37,12 @@ export const hondaExpenseRoutes = [
     permission: 'read:client_dashboard',
     showInSidebar: false,
   },
+   {
+    path: '/expense-transactions/consumables/*',
+    component: 'HondaConsumablesExpensePage',
+    permission: 'read:client_dashboard',
+    showInSidebar: false,
+  },
   {
     path: '/expense-transactions/satellite/*',
     component: 'HondaSatelliteExpensePage',
