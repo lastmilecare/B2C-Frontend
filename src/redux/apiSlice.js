@@ -2083,6 +2083,46 @@ export const api = createApi({
       }),
       providesTags: ["Bill"],
     }),
+    getCampPatientDetails: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        contactNumber,
+        gender,
+        category,
+        startDate,
+        endDate,
+        external_id,
+        idProof_number,
+        bill_no,
+        department,
+        doctor,
+        payment_mode,
+        added_by,
+      } = {}) => ({
+        url: "/opd-billing/view-camp-patient-details",
+        method: "get",
+        params: {
+          page,
+          limit,
+          name,
+          contactNumber,
+          gender,
+          category,
+          startDate,
+          endDate,
+          external_id,
+          idProof_number,
+          bill_no,
+          department,
+          doctor,
+          payment_mode,
+          added_by,
+        },
+      }),
+      providesTags: ["Bill"],
+    }),
     createDepartment: build.mutation({
       query: (departmentData) => ({
         url: "/departments",
@@ -2396,6 +2436,10 @@ export const api = createApi({
         { type: "ExpenseSheet", id: "total_exp_summary" },
       ],
     }),
+    getExpenseSheetIndex: build.query({
+      query: () => "/expense-sheets",
+      providesTags: [{ type: "ExpenseSheet", id: "INDEX" }],
+    }),
   }),
 });
 
@@ -2616,6 +2660,7 @@ export const {
   useUpdateCampPrescriptionMutation,
   useToggleCampPrescriptionStatusMutation,
   useGetPatientDetailsQuery,
+  useGetCampPatientDetailsQuery,
   useLazyExportCampPrescriptionsExcelQuery,
   useCreateDepartmentMutation,
   useUpdateDepartmentMutation,
@@ -2652,4 +2697,6 @@ export const {
   useGetExpenseSheetQuery,
   useGetExpenseSheetSummaryQuery,
   useSaveExpenseSheetMutation,
+  useGetExpenseSheetIndexQuery,
+  
 } = api;

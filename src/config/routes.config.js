@@ -66,6 +66,7 @@ import ohcPrescriptionList from "../pages/OhcPrescriptionList";
 import AmpDashboard from "../clients/amp/AmpDashboardPage";
 import HondaDashboard from "../clients/honda/HondaDashboardPage";
 import ExpensePage from "../pages/expenses/ExpensePage";
+import CampOpdBillAnalysis from "../pages/CampOpdBillAnalysis";
 import {
   AmpOperatingExpensePage,
   HondaComplianceExpensePage,
@@ -742,6 +743,15 @@ export const ROUTES = [
     component: OpdBillAnalysis,
     permission: "read:opd_analysis",
     label: "Opd Bill Analysis",
+    icon: "ClipboardDocumentListIcon",
+    group: "OPD",
+    showInSidebar: true,
+  },
+  {
+    path: "/camp-opd-analysis",
+    component: CampOpdBillAnalysis,
+    permission: "read:opd_analysis",
+    label: "Camp Opd Bill Analysis",
     icon: "ClipboardDocumentListIcon",
     group: "OPD",
     showInSidebar: true,
