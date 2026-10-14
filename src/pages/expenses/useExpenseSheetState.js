@@ -1,37 +1,52 @@
-import { useEffect, useMemo, useState } from 'react';
-import { buildEffectiveDefinition, extractPeriodsFromCells } from './expenseDefinitionMerge';
+import { useEffect, useMemo, useState } from "react";
+import {
+  buildEffectiveDefinition,
+  extractPeriodsFromCells,
+} from "./expenseDefinitionMerge";
 import {
   buildSavePayload,
   hydrateSheetState,
   initEmptySheetState,
   syncGridToDefinition,
-} from './expenseGridUtils';
-import { nextPeriodAfterLatest, slugifyLineCode } from './expensePeriodUtils';
-import { getSheetDefinition } from './expenseSheetDefinitions';
+} from "./expenseGridUtils";
+import {
+  nextPeriodAfterLatest,
+  normalizePeriodMonth,
+  slugifyLineCode,
+} from "./expensePeriodUtils";
+import { getSheetDefinition } from "./expenseSheetDefinitions";
 
-export const useExpenseSheetState = (reportType, sheetData, sheetLoading) => {
+const emptyCustom = () => ({
+  periods: [],
+  categories: [],
+  columns: [],
+  people: [],
+});
+
+export const useExpenseSheetState = (
+  reportType,
+  sheetData,
+  { isLoading, isFetching, isSuccess },
+) => {
   const baseDefinition = getSheetDefinition(reportType);
   const [state, setState] = useState(null);
 
   useEffect(() => {
-    if (!baseDefinition) return;
-    if (sheetLoading) return;
+    setState(null);
+  }, [reportType]);
 
-    const cellPeriods = extractPeriodsFromCells(sheetData?.cells);
-    const custom = sheetData?.custom || state?.custom;
+  useEffect(() => {
+    if (!baseDefinition) return;
+    if (isLoading || isFetching) return;
+    if (!isSuccess || sheetData === undefined) return;
+
+    const cellPeriods = extractPeriodsFromCells(sheetData.cells);
+    const custom = sheetData.custom || emptyCustom();
     const effective = buildEffectiveDefinition(baseDefinition, { custom, cellPeriods });
 
-    if (sheetData) {
-      const hydrated = hydrateSheetState(effective, sheetData);
-      setState(syncGridToDefinition(hydrated, effective));
-      return;
-    }
-
-    setState((prev) => {
-      if (prev) return syncGridToDefinition(prev, effective);
-      return syncGridToDefinition(initEmptySheetState(effective), effective);
-    });
-  }, [baseDefinition, sheetData, sheetLoading]);
+    const hydrated = hydrateSheetState(effective, sheetData);
+    setState(syncGridToDefinition(hydrated, effective));
+  }, [baseDefinition, sheetData, isLoading, isFetching, isSuccess]);
 
   const effectiveDefinition = useMemo(() => {
     if (!baseDefinition || !state) return baseDefinition;
@@ -108,9 +123,17 @@ export const useExpenseSheetState = (reportType, sheetData, sheetLoading) => {
       effectiveDefinition.periods,
       effectiveDefinition.period_format,
     );
+    const nextKey = normalizePeriodMonth(next.period_month);
     setState((prev) => {
-      const custom = { ...prev.custom, periods: [...(prev.custom?.periods || []), next] };
-      const effective = buildEffectiveDefinition(baseDefinition, { custom });
+      const existing = prev.custom?.periods || [];
+      if (existing.some((p) => normalizePeriodMonth(p.period_month) === nextKey)) {
+        return prev;
+      }
+      const custom = { ...prev.custom, periods: [...existing, next] };
+      const effective = buildEffectiveDefinition(baseDefinition, {
+        custom,
+        cellPeriods: extractPeriodsFromCells(sheetData?.cells),
+      });
       return syncGridToDefinition({ ...prev, custom }, effective);
     });
   };

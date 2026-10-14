@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowPathIcon,
@@ -6,7 +6,7 @@ import {
   ClipboardDocumentIcon,
   CurrencyRupeeIcon,
   PencilSquareIcon,
-  ArrowDownTrayIcon 
+  ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import { Button, Select } from "../../components/UIComponents";
 import {
@@ -23,17 +23,29 @@ import VendorMonthGrid from "./layouts/VendorMonthGrid";
 import { useExpenseSheetState } from "./useExpenseSheetState";
 import SheetToolbars from "./SheetToolbars";
 import { exportSheetToCsv } from "./expenseCsvExport";
+import { normalizeExpenseSheetResponse } from "./expenseApiNormalize";
 
 const ExpenseForm = ({ reportType }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const isEditMode =
-    location.state?.mode === "edit" || location.state?.mode !== "create";
   const [activeStep, setActiveStep] = useState(1);
-
-  const { data: sheetData, isLoading } = useGetExpenseSheetQuery(reportType, {
+  const formMode = location.state?.mode;
+  const {
+    data: rawSheetData,
+    isLoading,
+    isFetching,
+    isSuccess,
+    isError,
+    error,
+  } = useGetExpenseSheetQuery(reportType, {
     skip: !reportType,
+    refetchOnMountOrArgChange: true,
   });
+
+  const sheetData = useMemo(
+    () => normalizeExpenseSheetResponse(rawSheetData),
+    [rawSheetData],
+  );
   const [saveSheet, { isLoading: isSaving }] = useSaveExpenseSheetMutation();
 
   const {
@@ -54,7 +66,14 @@ const ExpenseForm = ({ reportType }) => {
     resetGrid,
     savePayload,
     hasSavedData,
-  } = useExpenseSheetState(reportType, sheetData, isLoading);
+  } = useExpenseSheetState(reportType, sheetData, {
+    isLoading,
+    isFetching,
+    isSuccess,
+  });
+
+  const isExplicitCreate = formMode === "create";
+  const isEditMode = formMode === "edit" || (hasSavedData && !isExplicitCreate);
 
   const definition = effectiveDefinition;
 
@@ -76,7 +95,15 @@ const ExpenseForm = ({ reportType }) => {
     );
   }
 
-  if (isLoading || !state) {
+  if (isError) {
+    return (
+      <div className="p-8 text-center text-red-600">
+        {getApiErrorMessage(error, "Could not load expense sheet")}
+      </div>
+    );
+  }
+
+  if (isLoading || isFetching || !state) {
     return (
       <div className="p-8 text-center text-slate-500">Loading sheet...</div>
     );
@@ -126,19 +153,11 @@ const ExpenseForm = ({ reportType }) => {
     }
   };
 
-  const handleExportCsv = () => {
-    exportSheetToCsv(definition, state, definition.report_type);
-    healthAlerts.success(
-      "CSV file downloaded (includes unsaved changes on screen)",
-      "Export",
-    );
-  };
-
   const handleSubmit = async () => {
     try {
       await saveSheet(savePayload).unwrap();
       healthAlerts.success(
-        isEditMode || hasSavedData
+        hasSavedData
           ? "Sheet updated successfully"
           : "Sheet saved successfully",
         "Saved",
@@ -240,20 +259,10 @@ const ExpenseForm = ({ reportType }) => {
                   </Button>
                 )}
                 {activeStep === 1 && (
-                  <>
-                    <Button type="button" variant="gray" onClick={resetGrid}>
-                      <ArrowPathIcon className="mr-1 inline h-5 w-5" />
-                      Clear all
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="gray"
-                      onClick={handleExportCsv}
-                    >
-                      <ArrowDownTrayIcon className="mr-1 inline h-5 w-5" />
-                      Export CSV
-                    </Button>
-                  </>
+                  <Button type="button" variant="gray" onClick={resetGrid}>
+                    <ArrowPathIcon className="mr-1 inline h-5 w-5" />
+                    Clear all
+                  </Button>
                 )}
               </div>
               <div className="flex gap-3">

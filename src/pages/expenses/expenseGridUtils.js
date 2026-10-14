@@ -1,3 +1,5 @@
+import { normalizePeriodMonth } from "./expensePeriodUtils";
+
 export const parseAmountInput = (value) => value.replace(/[^0-9.-]/g, "");
 
 export const amountFromInput = (value) => {
@@ -66,9 +68,10 @@ export const hydrateCategoryByMonth = (
 ) => {
   const { grid, remarks: remarkState } = emptyCategoryByMonthGrid(definition);
   cells.forEach(({ line_code, period_month, amount }) => {
-    if (grid[line_code] && period_month in grid[line_code]) {
-      grid[line_code][period_month] = formatAmountCell(amount);
-    }
+    const pm = normalizePeriodMonth(period_month);
+    if (!line_code || !pm) return;
+    if (!grid[line_code]) grid[line_code] = {};
+    grid[line_code][pm] = formatAmountCell(amount);
   });
   Object.keys(remarkState).forEach((code) => {
     if (remarks[code]) remarkState[code] = remarks[code];
@@ -79,9 +82,10 @@ export const hydrateCategoryByMonth = (
 export const hydrateMonthByCategory = (definition, cells = []) => {
   const { grid } = emptyMonthByCategoryGrid(definition);
   cells.forEach(({ line_code, period_month, amount }) => {
-    if (grid[period_month] && line_code in grid[period_month]) {
-      grid[period_month][line_code] = formatAmountCell(amount);
-    }
+    const pm = normalizePeriodMonth(period_month);
+    if (!line_code || !pm) return;
+    if (!grid[pm]) grid[pm] = {};
+    grid[pm][line_code] = formatAmountCell(amount);
   });
   return { grid };
 };
@@ -92,9 +96,10 @@ export const hydratePersonByMonth = (definition, people = [], cells = []) => {
     people,
   );
   cells.forEach(({ person_id, period_month, amount }) => {
-    if (grid[person_id] && period_month in grid[person_id]) {
-      grid[person_id][period_month] = formatAmountCell(amount);
-    }
+    const pm = normalizePeriodMonth(period_month);
+    if (!person_id || !pm) return;
+    if (!grid[person_id]) grid[person_id] = {};
+    grid[person_id][pm] = formatAmountCell(amount);
   });
   return { grid, people: rowPeople };
 };
@@ -102,25 +107,32 @@ export const hydratePersonByMonth = (definition, people = [], cells = []) => {
 export const hydrateVendorGrid = (definition, cells = []) => {
   const { grid } = emptyVendorGrid(definition);
   cells.forEach(({ period_month, block_code, field, amount }) => {
-    if (
-      grid[period_month]?.[block_code] &&
-      field in grid[period_month][block_code]
-    ) {
-      grid[period_month][block_code][field] = formatAmountCell(amount);
-    }
+    const pm = normalizePeriodMonth(period_month);
+    if (!pm || !block_code || !field) return;
+    if (!grid[pm]) grid[pm] = {};
+    if (!grid[pm][block_code]) grid[pm][block_code] = {};
+    grid[pm][block_code][field] = formatAmountCell(amount);
   });
   return { grid };
+};
+
+const pushCellIfNonZero = (cells, cell, amount) => {
+  if (amount !== 0) cells.push({ ...cell, amount });
 };
 
 export const flattenCategoryByMonth = (definition, grid, remarks) => {
   const cells = [];
   definition.categories.forEach((cat) => {
     definition.periods.forEach((p) => {
-      cells.push({
-        line_code: cat.line_code,
-        period_month: p.period_month,
-        amount: amountFromInput(grid[cat.line_code]?.[p.period_month]),
-      });
+      const amount = amountFromInput(grid[cat.line_code]?.[p.period_month]);
+      pushCellIfNonZero(
+        cells,
+        {
+          line_code: cat.line_code,
+          period_month: p.period_month,
+        },
+        amount,
+      );
     });
   });
   const remarksPayload = definition.remarks_per_row
@@ -136,11 +148,15 @@ export const flattenMonthByCategory = (definition, grid) => {
   const cells = [];
   definition.periods.forEach((p) => {
     definition.columns.forEach((col) => {
-      cells.push({
-        line_code: col.line_code,
-        period_month: p.period_month,
-        amount: amountFromInput(grid[p.period_month]?.[col.line_code]),
-      });
+      const amount = amountFromInput(grid[p.period_month]?.[col.line_code]);
+      pushCellIfNonZero(
+        cells,
+        {
+          line_code: col.line_code,
+          period_month: p.period_month,
+        },
+        amount,
+      );
     });
   });
   return { cells };
@@ -151,11 +167,15 @@ export const flattenPersonByMonth = (definition, grid, people) => {
   people.forEach((person) => {
     const person_id = person.person_id || person.id;
     definition.periods.forEach((p) => {
-      cells.push({
-        person_id,
-        period_month: p.period_month,
-        amount: amountFromInput(grid[person_id]?.[p.period_month]),
-      });
+      const amount = amountFromInput(grid[person_id]?.[p.period_month]);
+      pushCellIfNonZero(
+        cells,
+        {
+          person_id,
+          period_month: p.period_month,
+        },
+        amount,
+      );
     });
   });
   return { cells, people };
@@ -166,14 +186,18 @@ export const flattenVendorGrid = (definition, grid) => {
   definition.periods.forEach((p) => {
     definition.vendor_blocks.forEach((block) => {
       definition.block_fields.forEach((f) => {
-        cells.push({
-          period_month: p.period_month,
-          block_code: block.block_code,
-          field: f.field,
-          amount: amountFromInput(
-            grid[p.period_month]?.[block.block_code]?.[f.field],
-          ),
-        });
+        const amount = amountFromInput(
+          grid[p.period_month]?.[block.block_code]?.[f.field],
+        );
+        pushCellIfNonZero(
+          cells,
+          {
+            period_month: p.period_month,
+            block_code: block.block_code,
+            field: f.field,
+          },
+          amount,
+        );
       });
     });
   });
@@ -269,16 +293,23 @@ export const syncGridToDefinition = (state, definition) => {
   return { ...state, grid };
 };
 
+const normalizeCustomPeriods = (custom) => {
+  const c = custom || { periods: [], categories: [], columns: [], people: [] };
+  const periods = (c.periods || [])
+    .map((p) => {
+      const period_month = normalizePeriodMonth(p.period_month);
+      if (!period_month) return null;
+      return { ...p, period_month };
+    })
+    .filter(Boolean);
+  return { ...c, periods };
+};
+
 export const buildSavePayload = (definition, state) => {
   const base = {
     report_type: definition.report_type,
     status: state.status,
-    custom: state.custom || {
-      periods: [],
-      categories: [],
-      columns: [],
-      people: [],
-    },
+    custom: normalizeCustomPeriods(state.custom),
   };
   switch (definition.layout) {
     case "category_by_month":

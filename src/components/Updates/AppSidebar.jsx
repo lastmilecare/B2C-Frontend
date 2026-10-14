@@ -30,6 +30,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     return permissions?.includes(permission) ?? false;
   };
   const tenantType = cookie.get("tenantType");
+  const tenantId = cookie.get("tenantId") || "N/A";
   const [menus, setMenus] = useState({
     patient: false,
     opd: false,
@@ -566,72 +567,74 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             icon={BuildingOffice2Icon}
             label="Expense Transactions"
           >
-            <NavLink
-              to="/expense-transactions"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-              end
-            >
-              Operating expenses sheet
-            </NavLink>
-          </MenuGroup>
-        )}
-        {can("read:client_dashboard") && (
-          <MenuGroup
-            menuKey="ExpenseTransactions"
-            icon={BuildingOffice2Icon}
-            label="Expense Transactions"
-          >
-            <NavLink
-              to="/expense-transactions/compliances"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Compliances
-            </NavLink>
-            <NavLink
-              to="/expense-transactions/misc"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              MISC
-            </NavLink>
-            <NavLink
-              to="/expense-transactions/consumables"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Consumables
-            </NavLink>
+            {tenantId == 1 ? (
+              <>
+                <NavLink
+                  to="/expense-transactions/compliances"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Compliances
+                </NavLink>
 
-            <NavLink
-              to="/expense-transactions/satellite"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Satelite center
-            </NavLink>
-            <NavLink
-              to="/expense-transactions/salaries"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Salary details
-            </NavLink>
-            <NavLink
-              to="/expense-transactions/vendor-payments"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Vendor vs revenue
-            </NavLink>
-            <NavLink
-              to="/expense-transactions/total-exp"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Total Exp
-            </NavLink>
+                <NavLink
+                  to="/expense-transactions/misc"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  MISC
+                </NavLink>
+
+                <NavLink
+                  to="/expense-transactions/consumables"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Consumables
+                </NavLink>
+
+                <NavLink
+                  to="/expense-transactions/satellite"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Satellite Center
+                </NavLink>
+
+                <NavLink
+                  to="/expense-transactions/salaries"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Salary Details
+                </NavLink>
+
+                <NavLink
+                  to="/expense-transactions/vendor-payments"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Vendor vs Revenue
+                </NavLink>
+
+                <NavLink
+                  to="/expense-transactions/total-exp"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Total Exp
+                </NavLink>
+              </>
+            ) : tenantId == 2 ? (
+              <NavLink
+                to="/expense-transactions/operating"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+                end
+              >
+                Operating Expenses Sheet
+              </NavLink>
+            ) : null}
           </MenuGroup>
         )}
 

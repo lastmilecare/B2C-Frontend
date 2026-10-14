@@ -1,44 +1,78 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/UIComponents";
-import { useGetExpenseSheetSummaryQuery } from "../../redux/apiSlice";
+import {
+  useGetExpenseSheetSummaryQuery,
+  useGetExpenseSheetQuery,
+} from "../../redux/apiSlice";
 import { formatDate, getApiErrorMessage } from "../../utils/helper";
 import { formatINR } from "./expenseFormatters";
 import { getSheetDefinition } from "./expenseSheetDefinitions";
 import { useExportExpenseCsvFromApi } from "./useExportExpenseCsv";
-
+import { normalizeExpenseSheetResponse } from "./expenseApiNormalize";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { healthAlerts } from "../../utils/healthSwal";
 const ExpenseList = ({ reportType, listTitle }) => {
   const navigate = useNavigate();
   const definition = getSheetDefinition(reportType);
-  const heading = listTitle || definition?.module_title || 'Expenses';
+  const heading = listTitle || definition?.module_title || "Expenses";
 
-  const { data, isLoading, isError, error } = useGetExpenseSheetSummaryQuery(reportType, {
-    skip: !reportType,
-  });
+  const { data, isLoading, isError, error } = useGetExpenseSheetSummaryQuery(
+    reportType,
+    {
+      skip: !reportType,
+    },
+  );
+
+  const { data: rawSheetData, isLoading: sheetLoading } =
+    useGetExpenseSheetQuery(reportType, {
+      skip: !reportType,
+      refetchOnMountOrArgChange: true,
+    });
+
+  const sheetData = normalizeExpenseSheetResponse(rawSheetData);
+
+  const exportCsv = useExportExpenseCsvFromApi(reportType, sheetData);
 
   const summary = data || {
     grand_total: 0,
-    status: 'draft',
+    status: "draft",
     updated_at: null,
   };
 
   const goEdit = () => {
-    navigate('edit', { state: { goToForm: true, mode: 'edit' } });
+    navigate("edit", { state: { goToForm: true, mode: "edit" } });
   };
 
   const goCreate = () => {
-    navigate('edit', { state: { goToForm: true, mode: 'create' } });
+    navigate("edit", { state: { goToForm: true, mode: "create" } });
   };
 
   const goView = () => {
-    if (definition?.entry_mode === 'readonly') {
-      navigate('../total-exp', { relative: 'path' });
+    if (definition?.entry_mode === "readonly") {
+      navigate("../total-exp", { relative: "path" });
       return;
     }
     goEdit();
   };
 
-  const hasData = summary.updated_at || (summary.grand_total && summary.grand_total > 0);
+  const handleExport = () => {
+    if (sheetLoading) {
+      healthAlerts.warning("Sheet is still loading");
+      return;
+    }
+    if (!exportCsv()) {
+      healthAlerts.warning("No data to export yet");
+      return;
+    }
+    healthAlerts.success("CSV file downloaded", "Export");
+  };
+
+  const hasData = Boolean(
+    summary.has_data ||
+    summary.updated_at ||
+    (summary.grand_total && summary.grand_total > 0),
+  );
 
   return (
     <div className="mx-auto max-w-7xl px-4">
@@ -48,7 +82,8 @@ const ExpenseList = ({ reportType, listTitle }) => {
         {isLoading && <p className="text-slate-500">Loading...</p>}
         {isError && (
           <p className="mb-4 text-sm text-amber-700">
-            {getApiErrorMessage(error, 'Summary unavailable')}. You can still open the sheet.
+            {getApiErrorMessage(error, "Summary unavailable")}. You can still
+            open the sheet.
           </p>
         )}
 
@@ -60,28 +95,45 @@ const ExpenseList = ({ reportType, listTitle }) => {
               Grand total: <strong>{formatINR(summary.grand_total)}</strong>
             </p>
             <p className="text-sm text-slate-500">
-              Status: <span className="capitalize">{summary.status || 'draft'}</span>
-              {summary.updated_at && <> · Updated {formatDate(summary.updated_at)}</>}
+              Status:{" "}
+              <span className="capitalize">{summary.status || "draft"}</span>
+              {!hasData && <> · Not started yet</>}
+              {hasData && summary.updated_at && (
+                <> · Last saved {formatDate(summary.updated_at)}</>
+              )}
             </p>
             <p className="mt-2 max-w-xl text-xs text-slate-500">
-              Months extend automatically for future entry. On the sheet use <strong>Add next month</strong>
-              or add rows/columns for new lines.
+              Export downloads the same grid layout as your Google Sheet (UTF-8
+              CSV).
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row">
-            {definition?.entry_mode !== 'readonly' && (
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+            <Button
+              variant="gray"
+              onClick={handleExport}
+              disabled={sheetLoading}
+            >
+              <ArrowDownTrayIcon className="mr-1 inline h-5 w-5" />
+              Export CSV
+            </Button>
+            {definition?.entry_mode !== "readonly" && (
               <>
-                <Button variant="sky" onClick={goEdit}>
-                  Edit sheet
-                </Button>
-                <Button variant="emerald" onClick={goCreate}>
-                  {hasData ? 'Continue entry' : 'Start entry'}
-                </Button>
+                {hasData ? (
+                  <Button variant="sky" onClick={goEdit}>
+                    Edit sheet
+                  </Button>
+                ) : (
+                  <Button variant="emerald" onClick={goCreate}>
+                    Start entry
+                  </Button>
+                )}
               </>
             )}
-            {definition?.entry_mode === 'readonly' && (
-              <Button variant="emerald" onClick={goView}>View report</Button>
+            {definition?.entry_mode === "readonly" && (
+              <Button variant="emerald" onClick={goView}>
+                View report
+              </Button>
             )}
           </div>
         </div>
@@ -91,5 +143,3 @@ const ExpenseList = ({ reportType, listTitle }) => {
 };
 
 export default ExpenseList;
-
-

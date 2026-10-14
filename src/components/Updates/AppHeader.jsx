@@ -4,13 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../redux/authSlice";
 import { cookie } from "../../utils/cookie";
-import { 
-  Bars3Icon, 
+import {
+  Bars3Icon,
   ArrowLeftStartOnRectangleIcon,
-  InformationCircleIcon 
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import HelpPdf from "../../assets/LMC B2C DOC.pdf";
-
 
 const AppHeader = ({ toggleSidebar }) => {
   const navigate = useNavigate();
@@ -22,11 +21,20 @@ const AppHeader = ({ toggleSidebar }) => {
     dispatch(logout());
     navigate("/login");
   };
+  const tenantId = cookie.get("tenantId") || "N/A";
 
+  const tenantName =
+    tenantId == 1
+      ? "Honda"
+      : tenantId == 2
+        ? "AMP"
+        : tenantId == 3
+          ? "M3M"
+          : "";
   const letterAnimation = {
-    animate: { 
-      y: [0, -2, 0], 
-      color: ["#047857", "#10b981", "#047857"], 
+    animate: {
+      y: [0, -2, 0],
+      color: ["#047857", "#10b981", "#047857"],
     },
   };
 
@@ -39,8 +47,7 @@ const AppHeader = ({ toggleSidebar }) => {
       className="bg-white border-b border-sky-100 px-6 py-3 flex justify-between items-center shadow-sm sticky top-0 z-30"
     >
       <div className="flex items-center gap-4">
-       
-        <button 
+        <button
           onClick={toggleSidebar}
           className="p-2 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors group"
         >
@@ -54,45 +61,65 @@ const AppHeader = ({ toggleSidebar }) => {
                 key={index}
                 variants={letterAnimation}
                 animate="animate"
-                transition={{ duration: 2.8, repeat: Infinity, delay: index * 0.1, ease: "easeInOut" }}
+                transition={{
+                  duration: 2.8,
+                  repeat: Infinity,
+                  delay: index * 0.1,
+                  ease: "easeInOut",
+                }}
                 className="text-xl font-extrabold inline-block tracking-tight text-emerald-700"
               >
                 {char === " " ? "\u00A0" : char}
               </motion.span>
             ))}
-            
+
             <div className="w-10 h-6 flex items-center justify-center overflow-hidden ml-1">
               <svg viewBox="0 0 25 20" className="w-full h-full">
-                <path d={ekgPath} fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round"/>
+                <path
+                  d={ekgPath}
+                  fill="none"
+                  stroke="#d1d5db"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
                 <motion.path
-                  d={ekgPath} fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round"
+                  d={ekgPath}
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="2"
+                  strokeLinecap="round"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
                 />
               </svg>
             </div>
           </div>
-          <p className="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">Healthcare Management</p>
+          <p className="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">
+            Healthcare Management
+          </p>
         </div>
       </div>
 
       <div className="flex items-center gap-5">
-        
- <button
-  onClick={() => window.open(HelpPdf, "_blank")}
-  title="Help"
-  className="text-gray-500 hover:text-emerald-600 transition"
->
-  <InformationCircleIcon className="w-6 h-6" />
-</button>
-        
+        <div className="text-sm font-bold text-neutral-700">{tenantName} Center</div>
+        <button
+          onClick={() => window.open(HelpPdf, "_blank")}
+          title="Help"
+          className="text-gray-500 hover:text-emerald-600 transition"
+        >
+          <InformationCircleIcon className="w-6 h-6" />
+        </button>
+
         <div className="text-right hidden md:block">
           <p className="text-[10px] text-neutral-400 uppercase">Today</p>
           <p className="text-sm font-bold text-neutral-700">{today}</p>
         </div>
 
-        
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
