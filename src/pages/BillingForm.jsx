@@ -93,10 +93,16 @@ const BillingFormCopy = ({ refetchList }) => {
       skip: !id,
     });
 
+  // const { data: medicineResponse, refetch: refetchMedicineList } =
+  //   useGetMediceneListQuery(
+  //     { searchTerm: debouncedMedicine || skipToken },
+  //     { skip: !debouncedMedicine || debouncedMedicine.length },
+  //   );
+
   const { data: medicineResponse, refetch: refetchMedicineList } =
     useGetMediceneListQuery(
-      { searchTerm: debouncedMedicine || skipToken },
-      { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
+      { searchTerm: debouncedMedicine },
+      { skip: !debouncedMedicine?.trim() },
     );
   const medicineList = React.useMemo(
     () => medicineResponse?.data || [],
@@ -676,9 +682,13 @@ const BillingFormCopy = ({ refetchList }) => {
     formik.values.payMode,
   ]);
   const totalDiscount = formik.values.items.reduce(
-  (total, item) => total + Number(item.discAmt || 0),
-  0
-);
+    (total, item) => total + Number(item.discAmt || 0),
+    0,
+  );
+  const receivedQty = Number(stockDetails?.data?.[0]?.RecvQty ?? 0);
+  const issuedQty = Number(stockDetails?.data?.[0]?.IssueQty ?? 0);
+  const remainingStock = receivedQty - issuedQty;
+
   return (
     <FormikProvider value={formik}>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -974,9 +984,25 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       }
                       readOnly
                     />
-                    <Input
+                    {/* <Input
                       label="Bill No"
                       {...formik.getFieldProps("billNo")}
+                      readOnly
+                    /> */}
+                    <Input
+                      label={
+                        <>
+                          Remaining Stock Till Now{" "}
+                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                            NEW
+                          </span>
+                        </>
+                      }
+                      value={
+                        selectedMedicine?.id
+                          ? `${remainingStock} (Received: ${receivedQty}, Issued: ${issuedQty})`
+                          : ""
+                      }
                       readOnly
                     />
                     <Button
