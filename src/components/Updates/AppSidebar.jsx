@@ -546,21 +546,6 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             </NavLink>
           </MenuGroup>
         )}
-        {/* {can("read:client_dashboard") && (
-          <MenuGroup
-            menuKey="ExpenseTransactions"
-            icon={BuildingOffice2Icon}
-            label="Expense Transactions"
-          >
-            <NavLink
-              to="/expense-transactions"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Expense Transactions Sheet
-            </NavLink>
-          </MenuGroup>
-        )} */}
         {can("read:client_dashboard") && (
           <MenuGroup
             menuKey="ExpenseTransactions"

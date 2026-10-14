@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useMemo} from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/UIComponents";
 import {
@@ -9,69 +9,110 @@ import { formatDate, getApiErrorMessage } from "../../utils/helper";
 import { formatINR } from "./expenseFormatters";
 import { getSheetDefinition } from "./expenseSheetDefinitions";
 import { useExportExpenseCsvFromApi } from "./useExportExpenseCsv";
-import { normalizeExpenseSheetResponse } from "./expenseApiNormalize";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { healthAlerts } from "../../utils/healthSwal";
-const ExpenseList = ({ reportType, listTitle }) => {
+import {
+  mergeExpenseListSummary,
+  normalizeExpenseSheetResponse,
+  summaryFromFullSheet,
+} from './expenseApiNormalize';
+import { resolveReportType } from './expenseReportTypeResolve';
+
+const ExpenseList = ({ reportType: reportTypeProp, listTitle, onOpenForm }) => {
+  const reportType = resolveReportType(reportTypeProp);
   const navigate = useNavigate();
   const definition = getSheetDefinition(reportType);
-  const heading = listTitle || definition?.module_title || "Expenses";
+  const heading = listTitle || definition?.module_title || 'Expenses';
 
-  const { data, isLoading, isError, error } = useGetExpenseSheetSummaryQuery(
+  if (!reportType || !definition) {
+    return (
+      <div className="mx-auto max-w-3xl p-8 text-center text-red-600">
+        Unknown expense sheet. Use <code>AmpOperatingExpensePage</code> or path{' '}
+        <code>/expense-transactions/operating</code>.
+      </div>
+    );
+  }
+
+  const {
+    data: rawSummaryData,
+    isLoading,
+    isError,
+    error,
+  } = useGetExpenseSheetSummaryQuery(reportType, {
+    skip: !reportType,
+  });
+
+  const { data: rawSheetData, isLoading: sheetLoading } = useGetExpenseSheetQuery(
     reportType,
     {
       skip: !reportType,
+      refetchOnMountOrArgChange: true,
     },
   );
 
-  const { data: rawSheetData, isLoading: sheetLoading } =
-    useGetExpenseSheetQuery(reportType, {
-      skip: !reportType,
-      refetchOnMountOrArgChange: true,
-    });
-
-  const sheetData = normalizeExpenseSheetResponse(rawSheetData);
+  const sheetData = normalizeExpenseSheetResponse(rawSheetData, reportType);
 
   const exportCsv = useExportExpenseCsvFromApi(reportType, sheetData);
 
-  const summary = data || {
-    grand_total: 0,
-    status: "draft",
-    updated_at: null,
-  };
+  const summary = useMemo(
+    () => mergeExpenseListSummary(rawSummaryData, sheetData, reportType),
+    [rawSummaryData, sheetData, reportType],
+  );
+
+  const sheetSummaryFallback = summaryFromFullSheet(sheetData);
+  const showSummaryWarning = isError && !sheetSummaryFallback?.has_data;
 
   const goEdit = () => {
-    navigate("edit", { state: { goToForm: true, mode: "edit" } });
+    if (onOpenForm) {
+      onOpenForm('edit');
+      return;
+    }
+    navigate('edit', { relative: 'path', state: { goToForm: true, mode: 'edit' } });
   };
 
   const goCreate = () => {
-    navigate("edit", { state: { goToForm: true, mode: "create" } });
+    if (onOpenForm) {
+      onOpenForm('create');
+      return;
+    }
+    navigate('edit', { relative: 'path', state: { goToForm: true, mode: 'create' } });
   };
 
   const goView = () => {
-    if (definition?.entry_mode === "readonly") {
-      navigate("../total-exp", { relative: "path" });
+    if (definition?.entry_mode === 'readonly') {
+      navigate('../total-exp', { relative: 'path' });
       return;
     }
     goEdit();
   };
 
   const handleExport = () => {
+    if (!reportType) {
+      healthAlerts.warning('Unknown sheet type for export');
+      return;
+    }
     if (sheetLoading) {
-      healthAlerts.warning("Sheet is still loading");
+      healthAlerts.warning('Sheet is still loading');
+      return;
+    }
+    const cellCount = sheetData?.cells?.length ?? 0;
+    if (cellCount === 0 && hasData) {
+      healthAlerts.warning(
+        'Summary shows saved data but cells did not load. Open Edit once, or check GET /expense-sheets uses the correct report_type.',
+      );
       return;
     }
     if (!exportCsv()) {
-      healthAlerts.warning("No data to export yet");
+      healthAlerts.warning('No data to export yet');
       return;
     }
-    healthAlerts.success("CSV file downloaded", "Export");
+    healthAlerts.success('CSV file downloaded', 'Export');
   };
 
   const hasData = Boolean(
     summary.has_data ||
-    summary.updated_at ||
-    (summary.grand_total && summary.grand_total > 0),
+      summary.updated_at ||
+      (summary.grand_total && summary.grand_total > 0),
   );
 
   return (
@@ -80,10 +121,10 @@ const ExpenseList = ({ reportType, listTitle }) => {
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         {isLoading && <p className="text-slate-500">Loading...</p>}
-        {isError && (
+        {showSummaryWarning && (
           <p className="mb-4 text-sm text-amber-700">
-            {getApiErrorMessage(error, "Summary unavailable")}. You can still
-            open the sheet.
+            {getApiErrorMessage(error, 'Summary unavailable')}. Showing totals from the
+            loaded sheet instead.
           </p>
         )}
 
@@ -95,45 +136,33 @@ const ExpenseList = ({ reportType, listTitle }) => {
               Grand total: <strong>{formatINR(summary.grand_total)}</strong>
             </p>
             <p className="text-sm text-slate-500">
-              Status:{" "}
-              <span className="capitalize">{summary.status || "draft"}</span>
+              Status: <span className="capitalize">{summary.status || 'draft'}</span>
               {!hasData && <> · Not started yet</>}
               {hasData && summary.updated_at && (
                 <> · Last saved {formatDate(summary.updated_at)}</>
               )}
             </p>
             <p className="mt-2 max-w-xl text-xs text-slate-500">
-              Export downloads the same grid layout as your Google Sheet (UTF-8
-              CSV).
+              Export downloads the same grid layout as your Google Sheet (UTF-8 CSV).
             </p>
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
-            <Button
-              variant="gray"
-              onClick={handleExport}
-              disabled={sheetLoading}
-            >
+            <Button variant="gray" onClick={handleExport} disabled={sheetLoading}>
               <ArrowDownTrayIcon className="mr-1 inline h-5 w-5" />
               Export CSV
             </Button>
-            {definition?.entry_mode !== "readonly" && (
+            {definition?.entry_mode !== 'readonly' && (
               <>
                 {hasData ? (
-                  <Button variant="sky" onClick={goEdit}>
-                    Edit sheet
-                  </Button>
+                  <Button variant="sky" onClick={goEdit}>Edit sheet</Button>
                 ) : (
-                  <Button variant="emerald" onClick={goCreate}>
-                    Start entry
-                  </Button>
+                  <Button variant="emerald" onClick={goCreate}>Start entry</Button>
                 )}
               </>
             )}
-            {definition?.entry_mode === "readonly" && (
-              <Button variant="emerald" onClick={goView}>
-                View report
-              </Button>
+            {definition?.entry_mode === 'readonly' && (
+              <Button variant="emerald" onClick={goView}>View report</Button>
             )}
           </div>
         </div>

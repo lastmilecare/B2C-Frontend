@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
 import { expenseMockHandlers } from "../mocks/expenseMockApi";
-import { transformExpenseSheetResponse } from "./../pages/expenses/expenseApiNormalize";
+import { transformExpenseSheetResponse,transformExpenseSummaryResponse } from "./../pages/expenses/expenseApiNormalize";
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
   async ({ url, method, data, params, responseType }) => {
@@ -2423,6 +2423,7 @@ export const api = createApi({
 
     getExpenseSheetSummary: build.query({
       query: (reportType) => `/expense-sheets/${reportType}/summary`,
+      transformResponse: transformExpenseSummaryResponse,
       providesTags: (_, __, reportType) => [
         { type: "ExpenseSheet", id: `${reportType}-summary` },
       ],
