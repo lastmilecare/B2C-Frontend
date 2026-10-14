@@ -1,4 +1,7 @@
-import { buildEffectivePeriods } from './expensePeriodUtils';
+import {
+  buildEffectivePeriods,
+  normalizePeriodMonth,
+} from './expensePeriodUtils';
 
 /**
  * Base sheet definition + dynamic periods/lines (future-proof).
@@ -21,6 +24,15 @@ export const buildEffectiveDefinition = (baseDefinition, options = {}) => {
     monthsFuture,
   });
 
+  const mergeLines = (seed = [], extra = []) => {
+    const map = new Map();
+    seed.forEach((row) => map.set(row.line_code, row));
+    extra.forEach((row) => {
+      if (row?.line_code) map.set(row.line_code, { ...map.get(row.line_code), ...row });
+    });
+    return Array.from(map.values());
+  };
+
   const customCategories = custom.categories || [];
   const customColumns = custom.columns || [];
 
@@ -28,7 +40,7 @@ export const buildEffectiveDefinition = (baseDefinition, options = {}) => {
     return {
       ...baseDefinition,
       periods,
-      categories: [...(baseDefinition.categories || []), ...customCategories],
+      categories: mergeLines(baseDefinition.categories, customCategories),
     };
   }
 
@@ -36,7 +48,7 @@ export const buildEffectiveDefinition = (baseDefinition, options = {}) => {
     return {
       ...baseDefinition,
       periods,
-      columns: [...(baseDefinition.columns || []), ...customColumns],
+      columns: mergeLines(baseDefinition.columns, customColumns),
     };
   }
 
@@ -61,7 +73,8 @@ export const buildEffectiveDefinition = (baseDefinition, options = {}) => {
 export const extractPeriodsFromCells = (cells = []) => {
   const set = new Set();
   cells.forEach((c) => {
-    if (c.period_month) set.add(c.period_month);
+    const key = normalizePeriodMonth(c.period_month);
+    if (key) set.add(key);
   });
   return Array.from(set);
 };

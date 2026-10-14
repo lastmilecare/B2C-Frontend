@@ -23,14 +23,18 @@ import {
   useUpdateMedicinecampBillMutation,
   useGetMedicinecampBillByIdQuery,
   useGetCampPrescriptionsListQuery,
-  useGetcampOpdBillByIdQuery
+  useGetcampOpdBillByIdQuery,
 } from "../redux/apiSlice";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlert } from "../utils/healthSwal";
 import { Input, Select, Button, baseInput } from "../components/UIComponents";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { cleanCurrency, getPharmaSellingFromCP, formatDateOnly } from "../utils/helper";
+import {
+  cleanCurrency,
+  getPharmaSellingFromCP,
+  formatDateOnly,
+} from "../utils/helper";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Picaso_Paymode_Options } from "../utils/constants";
@@ -98,15 +102,18 @@ const CampBillingFormCopy = ({ refetchList }) => {
 
   const { data: medicineResponse } = useGetMediceneListQuery(
     { searchTerm: debouncedMedicine || skipToken },
-    { skip: !debouncedMedicine || debouncedMedicine.length < 2 },
+    { skip: !debouncedMedicine.trim() },
   );
   const medicineList = React.useMemo(
     () => medicineResponse?.data || [],
     [medicineResponse],
   );
-  const { data: suggestions = [] } = useSearchcampOpdBillNoQuery(debouncedUhid, {
-    skip: debouncedUhid.length < 1 || id,
-  });
+  const { data: suggestions = [] } = useSearchcampOpdBillNoQuery(
+    debouncedUhid,
+    {
+      skip: debouncedUhid.length < 1 || id,
+    },
+  );
   const { data: paymodes } = useGetComboQuery("paymode");
   const [createMedicineBill] = useCreateMedicinecampBillMutation();
   const [updateMedicineBill] = useUpdateMedicinecampBillMutation();
@@ -634,6 +641,10 @@ const CampBillingFormCopy = ({ refetchList }) => {
     (total, item) => total + Number(item.discAmt || 0),
     0,
   );
+  const receivedQty = Number(stockDetails?.data?.[0]?.RecvQty ?? 0);
+  const issuedQty = Number(stockDetails?.data?.[0]?.IssueQty ?? 0);
+  const remainingStock = receivedQty - issuedQty;
+
   return (
     <FormikProvider value={formik}>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -986,8 +997,19 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       readOnly
                     />
                     <Input
-                      label="Bill No"
-                      {...formik.getFieldProps("billNo")}
+                      label={
+                        <>
+                          Remaining Stock Till Now{" "}
+                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                            NEW
+                          </span>
+                        </>
+                      }
+                      value={
+                        selectedMedicine?.id
+                          ? `${remainingStock} (Received: ${receivedQty}, Issued: ${issuedQty})`
+                          : ""
+                      }
                       readOnly
                     />
                     <Button
@@ -1760,4 +1782,3 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
 };
 
 export default CampBillingFormCopy;
-

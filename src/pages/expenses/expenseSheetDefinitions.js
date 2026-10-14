@@ -44,14 +44,14 @@ const periodsFromLabels = (labels, parser) =>
     .filter((p) => p.period_month);
 
 const AMP_CATEGORIES = [
-  { line_code: "staff_salary", label: "Staff Salary" },
+  { line_code: "staff_salary", label: "Staff Salary (Fixed)" },
   { line_code: "medicine_consumables", label: "Medicine and Consumables" },
-  { line_code: "capex", label: "CAPEX" },
+  { line_code: "capex", label: "CAPEX (Fixed)" },
   { line_code: "admin_consumables", label: "Admin Consumables" },
   { line_code: "compliances_licensing", label: "Compliances and Licensing" },
   { line_code: "miscellaneous", label: "Miscellaneous" },
   { line_code: "camp_cost", label: "Camp Cost" },
-  { line_code: "management_cost", label: "Management Cost" },
+  { line_code: "management_cost", label: "Management Cost (Fixed)" },
 ];
 
 const AMP_PERIOD_LABELS = [

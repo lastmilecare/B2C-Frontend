@@ -16,7 +16,7 @@
 // ——— AMP (single sheet — keeps your existing URL) ———
 export const ampExpenseRoutes = [
   {
-    path: '/expense-transactions/*',
+    path: '/expense-transactions/operating/*',
     component: 'AmpOperatingExpensePage', // use AmpOperatingExpensePage import in real file
     permission: 'read:client_dashboard',
     showInSidebar: false,

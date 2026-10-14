@@ -1,6 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
 import { expenseMockHandlers } from "../mocks/expenseMockApi";
+import { transformExpenseSheetResponse,transformExpenseSummaryResponse } from "./../pages/expenses/expenseApiNormalize";
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
   async ({ url, method, data, params, responseType }) => {
@@ -2392,13 +2393,13 @@ export const api = createApi({
 
     createExpenseReport: build.mutation({
       queryFn: (body, api) =>
-        runMock(expenseMockHandlers.createReport, api, { body }),
+        runMock(expenseMockHandlers.createReport, api, { data: body }),
       invalidatesTags: [{ type: "ExpenseReport", id: "LIST" }],
     }),
 
     updateExpenseReport: build.mutation({
       queryFn: ({ id, ...body }, api) =>
-        runMock(expenseMockHandlers.updateReport, api, { id, body }),
+        runMock(expenseMockHandlers.updateReport, api, { id, data: body }),
       invalidatesTags: (_, __, { id }) => [
         { type: "ExpenseReport", id },
         { type: "ExpenseReport", id: "LIST" },
@@ -2411,7 +2412,10 @@ export const api = createApi({
       invalidatesTags: [{ type: "ExpenseReport", id: "LIST" }],
     }),
     getExpenseSheet: build.query({
-      query: (reportType) => `/expense-sheets/${reportType}`,
+      query: (reportType) => ({
+        url: `/expense-sheets/${reportType}`,
+      }),
+      transformResponse: transformExpenseSheetResponse,
       providesTags: (_, __, reportType) => [
         { type: "ExpenseSheet", id: reportType },
       ],
@@ -2419,6 +2423,7 @@ export const api = createApi({
 
     getExpenseSheetSummary: build.query({
       query: (reportType) => `/expense-sheets/${reportType}/summary`,
+      transformResponse: transformExpenseSummaryResponse,
       providesTags: (_, __, reportType) => [
         { type: "ExpenseSheet", id: `${reportType}-summary` },
       ],
@@ -2428,9 +2433,10 @@ export const api = createApi({
       query: (body) => ({
         url: `/expense-sheets/${body.report_type}`,
         method: "PUT",
-        body,
+        data: body,
       }),
       invalidatesTags: (_, __, body) => [
+        { type: "ExpenseSheet", id: "INDEX" },
         { type: "ExpenseSheet", id: body.report_type },
         { type: "ExpenseSheet", id: `${body.report_type}-summary` },
         { type: "ExpenseSheet", id: "total_exp_summary" },
@@ -2698,5 +2704,4 @@ export const {
   useGetExpenseSheetSummaryQuery,
   useSaveExpenseSheetMutation,
   useGetExpenseSheetIndexQuery,
-  
 } = api;

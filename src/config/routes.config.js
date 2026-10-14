@@ -878,7 +878,7 @@ export const ROUTES = [
     showInSidebar: false,
   },
   {
-    path: "/expense-transactions/*",
+    path: "/expense-transactions/operating/*",
     component: AmpOperatingExpensePage,
     permission: "read:client_dashboard",
     showInSidebar: false,
