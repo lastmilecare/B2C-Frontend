@@ -65,9 +65,9 @@ export function cleanCurrency(value) {
 }
 
 export const getPharmaSellingFromCP = (item, qty, discountPercent) => {
-  const cp = Number(item?.CP) || 0;
-  const cgstPercent = Number(item?.CGST) || 0;
-  const sgstPercent = Number(item?.SGST) || 0;
+  const cp = parseCurrency(item?.CP);
+  const cgstPercent = parseCurrency(item?.CGST);
+  const sgstPercent = parseCurrency(item?.SGST);
 
   const totalGstPercent = cgstPercent + sgstPercent;
   const markupPercent = 10;
