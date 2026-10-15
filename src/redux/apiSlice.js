@@ -50,6 +50,7 @@ export const api = createApi({
     "PackageManagement",
     "Ambulances",
     "AmbulanceServices",
+    "Feedback",
   ],
   endpoints: (build) => ({
     login: build.mutation({
@@ -2044,6 +2045,101 @@ export const api = createApi({
 
       keepUnusedDataFor: 0,
     }),
+    getFeedbackList: build.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        name,
+        contactNumber,
+        gender,
+        category,
+        startDate,
+        endDate,
+        external_id,
+        idProof_number,
+        bill_no,
+        department,
+        doctor,
+        payment_mode,
+        added_by,
+        feedback_status,
+        center_ids,
+        driver_id,
+        calling_from,
+        calling_to,
+      } = {}) => ({
+        url: "/feedback/list",
+        method: "get",
+        params: {
+          page,
+          limit,
+          name,
+          contactNumber,
+          gender,
+          category,
+          startDate,
+          endDate,
+          external_id,
+          idProof_number,
+          bill_no,
+          department,
+          doctor,
+          payment_mode,
+          added_by,
+          feedback_status,
+          center_ids,
+          driver_id,
+          calling_from,
+          calling_to,
+        },
+      }),
+      providesTags: ["Feedback"],
+    }),
+    getFeedbackVisit: build.query({
+      query: (visitKey) => ({
+        url: `/feedback/visit/${encodeURIComponent(visitKey)}`,
+        method: "get",
+      }),
+      providesTags: ["Feedback"],
+    }),
+    getFeedbackPatientHistory: build.query({
+      query: (arg) => {
+        if (arg && typeof arg === "object") {
+          const { patient_id, driver_id, source } = arg;
+          return {
+            url: "/feedback/patient-history",
+            method: "get",
+            params: {
+              patient_id,
+              driver_id,
+              source,
+            },
+          };
+        }
+        return {
+          url: "/feedback/patient-history",
+          method: "get",
+          params: { patient_id: arg },
+        };
+      },
+    }),
+    saveFeedback: build.mutation({
+      query: (body) => ({
+        url: "/feedback",
+        method: "post",
+        data: body,
+      }),
+      invalidatesTags: ["Feedback"],
+    }),
+    exportFeedbackExcel: build.query({
+      query: (filters = {}) => ({
+        url: "/feedback/export",
+        method: "GET",
+        params: filters,
+        responseType: "blob",
+      }),
+      keepUnusedDataFor: 0,
+    }),
     getPatientDetails: build.query({
       query: ({
         page = 1,
@@ -2704,4 +2800,10 @@ export const {
   useGetExpenseSheetSummaryQuery,
   useSaveExpenseSheetMutation,
   useGetExpenseSheetIndexQuery,
+  useGetFeedbackListQuery,
+  useLazyExportFeedbackExcelQuery,
+  useGetFeedbackVisitQuery,
+  useGetFeedbackPatientHistoryQuery,
+  useSaveFeedbackMutation,
 } = api;
+

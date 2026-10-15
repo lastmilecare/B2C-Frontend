@@ -19,12 +19,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/print-opd-form" element={<PrintOpdForm />} />
         <Route path="/403" element={<Unauthorized />} />
-        {ROUTES.map(({ path, component: Component, permission }) => (
+        {ROUTES.map(({ path, component: Component, permission, allowedRoles }) => (
           <Route
             key={path}
             path={path}
             element={
-              <ProtectedRoute permission={permission}>
+              <ProtectedRoute permission={permission} allowedRoles={allowedRoles}>
                 <AppLayout>
                   <Component />
                 </AppLayout>

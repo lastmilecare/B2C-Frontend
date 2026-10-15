@@ -245,15 +245,16 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
                 OPD Bill Analysis
               </NavLink>
             )}
-            {/* {can("read:opd_analysis") && ( */}
-              {/* <NavLink
+            {(cookie.get("role") === "LMC_ADMIN" ||
+              String(cookie.get("role") || "").toLowerCase() === "lmcadmin") && (
+              <NavLink
                 to="/feedback-list"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
                 Feedback List
-              </NavLink> */}
-            {/* )} */}
+              </NavLink>
+            )}
           </MenuGroup>
         )}
 
