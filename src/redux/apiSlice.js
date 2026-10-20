@@ -1,7 +1,10 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
 import { expenseMockHandlers } from "../mocks/expenseMockApi";
-import { transformExpenseSheetResponse,transformExpenseSummaryResponse } from "./../pages/expenses/expenseApiNormalize";
+import {
+  transformExpenseSheetResponse,
+  transformExpenseSummaryResponse,
+} from "./../pages/expenses/expenseApiNormalize";
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
   async ({ url, method, data, params, responseType }) => {
@@ -2446,6 +2449,31 @@ export const api = createApi({
       query: () => "/expense-sheets",
       providesTags: [{ type: "ExpenseSheet", id: "INDEX" }],
     }),
+    getPatientProfile: build.query({
+      query: ({ gender = "all", patientType = "all" } = {}) => ({
+        url: "/dashboard/patient-profile",
+        method: "GET",
+        params: {
+          gender,
+          patientType,
+        },
+      }),
+      providesTags: ["DashboardPatientProfile"],
+    }),
+
+    getCampPatientProfile: build.query({
+      query: ({ gender = "all", patientType = "all", from, to } = {}) => ({
+        url: "/dashboard/camp-patient-profile",
+        method: "GET",
+        params: {
+          gender,
+          patientType,
+          from,
+          to,
+        },
+      }),
+      providesTags: ["DashboardCampPatientProfile"],
+    }),
   }),
 });
 
@@ -2704,4 +2732,6 @@ export const {
   useGetExpenseSheetSummaryQuery,
   useSaveExpenseSheetMutation,
   useGetExpenseSheetIndexQuery,
+  useGetPatientProfileQuery,
+  useGetCampPatientProfileQuery,
 } = api;

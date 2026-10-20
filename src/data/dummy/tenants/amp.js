@@ -394,8 +394,13 @@ export const ampTabs = {
     }, filters),
   },
   "camp-profile": {
-    initialFilters: () => ({ gender: "all", patientType: "all" }),
+    initialFilters: () => ({
+      gender: "all",
+      patientType: "all",
+      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+    }),
     filters: [
+      { id: "dateRange", type: "dateRange", label: "Camp date" },
       { id: "gender", type: "select", label: "Gender", options: genderOptions },
       { id: "patientType", type: "select", label: "Patient type", options: patientTypeOptions },
     ],
