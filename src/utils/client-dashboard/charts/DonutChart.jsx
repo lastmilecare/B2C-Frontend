@@ -1,5 +1,13 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { formatValue, percentOf } from "../../../lib/util"
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+  Label,
+} from "recharts";
+import { formatValue, percentOf } from "../../../lib/util";
 import { CHART_PALETTE } from "../types";
 import { ChartEmpty } from "./ChartEmpty";
 
@@ -16,7 +24,19 @@ function CustomTooltip({ active, payload, valueFormat }) {
   );
 }
 
-export function DonutChart({ data = [], height = 300, showLegend = true, valueFormat = "number" }) {
+function pieSliceLabel({ percent, name }) {
+  if (percent < 0.06) return null;
+
+  return `${name} ${percent}%`;
+}
+
+export function DonutChart({
+  data = [],
+  height = 300,
+  showLegend = true,
+  valueFormat = "number",
+  variant = "donut",
+}) {
   const slices = data.filter((item) => Number(item.value) > 0);
   if (!slices.length) return <ChartEmpty />;
 
@@ -27,6 +47,8 @@ export function DonutChart({ data = [], height = 300, showLegend = true, valueFo
     percent: item.percent ?? ((item.value / total) * 100).toFixed(2),
   }));
 
+  const isPie = variant === "pie";
+
   return (
     <div className="w-full min-w-0" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -36,20 +58,65 @@ export function DonutChart({ data = [], height = 300, showLegend = true, valueFo
             dataKey="value"
             nameKey="name"
             cx="50%"
-            cy="46%"
-            innerRadius="52%"
-            outerRadius="74%"
-            paddingAngle={2}
+            cy={isPie ? "50%" : "46%"}
+            {...(isPie
+              ? {
+                  outerRadius: "82%",
+                  label: pieSliceLabel,
+                  labelLine: { stroke: "#94a3b8", strokeWidth: 1 },
+                }
+              : {
+                  innerRadius: "58%",
+                  outerRadius: "78%",
+                  paddingAngle: 2,
+                })}
           >
             {enriched.map((entry) => (
-              <Cell key={entry.name} fill={entry.color} stroke="transparent" />
+              <Cell
+                key={entry.name}
+                fill={entry.color}
+                stroke={isPie ? "#fff" : "transparent"}
+                strokeWidth={isPie ? 2 : 0}
+              />
             ))}
+            {!isPie && (
+              <Label
+                position="center"
+                content={({ viewBox }) => {
+                  if (!viewBox || typeof viewBox.cx !== "number") return null;
+                  const { cx, cy } = viewBox;
+                  return (
+                    <text
+                      x={cx}
+                      y={cy}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                    >
+                      <tspan
+                        x={cx}
+                        dy="-0.4em"
+                        className="fill-slate-500 text-[11px]"
+                      >
+                        Total
+                      </tspan>
+                      <tspan
+                        x={cx}
+                        dy="1.35em"
+                        className="fill-slate-900 text-sm font-semibold"
+                      >
+                        {formatValue(total, valueFormat)}
+                      </tspan>
+                    </text>
+                  );
+                }}
+              />
+            )}
           </Pie>
           <Tooltip content={<CustomTooltip valueFormat={valueFormat} />} />
           {showLegend && (
             <Legend
               verticalAlign="bottom"
-              wrapperStyle={{ fontSize: 12 }}
+              wrapperStyle={{ fontSize: 12, paddingTop: isPie ? 4 : 8 }}
               formatter={(value, entry) => {
                 const amount = entry?.payload?.value ?? 0;
                 const share = entry?.payload?.percent;
@@ -59,9 +126,16 @@ export function DonutChart({ data = [], height = 300, showLegend = true, valueFo
           )}
         </PieChart>
       </ResponsiveContainer>
-      <p className="text-center text-xs text-muted">
-        Total: {formatValue(total, valueFormat)} ({percentOf(total, total)})
-      </p>
+      {isPie && (
+        <p className="text-center text-xs text-muted">
+          Total: {formatValue(total, valueFormat)} ({percentOf(total, total)})
+        </p>
+      )}
     </div>
   );
+}
+
+/** Full pie with on-slice labels — patient / feedback breakdowns. */
+export function PieChartPanel(props) {
+  return <DonutChart {...props} variant="pie" />;
 }

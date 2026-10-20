@@ -3,7 +3,7 @@ export { KpiCard, KpiGrid } from "./KpiCard";
 export { DashboardCard } from "./DashboardCard";
 export { FilterBar, defaultDateRange } from "./FilterBar";
 export { TabNav } from "./TabNav";
-export { DonutChart } from "./charts/DonutChart";
+export { DonutChart, PieChartPanel } from "./charts/DonutChart";
 export { BarChartPanel } from "./charts/BarChartPanel";
 export { TrendLineChart } from "./charts/TrendLineChart";
 export { SegmentationHeatTable } from "./charts/SegmentationHeatTable";
