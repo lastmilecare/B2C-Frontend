@@ -6,11 +6,14 @@ import {
   selectFeedback,
   selectPatient,
   selectRevenue,
+  selectThirdParty,
+  selectThirdPartyCategory,
 } from "../select";
-
 const all = { value: "all", label: "All" };
+
 const ages = ["0-17", "18-29", "30-44", "45-60", "60+"];
 const ageWeights = [18, 20, 30, 20, 12];
+
 function complaintsByAge(pairs) {
   const parts = Object.fromEntries(
     pairs.map(([name, total]) => [name, spread(total, ageWeights)]),
@@ -23,6 +26,35 @@ function complaintsByAge(pairs) {
     return row;
   });
 }
+const thirdPartyCategories = [
+  { name: "Dentist", revenue: 1709056, cost: 1162329 },
+  { name: "Diagnostics", revenue: 3076301, cost: 1964833 },
+  { name: "Medicines", revenue: 5127169, cost: 4001912 },
+  { name: "Physiotherapist", revenue: 911497, cost: 643790 },
+  { name: "Specs Vendor", revenue: 569685, cost: 436379 },
+];
+const thirdPartyWeights = Array.from({ length: 24 }, (_, index) => 40 + index);
+const thirdPartyLabels = monthSeries("2024-07-01", Array(24).fill(0));
+const thirdPartyRevenue = spread(11393708, thirdPartyWeights);
+const thirdPartyCost = spread(8209243, thirdPartyWeights);
+const thirdPartyMonths = thirdPartyLabels.map((point, index) => ({
+  ...point,
+  revenue: thirdPartyRevenue[index],
+  cost: thirdPartyCost[index],
+}));
+const categoryKeys = thirdPartyCategories.map((item) => item.name);
+const categoryMonths = thirdPartyLabels.map((point, index) => {
+  const row = { ...point };
+  let used = 0;
+  categoryKeys.slice(0, -1).forEach((key) => {
+    const category = thirdPartyCategories.find((item) => item.name === key);
+    const value = spread(category.revenue, thirdPartyWeights)[index];
+    row[key] = value;
+    used += value;
+  });
+  row[categoryKeys[categoryKeys.length - 1]] = thirdPartyRevenue[index] - used;
+  return row;
+});
 const patientProfile = {
   uniqueHeadline: 5458,
   base: 5458,
@@ -150,6 +182,7 @@ const patientProfile = {
     { area: "KHERKI DAULA", patients: 77 },
   ],
 };
+
 const campProfile = {
   uniqueHeadline: 3000,
   base: 3009,
@@ -236,6 +269,7 @@ const campProfile = {
     { area: "KHERKI DHOLA", patients: 78 },
   ],
 };
+
 const complaintNames = [
   "Fever/Cold/Cough",
   "Weakness",
@@ -257,6 +291,7 @@ const complaintAreas = [
   { area: "MOHMADPUR", patients: 329 },
   { area: "SHAKTI PARK", patients: 316 },
 ];
+
 const campComplaintNames = [
   "Pain",
   "Weakness/Fatigue",
@@ -278,6 +313,7 @@ const campComplaintAreas = [
   { area: "NARSINGPUR", patients: 229 },
   { area: "KADIPUR", patients: 220 },
 ];
+
 const feedbackSlices = [
   { name: "Patient liked service", value: 5779 },
   { name: "Not Reachable", value: 2536 },
@@ -286,6 +322,7 @@ const feedbackSlices = [
   { name: "Other", value: 70 },
   { name: "Under medication", value: 38 },
 ];
+
 const revenueServices = [
   { name: "Pharmacy", value: 231636 },
   { name: "Random Blood Sugar Test", value: 4120 },
@@ -301,6 +338,7 @@ const revenueMonths = monthSeries("2025-06-01", [
   ...revenueKnown,
   ...spread(237646 - sum(revenueKnown), Array(5).fill(1)),
 ]);
+
 const costCategories = [
   { name: "Staff Salary", value: 4855000 },
   { name: "Medicine and Consumables", value: 1075800 },
@@ -320,6 +358,7 @@ const costValues = [
   ...spread(9115476 - sum(costKnown), Array(7).fill(1)),
 ];
 const costMonths = monthSeries("2025-04-01", costValues);
+
 const quarterLabels = [
   "Q2 2025",
   "Q3 2025",
@@ -350,6 +389,7 @@ const quarterly = quarterLabels.map((label, index) => {
   row[quarterKeys[quarterKeys.length - 1]] = Math.max(0, quarterTotal - used);
   return row;
 });
+
 const fixedKeys = costCategories.map((item) => item.name);
 const fixedVariable = [
   {
@@ -367,6 +407,7 @@ const fixedVariable = [
     "Admin Consumables": 128706,
   },
 ];
+
 const genderOptions = [
   all,
   { value: "male", label: "Male" },
@@ -377,6 +418,17 @@ const patientTypeOptions = [
   { value: "apl", label: "APL" },
   { value: "bpl", label: "BPL" },
 ];
+
+const footfallTotal = [
+  412, 318, 521, 698, 1240, 892, 610, 554, 672, 891, 934, 812, 856, 844, 1021,
+  1488, 1422, 978, 1098, 1012, 988, 1076, 1154, 1128, 1088, 1210, 1422, 1898,
+  1988,
+];
+const footfallUnique = [
+  198, 176, 312, 248, 378, 712, 468, 402, 488, 642, 678, 592, 604, 658, 768,
+  1022, 1048, 712, 756, 742, 718, 782, 824, 798, 776, 868, 1012, 1348, 1428,
+];
+
 export const hondaTabs = {
   "unique-patients": {
     initialFilters: () => ({
@@ -395,6 +447,25 @@ export const hondaTabs = {
       },
     ],
     select: (filters) => selectPatient(patientProfile, filters, "patients"),
+  },
+  footfall: {
+    initialFilters: () => ({
+      dateRange: defaultDateRange("2024-05-01", "2026-09-30"),
+    }),
+    filters: [{ id: "dateRange", type: "dateRange", label: "Date" }],
+    select: (filters) =>
+      selectFootfall(
+        {
+          total: monthSeries("2024-05-01", footfallTotal),
+          unique: monthSeries("2024-05-01", footfallUnique),
+          headline: {
+            totalPatients: 10650,
+            uniquePatients: 5458,
+            returningPatients: 5192,
+          },
+        },
+        filters,
+      ),
   },
   "camp-profile": {
     initialFilters: () => ({
@@ -511,6 +582,57 @@ export const hondaTabs = {
         },
         filters,
         "complaints",
+      ),
+  },
+
+  "third-party": {
+    initialFilters: () => ({
+      dateRange: defaultDateRange("2024-07-01", "2026-06-30"),
+      category: "all",
+    }),
+    filters: [
+      { id: "dateRange", type: "dateRange", label: "Date" },
+      {
+        id: "category",
+        type: "select",
+        label: "Categories",
+        options: [
+          all,
+          ...categoryKeys.map((name) => ({ value: name, label: name })),
+        ],
+      },
+    ],
+    select: (filters) =>
+      selectThirdParty(
+        { months: thirdPartyMonths, categories: thirdPartyCategories },
+        filters,
+      ),
+  },
+  "third-party-category": {
+    initialFilters: () => ({
+      dateRange: defaultDateRange("2024-07-01", "2026-06-30"),
+      category: "all",
+    }),
+    filters: [
+      { id: "dateRange", type: "dateRange", label: "Months" },
+      {
+        id: "category",
+        type: "select",
+        label: "Categories",
+        options: [
+          all,
+          ...categoryKeys.map((name) => ({ value: name, label: name })),
+        ],
+      },
+    ],
+    select: (filters) =>
+      selectThirdPartyCategory(
+        {
+          categoryMonths,
+          categoryKeys,
+          categories: thirdPartyCategories,
+        },
+        filters,
       ),
   },
   feedback: {

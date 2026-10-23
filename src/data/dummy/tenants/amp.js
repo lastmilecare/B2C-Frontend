@@ -8,9 +8,12 @@ import {
   selectRevenue,
   selectThirdParty,
   selectThirdPartyCategory,
+  selectComplaints,
 } from "../select";
 
 const all = { value: "all", label: "All" };
+const ages = ["0-17", "18-29", "30-44", "45-60", "60+"];
+const ageWeights = [18, 20, 30, 20, 12];
 const revenueServices = [
   { name: "Pharmacy", value: 7092347 },
   { name: "Suture/First Aid/Procedure", value: 3961169 },
@@ -27,6 +30,18 @@ const revenueKnown = [
   74980, 521000, 753340, 216630, 805330, 510770, 1396580, 552690, 469380,
   466240, 704580, 763140, 411250, 474800, 137890, 946170, 235370, 460000,
 ];
+function complaintsByAge(pairs) {
+  const parts = Object.fromEntries(
+    pairs.map(([name, total]) => [name, spread(total, ageWeights)]),
+  );
+  return ages.map((label, index) => {
+    const row = { label };
+    pairs.forEach(([name]) => {
+      row[name] = parts[name][index];
+    });
+    return row;
+  });
+}
 const revenueMonths = monthSeries("2024-07-01", [
   ...revenueKnown,
   ...spread(16421385 - sum(revenueKnown), Array(9).fill(1)),
@@ -450,6 +465,27 @@ const patientTypeOptions = [
   { value: "apl", label: "APL" },
   { value: "bpl", label: "BPL" },
 ];
+const campComplaintNames = [
+  "Pain",
+  "Weakness/Fatigue",
+  "Fever & Infection",
+  "Allergy/Skin",
+  "Cold Cough",
+];
+const campComplaintPairs = [
+  ["Pain", 812],
+  ["Weakness/Fatigue", 604],
+  ["Fever & Infection", 449],
+  ["Allergy/Skin", 170],
+  ["Cold Cough", 98],
+];
+const campComplaintAreas = [
+  { area: "KHANDSA", patients: 734 },
+  { area: "NAHARPUR RUPA", patients: 346 },
+  { area: "SHAKTI PARK", patients: 236 },
+  { area: "NARSINGPUR", patients: 229 },
+  { area: "KADIPUR", patients: 220 },
+];
 export const ampTabs = {
   revenue: {
     initialFilters: () => ({
@@ -580,6 +616,60 @@ export const ampTabs = {
           },
         },
         filters,
+      ),
+  },
+  "camp-complaints": {
+    initialFilters: () => ({ complaint: "all", gender: "all", area: "all" }),
+    filters: [
+      {
+        id: "complaint",
+        type: "select",
+        label: "Complaints",
+        options: [
+          all,
+          ...campComplaintNames.map((name) => ({ value: name, label: name })),
+        ],
+      },
+      { id: "gender", type: "select", label: "Gender", options: genderOptions },
+      {
+        id: "area",
+        type: "select",
+        label: "Geographic area",
+        options: [
+          all,
+          ...campComplaintAreas.map((area) => ({
+            value: area.area,
+            label: area.area,
+          })),
+        ],
+      },
+    ],
+    select: (filters) =>
+      selectComplaints(
+        {
+          names: campComplaintNames,
+          totalPatients: 3009,
+          complaints: campComplaintPairs.map(([label, value]) => ({
+            label,
+            value,
+          })),
+          byAge: complaintsByAge(campComplaintPairs),
+          areas: campComplaintAreas,
+          gender: [
+            { name: "Female", value: 1586 },
+            { name: "Male", value: 1423 },
+          ],
+          revenueByComplaint: [
+            { label: "Pain", value: 10137 },
+            { label: "Weakness/Fatigue", value: 8379 },
+            { label: "Fever & Infection", value: 4642 },
+            { label: "General Consultation", value: 3140 },
+            { label: "Allergy/Skin", value: 2323 },
+            { label: "Other", value: 9513 },
+          ],
+        },
+        filters,
+        "complaints",
       ),
   },
   /** AMP Disease Analysis tab — same data as GET /dashboard/patient-complaints (ChiefComplaints). */

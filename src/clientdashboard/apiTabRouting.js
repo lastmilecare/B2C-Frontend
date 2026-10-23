@@ -6,6 +6,7 @@ const TAB_MODES = {
   "unique-patients": "patientProfile",
   "camp-profile": "campPatientProfile",
   complaints: "patientComplaints",
+  footfall: "patientFootfall",
 };
 
 export function resolveApiTabMode(tenantSlug, tabId) {

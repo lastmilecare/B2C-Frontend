@@ -4,6 +4,7 @@ import {
   useGetCampPatientProfileQuery,
   useGetPatientProfileQuery,
   useGetPatientComplaintsQuery,
+  useGetPatientFootfallQuery,
 } from "../redux/apiSlice";
 import { resolveApiTabMode, usesPatientComplaintsApi } from "./apiTabRouting";
 const API_TABS = {
@@ -67,6 +68,9 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
   const patientComplaints = useGetPatientComplaintsQuery(queryArg, {
     skip: mode !== "patientComplaints",
   });
+  const patientFootfall = useGetPatientFootfallQuery(queryArg, {
+    skip: mode !== "patientFootfall",
+  });
   const active =
     mode === "patientProfile"
       ? patientProfile
@@ -74,7 +78,10 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
         ? campProfile
         : mode === "patientComplaints"
           ? patientComplaints
-          : null;
+          : mode === "patientFootfall"
+            ? patientFootfall
+            : null;
+            
   const dummyView = useMemo(() => {
     if (mode) return null;
     return bundle.select(filters);
