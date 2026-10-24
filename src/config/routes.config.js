@@ -760,8 +760,8 @@ export const ROUTES = [
     component: FeedbackList,
     permission: "read:feedback_form",
     label: "Feedback List",
-    icon: "ClipboardDocumentListIcon",
-    group: "OPD",
+    icon: "ChatBubbleLeftRightIcon",
+    group: "Feedback",
     showInSidebar: true,
   },
   {
