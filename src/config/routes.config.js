@@ -758,8 +758,7 @@ export const ROUTES = [
   {
     path: "/feedback-list",
     component: FeedbackList,
-    permission: null,
-    allowedRoles: ["LMC_ADMIN", "lmcadmin"],
+    permission: "read:feedback_form",
     label: "Feedback List",
     icon: "ClipboardDocumentListIcon",
     group: "OPD",
@@ -768,8 +767,7 @@ export const ROUTES = [
   {
     path: "/feedback-form/*",
     component: FeedbackForm,
-    permission: null,
-    allowedRoles: ["LMC_ADMIN", "lmcadmin"],
+    permission: "read:feedback_form",
     label: "Feedback Form",
     showInSidebar: false,
   },

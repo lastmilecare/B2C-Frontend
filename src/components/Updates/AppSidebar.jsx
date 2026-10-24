@@ -215,7 +215,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
         )}
 
         {/* ── OPD ─────────────────────────────────────────── */}
-        {can("read:opd_form") && (
+        {(can("read:opd_form") || can("read:feedback_form")) && (
           <MenuGroup menuKey="opd" icon={ClipboardDocumentListIcon} label="OPD">
             {can("create:opd_form") && (
               <NavLink
@@ -245,8 +245,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
                 OPD Bill Analysis
               </NavLink>
             )}
-            {(cookie.get("role") === "LMC_ADMIN" ||
-              String(cookie.get("role") || "").toLowerCase() === "lmcadmin") && (
+            {can("read:feedback_form") && (
               <NavLink
                 to="/feedback-list"
                 className={subNavItem}
