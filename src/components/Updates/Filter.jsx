@@ -160,6 +160,39 @@ outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky
               </select>
             )}
 
+            {filter.type === "multiselect" && (
+              <select
+                name={filter.name}
+                multiple
+                value={
+                  Array.isArray(tempFilters[filter.name])
+                    ? tempFilters[filter.name]
+                    : tempFilters[filter.name]
+                      ? String(tempFilters[filter.name]).split(",")
+                      : []
+                }
+                onChange={(e) => {
+                  const selected = Array.from(e.target.selectedOptions).map(
+                    (o) => o.value,
+                  );
+                  onChange({
+                    target: { name: filter.name, value: selected },
+                  });
+                }}
+                className="w-full border border-sky-200 bg-white shadow-sm px-2 py-1 rounded-md text-xs min-h-[88px]
+outline-none focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+              >
+                {filter.options?.map((opt, index) => (
+                  <option
+                    key={opt.id ?? opt.value ?? index}
+                    value={String(opt.value)}
+                  >
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            )}
+
           {filter.type === "date" && (
   <div className="w-full">
     <DatePicker

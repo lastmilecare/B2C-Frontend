@@ -18,6 +18,7 @@ import {
   BanknotesIcon,
   MapPinIcon,
   DocumentTextIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
 import { cookie } from "../../utils/cookie";
@@ -46,6 +47,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
     PatientDetails: false,
     ClientDashboard: false,
     ExpenseTransactions: false,
+    feedback: false,
   });
 
   const toggleSubMenu = (menu) => {
@@ -245,15 +247,6 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
                 OPD Bill Analysis
               </NavLink>
             )}
-            {/* {can("read:opd_analysis") && ( */}
-              {/* <NavLink
-                to="/feedback-list"
-                className={subNavItem}
-                onClick={() => setIsOpen(false)}
-              >
-                Feedback List
-              </NavLink> */}
-            {/* )} */}
           </MenuGroup>
         )}
 
@@ -631,6 +624,23 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
                 Operating Expenses Sheet
               </NavLink>
             ) : null}
+          </MenuGroup>
+        )}
+
+        {/* ── Feedback ────────────────────────────────────── */}
+        {can("read:feedback_form") && (
+          <MenuGroup
+            menuKey="feedback"
+            icon={ChatBubbleLeftRightIcon}
+            label="Feedback"
+          >
+            <NavLink
+              to="/feedback-list"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Feedback List
+            </NavLink>
           </MenuGroup>
         )}
 

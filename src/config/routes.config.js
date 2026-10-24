@@ -52,6 +52,8 @@ import PrescriptionListCamp from "../pages/PrescriptionCampList";
 import PrescriptionFormCamp from "../pages/PrescriptionCampForm";
 import PatientDetails from "../pages/PatientDetails";
 import OpdBillAnalysis from "../pages/OpdBillAnalysis";
+import FeedbackList from "../pages/FeedbackList";
+import FeedbackForm from "../pages/FeedbackForm";
 import DepartmentPage from "../pages/OhcDeparmentPage";
 import DepartmentList from "../pages/OhcDeparmentList";
 import DepartmentForm from "../pages/OhcDeparmentForm";
@@ -752,9 +754,22 @@ export const ROUTES = [
     component: CampOpdBillAnalysis,
     permission: "read:opd_analysis",
     label: "Camp Opd Bill Analysis",
-    icon: "ClipboardDocumentListIcon",
-    group: "OPD",
+  },
+  {
+    path: "/feedback-list",
+    component: FeedbackList,
+    permission: "read:feedback_form",
+    label: "Feedback List",
+    icon: "ChatBubbleLeftRightIcon",
+    group: "Feedback",
     showInSidebar: true,
+  },
+  {
+    path: "/feedback-form/*",
+    component: FeedbackForm,
+    permission: "read:feedback_form",
+    label: "Feedback Form",
+    showInSidebar: false,
   },
   //Ambulance Module need to change permission with actual one
   {
