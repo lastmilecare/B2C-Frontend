@@ -5,7 +5,10 @@ import {
   useGetPatientProfileQuery,
   useGetPatientComplaintsQuery,
   useGetPatientFootfallQuery,
+  useGetRevenueQuery,
+  useGetCostQuery,
 } from "../redux/apiSlice";
+
 import { resolveApiTabMode, usesPatientComplaintsApi } from "./apiTabRouting";
 const API_TABS = {
   "unique-patients": "patientProfile",
@@ -71,6 +74,13 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
   const patientFootfall = useGetPatientFootfallQuery(queryArg, {
     skip: mode !== "patientFootfall",
   });
+  const revenue = useGetRevenueQuery(queryArg, {
+    skip: mode !== "revenue",
+  });
+  const cost = useGetCostQuery(queryArg, {
+    skip: mode !== "cost",
+  });
+
   const active =
     mode === "patientProfile"
       ? patientProfile
@@ -80,8 +90,12 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
           ? patientComplaints
           : mode === "patientFootfall"
             ? patientFootfall
-            : null;
-            
+            : mode === "revenue"
+              ? revenue
+              : mode === "cost"
+                ? cost
+                : null;
+
   const dummyView = useMemo(() => {
     if (mode) return null;
     return bundle.select(filters);

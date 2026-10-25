@@ -2502,6 +2502,22 @@ export const api = createApi({
       }),
       providesTags: ["DashboardPatientFootfall"],
     }),
+    getRevenue: build.query({
+      query: ({ service = "all", from, to } = {}) => ({
+        url: "/dashboard/revenue",
+        method: "GET",
+        params: { service, from, to },
+      }),
+      providesTags: ["DashboardRevenue"],
+    }),
+    getCost: build.query({
+      query: ({ category = "all", from, to } = {}) => ({
+        url: "/dashboard/cost",
+        method: "GET",
+        params: { category, from, to },
+      }),
+      providesTags: ["DashboardCost"],
+    }),
   }),
 });
 
@@ -2764,4 +2780,6 @@ export const {
   useGetCampPatientProfileQuery,
   useGetPatientComplaintsQuery,
   useGetPatientFootfallQuery,
+  useGetRevenueQuery,
+  useGetCostQuery,
 } = api;

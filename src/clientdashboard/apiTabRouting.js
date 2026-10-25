@@ -3,6 +3,8 @@
  * AMP "Disease Analysis" uses the same backend as Honda "Patient Complaints Analysis".
  */
 const TAB_MODES = {
+  revenue: "revenue",
+  cost: "cost",
   "unique-patients": "patientProfile",
   "camp-profile": "campPatientProfile",
   complaints: "patientComplaints",

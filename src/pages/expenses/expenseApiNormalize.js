@@ -1,3 +1,4 @@
+import { mergeSalaryPeople } from "./expenseGridUtils.js";
 import { normalizePeriodMonth } from "./expensePeriodUtils.js";
 
 /**
@@ -77,18 +78,21 @@ export const normalizeExpenseSheetResponse = (payload, reportType = "") => {
         }))
     : [];
 
+  const custom = sheet.custom || {
+    periods: [],
+    categories: [],
+    columns: [],
+    people: [],
+  };
+  const people = mergeSalaryPeople(sheet.people || [], custom.people || []);
+
   return {
     ...sheet,
     report_type: sheet.report_type || reportType,
     cells,
-    custom: sheet.custom || {
-      periods: [],
-      categories: [],
-      columns: [],
-      people: [],
-    },
+    custom: { ...custom, people: [] },
     remarks: sheet.remarks || {},
-    people: sheet.people || [],
+    people,
   };
 };
 

@@ -44,110 +44,19 @@ const periodsFromLabels = (labels, parser) =>
     .filter((p) => p.period_month);
 
 const AMP_CATEGORIES = [
-  { line_code: "staff_salary", label: "Staff Salary (Fixed)" },
+  { line_code: "staff_salary", label: "Staff Salary" },
   { line_code: "medicine_consumables", label: "Medicine and Consumables" },
-  { line_code: "capex", label: "CAPEX (Fixed)" },
+  { line_code: "capex", label: "CAPEX" },
   { line_code: "admin_consumables", label: "Admin Consumables" },
   { line_code: "compliances_licensing", label: "Compliances and Licensing" },
   { line_code: "miscellaneous", label: "Miscellaneous" },
   { line_code: "camp_cost", label: "Camp Cost" },
-  { line_code: "management_cost", label: "Management Cost (Fixed)" },
+  { line_code: "management_cost", label: "Management Cost" },
 ];
 
-const AMP_PERIOD_LABELS = [
-  "Apr-25",
-  "May-25",
-  "Jun-25",
-  "Jul-25",
-  "Aug-25",
-  "Sep-25",
-  "Oct-25",
-  "Nov-25",
-  "Dec-25",
-  "Jan-26",
-  "Feb-26",
-  "Mar-26",
-  "Apr-26",
-  "May-26",
-  "Jun-26",
-  "Jul-26",
-  "Aug-26",
-];
+/** Period rows/columns come from DB cells + custom.periods + rolling window (see expensePeriodUtils). */
+const EMPTY_PERIODS = [];
 
-const HONDA_MONTH_LABELS = [
-  "24-Apr",
-  "24-May",
-  "24-Jun",
-  "24-Jul",
-  "24-Aug",
-  "24-Sep",
-  "24-Oct",
-  "24-Nov",
-  "24-Dec",
-  "25-Jan",
-  "25-Feb",
-  "25-Mar",
-  "25-Apr",
-  "25-May",
-  "25-Jun",
-  "25-Jul",
-  "25-Aug",
-  "25-Sep",
-  "25-Oct",
-  "25-Nov",
-  "25-Dec",
-  "26-Jan",
-  "26-Feb",
-  "26-Mar",
-  "26-Apr",
-  "26-May",
-  "26-Jun",
-  "26-Jul",
-  "26-Aug",
-];
-
-const HONDA_PERIODS = periodsFromLabels(HONDA_MONTH_LABELS, parseYyMonLabel);
-
-const SALARY_PERIOD_LABELS = [
-  "Aug-26",
-  "Jul-26",
-  "Jun-26",
-  "May-26",
-  "Apr-26",
-  "Mar-26",
-  "Feb-26",
-  "Jan-26",
-  "Dec-25",
-  "Nov-25",
-  "Oct-25",
-  "Sep-25",
-  "Aug-25",
-  "Jul-25",
-  "Jun-25",
-  "May-25",
-  "Apr-25",
-  "Mar-25",
-  "Feb-25",
-  "Jan-25",
-  "Dec-24",
-  "Nov-24",
-  "Oct-24",
-  "Sep-24",
-  "Aug-24",
-  "Jul-24",
-  "Jun-24",
-  "May-24",
-  "Apr-24",
-];
-
-const CONSUMABLES_PERIOD_LABELS = HONDA_MONTH_LABELS.map((label) => {
-  const [yy, mon] = label.split("-");
-  return `${mon}-${yy}`;
-});
-const CONSUMABLES_PERIODS = periodsFromLabels(
-  CONSUMABLES_PERIOD_LABELS,
-  parseMonYyLabel,
-);
 const VENDOR_BLOCKS = [
   {
     block_code: "diagnostics",
@@ -203,7 +112,8 @@ export const EXPENSE_SHEET_DEFINITIONS = {
     module_title: "Monthly Operating Expenses",
     row_label_header: "Categories",
     categories: AMP_CATEGORIES,
-    periods: periodsFromLabels(AMP_PERIOD_LABELS, parseMonYyLabel),
+    periods: EMPTY_PERIODS,
+    period_format: "mon_yy",
     remarks_per_row: true,
     entry_mode: "editable",
   },
@@ -225,7 +135,8 @@ export const EXPENSE_SHEET_DEFINITIONS = {
       { line_code: "regulatory_license", label: "Regulatory License" },
       { line_code: "pharmacy_license", label: "Pharmacy license" },
     ],
-    periods: HONDA_PERIODS,
+    periods: EMPTY_PERIODS,
+    period_format: "yy_mon",
     entry_mode: "editable",
   },
 
@@ -249,9 +160,11 @@ export const EXPENSE_SHEET_DEFINITIONS = {
         label: "Mobilisation Conveyance",
       },
     ],
-    periods: HONDA_PERIODS,
+    periods: EMPTY_PERIODS,
+    period_format: "yy_mon",
     entry_mode: "editable",
   },
+
   consumables_expenses: {
     report_type: "consumables_expenses",
     client: "honda",
@@ -266,10 +179,11 @@ export const EXPENSE_SHEET_DEFINITIONS = {
       { line_code: "dental_expenses", label: "Dental Expenses" },
       { line_code: "office_expense", label: "Office Expense" },
     ],
-    periods: CONSUMABLES_PERIODS,
+    periods: EMPTY_PERIODS,
     period_format: "mon_yy",
     entry_mode: "editable",
   },
+
   satellite_centre: {
     report_type: "satellite_centre",
     client: "honda",
@@ -289,7 +203,8 @@ export const EXPENSE_SHEET_DEFINITIONS = {
       },
       { line_code: "conveyence", label: "Conveyence (mobilisation)" },
     ],
-    periods: HONDA_PERIODS,
+    periods: EMPTY_PERIODS,
+    period_format: "yy_mon",
     entry_mode: "editable",
   },
 
@@ -299,7 +214,8 @@ export const EXPENSE_SHEET_DEFINITIONS = {
     layout: "person_by_month",
     module_title: "Individual Salary Details",
     row_label_header: "Name",
-    periods: periodsFromLabels(SALARY_PERIOD_LABELS, parseMonYyLabel),
+    periods: EMPTY_PERIODS,
+    period_format: "mon_yy",
     meta_columns: ["subcategory", "category"],
     entry_mode: "editable",
   },
@@ -310,12 +226,18 @@ export const EXPENSE_SHEET_DEFINITIONS = {
     layout: "vendor_month_blocks",
     module_title: "Vendor Payment Vs Revenue",
     row_label_header: "Month",
-    periods: HONDA_PERIODS,
+    periods: EMPTY_PERIODS,
+    period_format: "yy_mon",
     vendor_blocks: VENDOR_BLOCKS,
     block_fields: [
       { field: "revenue", label: "Revenue" },
       { field: "vendor_payment", label: "Payment" },
-      { field: "share", label: "MediKavach's Share" },
+      {
+        field: "share",
+        label: "MediKavach's Share",
+        computed: true,
+        formula: "revenue_minus_vendor_payment",
+      },
     ],
     entry_mode: "editable",
   },
@@ -327,7 +249,8 @@ export const EXPENSE_SHEET_DEFINITIONS = {
     module_title: "Total Exp",
     row_label_header: "Month",
     columns: TOTAL_EXP_COLUMNS,
-    periods: HONDA_PERIODS,
+    periods: EMPTY_PERIODS,
+    period_format: "yy_mon",
     entry_mode: "readonly",
   },
 };

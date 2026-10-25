@@ -1,20 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from 'react';
 import {
   buildEffectiveDefinition,
   extractPeriodsFromCells,
-} from "./expenseDefinitionMerge";
+} from './expenseDefinitionMerge';
 import {
   buildSavePayload,
   hydrateSheetState,
   initEmptySheetState,
   syncGridToDefinition,
-} from "./expenseGridUtils";
+  syncVendorBlockShare,
+} from './expenseGridUtils';
 import {
   nextPeriodAfterLatest,
   normalizePeriodMonth,
   slugifyLineCode,
-} from "./expensePeriodUtils";
-import { getSheetDefinition } from "./expenseSheetDefinitions";
+} from './expensePeriodUtils';
+import { getSheetDefinition } from './expenseSheetDefinitions';
 
 const emptyCustom = () => ({
   periods: [],
@@ -26,7 +27,7 @@ const emptyCustom = () => ({
 export const useExpenseSheetState = (
   reportType,
   sheetData,
-  { isLoading, isFetching, isSuccess },
+  { isLoading, isFetching, isSuccess, isError },
 ) => {
   const baseDefinition = getSheetDefinition(reportType);
   const [state, setState] = useState(null);
@@ -37,16 +38,27 @@ export const useExpenseSheetState = (
 
   useEffect(() => {
     if (!baseDefinition) return;
-    if (isLoading || isFetching) return;
-    if (!isSuccess || sheetData === undefined) return;
+    const fetchSettled = !isLoading && !isFetching;
+    if (!fetchSettled) return;
 
-    const cellPeriods = extractPeriodsFromCells(sheetData.cells);
-    const custom = sheetData.custom || emptyCustom();
-    const effective = buildEffectiveDefinition(baseDefinition, { custom, cellPeriods });
+    const canHydrateFromApi =
+      sheetData &&
+      (isSuccess ||
+        Boolean(sheetData.updated_at) ||
+        (Array.isArray(sheetData.cells) && sheetData.cells.length > 0));
 
-    const hydrated = hydrateSheetState(effective, sheetData);
-    setState(syncGridToDefinition(hydrated, effective));
-  }, [baseDefinition, sheetData, isLoading, isFetching, isSuccess]);
+    if (canHydrateFromApi) {
+      const cellPeriods = extractPeriodsFromCells(sheetData.cells);
+      const custom = sheetData.custom || emptyCustom();
+      const effective = buildEffectiveDefinition(baseDefinition, { custom, cellPeriods });
+      const hydrated = hydrateSheetState(effective, sheetData);
+      setState(syncGridToDefinition(hydrated, effective));
+      return;
+    }
+
+    const effective = buildEffectiveDefinition(baseDefinition, {});
+    setState(syncGridToDefinition(initEmptySheetState(effective), effective));
+  }, [baseDefinition, sheetData, isLoading, isFetching, isSuccess, isError]);
 
   const effectiveDefinition = useMemo(() => {
     if (!baseDefinition || !state) return baseDefinition;
@@ -102,19 +114,24 @@ export const useExpenseSheetState = (
   };
 
   const setVendorCell = (periodMonth, blockCode, field, value) => {
-    setState((prev) => ({
-      ...prev,
-      grid: {
-        ...prev.grid,
-        [periodMonth]: {
-          ...prev.grid[periodMonth],
-          [blockCode]: {
-            ...prev.grid[periodMonth][blockCode],
-            [field]: value,
+    if (field === 'share') return;
+    setState((prev) => {
+      const periodRow = { ...(prev.grid[periodMonth] || {}) };
+      const blockCells = syncVendorBlockShare({
+        ...(periodRow[blockCode] || {}),
+        [field]: value,
+      });
+      return {
+        ...prev,
+        grid: {
+          ...prev.grid,
+          [periodMonth]: {
+            ...periodRow,
+            [blockCode]: blockCells,
           },
         },
-      },
-    }));
+      };
+    });
   };
 
   const addNextMonth = () => {
@@ -175,11 +192,8 @@ export const useExpenseSheetState = (
       category,
     };
     setState((prev) => {
-      const custom = {
-        ...prev.custom,
-        people: [...(prev.custom?.people || []), person],
-      };
       const people = [...(prev.people || []), person];
+      const custom = { ...prev.custom, people: [] };
       const effective = buildEffectiveDefinition(baseDefinition, { custom });
       return syncGridToDefinition({ ...prev, custom, people }, effective);
     });
