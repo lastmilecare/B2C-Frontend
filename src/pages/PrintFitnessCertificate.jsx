@@ -41,7 +41,9 @@ const PrintFitnessCertificate = forwardRef(({ data = {} }, ref) => {
 
   const profile = organisationData?.data?.[0] || {};
   const projectName = data.project_name || profile.display_name || "";
-  const issueDate = formatDate(data.created_at || new Date());
+  const issueDate = formatDate(
+    data.certificate_date || data.created_at || new Date()
+  );
 
   const pageStyle = {
     width: "210mm",
