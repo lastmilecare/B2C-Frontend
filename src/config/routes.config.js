@@ -76,6 +76,11 @@ import {
   HondaVendorExpensePage,
   HondaTotalExpPage,
   HondaConsumablesExpensePage,
+  HondaHrRecruitmentExpensePage,
+  HondaHealthCampExpensePage,
+  HondaIecBrandingExpensePage,
+  HondaTechStackExpensePage,
+  HondaManagementExpPage,
 } from "../pages/expenses/expenseRouteComponents";
 
 export const ROUTES = [
@@ -862,6 +867,36 @@ export const ROUTES = [
   {
     path: "/expense-transactions/salaries/*",
     component: HondaSalaryExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/hr_recruitment/*",
+    component: HondaHrRecruitmentExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/health_camp/*",
+    component: HondaHealthCampExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/iec_branding/*",
+    component: HondaIecBrandingExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/tech_stack/*",
+    component: HondaTechStackExpensePage,
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/management_exp/*",
+    component: HondaManagementExpPage,
     permission: "read:client_dashboard",
     showInSidebar: false,
   },

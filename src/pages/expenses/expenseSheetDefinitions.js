@@ -83,7 +83,7 @@ const VENDOR_BLOCKS = [
 
 const TOTAL_EXP_COLUMNS = [
   { line_code: "salaries", label: "Salaries" },
-  { line_code: "hr_recruitment", label: "Hr Recruitment & Managemenrt Cost" },
+  { line_code: "hr_recruitment", label: "Hr Recruitment & Managemenrt Cost(salaries * 0.03)" },
   { line_code: "health_camp", label: "Health Camp & Other Events" },
   { line_code: "compliance_cert", label: "Compliance & Certifications" },
   { line_code: "iec_branding", label: "IEC Branding and Promotion" },
@@ -217,6 +217,76 @@ export const EXPENSE_SHEET_DEFINITIONS = {
     periods: EMPTY_PERIODS,
     period_format: "mon_yy",
     meta_columns: ["subcategory", "category"],
+    entry_mode: "editable",
+  },
+
+  hr_recruitment: {
+    report_type: "hr_recruitment",
+    client: "honda",
+    layout: "month_by_category",
+    module_title: "HR Recruitment & Management Cost",
+    row_label_header: "Month",
+    persist_column_codes: ['cost'],
+    show_month_row_total: false,
+    columns: [
+      { line_code: "salaries", label: "Salaries",input_only:true  },
+      {
+        line_code: "cost",
+        label: "Cost (Salaries × 0.03)",
+        computed: true,
+        formula: "salaries_times_0_3",
+      },
+    ],
+    periods: EMPTY_PERIODS,
+    period_format: "yy_mon",
+    entry_mode: "editable",
+  },
+
+  health_camp: {
+    report_type: "health_camp",
+    client: "honda",
+    layout: "month_by_category",
+    module_title: "Health Camp & Other Events",
+    row_label_header: "Month",
+    columns: [{ line_code: "cost", label: "Cost" }],
+    periods: EMPTY_PERIODS,
+    period_format: "yy_mon",
+    entry_mode: "editable",
+  },
+
+  iec_branding: {
+    report_type: "iec_branding",
+    client: "honda",
+    layout: "month_by_category",
+    module_title: "IEC Branding and Promotion",
+    row_label_header: "Month",
+    columns: [{ line_code: "cost", label: "Cost" }],
+    periods: EMPTY_PERIODS,
+    period_format: "yy_mon",
+    entry_mode: "editable",
+  },
+
+  tech_stack: {
+    report_type: "tech_stack",
+    client: "honda",
+    layout: "month_by_category",
+    module_title: "Tech Stack",
+    row_label_header: "Month",
+    columns: [{ line_code: "cost", label: "Cost" }],
+    periods: EMPTY_PERIODS,
+    period_format: "yy_mon",
+    entry_mode: "editable",
+  },
+
+  management_exp: {
+    report_type: "management_exp",
+    client: "honda",
+    layout: "month_by_category",
+    module_title: "Management Exp",
+    row_label_header: "Month",
+    columns: [{ line_code: "cost", label: "Cost" }],
+    periods: EMPTY_PERIODS,
+    period_format: "yy_mon",
     entry_mode: "editable",
   },
 

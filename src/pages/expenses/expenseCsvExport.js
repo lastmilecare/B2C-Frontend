@@ -84,11 +84,12 @@ export const buildSheetCsv = (definition, state) => {
     }
 
     case "month_by_category": {
+      const showTotal = showMonthRowTotal(definition);
       lines.push(
         rowToCsv([
           definition.row_label_header || "Month",
           ...definition.columns.map((c) => c.label),
-          "Total",
+          ...(showTotal ? ["Total"] : []),
         ]),
       );
       definition.periods.forEach((p) => {
@@ -98,7 +99,9 @@ export const buildSheetCsv = (definition, state) => {
             ...definition.columns.map((col) =>
               numCell(state.grid[p.period_month]?.[col.line_code]),
             ),
-            String(monthRowTotal(definition, state.grid, p.period_month)),
+            ...(showTotal
+              ? [String(monthRowTotal(definition, state.grid, p.period_month))]
+              : []),
           ]),
         );
       });

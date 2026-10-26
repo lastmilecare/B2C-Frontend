@@ -601,7 +601,43 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 >
                   Vendor vs Revenue
                 </NavLink>
-
+                {/* ccccc */}
+                <NavLink
+                  to="/expense-transactions/hr_recruitment"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Recruitment
+                </NavLink>
+                <NavLink
+                  to="/expense-transactions/health_camp"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Health Camp
+                </NavLink>
+                <NavLink
+                  to="/expense-transactions/iec_branding"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Iec Branding
+                </NavLink>
+                <NavLink
+                  to="/expense-transactions/tech_stack"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Tech Stack
+                </NavLink>
+                <NavLink
+                  to="/expense-transactions/management_exp"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Management Exp
+                </NavLink>
+                {/* dsdsds */}
                 <NavLink
                   to="/expense-transactions/total-exp"
                   className={subNavItem}

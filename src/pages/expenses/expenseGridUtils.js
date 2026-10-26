@@ -58,8 +58,33 @@ export const emptyVendorGrid = (definition) => {
   return { grid };
 };
 
-const formatAmountCell = (amount) =>
-  amount === 0 || amount === "0" ? "" : String(amount);
+const roundMoney = (amount) => Math.round(Number(amount) * 100) / 100;
+
+const formatAmountCell = (amount) => {
+  const n = Number(amount);
+  if (!Number.isFinite(n) || n === 0) return "";
+  return String(roundMoney(n));
+};
+
+export const shouldPersistMonthColumn = (definition, col) => {
+  const allow = definition?.persist_column_codes;
+  if (!allow?.length) return true;
+  return allow.includes(col.line_code);
+};
+
+export const showMonthRowTotal = (definition) =>
+  definition?.show_month_row_total !== false;
+
+export const grandTotalFromSheetCells = (definition, cells = []) => {
+  const allow = definition?.persist_column_codes;
+  const list = cells || [];
+  if (allow?.length) {
+    return list
+      .filter((c) => allow.includes(c.line_code))
+      .reduce((s, c) => s + (Number(c.amount) || 0), 0);
+  }
+  return list.reduce((s, c) => s + (Number(c.amount) || 0), 0);
+};
 
 export const hydrateCategoryByMonth = (
   definition,
@@ -79,15 +104,63 @@ export const hydrateCategoryByMonth = (
   return { grid, remarks: remarkState };
 };
 
+export const isMonthCategoryColumnComputed = (col) => Boolean(col?.computed);
+
+export const monthCategoryComputedAmount = (col, periodRow = {}) => {
+  if (col?.formula === "salaries_times_0_3") {
+    return roundMoney(amountFromInput(periodRow.salaries) * 0.03);
+  }
+  return 0;
+};
+
+export const syncMonthCategoryPeriodRow = (definition, periodRow = {}) => {
+  const row = { ...periodRow };
+  (definition.columns || []).forEach((col) => {
+    if (!isMonthCategoryColumnComputed(col)) return;
+    const amount = monthCategoryComputedAmount(col, row);
+    row[col.line_code] = formatAmountCell(amount);
+  });
+  return row;
+};
+
+export const recomputeMonthCategoryGrid = (definition, grid = {}) => {
+  const next = { ...grid };
+  definition.periods.forEach((p) => {
+    next[p.period_month] = syncMonthCategoryPeriodRow(
+      definition,
+      next[p.period_month] || {},
+    );
+  });
+  return next;
+};
+
 export const hydrateMonthByCategory = (definition, cells = []) => {
   const { grid } = emptyMonthByCategoryGrid(definition);
+  const computedCodes = new Set(
+    (definition.columns || [])
+      .filter(isMonthCategoryColumnComputed)
+      .map((col) => col.line_code),
+  );
+  const persistComputed = new Set(definition.persist_column_codes || []);
   cells.forEach(({ line_code, period_month, amount }) => {
     const pm = normalizePeriodMonth(period_month);
     if (!line_code || !pm) return;
+    if (computedCodes.has(line_code) && !persistComputed.has(line_code)) return;
     if (!grid[pm]) grid[pm] = {};
     grid[pm][line_code] = formatAmountCell(amount);
   });
-  return { grid };
+  if (definition.report_type === "hr_recruitment") {
+    Object.keys(grid).forEach((pm) => {
+      const row = grid[pm];
+      if (!row) return;
+      const salaries = amountFromInput(row.salaries);
+      const cost = amountFromInput(row.cost);
+      if (!salaries && cost) {
+        row.salaries = formatAmountCell(roundMoney(cost / 0.3));
+      }
+    });
+  }
+  return { grid: recomputeMonthCategoryGrid(definition, grid) };
 };
 
 export const normalizeSalaryPersonName = (name) =>
@@ -252,9 +325,12 @@ export const flattenCategoryByMonth = (definition, grid, remarks) => {
 
 export const flattenMonthByCategory = (definition, grid) => {
   const cells = [];
+  const syncedGrid = recomputeMonthCategoryGrid(definition, grid);
   definition.periods.forEach((p) => {
+    const periodRow = syncedGrid[p.period_month] || {};
     definition.columns.forEach((col) => {
-      const amount = amountFromInput(grid[p.period_month]?.[col.line_code]);
+      if (!shouldPersistMonthColumn(definition, col)) return;
+      const amount = amountFromInput(periodRow[col.line_code]);
       pushCellIfNonZero(
         cells,
         {
@@ -385,6 +461,10 @@ export const syncGridToDefinition = (state, definition) => {
           grid[p.period_month][col.line_code] = "";
         }
       });
+      grid[p.period_month] = syncMonthCategoryPeriodRow(
+        definition,
+        grid[p.period_month],
+      );
     });
   }
 
