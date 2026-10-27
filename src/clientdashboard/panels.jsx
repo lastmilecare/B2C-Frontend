@@ -20,7 +20,6 @@ function series(names) {
     color: CHART_PALETTE[index % CHART_PALETTE.length],
   }));
 }
-
 function KpiRow({ items = [] }) {
   if (!items.length) return null;
   return (
@@ -31,8 +30,16 @@ function KpiRow({ items = [] }) {
     </KpiGrid>
   );
 }
-
 function RevenuePanel({ view }) {
+  const yearColumns = (view.yearColumns ?? ["2024", "2025", "2026"]).map(
+    (year) => ({
+      name: year,
+      selector: (row) => row[`y${year}`] ?? row[`y${year.slice(-2)}`] ?? 0,
+      format: (row) => formatCurrency(row[`y${year}`] ?? 0),
+      sortable: true,
+      right: true,
+    }),
+  );
   const revenueColumns = [
     {
       name: "Service category",
@@ -40,27 +47,7 @@ function RevenuePanel({ view }) {
       sortable: true,
       grow: 2,
     },
-    {
-      name: "2024",
-      selector: (row) => row.y2024,
-      format: (row) => formatCurrency(row.y2024),
-      sortable: true,
-      right: true,
-    },
-    {
-      name: "2025",
-      selector: (row) => row.y2025,
-      format: (row) => formatCurrency(row.y2025),
-      sortable: true,
-      right: true,
-    },
-    {
-      name: "2026",
-      selector: (row) => row.y2026,
-      format: (row) => formatCurrency(row.y2026),
-      sortable: true,
-      right: true,
-    },
+    ...yearColumns,
     {
       name: "Total",
       selector: (row) => row.total,
@@ -69,7 +56,53 @@ function RevenuePanel({ view }) {
       right: true,
     },
   ];
+  const tableData = view.table ?? [];
 
+  const grandTotalRow = {
+    serviceCategory: "— Grand Total —",
+
+    ...(view.yearColumns ?? ["2024", "2025", "2026"]).reduce((acc, year) => {
+      const key = `y${year}`;
+      const shortKey = `y${year.slice(-2)}`;
+
+      acc[key] = tableData.reduce(
+        (sum, row) => sum + Number(row[key] ?? row[shortKey] ?? 0),
+        0,
+      );
+
+      return acc;
+    }, {}),
+
+    total: tableData.reduce((sum, row) => sum + Number(row.total ?? 0), 0),
+  };
+
+  const tableWithGrandTotal = [...tableData, grandTotalRow];
+  const breakdownColumns = [
+    { name: "Service", selector: (row) => row.name, sortable: true, grow: 2 },
+    {
+      name: "Revenue",
+      selector: (row) => row.revenue,
+      format: (row) => formatCurrency(row.revenue),
+      sortable: true,
+      right: true,
+    },
+    {
+      name: "Patient count",
+      selector: (row) => row.patients ?? "—",
+      sortable: true,
+      right: true,
+    },
+  ];
+  const patientTypeKeys =
+    view.patientType?.[0]?.OPD != null
+      ? [
+          { key: "OPD", name: "OPD Revenue", color: "#2563eb" },
+          { key: "Pharmacy", name: "Pharmacy Revenue", color: "#059669" },
+        ]
+      : [
+          { key: "APL", name: "APL", color: "#2563eb" },
+          { key: "BPL", name: "BPL", color: "#d97706" },
+        ];
   return (
     <div className="space-y-6">
       <KpiRow
@@ -91,26 +124,33 @@ function RevenuePanel({ view }) {
           />
         </DashboardCard>
       </div>
-      {view.patientType && (
+      {view.patientType?.length > 0 && (
         <DashboardCard title="Patient Type Revenue Analysis">
           <BarChartPanel
             data={view.patientType}
             xKey="label"
             layout="horizontal"
             valueFormat="currency"
-            xLabel="Channel"
+            xLabel="Patient type"
             yLabel="Revenue (₹)"
             height={280}
-            dataKeys={[
-              { key: "APL", name: "APL", color: "#2563eb" },
-              { key: "BPL", name: "BPL", color: "#d97706" },
-            ]}
+            dataKeys={patientTypeKeys}
           />
         </DashboardCard>
       )}
-      <DashboardCard title="Service category by year" noPadding>
-        <DataTableSimple columns={revenueColumns} data={view.table} />
-      </DashboardCard>
+      {view.serviceBreakdown?.length > 0 && (
+        <DashboardCard title="Service-wise Revenue Breakdown" noPadding>
+          <DataTableSimple
+            columns={breakdownColumns}
+            data={view.serviceBreakdown}
+          />
+        </DashboardCard>
+      )}
+      {view.table?.length > 0 && (
+        <DashboardCard title="Service category by year" noPadding>
+          <DataTableSimple columns={revenueColumns} data={tableWithGrandTotal} />
+        </DashboardCard>
+      )}
       {view.utilization?.length > 0 && (
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <DashboardCard title="Service Utilization Summary">
@@ -150,7 +190,6 @@ function RevenuePanel({ view }) {
     </div>
   );
 }
-
 function CostPanel({ view }) {
   return (
     <div className="space-y-6">
@@ -215,7 +254,6 @@ function CostPanel({ view }) {
     </div>
   );
 }
-
 function ThirdPartyPanel({ view }) {
   const columns = [
     {
@@ -280,7 +318,6 @@ function ThirdPartyPanel({ view }) {
     </div>
   );
 }
-
 function ThirdPartyCategoryPanel({ view }) {
   return (
     <div className="space-y-6">
@@ -324,7 +361,6 @@ function ThirdPartyCategoryPanel({ view }) {
     </div>
   );
 }
-
 function PatientsPanel({ view }) {
   return (
     <div className="space-y-6">
@@ -416,7 +452,6 @@ function PatientsPanel({ view }) {
     </div>
   );
 }
-
 function FootfallPanel({ view }) {
   return (
     <div className="space-y-6">
@@ -438,7 +473,6 @@ function FootfallPanel({ view }) {
     </div>
   );
 }
-
 function DiseasePanel({ view }) {
   return (
     <div className="space-y-6">
@@ -489,7 +523,6 @@ function DiseasePanel({ view }) {
     </div>
   );
 }
-
 function ComplaintsPanel({ view }) {
   return (
     <div className="space-y-6">
@@ -572,7 +605,6 @@ function ComplaintsPanel({ view }) {
     </div>
   );
 }
-
 function FeedbackPanel({ view }) {
   return (
     <div className="space-y-6">
@@ -583,7 +615,6 @@ function FeedbackPanel({ view }) {
     </div>
   );
 }
-
 const PANELS = {
   revenue: RevenuePanel,
   cost: CostPanel,
@@ -595,7 +626,6 @@ const PANELS = {
   complaints: ComplaintsPanel,
   feedback: FeedbackPanel,
 };
-
 export function DashboardPanel({ view }) {
   if (!view || view.empty) {
     return <ChartEmpty message="No records for the selected filters." />;
