@@ -17,6 +17,9 @@ export function resolveApiTabMode(tenantSlug, tabId) {
   if (tabId === "disease" && tenantSlug === "amp") {
     return "patientComplaints";
   }
+  if (tabId === "feedback" && tenantSlug === "amp") {
+    return "patientFeedback";
+  }
   return TAB_MODES[tabId] ?? null;
 }
 

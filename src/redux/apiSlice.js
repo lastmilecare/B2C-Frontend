@@ -2534,6 +2534,14 @@ export const api = createApi({
       }),
       providesTags: ["DashboardThirdPartyCategory"],
     }),
+    getPatientFeedback: build.query({
+      query: ({ feedback = "all", from, to } = {}) => ({
+        url: "/dashboard/patient-feedback",
+        method: "GET",
+        params: { feedback, from, to },
+      }),
+      providesTags: ["DashboardPatientFeedback"],
+    }),
   }),
 });
 
@@ -2800,4 +2808,5 @@ export const {
   useGetCostQuery,
   useGetThirdPartyQuery,
   useGetThirdPartyCategoryQuery,
+  useGetPatientFeedbackQuery,
 } = api;

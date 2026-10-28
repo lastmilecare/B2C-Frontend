@@ -5,7 +5,7 @@ import { getTabBundle } from "../data/dashboardData";
 import { TENANTS } from "./tenants";
 import { DashboardPanel } from "./panels";
 import { useDashboardView } from "./useDashboardView";
-import { mergeCategoryFilterOptions } from "./mergeFilterOptions";
+import { mergeFilterOptionsFromView } from "./mergeFilterOptions";
 
 export function TenantDashboard({ tenantId }) {
   const config = TENANTS[tenantId];
@@ -26,7 +26,7 @@ export function TenantDashboard({ tenantId }) {
     bundle,
   );
   const filterFields = useMemo(
-    () => mergeCategoryFilterOptions(bundle.filters, view),
+    () => mergeFilterOptionsFromView(bundle.filters, view),
     [bundle.filters, view?.categoryOptions],
   );
   return (

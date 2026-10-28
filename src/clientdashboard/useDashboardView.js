@@ -9,6 +9,7 @@ import {
   useGetCostQuery,
   useGetThirdPartyQuery,
   useGetThirdPartyCategoryQuery,
+  useGetPatientFeedbackQuery,
 } from "../redux/apiSlice";
 
 import { resolveApiTabMode, usesPatientComplaintsApi } from "./apiTabRouting";
@@ -55,8 +56,8 @@ function buildQueryArg(tenantSlug, tabId, filters) {
  * API-backed tabs use RTK Query; other tabs still use dummy `bundle.select`.
  */
 export function useDashboardView(tenantSlug, tabId, filters, bundle) {
-  const mode = API_ENABLED ? resolveApiTabMode(tenantSlug, tabId) : null;
-  // const mode = resolveApiTabMode(tenantSlug, tabId);
+  // const mode = API_ENABLED ? resolveApiTabMode(tenantSlug, tabId) : null;
+  const mode = resolveApiTabMode(tenantSlug, tabId);
   const queryArg = useMemo(
     () => buildQueryArg(tenantSlug, tabId, filters),
     [tenantSlug, tabId, filters],
@@ -86,6 +87,9 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
     skip: mode !== "thirdPartyCategory",
   });
 
+  const patientFeedback = useGetPatientFeedbackQuery(queryArg, {
+    skip: mode !== "patientFeedback",
+  });
   const active =
     mode === "patientProfile"
       ? patientProfile
@@ -103,7 +107,9 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
                   ? thirdParty
                   : mode === "thirdPartyCategory"
                     ? thirdPartyCategory
-                    : null;
+                    : mode === "patientFeedback"
+                      ? patientFeedback
+                      : null;
 
   const dummyView = useMemo(() => {
     if (mode) return null;

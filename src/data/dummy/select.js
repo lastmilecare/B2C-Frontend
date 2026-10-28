@@ -569,6 +569,7 @@ export function selectFeedback(source, filters) {
   const total = sum(slices.map((item) => item.value));
   return {
     panel: "feedback",
+    feedbackOptions: source.slices.map((item) => item.name),
     kpis: [
       {
         label: "Total Patients",

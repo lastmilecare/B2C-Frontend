@@ -8,7 +8,7 @@ import {
   selectRevenue,
   selectThirdParty,
   selectThirdPartyCategory,
-  selectFeedback
+  selectFeedback,
 } from "../select";
 
 const all = { value: "all", label: "All" };
@@ -28,6 +28,12 @@ function complaintsByAge(pairs) {
     return row;
   });
 }
+const ampFeedbackSlices = [
+  { name: "Patient liked service", value: 4 },
+  { name: "Invalid number", value: 2 },
+  { name: "Not Reachable", value: 1 },
+];
+
 const revenueServices = [
   { name: "Pharmacy", value: 7092347 },
   { name: "Suture/First Aid/Procedure", value: 3961169 },
@@ -607,15 +613,19 @@ export const ampTabs = {
     select: (filters) => selectCost(costSource, filters),
   },
   feedback: {
-    initialFilters: () => ({ feedback: "all" }),
+    initialFilters: () => ({
+      dateRange: defaultDateRange("2025-06-01", "2025-06-30"),
+      feedback: "all",
+    }),
     filters: [
+      { id: "dateRange", type: "dateRange", label: "Bill date" },
       {
         id: "feedback",
         type: "select",
         label: "Feedback category",
         options: [
           all,
-          ...feedbackSlices.map((item) => ({
+          ...ampFeedbackSlices.map((item) => ({
             value: item.name,
             label: item.name,
           })),
@@ -625,9 +635,9 @@ export const ampTabs = {
     select: (filters) =>
       selectFeedback(
         {
-          totalPatients: 9279,
-          respondedPct: 65.2,
-          slices: feedbackSlices,
+          totalPatients: 8,
+          respondedPct: 50,
+          slices: ampFeedbackSlices,
         },
         filters,
       ),
