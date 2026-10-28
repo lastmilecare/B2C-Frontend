@@ -211,7 +211,7 @@ function CostPanel({ view }) {
         </DashboardCard>
       </div>
       {view.salaries && (
-        <DashboardCard title="Individual Salaries">
+        <DashboardCard title="Salaries by Department">
           <BarChartPanel
             data={view.salaries}
             layout="vertical"

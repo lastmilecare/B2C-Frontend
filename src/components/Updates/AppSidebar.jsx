@@ -530,20 +530,25 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
             icon={BuildingOffice2Icon}
             label="Client Dashboard"
           >
-            <NavLink
-              to="/honda-dashboard"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              Honda Dashboard
-            </NavLink>
-            <NavLink
-              to="/amp-dashboard"
-              className={subNavItem}
-              onClick={() => setIsOpen(false)}
-            >
-              AMP Dashboard
-            </NavLink>
+            {tenantId == 1 ? (
+              <>
+                <NavLink
+                  to="/honda-dashboard"
+                  className={subNavItem}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Honda Dashboard
+                </NavLink>
+              </>
+            ) : tenantId == 2 ? (
+              <NavLink
+                to="/amp-dashboard"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                AMP Dashboard
+              </NavLink>
+            ) : null}
           </MenuGroup>
         )}
         {can("read:client_dashboard") && (

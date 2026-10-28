@@ -342,13 +342,17 @@ const revenueMonths = monthSeries("2025-06-01", [
 const costCategories = [
   { name: "Staff Salary", value: 4855000 },
   { name: "Medicine and Consumables", value: 1075800 },
-  { name: "Camp Cost", value: 848000 },
+  { name: "Health Camp", value: 848000 },
   { name: "Management Cost", value: 828000 },
   { name: "CAPEX", value: 691200 },
+  { name: "IEC Branding", value: 120000 },
+  { name: "Tech Stack", value: 95000 },
+  { name: "HR Recruitment", value: 45000 },
   { name: "Miscellaneous", value: 508770 },
   { name: "Compliances and Licensing", value: 180000 },
   { name: "Admin Consumables", value: 128706 },
 ];
+
 const costKnown = [
   118047, 1166301, 567024, 536735, 547730, 501134, 479338, 503737, 520230,
   522138,
@@ -390,23 +394,23 @@ const quarterly = quarterLabels.map((label, index) => {
   return row;
 });
 
-const fixedKeys = costCategories.map((item) => item.name);
-const fixedVariable = [
-  {
-    label: "Fixed Cost",
-    "Staff Salary": 4855000,
-    "Management Cost": 828000,
-    CAPEX: 691200,
-  },
-  {
-    label: "Variable Cost",
-    "Medicine and Consumables": 1075800,
-    "Camp Cost": 848000,
-    Miscellaneous: 508770,
-    "Compliances and Licensing": 180000,
-    "Admin Consumables": 128706,
-  },
-];
+// const fixedKeys = costCategories.map((item) => item.name);
+// const fixedVariable = [
+//   {
+//     label: "Fixed Cost",
+//     "Staff Salary": 4855000,
+//     "Management Cost": 828000,
+//     CAPEX: 691200,
+//   },
+//   {
+//     label: "Variable Cost",
+//     "Medicine and Consumables": 1075800,
+//     "Camp Cost": 848000,
+//     Miscellaneous: 508770,
+//     "Compliances and Licensing": 180000,
+//     "Admin Consumables": 128706,
+//   },
+// ];
 
 const genderOptions = [
   all,
@@ -793,8 +797,8 @@ export const hondaTabs = {
           total: 9115476,
           categories: costCategories,
           months: costMonths,
-          fixedVariable,
-          fixedKeys,
+          // fixedVariable,
+          // fixedKeys,
           quarterly,
           quarterKeys,
         },

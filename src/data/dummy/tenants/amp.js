@@ -1,35 +1,21 @@
 import { defaultDateRange } from "../../../utils/client-dashboard/FilterBar";
 import { monthSeries, spread, sum } from "../allocate";
 import {
+  selectComplaints,
   selectCost,
-  selectDisease,
   selectFootfall,
   selectPatient,
   selectRevenue,
   selectThirdParty,
   selectThirdPartyCategory,
-  selectComplaints,
+  selectFeedback
 } from "../select";
 
 const all = { value: "all", label: "All" };
+
 const ages = ["0-17", "18-29", "30-44", "45-60", "60+"];
 const ageWeights = [18, 20, 30, 20, 12];
-const revenueServices = [
-  { name: "Pharmacy", value: 7092347 },
-  { name: "Suture/First Aid/Procedure", value: 3961169 },
-  { name: "Diagnostics", value: 2751727 },
-  { name: "Spectacle", value: 1016207 },
-  { name: "X Ray", value: 696136 },
-  { name: "Consultation", value: 372188 },
-  { name: "Specialist Consultation", value: 364691 },
-  { name: "B2B", value: 148872 },
-  { name: "Satellite Center", value: 18048 },
-  { name: "Camp", value: 0 },
-];
-const revenueKnown = [
-  74980, 521000, 753340, 216630, 805330, 510770, 1396580, 552690, 469380,
-  466240, 704580, 763140, 411250, 474800, 137890, 946170, 235370, 460000,
-];
+
 function complaintsByAge(pairs) {
   const parts = Object.fromEntries(
     pairs.map(([name, total]) => [name, spread(total, ageWeights)]),
@@ -42,10 +28,28 @@ function complaintsByAge(pairs) {
     return row;
   });
 }
+const revenueServices = [
+  { name: "Pharmacy", value: 7092347 },
+  { name: "Suture/First Aid/Procedure", value: 3961169 },
+  { name: "Diagnostics", value: 2751727 },
+  { name: "Spectacle", value: 1016207 },
+  { name: "X Ray", value: 696136 },
+  { name: "Consultation", value: 372188 },
+  { name: "Specialist Consultation", value: 364691 },
+  { name: "B2B", value: 148872 },
+  { name: "Satellite Center", value: 18048 },
+  { name: "Camp", value: 0 },
+];
+
+const revenueKnown = [
+  74980, 521000, 753340, 216630, 805330, 510770, 1396580, 552690, 469380,
+  466240, 704580, 763140, 411250, 474800, 137890, 946170, 235370, 460000,
+];
 const revenueMonths = monthSeries("2024-07-01", [
   ...revenueKnown,
   ...spread(16421385 - sum(revenueKnown), Array(9).fill(1)),
 ]);
+
 const revenueYearly = [
   {
     serviceCategory: "Pharmacy",
@@ -112,9 +116,11 @@ const revenueYearly = [
   },
   { serviceCategory: "Camp", y2024: 0, y2025: 0, y2026: 0, total: 0 },
 ];
+
 const costCategories = [
-  { name: "Salaries", value: 15652000 },
-  { name: "Management Exp", value: 5400000 },
+  { name: "Staff Salary", value: 15652000 },
+  { name: "Management Cost", value: 5400000 },
+  { name: "Capex", value: 0 },
   { name: "Medicines", value: 4352000 },
   { name: "Tech Stack", value: 2315000 },
   { name: "Diagnostics", value: 1376000 },
@@ -123,6 +129,7 @@ const costCategories = [
   { name: "Consumables HSVK", value: 2200000 },
   { name: "Misc", value: 2242166 },
 ];
+
 const costKnown = [
   696000, 1587000, 1769000, 1417000, 1201000, 1552000, 981000, 1257000, 1224000,
   1551000, 1164000, 1418000, 1282000, 1293000, 1343000, 1422000, 1264000,
@@ -132,6 +139,7 @@ const costMonths = monthSeries("2024-04-01", [
   ...costKnown,
   ...spread(35565166 - sum(costKnown), [1, 1, 1]),
 ]);
+
 const salaries = [
   { label: "Doctors", value: 6061000 },
   { label: "Management", value: 3609000 },
@@ -153,6 +161,7 @@ const salaries = [
   { label: "Dental Assistant", value: 4000 },
   { label: "Locum", value: 3000 },
 ];
+
 const thirdPartyCategories = [
   { name: "Dentist", revenue: 1709056, cost: 1162329 },
   { name: "Diagnostics", revenue: 3076301, cost: 1964833 },
@@ -160,6 +169,7 @@ const thirdPartyCategories = [
   { name: "Physiotherapist", revenue: 911497, cost: 643790 },
   { name: "Specs Vendor", revenue: 569685, cost: 436379 },
 ];
+
 const thirdPartyWeights = Array.from({ length: 24 }, (_, index) => 40 + index);
 const thirdPartyLabels = monthSeries("2024-07-01", Array(24).fill(0));
 const thirdPartyRevenue = spread(11393708, thirdPartyWeights);
@@ -169,6 +179,7 @@ const thirdPartyMonths = thirdPartyLabels.map((point, index) => ({
   revenue: thirdPartyRevenue[index],
   cost: thirdPartyCost[index],
 }));
+
 const categoryKeys = thirdPartyCategories.map((item) => item.name);
 const categoryMonths = thirdPartyLabels.map((point, index) => {
   const row = { ...point };
@@ -182,6 +193,7 @@ const categoryMonths = thirdPartyLabels.map((point, index) => {
   row[categoryKeys[categoryKeys.length - 1]] = thirdPartyRevenue[index] - used;
   return row;
 });
+
 const footfallTotal = [
   645, 462, 730, 1065, 2168, 1440, 885, 785, 956, 1339, 1407, 1208, 1282, 1273,
   1602, 2369, 2329, 1516, 1684, 1535, 1481, 1622, 1764, 1746, 1658, 1873, 2264,
@@ -192,6 +204,7 @@ const footfallUnique = [
   1555, 1607, 1092, 1156, 1138, 1100, 1198, 1256, 1222, 1204, 1340, 1572, 2113,
   2242,
 ];
+
 const diseases = [
   {
     name: "Fever",
@@ -260,6 +273,56 @@ const diseases = [
     specialty: "Other specialties",
   },
 ];
+const complaintNames = [
+  "Fever/Cold/Cough",
+  "Weakness",
+  "Body Pain",
+  "Allergy",
+  "Hypertension",
+];
+const complaintPairs = [
+  ["Fever/Cold/Cough", 1645],
+  ["Weakness", 1404],
+  ["Body Pain", 1264],
+  ["Allergy", 330],
+  ["Hypertension", 267],
+];
+const complaintAreas = [
+  { area: "KHANDSA", patients: 1978 },
+  { area: "NARSINGPUR", patients: 454 },
+  { area: "NAHARPUR RUPA", patients: 360 },
+  { area: "MOHMADPUR", patients: 329 },
+  { area: "SHAKTI PARK", patients: 316 },
+];
+const feedbackSlices = [
+  { name: "Patient liked service", value: 5779 },
+  { name: "Not Reachable", value: 2536 },
+  { name: "Invalid number", value: 626 },
+  { name: "Not Satisfied", value: 230 },
+  { name: "Other", value: 70 },
+  { name: "Under medication", value: 38 },
+];
+const campComplaintNames = [
+  "Pain",
+  "Weakness/Fatigue",
+  "Fever & Infection",
+  "Allergy/Skin",
+  "Cold Cough",
+];
+const campComplaintPairs = [
+  ["Pain", 812],
+  ["Weakness/Fatigue", 604],
+  ["Fever & Infection", 449],
+  ["Allergy/Skin", 170],
+  ["Cold Cough", 98],
+];
+const campComplaintAreas = [
+  { area: "KHANDSA", patients: 734 },
+  { area: "NAHARPUR RUPA", patients: 346 },
+  { area: "SHAKTI PARK", patients: 236 },
+  { area: "NARSINGPUR", patients: 229 },
+  { area: "KADIPUR", patients: 220 },
+];
 const trendKeys = [
   "Fever",
   "Musculoskeletal Pain",
@@ -277,6 +340,7 @@ const diseaseTrend = diseaseLabels.map((point, index) => {
   });
   return row;
 });
+
 const patientProfile = {
   uniqueHeadline: 23559,
   base: 23559,
@@ -395,6 +459,7 @@ const patientProfile = {
     { area: "POLICE LINES MANESAR", patients: 386 },
   ],
 };
+
 const campProfile = {
   uniqueHeadline: 4800,
   base: 4800,
@@ -442,18 +507,40 @@ const campProfile = {
     { area: "POLICE LINES MANESAR", patients: 79 },
   ],
 };
+
 const revenueSource = {
   total: 16421385,
   services: revenueServices,
   months: revenueMonths,
   yearly: revenueYearly,
 };
+
 const costSource = {
   total: 35565166,
   categories: costCategories,
   months: costMonths,
   salaries,
+  fixedKeys: costCategories.map((item) => item.name),
+  fixedVariable: [
+    {
+      label: "Fixed Cost",
+      "Staff Salary": 15652000,
+      "Management Cost": 5400000,
+      Capex: 0,
+    },
+    {
+      label: "Variable Cost",
+      Medicines: 4352000,
+      "Tech Stack": 2315000,
+      Diagnostics: 1376000,
+      Dentist: 1340000,
+      "Compliance & Certification": 688000,
+      "Consumables HSVK": 2200000,
+      Misc: 2242166,
+    },
+  ],
 };
+
 const genderOptions = [
   all,
   { value: "male", label: "Male" },
@@ -465,27 +552,7 @@ const patientTypeOptions = [
   { value: "apl", label: "APL" },
   { value: "bpl", label: "BPL" },
 ];
-const campComplaintNames = [
-  "Pain",
-  "Weakness/Fatigue",
-  "Fever & Infection",
-  "Allergy/Skin",
-  "Cold Cough",
-];
-const campComplaintPairs = [
-  ["Pain", 812],
-  ["Weakness/Fatigue", 604],
-  ["Fever & Infection", 449],
-  ["Allergy/Skin", 170],
-  ["Cold Cough", 98],
-];
-const campComplaintAreas = [
-  { area: "KHANDSA", patients: 734 },
-  { area: "NAHARPUR RUPA", patients: 346 },
-  { area: "SHAKTI PARK", patients: 236 },
-  { area: "NARSINGPUR", patients: 229 },
-  { area: "KADIPUR", patients: 220 },
-];
+
 export const ampTabs = {
   revenue: {
     initialFilters: () => ({
@@ -500,10 +567,18 @@ export const ampTabs = {
         label: "Service category",
         options: [
           all,
-          ...revenueServices.map((service) => ({
-            value: service.name,
-            label: service.name,
-          })),
+          { value: "Pharmacy", label: "Pharmacy" },
+          {
+            value: "Random Blood Sugar Test (RBS/RBD)",
+            label: "Random Blood Sugar Test (RBS/RBD)",
+          },
+          { value: "Hemoglobin Test (HB)", label: "Hemoglobin Test (HB)" },
+          { value: "ECG", label: "ECG" },
+          { value: "Consultation", label: "Consultation" },
+          {
+            value: "Suture / First Aid / Procedure",
+            label: "Suture / First Aid / Procedure",
+          },
         ],
       },
     ],
@@ -530,6 +605,32 @@ export const ampTabs = {
       },
     ],
     select: (filters) => selectCost(costSource, filters),
+  },
+  feedback: {
+    initialFilters: () => ({ feedback: "all" }),
+    filters: [
+      {
+        id: "feedback",
+        type: "select",
+        label: "Feedback category",
+        options: [
+          all,
+          ...feedbackSlices.map((item) => ({
+            value: item.name,
+            label: item.name,
+          })),
+        ],
+      },
+    ],
+    select: (filters) =>
+      selectFeedback(
+        {
+          totalPatients: 9279,
+          respondedPct: 65.2,
+          slices: feedbackSlices,
+        },
+        filters,
+      ),
   },
   "third-party": {
     initialFilters: () => ({
@@ -599,25 +700,6 @@ export const ampTabs = {
     ],
     select: (filters) => selectPatient(patientProfile, filters, "patients"),
   },
-  footfall: {
-    initialFilters: () => ({
-      dateRange: defaultDateRange("2024-05-01", "2026-09-30"),
-    }),
-    filters: [{ id: "dateRange", type: "dateRange", label: "Date" }],
-    select: (filters) =>
-      selectFootfall(
-        {
-          total: monthSeries("2024-05-01", footfallTotal),
-          unique: monthSeries("2024-05-01", footfallUnique),
-          headline: {
-            totalPatients: 45278,
-            uniquePatients: 23559,
-            returningPatients: 21719,
-          },
-        },
-        filters,
-      ),
-  },
   "camp-complaints": {
     initialFilters: () => ({ complaint: "all", gender: "all", area: "all" }),
     filters: [
@@ -670,6 +752,25 @@ export const ampTabs = {
         },
         filters,
         "complaints",
+      ),
+  },
+  footfall: {
+    initialFilters: () => ({
+      dateRange: defaultDateRange("2024-05-01", "2026-09-30"),
+    }),
+    filters: [{ id: "dateRange", type: "dateRange", label: "Date" }],
+    select: (filters) =>
+      selectFootfall(
+        {
+          total: monthSeries("2024-05-01", footfallTotal),
+          unique: monthSeries("2024-05-01", footfallUnique),
+          headline: {
+            totalPatients: 45278,
+            uniquePatients: 23559,
+            returningPatients: 21719,
+          },
+        },
+        filters,
       ),
   },
   /** AMP Disease Analysis tab — same data as GET /dashboard/patient-complaints (ChiefComplaints). */

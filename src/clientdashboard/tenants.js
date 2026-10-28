@@ -14,7 +14,7 @@ export const TENANTS = {
       { id: "disease", label: "Patient Complaints Analysis" },
       { id: "camp-complaints", label: "Camp Patients Complaint Analysis" },
       { id: "footfall", label: "Patient Footfall" },
-      { id: "patientFeedback", label: "Patient Feedback" },
+      { id: "feedback", label: "Patient Feedback" },
       { id: "revenue", label: "Revenue" },
       { id: "cost", label: "Cost" }
     ],
