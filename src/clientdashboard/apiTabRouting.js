@@ -9,6 +9,8 @@ const TAB_MODES = {
   "camp-profile": "campPatientProfile",
   complaints: "patientComplaints",
   footfall: "patientFootfall",
+  "third-party": "thirdParty",
+  "third-party-category": "thirdPartyCategory",
 };
 
 export function resolveApiTabMode(tenantSlug, tabId) {

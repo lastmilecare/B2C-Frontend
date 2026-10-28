@@ -794,7 +794,7 @@ export const hondaTabs = {
     select: (filters) =>
       selectCost(
         {
-          total: 9115476,
+          total: 9375476,
           categories: costCategories,
           months: costMonths,
           // fixedVariable,

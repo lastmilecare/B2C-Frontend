@@ -7,14 +7,12 @@ import {
   useGetPatientFootfallQuery,
   useGetRevenueQuery,
   useGetCostQuery,
+  useGetThirdPartyQuery,
+  useGetThirdPartyCategoryQuery,
 } from "../redux/apiSlice";
 
 import { resolveApiTabMode, usesPatientComplaintsApi } from "./apiTabRouting";
-const API_TABS = {
-  "unique-patients": "patientProfile",
-  "camp-profile": "campPatientProfile",
-  complaints: "patientComplaints",
-};
+const API_ENABLED = Boolean(import.meta.env.VITE_API_BASE_URL?.trim());
 function campDateQuery(filters) {
   const range = filters.dateRange;
   if (!range?.[0] || !range?.[1]) return {};
@@ -57,7 +55,8 @@ function buildQueryArg(tenantSlug, tabId, filters) {
  * API-backed tabs use RTK Query; other tabs still use dummy `bundle.select`.
  */
 export function useDashboardView(tenantSlug, tabId, filters, bundle) {
-  const mode = resolveApiTabMode(tenantSlug, tabId);
+  const mode = API_ENABLED ? resolveApiTabMode(tenantSlug, tabId) : null;
+  // const mode = resolveApiTabMode(tenantSlug, tabId);
   const queryArg = useMemo(
     () => buildQueryArg(tenantSlug, tabId, filters),
     [tenantSlug, tabId, filters],
@@ -80,6 +79,12 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
   const cost = useGetCostQuery(queryArg, {
     skip: mode !== "cost",
   });
+  const thirdParty = useGetThirdPartyQuery(queryArg, {
+    skip: mode !== "thirdParty",
+  });
+  const thirdPartyCategory = useGetThirdPartyCategoryQuery(queryArg, {
+    skip: mode !== "thirdPartyCategory",
+  });
 
   const active =
     mode === "patientProfile"
@@ -94,7 +99,11 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
               ? revenue
               : mode === "cost"
                 ? cost
-                : null;
+                : mode === "thirdParty"
+                  ? thirdParty
+                  : mode === "thirdPartyCategory"
+                    ? thirdPartyCategory
+                    : null;
 
   const dummyView = useMemo(() => {
     if (mode) return null;

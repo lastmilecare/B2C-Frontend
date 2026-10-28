@@ -2518,6 +2518,22 @@ export const api = createApi({
       }),
       providesTags: ["DashboardCost"],
     }),
+    getThirdParty: build.query({
+      query: ({ category = "all", from, to } = {}) => ({
+        url: "/dashboard/third-party",
+        method: "GET",
+        params: { category, from, to },
+      }),
+      providesTags: ["DashboardThirdParty"],
+    }),
+    getThirdPartyCategory: build.query({
+      query: ({ category = "all", from, to } = {}) => ({
+        url: "/dashboard/third-party-category",
+        method: "GET",
+        params: { category, from, to },
+      }),
+      providesTags: ["DashboardThirdPartyCategory"],
+    }),
   }),
 });
 
@@ -2782,4 +2798,6 @@ export const {
   useGetPatientFootfallQuery,
   useGetRevenueQuery,
   useGetCostQuery,
+  useGetThirdPartyQuery,
+  useGetThirdPartyCategoryQuery,
 } = api;

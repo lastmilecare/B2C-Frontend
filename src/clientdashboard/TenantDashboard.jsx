@@ -5,6 +5,7 @@ import { getTabBundle } from "../data/dashboardData";
 import { TENANTS } from "./tenants";
 import { DashboardPanel } from "./panels";
 import { useDashboardView } from "./useDashboardView";
+import { mergeCategoryFilterOptions } from "./mergeFilterOptions";
 
 export function TenantDashboard({ tenantId }) {
   const config = TENANTS[tenantId];
@@ -24,6 +25,10 @@ export function TenantDashboard({ tenantId }) {
     filters,
     bundle,
   );
+  const filterFields = useMemo(
+    () => mergeCategoryFilterOptions(bundle.filters, view),
+    [bundle.filters, view?.categoryOptions],
+  );
   return (
     <DashboardShell
       title={config.title}
@@ -39,7 +44,7 @@ export function TenantDashboard({ tenantId }) {
     >
       <div className="mb-6">
         <FilterBar
-          filters={bundle.filters}
+          filters={filterFields}
           values={filters}
           onChange={(id, value) =>
             setFilters((current) => ({ ...current, [id]: value }))

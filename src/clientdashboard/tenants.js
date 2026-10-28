@@ -16,7 +16,7 @@ export const TENANTS = {
       { id: "footfall", label: "Patient Footfall" },
       { id: "feedback", label: "Patient Feedback" },
       { id: "revenue", label: "Revenue" },
-      { id: "cost", label: "Cost" }
+      { id: "cost", label: "Cost" },
     ],
   },
   honda: {
@@ -31,10 +31,7 @@ export const TENANTS = {
       { id: "third-party", label: "3rd Party Analysis" },
       { id: "third-party-category", label: "3rd Party Category" },
       { id: "footfall", label: "Patient Footfall" },
-      // { id: "camp-profile", label: "Camp Patients Profile" },
       { id: "complaints", label: "Patient Complaints Analysis" },
-      // { id: "camp-complaints", label: "Camp Patients Complaint Analysis" },
-      // { id: "feedback", label: "Patient Feedback" },
     ],
   },
 };
