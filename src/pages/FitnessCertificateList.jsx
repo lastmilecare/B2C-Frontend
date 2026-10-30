@@ -6,6 +6,7 @@ import {
   useGetFitnessCertificatesQuery,
   useDeleteFitnessMutation,
   useDownloadFitnessCertificatePdfMutation,
+  useGetComboQuery,
 } from "../redux/apiSlice";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { healthAlerts } from "../utils/healthSwal";
@@ -14,12 +15,16 @@ import { getApiErrorMessage, downloadBlob, formatDate } from "../utils/helper";
 const FitnessCertificateList = () => {
   const navigate = useNavigate();
   const { data: records = [], isLoading } = useGetFitnessCertificatesQuery();
+  const { data: vendors = [] } = useGetComboQuery("ohc-vendor");
   const [deleteFitness] = useDeleteFitnessMutation();
   const [downloadPdf] = useDownloadFitnessCertificatePdfMutation();
   const [downloadingId, setDownloadingId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
 
   const [tempFilters, setTempFilters] = useState({
     workmanName: "",
+    vendorName: "",
     trade: "",
     sex: "",
     fromDate: "",
@@ -35,11 +40,13 @@ const FitnessCertificateList = () => {
 
   const handleApplyFilters = () => {
     setFilters(tempFilters);
+    setPage(1);
   };
 
   const handleResetFilters = () => {
     const reset = {
       workmanName: "",
+      vendorName: "",
       trade: "",
       sex: "",
       fromDate: "",
@@ -47,12 +54,14 @@ const FitnessCertificateList = () => {
     };
     setTempFilters(reset);
     setFilters({});
+    setPage(1);
   };
 
   const formattedData = records.map((item) => ({
     id: item.id,
     certNo: item.certificate_number,
     workmanName: item.workman_name,
+    vendorId: item.vendor_id != null ? String(item.vendor_id) : "",
     vendorName: item.vendor_name || "-",
     trade: item.trade,
     sex: item.sex,
@@ -62,12 +71,13 @@ const FitnessCertificateList = () => {
   }));
 
   const filteredData = formattedData.filter((item) => {
-    const { workmanName, trade, sex, fromDate, toDate } = filters;
+    const { workmanName, vendorName, trade, sex, fromDate, toDate } = filters;
     const createdAt = item.createdAtRaw?.split("T")[0] || "";
 
     return (
       (!workmanName ||
         item.workmanName?.toLowerCase().includes(workmanName.toLowerCase())) &&
+      (!vendorName || item.vendorId === String(vendorName)) &&
       (!trade || item.trade?.toLowerCase().includes(trade.toLowerCase())) &&
       (!sex || item.sex?.toLowerCase() === sex.toLowerCase()) &&
       (!fromDate || createdAt >= fromDate) &&
@@ -75,7 +85,11 @@ const FitnessCertificateList = () => {
     );
   });
 
-  
+  const pagedData = filteredData.slice(
+    (page - 1) * perPage,
+    page * perPage,
+  );
+
   const onDownloadPdf = async (row) => {
     try {
       setDownloadingId(row.id);
@@ -91,8 +105,19 @@ const FitnessCertificateList = () => {
     }
   };
 
+  const vendorOptions = vendors.map((vendor) => ({
+    label: vendor.name,
+    value: String(vendor.id),
+  }));
+
   const filtersConfig = [
     { label: "Workman Name", name: "workmanName", type: "text" },
+    {
+      label: "Vendor Name",
+      name: "vendorName",
+      type: "select",
+      options: vendorOptions,
+    },
     { label: "Trade", name: "trade", type: "text" },
     {
       label: "Sex",
@@ -152,13 +177,16 @@ const FitnessCertificateList = () => {
 
       <PatientTable
         title="Fitness Certificates"
-        data={filteredData}
+        data={pagedData}
         columns={columns}
         totalRows={filteredData.length}
-        currentPage={1}
-        perPage={10}
-        onPageChange={() => {}}
-        onPerPageChange={() => {}}
+        currentPage={page}
+        perPage={perPage}
+        onPageChange={(newPage) => setPage(newPage)}
+        onPerPageChange={(newPerPage) => {
+          setPerPage(newPerPage);
+          setPage(1);
+        }}
         isLoading={isLoading}
         enableAdd
         addButtonText="Add Certificate"
