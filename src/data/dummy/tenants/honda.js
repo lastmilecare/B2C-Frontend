@@ -8,6 +8,7 @@ import {
   selectRevenue,
   selectThirdParty,
   selectThirdPartyCategory,
+  selectDisease,
 } from "../select";
 const all = { value: "all", label: "All" };
 
@@ -270,20 +271,6 @@ const campProfile = {
   ],
 };
 
-const complaintNames = [
-  "Fever/Cold/Cough",
-  "Weakness",
-  "Body Pain",
-  "Allergy",
-  "Hypertension",
-];
-const complaintPairs = [
-  ["Fever/Cold/Cough", 1645],
-  ["Weakness", 1404],
-  ["Body Pain", 1264],
-  ["Allergy", 330],
-  ["Hypertension", 267],
-];
 const complaintAreas = [
   { area: "KHANDSA", patients: 1978 },
   { area: "NARSINGPUR", patients: 454 },
@@ -291,6 +278,94 @@ const complaintAreas = [
   { area: "MOHMADPUR", patients: 329 },
   { area: "SHAKTI PARK", patients: 316 },
 ];
+
+/** Honda Patient Complaints Analysis — Top 10 diseases + specialty-wise visits. */
+const hondaTrendKeys = [
+  "Fever",
+  "Musculoskeletal Pain",
+  "Blood Test",
+  "Others",
+  "Gastrointestinal Problem",
+];
+const hondaDiseaseRows = [
+  {
+    name: "Fever",
+    visits: 892,
+    category: "Fever",
+    specialty: "General Medicine",
+  },
+  {
+    name: "Musculoskeletal Pain",
+    visits: 748,
+    category: "Musculoskeletal Pain",
+    specialty: "Orthopedics",
+  },
+  {
+    name: "Blood Test",
+    visits: 612,
+    category: "Blood Test",
+    specialty: "Laboratory",
+  },
+  {
+    name: "Others",
+    visits: 534,
+    category: "Others",
+    specialty: "General Medicine",
+  },
+  {
+    name: "Gastrointestinal Problem",
+    visits: 418,
+    category: "Gastrointestinal Problem",
+    specialty: "Gastroenterology",
+  },
+  {
+    name: "Eye Problem",
+    visits: 376,
+    category: "Eye Problem",
+    specialty: "Ophthalmology",
+  },
+  { name: "Cough", visits: 341, category: "Cough", specialty: "Respiratory" },
+  {
+    name: "Dental Problem",
+    visits: 298,
+    category: "Dental Problem",
+    specialty: "Dental",
+  },
+  {
+    name: "Report Review",
+    visits: 276,
+    category: "Report Review",
+    specialty: "General Medicine",
+  },
+  {
+    name: "Weakness",
+    visits: 251,
+    category: "Weakness",
+    specialty: "General Medicine",
+  },
+];
+const hondaDiseaseWeights = Array.from(
+  { length: 21 },
+  (_, index) => 18 + index,
+);
+const hondaDiseaseTrend = monthSeries("2024-07-01", Array(21).fill(0)).map(
+  (point, index) => {
+    const row = { ...point };
+    hondaTrendKeys.forEach((key) => {
+      const disease = hondaDiseaseRows.find((item) => item.name === key);
+      row[key] = spread(disease.visits, hondaDiseaseWeights)[index];
+    });
+    return row;
+  },
+);
+const hondaDiseaseAnalysis = {
+  opd: 5458,
+  diseases: hondaDiseaseRows,
+  trend: hondaDiseaseTrend,
+  trendKeys: hondaTrendKeys,
+  areas: complaintAreas,
+};
+const hondaDiseaseFilterNames = hondaDiseaseRows.map((item) => item.name);
 
 const campComplaintNames = [
   "Pain",
@@ -500,10 +575,13 @@ export const hondaTabs = {
       {
         id: "complaint",
         type: "select",
-        label: "Complaints",
+        label: "Disease",
         options: [
           all,
-          ...complaintNames.map((name) => ({ value: name, label: name })),
+          ...hondaDiseaseFilterNames.map((name) => ({
+            value: name,
+            label: name,
+          })),
         ],
       },
       {
@@ -520,19 +598,11 @@ export const hondaTabs = {
       },
     ],
     select: (filters) =>
-      selectComplaints(
-        {
-          names: complaintNames,
-          complaints: complaintPairs.map(([label, value]) => ({
-            label,
-            value,
-          })),
-          byAge: complaintsByAge(complaintPairs),
-          areas: complaintAreas,
-        },
-        filters,
-        "complaints",
-      ),
+      selectDisease(hondaDiseaseAnalysis, {
+        ...filters,
+        diseaseCategory: "all",
+        specialty: "all",
+      }),
   },
   "camp-complaints": {
     initialFilters: () => ({ complaint: "all", gender: "all", area: "all" }),

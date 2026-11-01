@@ -148,7 +148,10 @@ function RevenuePanel({ view }) {
       )}
       {view.table?.length > 0 && (
         <DashboardCard title="Service category by year" noPadding>
-          <DataTableSimple columns={revenueColumns} data={tableWithGrandTotal} />
+          <DataTableSimple
+            columns={revenueColumns}
+            data={tableWithGrandTotal}
+          />
         </DashboardCard>
       )}
       {view.utilization?.length > 0 && (
@@ -524,11 +527,13 @@ function DiseasePanel({ view }) {
   );
 }
 function ComplaintsPanel({ view }) {
+  const complaintsTitle = view.complaintsChartTitle ?? "Complaints by Patients";
+  const ageBucketKeys = view.byAge?.map((row) => row.label) ?? [];
   return (
     <div className="space-y-6">
       <KpiRow items={view.kpis} />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <DashboardCard title="Complaints by Patients">
+        <DashboardCard title={complaintsTitle}>
           <BarChartPanel
             data={view.complaints}
             layout="vertical"
@@ -555,6 +560,19 @@ function ComplaintsPanel({ view }) {
           height={340}
         />
       </DashboardCard>
+      {view.byComplaint?.length > 0 && ageBucketKeys.length > 0 && (
+        <DashboardCard title="Age Group by Complaint">
+          <BarChartPanel
+            data={view.byComplaint}
+            dataKeys={series(ageBucketKeys)}
+            stacked
+            layout="vertical"
+            categoryWidth={160}
+            xLabel="Patients"
+            height={Math.max(300, view.byComplaint.length * 40)}
+          />
+        </DashboardCard>
+      )}
       {view.revenueByComplaint && (
         <DashboardCard title="Revenue by Complaints">
           <BarChartPanel
@@ -605,6 +623,7 @@ function ComplaintsPanel({ view }) {
     </div>
   );
 }
+
 function FeedbackPanel({ view }) {
   return (
     <div className="space-y-6">

@@ -9,6 +9,7 @@ import {
   selectThirdParty,
   selectThirdPartyCategory,
   selectFeedback,
+  selectDisease,
 } from "../select";
 
 const all = { value: "all", label: "All" };
@@ -28,6 +29,35 @@ function complaintsByAge(pairs) {
     return row;
   });
 }
+const ampComplaintTop5 = [
+  ["Fever", 3901],
+  ["Musculoskeletal Pain", 3253],
+  ["Blood Test", 2952],
+  ["Cough", 1631],
+  ["Weakness", 1285],
+];
+const ampComplaintNames = ampComplaintTop5.map(([name]) => name);
+const ampAgeBuckets = ["0-17", "18-29", "30-44", "45-60", "60+"];
+const ampAgeWeights = [18, 20, 30, 20, 12];
+function ampComplaintsByAge(pairs) {
+  const parts = Object.fromEntries(
+    pairs.map(([name, total]) => [name, spread(total, ampAgeWeights)]),
+  );
+  return ampAgeBuckets.map((label, index) => {
+    const row = { label };
+    pairs.forEach(([name]) => {
+      row[name] = parts[name][index];
+    });
+    return row;
+  });
+}
+const ampComplaintAreas = [
+  { area: "NAURANGPUR", patients: 5801 },
+  { area: "BIHAR", patients: 1775 },
+  { area: "NSG", patients: 1184 },
+  { area: "RAMPURA", patients: 1116 },
+  { area: "UTTAR PRADESH", patients: 977 },
+];
 const ampFeedbackSlices = [
   { name: "Patient liked service", value: 4 },
   { name: "Invalid number", value: 2 },
@@ -798,9 +828,7 @@ export const ampTabs = {
         label: "Complaints",
         options: [
           all,
-          ...diseases
-            .slice(0, 8)
-            .map((item) => ({ value: item.name, label: item.name })),
+          ...ampComplaintNames.map((name) => ({ value: name, label: name })),
         ],
       },
       {
@@ -809,21 +837,24 @@ export const ampTabs = {
         label: "Geographic area",
         options: [
           all,
-          { value: "NAURANGPUR", label: "NAURANGPUR" },
-          { value: "NSG", label: "NSG" },
+          ...ampComplaintAreas.map((row) => ({
+            value: row.area,
+            label: row.area,
+          })),
         ],
       },
     ],
     select: (filters) =>
       selectComplaints(
         {
-          names: diseases.map((item) => item.name),
-          complaints: diseases.map((item) => ({
-            label: item.name,
-            value: item.visits,
+          names: ampComplaintNames,
+          complaints: ampComplaintTop5.map(([label, value]) => ({
+            label,
+            value,
           })),
-          byAge: [],
-          areas: [{ area: "NAURANGPUR", patients: 5801 }],
+          byAge: ampComplaintsByAge(ampComplaintTop5),
+          areas: ampComplaintAreas,
+          complaintsChartTitle: "Top 5 Complaints",
         },
         filters,
         "complaints",

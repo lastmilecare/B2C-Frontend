@@ -18,7 +18,7 @@ import {
   usePreviewFitnessCertificatePdfMutation,
 } from "../redux/apiSlice";
 import { healthAlerts } from "../utils/healthSwal";
-import { getApiErrorMessage, downloadBlob } from "../utils/helper";
+import { getApiErrorMessage, downloadBlob, formatDate } from "../utils/helper";
 import { Input, Select, Button } from "../components/UIComponents";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -80,6 +80,7 @@ const initialValues = {
   identification_mark_2: "",
   guardian_name: "",
   sex: "",
+  certificate_date: new Date().toISOString().split("T")[0],
   residence_address: "",
   date_of_birth: "",
   certificate_age: "",
@@ -226,6 +227,10 @@ const FitnessCertificate = ({
       identification_mark_2: editData.identification_mark_2 || "",
       guardian_name: editData.guardian_name || "",
       sex: editData.sex || "",
+      certificate_date:
+        editData.certificate_date?.split("T")[0] ||
+        editData.created_at?.split("T")[0] ||
+        "",
       residence_address: editData.residence_address || "",
       date_of_birth: editData.date_of_birth?.split("T")[0] || "",
       certificate_age: editData.certificate_age || "",
@@ -305,6 +310,7 @@ const FitnessCertificate = ({
         ["trade", "Trade"],
         ["guardian_name", "Guardian name"],
         ["sex", "Sex"],
+        ["certificate_date", "Date of Certificate"],
         ["residence_address", "Residence address"],
         ["certificate_age", "Certificate age"],
         ["doctor_id", "Medical Inspector / Doctor"],
@@ -419,6 +425,12 @@ const FitnessCertificate = ({
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
                   </Select>
+                  <Input
+                    type="date"
+                    label="Date of Certificate"
+                    required
+                    {...formik.getFieldProps("certificate_date")}
+                  />
                   <div className="md:col-span-3">
                     <label className="text-sm text-gray-600 block mb-1 font-medium">
                       Residence Address <span className="text-red-500">*</span>
@@ -598,10 +610,17 @@ const FitnessCertificate = ({
                     />
                     <PreviewItem label="Sex" value={formik.values.sex} />
                     <PreviewItem
+                      label="Date of Certificate"
+                      value={formatDate(formik.values.certificate_date)}
+                    />
+                    <PreviewItem
                       label="Medical Inspector / Doctor"
                       value={resolveDoctorName(formik.values.doctor_id, formik.values.doctor_name)}
                     />
-                    <PreviewItem label="Date of Birth" value={formik.values.date_of_birth} />
+                    <PreviewItem
+                      label="Date of Birth"
+                      value={formatDate(formik.values.date_of_birth)}
+                    />
                     <PreviewItem label="Certificate Age" value={formik.values.certificate_age} />
                     <p className="md:col-span-2">
                       <b>Residence Address:</b> {formik.values.residence_address || "-"}

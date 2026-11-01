@@ -18,11 +18,12 @@ import {
   BanknotesIcon,
   MapPinIcon,
   DocumentTextIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
 import { cookie } from "../../utils/cookie";
 
-const AppSidebar = ({ isOpen, setIsOpen }) => {
+const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
   const { permissions } = useSelector((state) => state.auth);
 
   const can = (permission) => {
@@ -46,6 +47,7 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     PatientDetails: false,
     ClientDashboard: false,
     ExpenseTransactions: false,
+    feedback: false,
   });
 
   const toggleSubMenu = (menu) => {
@@ -153,12 +155,14 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
     </MenuGroup>
   );
 
+
   return (
     <motion.aside
       initial={false}
-      animate={{ width: isOpen ? 260 : 0, x: isOpen ? 0 : -260 }}
-      transition={{ duration: 0.4, ease: "circOut" }}
-      className="fixed lg:relative z-50 h-screen bg-white border-r border-sky-100 shadow-2xl lg:shadow-none flex flex-col overflow-hidden"
+      animate={{ x: isOpen ? 0 : -width }}
+      transition={transition ?? { duration: 0.4, ease: "circOut" }}
+      style={{ width }}
+      className="fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden border-r border-sky-100 bg-white shadow-2xl will-change-transform lg:shadow-none"
     >
       {/* ── Logo ─────────────────────────────────────────────────────────── */}
       <div className="p-5 flex items-center justify-between border-b border-sky-50 min-w-[260px]">
@@ -661,6 +665,23 @@ const AppSidebar = ({ isOpen, setIsOpen }) => {
                 Operating Expenses Sheet
               </NavLink>
             ) : null}
+          </MenuGroup>
+        )}
+
+        {/* ── Feedback ────────────────────────────────────── */}
+        {can("read:feedback_form") && (
+          <MenuGroup
+            menuKey="feedback"
+            icon={ChatBubbleLeftRightIcon}
+            label="Feedback"
+          >
+            <NavLink
+              to="/feedback-list"
+              className={subNavItem}
+              onClick={() => setIsOpen(false)}
+            >
+              Feedback List
+            </NavLink>
           </MenuGroup>
         )}
 

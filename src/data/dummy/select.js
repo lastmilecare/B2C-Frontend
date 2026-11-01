@@ -156,6 +156,7 @@ export function selectCost(source, filters) {
     slices,
     trend,
     salaries,
+    categoryOptions: source.categories.map((item) => item.name),
     fixedVariable: scaleRows(source.fixedVariable, ratio),
     quarterly: scaleRows(source.quarterly, ratio),
     quarterKeys: source.quarterKeys,
@@ -187,6 +188,7 @@ export function selectThirdParty(source, filters) {
 
   return {
     panel: "third-party",
+    categoryOptions: source.categories.map((item) => item.name),
     kpis: [
       { label: "Total Revenue", value: revenue, format: "currency" },
       { label: "Total Cost", value: cost, format: "currency" },
@@ -226,6 +228,7 @@ export function selectThirdPartyCategory(source, filters) {
   });
   return {
     panel: "third-party-category",
+    categoryOptions: source.categoryKeys,
     data,
     keys,
     margins: source.categories
@@ -410,9 +413,11 @@ export function selectFootfall(source, filters) {
 }
 
 export function selectDisease(source, filters) {
-  const category = filters.diseaseCategory;
-  const specialty = filters.specialty;
+  const category = filters.diseaseCategory ?? "all";
+  const specialty = filters.specialty ?? "all";
+  const complaint = filters.complaint ?? "all";
   let diseases = source.diseases.filter((item) => {
+    if (complaint !== "all" && item.name !== complaint) return false;
     if (category !== "all" && item.category !== category) return false;
     if (specialty !== "all" && item.specialty !== specialty) return false;
     return true;
@@ -421,22 +426,32 @@ export function selectDisease(source, filters) {
   if (!diseases.length || !months.length)
     return { panel: "disease", empty: true };
 
+  let areaShare = 1;
+  if (filters.area && filters.area !== "all" && source.areas?.length) {
+    const areaBase = sum(source.areas.map((area) => area.patients)) || 1;
+    areaShare =
+      (source.areas.find((area) => area.area === filters.area)?.patients || 0) /
+      areaBase;
+  }
+
   const full =
     isFull(source.trend, filters.dateRange) &&
     category === "all" &&
-    specialty === "all";
-  const trendKeys = source.trendKeys.filter(
-    (key) =>
-      diseases.some((item) => item.name === key) ||
-      (category === "all" && specialty === "all"),
-  );
-  const activeKeys = source.trendKeys.filter((key) =>
-    category === "all" && specialty === "all"
-      ? true
-      : diseases.some((item) => item.name === key),
-  );
+    specialty === "all" &&
+    complaint === "all";
+  const baseTrendKeys = (source.trendKeys || []).slice(0, 5);
+  const activeKeys =
+    complaint !== "all"
+      ? baseTrendKeys.filter((key) => key === complaint).length
+        ? baseTrendKeys.filter((key) => key === complaint)
+        : [complaint]
+      : baseTrendKeys.filter((key) =>
+          category === "all" && specialty === "all"
+            ? true
+            : diseases.some((item) => item.name === key),
+        );
 
-  const ratio = full ? 1 : months.length / source.trend.length;
+  const ratio = (full ? 1 : months.length / source.trend.length) * areaShare;
   diseases = diseases.map((item) => ({
     ...item,
     visits: Math.round(item.visits * ratio),
@@ -447,10 +462,13 @@ export function selectDisease(source, filters) {
 
   return {
     panel: "disease",
+    diseaseFilterOptions: source.diseases
+      .map((item) => item.name)
+      .filter((name) => name !== "Other diseases"),
     kpis: [
       {
         label: "Patient OPD Visits",
-        value: full ? source.opd : Math.round(source.opd * ratio),
+        value: Math.round(full ? source.opd : source.opd * ratio),
       },
       { label: "Clinical Cases", value: clinical },
       { label: "Most Common Disease", value: top?.name || "—", format: "text" },
@@ -468,11 +486,11 @@ export function selectDisease(source, filters) {
     trend: months.map((point) => {
       const row = { date: point.label };
       activeKeys.forEach((key) => {
-        row[key] = point[key] || 0;
+        row[key] = Math.round((point[key] || 0) * areaShare);
       });
       return row;
     }),
-    trendKeys: activeKeys.length ? activeKeys : trendKeys,
+    trendKeys: activeKeys.length ? activeKeys : baseTrendKeys,
     diseases: diseases
       .filter((item) => item.name !== "Other diseases")
       .slice(0, 10),
@@ -543,11 +561,22 @@ export function selectComplaints(source, filters, panel = "complaints") {
     });
   }
 
+  const byComplaint = names.map((name) => {
+    const row = { label: name };
+    byAge.forEach((ageRow) => {
+      row[ageRow.label] = ageRow[name] ?? 0;
+    });
+    return row;
+  });
+
   return {
     panel,
+    complaintsChartTitle: source.complaintsChartTitle,
+    complaintFilterOptions: source.names,
     kpis,
     complaints,
     byAge,
+    byComplaint,
     names,
     areas,
     gender: source.gender?.filter(

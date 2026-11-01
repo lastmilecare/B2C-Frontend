@@ -2,10 +2,7 @@ const ALL_OPTION = { value: "all", label: "All" };
 
 function withOptions(bundleFilters, fieldId, names) {
   if (!names?.length) return bundleFilters;
-  const options = [
-    ALL_OPTION,
-    ...names.map((name) => ({ value: name, label: name })),
-  ];
+  const options = [ALL_OPTION, ...names.map((name) => ({ value: name, label: name }))];
   return bundleFilters.map((field) =>
     field.id === fieldId ? { ...field, options } : field,
   );
@@ -16,6 +13,11 @@ export function mergeFilterOptionsFromView(bundleFilters, view) {
   let fields = bundleFilters;
   fields = withOptions(fields, "category", view?.categoryOptions);
   fields = withOptions(fields, "feedback", view?.feedbackOptions);
+  fields = withOptions(
+    fields,
+    "complaint",
+    view?.diseaseFilterOptions ?? view?.complaintFilterOptions ?? view?.names,
+  );
   return fields;
 }
 

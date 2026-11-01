@@ -9,7 +9,7 @@ import {
 } from "../redux/apiSlice";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { healthAlerts } from "../utils/healthSwal";
-import { getApiErrorMessage, downloadBlob } from "../utils/helper";
+import { getApiErrorMessage, downloadBlob, formatDate } from "../utils/helper";
 
 const FitnessCertificateList = () => {
   const navigate = useNavigate();
@@ -56,20 +56,22 @@ const FitnessCertificateList = () => {
     vendorName: item.vendor_name || "-",
     trade: item.trade,
     sex: item.sex,
-    createdAt: item.created_at?.split("T")[0],
+    certificateDateRaw: item.certificate_date || item.created_at || "",
+    createdAtRaw: item.created_at || "",
     raw: item,
   }));
 
   const filteredData = formattedData.filter((item) => {
     const { workmanName, trade, sex, fromDate, toDate } = filters;
+    const createdAt = item.createdAtRaw?.split("T")[0] || "";
 
     return (
       (!workmanName ||
         item.workmanName?.toLowerCase().includes(workmanName.toLowerCase())) &&
       (!trade || item.trade?.toLowerCase().includes(trade.toLowerCase())) &&
       (!sex || item.sex?.toLowerCase() === sex.toLowerCase()) &&
-      (!fromDate || item.createdAt >= fromDate) &&
-      (!toDate || item.createdAt <= toDate)
+      (!fromDate || createdAt >= fromDate) &&
+      (!toDate || createdAt <= toDate)
     );
   });
 
@@ -113,7 +115,11 @@ const FitnessCertificateList = () => {
     { name: "Vendor Name", selector: (row) => row.vendorName },
     { name: "Trade", selector: (row) => row.trade },
     { name: "Sex", selector: (row) => row.sex },
-    { name: "Created On", selector: (row) => row.createdAt },
+    {
+      name: "Certificate Date",
+      selector: (row) => formatDate(row.certificateDateRaw),
+    },
+    { name: "Created On", selector: (row) => formatDate(row.createdAtRaw) },
     {
       name: "Certificate",
       cell: (row) => (
