@@ -52,15 +52,19 @@ const FeedbackList = () => {
   const hasCenterFilter = Boolean(
     filters.center_ids && String(filters.center_ids).trim(),
   );
-  const hasVisitOrCallingDate = Boolean(
-    (filters.startDate && String(filters.startDate).trim()) ||
-      (filters.calling_from && String(filters.calling_from).trim()) ||
+  const hasVisitDate = Boolean(
+    filters.startDate && String(filters.startDate).trim(),
+  );
+  const hasCallingDate = Boolean(
+    (filters.calling_from && String(filters.calling_from).trim()) ||
       (filters.calling_to && String(filters.calling_to).trim()),
   );
+  // Calling-date filter: center optional. Visit-date filter: center required.
+  const canFetchList = hasCallingDate || (hasCenterFilter && hasVisitDate);
 
   const { data, isLoading } = useGetFeedbackListQuery(
     { page, limit, ...filters },
-    { skip: !page || !limit || !hasCenterFilter || !hasVisitOrCallingDate },
+    { skip: !page || !limit || !canFetchList },
   );
 
   const [exportExcel, { isFetching: exporting }] =
@@ -93,23 +97,24 @@ const FeedbackList = () => {
       calling_to,
     } = tempFilters;
     const centerId = String(center_id || "").trim();
-    const hasCallingDate = Boolean(
+    const callingDateSelected = Boolean(
       String(calling_from || "").trim() || String(calling_to || "").trim(),
     );
 
-    if (!centerId) {
+    // Date from required only when calling-date filter is not used
+    if (!startDate && !callingDateSelected) {
       healthAlert({
         title: "Feedback",
-        text: "Please select a center.",
+        text: "Please select Date from, or Feedback calling from/to.",
         icon: "info",
       });
       return null;
     }
-    // Date from required only when calling-date filter is not used
-    if (!startDate && !hasCallingDate) {
+    // Center required for visit-date filter; optional for calling-date filter
+    if (startDate && !callingDateSelected && !centerId) {
       healthAlert({
         title: "Feedback",
-        text: "Please select Date from, or Feedback calling from/to.",
+        text: "Please select a center when filtering by visit date.",
         icon: "info",
       });
       return null;
@@ -144,10 +149,11 @@ const FeedbackList = () => {
     }
 
     const { center_id: _c, ...rest } = tempFilters;
-    return {
-      ...rest,
-      center_ids: centerId,
-    };
+    const next = { ...rest };
+    if (centerId) {
+      next.center_ids = centerId;
+    }
+    return next;
   };
 
   const handleApplyFilters = () => {
