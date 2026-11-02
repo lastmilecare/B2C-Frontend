@@ -84,7 +84,7 @@ import {
   HondaTechStackExpensePage,
   HondaManagementExpPage,
 } from "../pages/expenses/expenseRouteComponents";
-
+import ExpenseLandingPage from "../pages/expenses/ExpenseLandingPage";
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -851,86 +851,86 @@ export const ROUTES = [
   },
   {
     path: "/expense-transactions",
-    component: ExpensePage,
-    permission: "read:client_dashboard",
+    component: ExpenseLandingPage,
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/compliances/*",
     component: HondaComplianceExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/misc/*",
     component: HondaMiscExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/consumables/*",
     component: HondaConsumablesExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/satellite/*",
     component: HondaSatelliteExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/salaries/*",
     component: HondaSalaryExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/hr_recruitment/*",
     component: HondaHrRecruitmentExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/health_camp/*",
     component: HondaHealthCampExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/iec_branding/*",
     component: HondaIecBrandingExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/tech_stack/*",
     component: HondaTechStackExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/management_exp/*",
     component: HondaManagementExpPage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/vendor-payments/*",
     component: HondaVendorExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/total-exp/*",
     component: HondaTotalExpPage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
   {
     path: "/expense-transactions/operating/*",
     component: AmpOperatingExpensePage,
-    permission: "read:client_dashboard",
+    permission: "read:add_expense",
     showInSidebar: false,
   },
 ];

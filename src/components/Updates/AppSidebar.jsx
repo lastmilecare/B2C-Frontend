@@ -555,7 +555,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
             ) : null}
           </MenuGroup>
         )}
-        {can("read:client_dashboard") && (
+        {can("read:add_expense") && (
           <MenuGroup
             menuKey="ExpenseTransactions"
             icon={BuildingOffice2Icon}
