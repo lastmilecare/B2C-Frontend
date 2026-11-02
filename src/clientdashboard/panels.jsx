@@ -4,6 +4,7 @@ import {
   KpiGrid,
   DashboardCard,
   DonutChart,
+  PieChartPanel,
   BarChartPanel,
   TrendLineChart,
   SegmentationHeatTable,
@@ -19,7 +20,6 @@ function series(names) {
     color: CHART_PALETTE[index % CHART_PALETTE.length],
   }));
 }
-
 function KpiRow({ items = [] }) {
   if (!items.length) return null;
   return (
@@ -30,19 +30,86 @@ function KpiRow({ items = [] }) {
     </KpiGrid>
   );
 }
-
 function RevenuePanel({ view }) {
+  const yearColumns = (view.yearColumns ?? ["2024", "2025", "2026"]).map(
+    (year) => ({
+      name: year,
+      selector: (row) => row[`y${year}`] ?? row[`y${year.slice(-2)}`] ?? 0,
+      format: (row) => formatCurrency(row[`y${year}`] ?? 0),
+      sortable: true,
+      right: true,
+    }),
+  );
   const revenueColumns = [
-    { name: "Service category", selector: (row) => row.serviceCategory, sortable: true, grow: 2 },
-    { name: "2024", selector: (row) => row.y2024, format: (row) => formatCurrency(row.y2024), sortable: true, right: true },
-    { name: "2025", selector: (row) => row.y2025, format: (row) => formatCurrency(row.y2025), sortable: true, right: true },
-    { name: "2026", selector: (row) => row.y2026, format: (row) => formatCurrency(row.y2026), sortable: true, right: true },
-    { name: "Total", selector: (row) => row.total, format: (row) => formatCurrency(row.total), sortable: true, right: true },
+    {
+      name: "Service category",
+      selector: (row) => row.serviceCategory,
+      sortable: true,
+      grow: 2,
+    },
+    ...yearColumns,
+    {
+      name: "Total",
+      selector: (row) => row.total,
+      format: (row) => formatCurrency(row.total),
+      sortable: true,
+      right: true,
+    },
   ];
+  const tableData = view.table ?? [];
 
+  const grandTotalRow = {
+    serviceCategory: "— Grand Total —",
+
+    ...(view.yearColumns ?? ["2024", "2025", "2026"]).reduce((acc, year) => {
+      const key = `y${year}`;
+      const shortKey = `y${year.slice(-2)}`;
+
+      acc[key] = tableData.reduce(
+        (sum, row) => sum + Number(row[key] ?? row[shortKey] ?? 0),
+        0,
+      );
+
+      return acc;
+    }, {}),
+
+    total: tableData.reduce((sum, row) => sum + Number(row.total ?? 0), 0),
+  };
+
+  const tableWithGrandTotal = [...tableData, grandTotalRow];
+  const breakdownColumns = [
+    { name: "Service", selector: (row) => row.name, sortable: true, grow: 2 },
+    {
+      name: "Revenue",
+      selector: (row) => row.revenue,
+      format: (row) => formatCurrency(row.revenue),
+      sortable: true,
+      right: true,
+    },
+    {
+      name: "Patient count",
+      selector: (row) => row.patients ?? "—",
+      sortable: true,
+      right: true,
+    },
+  ];
+  const patientTypeKeys =
+    view.patientType?.[0]?.OPD != null
+      ? [
+          { key: "OPD", name: "OPD Revenue", color: "#2563eb" },
+          { key: "Pharmacy", name: "Pharmacy Revenue", color: "#059669" },
+        ]
+      : [
+          { key: "APL", name: "APL", color: "#2563eb" },
+          { key: "BPL", name: "BPL", color: "#d97706" },
+        ];
   return (
     <div className="space-y-6">
-      <KpiRow items={[{ label: "Total Revenue", value: view.total, format: "currency" }]} />
+      <KpiRow
+        items={[
+          { label: "Total Revenue", value: view.total, format: "currency" },
+        ]}
+      />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <DashboardCard title="Revenue by Service Category">
           <DonutChart data={view.slices} valueFormat="currency" height={340} />
@@ -57,31 +124,44 @@ function RevenuePanel({ view }) {
           />
         </DashboardCard>
       </div>
-      {view.patientType && (
+      {view.patientType?.length > 0 && (
         <DashboardCard title="Patient Type Revenue Analysis">
           <BarChartPanel
             data={view.patientType}
             xKey="label"
             layout="horizontal"
             valueFormat="currency"
-            xLabel="Channel"
+            xLabel="Patient type"
             yLabel="Revenue (₹)"
             height={280}
-            dataKeys={[
-              { key: "APL", name: "APL", color: "#2563eb" },
-              { key: "BPL", name: "BPL", color: "#d97706" },
-            ]}
+            dataKeys={patientTypeKeys}
           />
         </DashboardCard>
       )}
-      <DashboardCard title="Service category by year" noPadding>
-        <DataTableSimple columns={revenueColumns} data={view.table} />
-      </DashboardCard>
+      {view.serviceBreakdown?.length > 0 && (
+        <DashboardCard title="Service-wise Revenue Breakdown" noPadding>
+          <DataTableSimple
+            columns={breakdownColumns}
+            data={view.serviceBreakdown}
+          />
+        </DashboardCard>
+      )}
+      {view.table?.length > 0 && (
+        <DashboardCard title="Service category by year" noPadding>
+          <DataTableSimple
+            columns={revenueColumns}
+            data={tableWithGrandTotal}
+          />
+        </DashboardCard>
+      )}
       {view.utilization?.length > 0 && (
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <DashboardCard title="Service Utilization Summary">
             <BarChartPanel
-              data={view.utilization.map((row) => ({ label: row.service, value: row.patients }))}
+              data={view.utilization.map((row) => ({
+                label: row.service,
+                value: row.patients,
+              }))}
               layout="vertical"
               categoryWidth={220}
               xLabel="Patients"
@@ -92,8 +172,18 @@ function RevenuePanel({ view }) {
           <DashboardCard title="Patients by service" noPadding>
             <DataTableSimple
               columns={[
-                { name: "Service", selector: (row) => row.service, sortable: true, grow: 2 },
-                { name: "Total patients", selector: (row) => row.patients, sortable: true, right: true },
+                {
+                  name: "Service",
+                  selector: (row) => row.service,
+                  sortable: true,
+                  grow: 2,
+                },
+                {
+                  name: "Total patients",
+                  selector: (row) => row.patients,
+                  sortable: true,
+                  right: true,
+                },
               ]}
               data={view.utilization}
             />
@@ -103,21 +193,28 @@ function RevenuePanel({ view }) {
     </div>
   );
 }
-
 function CostPanel({ view }) {
   return (
     <div className="space-y-6">
-      <KpiRow items={[{ label: "Total Cost", value: view.total, format: "currency" }]} />
+      <KpiRow
+        items={[{ label: "Total Cost", value: view.total, format: "currency" }]}
+      />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <DashboardCard title="Cost by Categories">
           <DonutChart data={view.slices} valueFormat="currency" height={360} />
         </DashboardCard>
         <DashboardCard title="Cost Trend">
-          <TrendLineChart data={view.trend} currency yLabel="Cost (₹)" xLabel="Month" height={360} />
+          <TrendLineChart
+            data={view.trend}
+            currency
+            yLabel="Cost (₹)"
+            xLabel="Month"
+            height={360}
+          />
         </DashboardCard>
       </div>
       {view.salaries && (
-        <DashboardCard title="Individual Salaries">
+        <DashboardCard title="Salaries by Department">
           <BarChartPanel
             data={view.salaries}
             layout="vertical"
@@ -160,24 +257,62 @@ function CostPanel({ view }) {
     </div>
   );
 }
-
 function ThirdPartyPanel({ view }) {
   const columns = [
-    { name: "Category", selector: (row) => row.category, sortable: true, grow: 2 },
-    { name: "Revenue", selector: (row) => row.revenue, format: (row) => formatCurrency(row.revenue), sortable: true, right: true },
-    { name: "Cost", selector: (row) => row.cost, format: (row) => formatCurrency(row.cost), sortable: true, right: true },
-    { name: "Profit", selector: (row) => row.profit, format: (row) => formatCurrency(row.profit), sortable: true, right: true },
-    { name: "Margin", selector: (row) => row.margin, format: (row) => formatPercent(row.margin), sortable: true, right: true },
+    {
+      name: "Category",
+      selector: (row) => row.category,
+      sortable: true,
+      grow: 2,
+    },
+    {
+      name: "Revenue",
+      selector: (row) => row.revenue,
+      format: (row) => formatCurrency(row.revenue),
+      sortable: true,
+      right: true,
+    },
+    {
+      name: "Cost",
+      selector: (row) => row.cost,
+      format: (row) => formatCurrency(row.cost),
+      sortable: true,
+      right: true,
+    },
+    {
+      name: "Profit",
+      selector: (row) => row.profit,
+      format: (row) => formatCurrency(row.profit),
+      sortable: true,
+      right: true,
+    },
+    {
+      name: "Margin",
+      selector: (row) => row.margin,
+      format: (row) => formatPercent(row.margin),
+      sortable: true,
+      right: true,
+    },
   ];
   return (
     <div className="space-y-6">
       <KpiRow items={view.kpis} />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <DashboardCard title="3rd Party Revenue Trend">
-          <TrendLineChart data={view.revenueTrend} currency yLabel="Revenue (₹)" xLabel="Month" />
+          <TrendLineChart
+            data={view.revenueTrend}
+            currency
+            yLabel="Revenue (₹)"
+            xLabel="Month"
+          />
         </DashboardCard>
         <DashboardCard title="3rd Party Cost Trend">
-          <TrendLineChart data={view.costTrend} currency yLabel="Cost (₹)" xLabel="Month" />
+          <TrendLineChart
+            data={view.costTrend}
+            currency
+            yLabel="Cost (₹)"
+            xLabel="Month"
+          />
         </DashboardCard>
       </div>
       <DashboardCard title="Profit Margin by Category" noPadding>
@@ -186,7 +321,6 @@ function ThirdPartyPanel({ view }) {
     </div>
   );
 }
-
 function ThirdPartyCategoryPanel({ view }) {
   return (
     <div className="space-y-6">
@@ -223,39 +357,44 @@ function ThirdPartyCategoryPanel({ view }) {
           xLabel="Profit margin (%)"
           categoryWidth={140}
           height={280}
-            dataKeys={[{ key: "value", name: "Profit margin", color: "#059669" }]}
-            showShare={false}
+          dataKeys={[{ key: "value", name: "Profit margin", color: "#059669" }]}
+          showShare={false}
         />
       </DashboardCard>
     </div>
   );
 }
-
 function PatientsPanel({ view }) {
   return (
     <div className="space-y-6">
       <KpiRow items={view.kpis} />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <DashboardCard title="Unique Patients by Gender">
-          <DonutChart data={view.gender} />
+          <PieChartPanel data={view.gender} />
         </DashboardCard>
         <DashboardCard title="Unique Patients by Category">
-          <DonutChart data={view.category} />
+          <PieChartPanel data={view.category} />
         </DashboardCard>
         <DashboardCard title="Unique Patients by Age Group">
-          <DonutChart data={view.age} />
+          <PieChartPanel data={view.age} />
         </DashboardCard>
       </div>
       {view.segmentation.rows.length > 0 && (
         <DashboardCard title="Age and Gender-wise Patient Segmentation — APL vs BPL">
-          <SegmentationHeatTable columns={view.segmentation.columns} rows={view.segmentation.rows} />
+          <SegmentationHeatTable
+            columns={view.segmentation.columns}
+            rows={view.segmentation.rows}
+          />
         </DashboardCard>
       )}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {view.maleAge.length > 0 && (
           <DashboardCard title="Unique Male Patients by Age Group">
             <BarChartPanel
-              data={view.maleAge.map((item) => ({ label: item.name, value: item.value }))}
+              data={view.maleAge.map((item) => ({
+                label: item.name,
+                value: item.value,
+              }))}
               layout="vertical"
               xLabel="Patients"
               yLabel="Age group"
@@ -267,7 +406,10 @@ function PatientsPanel({ view }) {
         {view.femaleAge.length > 0 && (
           <DashboardCard title="Unique Female Patients by Age Group">
             <BarChartPanel
-              data={view.femaleAge.map((item) => ({ label: item.name, value: item.value }))}
+              data={view.femaleAge.map((item) => ({
+                label: item.name,
+                value: item.value,
+              }))}
               layout="vertical"
               xLabel="Patients"
               height={260}
@@ -279,7 +421,10 @@ function PatientsPanel({ view }) {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <DashboardCard title="Patients Geographic Distribution (Top 10 Areas)">
           <BarChartPanel
-            data={view.geo.map((row) => ({ label: row.area, value: row.patients }))}
+            data={view.geo.map((row) => ({
+              label: row.area,
+              value: row.patients,
+            }))}
             layout="vertical"
             categoryWidth={180}
             xLabel="Patients"
@@ -290,8 +435,18 @@ function PatientsPanel({ view }) {
         <DashboardCard title="Area breakdown" noPadding>
           <DataTableSimple
             columns={[
-              { name: "Area", selector: (row) => row.area, sortable: true, grow: 2 },
-              { name: "Patients", selector: (row) => row.patients, sortable: true, right: true },
+              {
+                name: "Area",
+                selector: (row) => row.area,
+                sortable: true,
+                grow: 2,
+              },
+              {
+                name: "Patients",
+                selector: (row) => row.patients,
+                sortable: true,
+                right: true,
+              },
             ]}
             data={view.geo}
           />
@@ -300,21 +455,27 @@ function PatientsPanel({ view }) {
     </div>
   );
 }
-
 function FootfallPanel({ view }) {
   return (
     <div className="space-y-6">
       <KpiRow items={view.kpis} />
       <DashboardCard title="Total Patients Footfall">
-        <TrendLineChart data={view.totalTrend} yLabel="Patients" xLabel="Month" />
+        <TrendLineChart
+          data={view.totalTrend}
+          yLabel="Patients"
+          xLabel="Month"
+        />
       </DashboardCard>
       <DashboardCard title="Unique Patients Footfall">
-        <TrendLineChart data={view.uniqueTrend} yLabel="Unique patients" xLabel="Month" />
+        <TrendLineChart
+          data={view.uniqueTrend}
+          yLabel="Unique patients"
+          xLabel="Month"
+        />
       </DashboardCard>
     </div>
   );
 }
-
 function DiseasePanel({ view }) {
   return (
     <div className="space-y-6">
@@ -333,35 +494,46 @@ function DiseasePanel({ view }) {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <DashboardCard title="Top 10 Diseases">
           <BarChartPanel
-            data={view.diseases.map((item) => ({ label: item.name, value: item.visits }))}
+            data={view.diseases.map((item) => ({
+              label: item.name,
+              value: item.visits,
+            }))}
             layout="vertical"
             categoryWidth={170}
             xLabel="Patient visits"
             height={Math.max(300, view.diseases.length * 34)}
-            dataKeys={[{ key: "value", name: "Patient visits", color: "#7c3aed" }]}
+            dataKeys={[
+              { key: "value", name: "Patient visits", color: "#7c3aed" },
+            ]}
           />
         </DashboardCard>
         <DashboardCard title="Specialty-wise Patient Visits">
           <BarChartPanel
-            data={view.specialties.map((item) => ({ label: item.name, value: item.value }))}
+            data={view.specialties.map((item) => ({
+              label: item.name,
+              value: item.value,
+            }))}
             layout="vertical"
             categoryWidth={150}
             xLabel="Patient visits"
             height={Math.max(300, view.specialties.length * 34)}
-            dataKeys={[{ key: "value", name: "Patient visits", color: "#0891b2" }]}
+            dataKeys={[
+              { key: "value", name: "Patient visits", color: "#0891b2" },
+            ]}
           />
         </DashboardCard>
       </div>
     </div>
   );
 }
-
 function ComplaintsPanel({ view }) {
+  const complaintsTitle = view.complaintsChartTitle ?? "Complaints by Patients";
+  const ageBucketKeys = view.byAge?.map((row) => row.label) ?? [];
   return (
     <div className="space-y-6">
       <KpiRow items={view.kpis} />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <DashboardCard title="Complaints by Patients">
+        <DashboardCard title={complaintsTitle}>
           <BarChartPanel
             data={view.complaints}
             layout="vertical"
@@ -373,7 +545,7 @@ function ComplaintsPanel({ view }) {
         </DashboardCard>
         {view.gender && (
           <DashboardCard title="Gender wise Distribution">
-            <DonutChart data={view.gender} />
+            <PieChartPanel data={view.gender} />
           </DashboardCard>
         )}
       </div>
@@ -388,6 +560,19 @@ function ComplaintsPanel({ view }) {
           height={340}
         />
       </DashboardCard>
+      {view.byComplaint?.length > 0 && ageBucketKeys.length > 0 && (
+        <DashboardCard title="Age Group by Complaint">
+          <BarChartPanel
+            data={view.byComplaint}
+            dataKeys={series(ageBucketKeys)}
+            stacked
+            layout="vertical"
+            categoryWidth={160}
+            xLabel="Patients"
+            height={Math.max(300, view.byComplaint.length * 40)}
+          />
+        </DashboardCard>
+      )}
       {view.revenueByComplaint && (
         <DashboardCard title="Revenue by Complaints">
           <BarChartPanel
@@ -404,7 +589,10 @@ function ComplaintsPanel({ view }) {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <DashboardCard title="Area-wise Health Complaint Distribution">
           <BarChartPanel
-            data={view.areas.map((row) => ({ label: row.area, value: row.patients }))}
+            data={view.areas.map((row) => ({
+              label: row.area,
+              value: row.patients,
+            }))}
             layout="vertical"
             categoryWidth={160}
             xLabel="Patients"
@@ -415,8 +603,18 @@ function ComplaintsPanel({ view }) {
         <DashboardCard title="Areas" noPadding>
           <DataTableSimple
             columns={[
-              { name: "Area", selector: (row) => row.area, sortable: true, grow: 2 },
-              { name: "Patients", selector: (row) => row.patients, sortable: true, right: true },
+              {
+                name: "Area",
+                selector: (row) => row.area,
+                sortable: true,
+                grow: 2,
+              },
+              {
+                name: "Patients",
+                selector: (row) => row.patients,
+                sortable: true,
+                right: true,
+              },
             ]}
             data={view.areas}
           />
@@ -431,12 +629,11 @@ function FeedbackPanel({ view }) {
     <div className="space-y-6">
       <KpiRow items={view.kpis} />
       <DashboardCard title="Feedback by Patients">
-        <DonutChart data={view.slices} height={360} />
+        <PieChartPanel data={view.slices} height={360} />
       </DashboardCard>
     </div>
   );
 }
-
 const PANELS = {
   revenue: RevenuePanel,
   cost: CostPanel,
@@ -448,7 +645,6 @@ const PANELS = {
   complaints: ComplaintsPanel,
   feedback: FeedbackPanel,
 };
-
 export function DashboardPanel({ view }) {
   if (!view || view.empty) {
     return <ChartEmpty message="No records for the selected filters." />;

@@ -6,15 +6,19 @@ import {
   selectFeedback,
   selectPatient,
   selectRevenue,
+  selectThirdParty,
+  selectThirdPartyCategory,
+  selectDisease,
 } from "../select";
-
 const all = { value: "all", label: "All" };
 
 const ages = ["0-17", "18-29", "30-44", "45-60", "60+"];
 const ageWeights = [18, 20, 30, 20, 12];
 
 function complaintsByAge(pairs) {
-  const parts = Object.fromEntries(pairs.map(([name, total]) => [name, spread(total, ageWeights)]));
+  const parts = Object.fromEntries(
+    pairs.map(([name, total]) => [name, spread(total, ageWeights)]),
+  );
   return ages.map((label, index) => {
     const row = { label };
     pairs.forEach(([name]) => {
@@ -23,7 +27,35 @@ function complaintsByAge(pairs) {
     return row;
   });
 }
-
+const thirdPartyCategories = [
+  { name: "Dentist", revenue: 1709056, cost: 1162329 },
+  { name: "Diagnostics", revenue: 3076301, cost: 1964833 },
+  { name: "Medicines", revenue: 5127169, cost: 4001912 },
+  { name: "Physiotherapist", revenue: 911497, cost: 643790 },
+  { name: "Specs Vendor", revenue: 569685, cost: 436379 },
+];
+const thirdPartyWeights = Array.from({ length: 24 }, (_, index) => 40 + index);
+const thirdPartyLabels = monthSeries("2024-07-01", Array(24).fill(0));
+const thirdPartyRevenue = spread(11393708, thirdPartyWeights);
+const thirdPartyCost = spread(8209243, thirdPartyWeights);
+const thirdPartyMonths = thirdPartyLabels.map((point, index) => ({
+  ...point,
+  revenue: thirdPartyRevenue[index],
+  cost: thirdPartyCost[index],
+}));
+const categoryKeys = thirdPartyCategories.map((item) => item.name);
+const categoryMonths = thirdPartyLabels.map((point, index) => {
+  const row = { ...point };
+  let used = 0;
+  categoryKeys.slice(0, -1).forEach((key) => {
+    const category = thirdPartyCategories.find((item) => item.name === key);
+    const value = spread(category.revenue, thirdPartyWeights)[index];
+    row[key] = value;
+    used += value;
+  });
+  row[categoryKeys[categoryKeys.length - 1]] = thirdPartyRevenue[index] - used;
+  return row;
+});
 const patientProfile = {
   uniqueHeadline: 5458,
   base: 5458,
@@ -59,13 +91,83 @@ const patientProfile = {
   segmentation: {
     columns: ["Sex", "0-17", "18-29", "30-44", "45-60", "60+", "Total"],
     rows: [
-      { Sex: "Female", block: "Female", kind: "group", "0-17": "9.07%", "18-29": "10.15%", "30-44": "12.95%", "45-60": "6.43%", "60+": "4.43%", Total: "43.04%" },
-      { Sex: "APL", block: "Female", kind: "apl", "0-17": "6.43%", "18-29": "7.05%", "30-44": "8.23%", "45-60": "3.85%", "60+": "2.57%", Total: "28.12%" },
-      { Sex: "BPL", block: "Female", kind: "bpl", "0-17": "2.64%", "18-29": "3.10%", "30-44": "4.73%", "45-60": "2.58%", "60+": "1.87%", Total: "14.91%" },
-      { Sex: "Male", block: "Male", kind: "group", "0-17": "11.62%", "18-29": "13.56%", "30-44": "17.44%", "45-60": "11.03%", "60+": "3.32%", Total: "56.96%" },
-      { Sex: "APL", block: "Male", kind: "apl", "0-17": "8.79%", "18-29": "9.91%", "30-44": "14.16%", "45-60": "8.61%", "60+": "2.47%", Total: "43.95%" },
-      { Sex: "BPL", block: "Male", kind: "bpl", "0-17": "2.82%", "18-29": "3.65%", "30-44": "3.28%", "45-60": "2.42%", "60+": "0.84%", Total: "13.01%" },
-      { Sex: "Total", block: "Total", kind: "total", "0-17": "20.69%", "18-29": "23.71%", "30-44": "30.40%", "45-60": "17.46%", "60+": "7.75%", Total: "100.00%" },
+      {
+        Sex: "Female",
+        block: "Female",
+        kind: "group",
+        "0-17": "9.07%",
+        "18-29": "10.15%",
+        "30-44": "12.95%",
+        "45-60": "6.43%",
+        "60+": "4.43%",
+        Total: "43.04%",
+      },
+      {
+        Sex: "APL",
+        block: "Female",
+        kind: "apl",
+        "0-17": "6.43%",
+        "18-29": "7.05%",
+        "30-44": "8.23%",
+        "45-60": "3.85%",
+        "60+": "2.57%",
+        Total: "28.12%",
+      },
+      {
+        Sex: "BPL",
+        block: "Female",
+        kind: "bpl",
+        "0-17": "2.64%",
+        "18-29": "3.10%",
+        "30-44": "4.73%",
+        "45-60": "2.58%",
+        "60+": "1.87%",
+        Total: "14.91%",
+      },
+      {
+        Sex: "Male",
+        block: "Male",
+        kind: "group",
+        "0-17": "11.62%",
+        "18-29": "13.56%",
+        "30-44": "17.44%",
+        "45-60": "11.03%",
+        "60+": "3.32%",
+        Total: "56.96%",
+      },
+      {
+        Sex: "APL",
+        block: "Male",
+        kind: "apl",
+        "0-17": "8.79%",
+        "18-29": "9.91%",
+        "30-44": "14.16%",
+        "45-60": "8.61%",
+        "60+": "2.47%",
+        Total: "43.95%",
+      },
+      {
+        Sex: "BPL",
+        block: "Male",
+        kind: "bpl",
+        "0-17": "2.82%",
+        "18-29": "3.65%",
+        "30-44": "3.28%",
+        "45-60": "2.42%",
+        "60+": "0.84%",
+        Total: "13.01%",
+      },
+      {
+        Sex: "Total",
+        block: "Total",
+        kind: "total",
+        "0-17": "20.69%",
+        "18-29": "23.71%",
+        "30-44": "30.40%",
+        "45-60": "17.46%",
+        "60+": "7.75%",
+        Total: "100.00%",
+      },
     ],
   },
   geo: [
@@ -120,9 +222,39 @@ const campProfile = {
   segmentation: {
     columns: ["Sex", "0-17", "18-29", "30-44", "45-60", "60+", "Total"],
     rows: [
-      { Sex: "Female", block: "Female", kind: "group", "0-17": "12.06%", "18-29": "11.40%", "30-44": "15.69%", "45-60": "8.08%", "60+": "5.48%", Total: "52.71%" },
-      { Sex: "Male", block: "Male", kind: "group", "0-17": "15.35%", "18-29": "7.34%", "30-44": "11.60%", "45-60": "8.71%", "60+": "4.29%", Total: "47.29%" },
-      { Sex: "Total", block: "Total", kind: "total", "0-17": "27.42%", "18-29": "18.74%", "30-44": "27.28%", "45-60": "16.78%", "60+": "9.77%", Total: "100.00%" },
+      {
+        Sex: "Female",
+        block: "Female",
+        kind: "group",
+        "0-17": "12.06%",
+        "18-29": "11.40%",
+        "30-44": "15.69%",
+        "45-60": "8.08%",
+        "60+": "5.48%",
+        Total: "52.71%",
+      },
+      {
+        Sex: "Male",
+        block: "Male",
+        kind: "group",
+        "0-17": "15.35%",
+        "18-29": "7.34%",
+        "30-44": "11.60%",
+        "45-60": "8.71%",
+        "60+": "4.29%",
+        Total: "47.29%",
+      },
+      {
+        Sex: "Total",
+        block: "Total",
+        kind: "total",
+        "0-17": "27.42%",
+        "18-29": "18.74%",
+        "30-44": "27.28%",
+        "45-60": "16.78%",
+        "60+": "9.77%",
+        Total: "100.00%",
+      },
     ],
   },
   geo: [
@@ -139,14 +271,6 @@ const campProfile = {
   ],
 };
 
-const complaintNames = ["Fever/Cold/Cough", "Weakness", "Body Pain", "Allergy", "Hypertension"];
-const complaintPairs = [
-  ["Fever/Cold/Cough", 1645],
-  ["Weakness", 1404],
-  ["Body Pain", 1264],
-  ["Allergy", 330],
-  ["Hypertension", 267],
-];
 const complaintAreas = [
   { area: "KHANDSA", patients: 1978 },
   { area: "NARSINGPUR", patients: 454 },
@@ -155,7 +279,101 @@ const complaintAreas = [
   { area: "SHAKTI PARK", patients: 316 },
 ];
 
-const campComplaintNames = ["Pain", "Weakness/Fatigue", "Fever & Infection", "Allergy/Skin", "Cold Cough"];
+/** Honda Patient Complaints Analysis — Top 10 diseases + specialty-wise visits. */
+const hondaTrendKeys = [
+  "Fever",
+  "Musculoskeletal Pain",
+  "Blood Test",
+  "Others",
+  "Gastrointestinal Problem",
+];
+const hondaDiseaseRows = [
+  {
+    name: "Fever",
+    visits: 892,
+    category: "Fever",
+    specialty: "General Medicine",
+  },
+  {
+    name: "Musculoskeletal Pain",
+    visits: 748,
+    category: "Musculoskeletal Pain",
+    specialty: "Orthopedics",
+  },
+  {
+    name: "Blood Test",
+    visits: 612,
+    category: "Blood Test",
+    specialty: "Laboratory",
+  },
+  {
+    name: "Others",
+    visits: 534,
+    category: "Others",
+    specialty: "General Medicine",
+  },
+  {
+    name: "Gastrointestinal Problem",
+    visits: 418,
+    category: "Gastrointestinal Problem",
+    specialty: "Gastroenterology",
+  },
+  {
+    name: "Eye Problem",
+    visits: 376,
+    category: "Eye Problem",
+    specialty: "Ophthalmology",
+  },
+  { name: "Cough", visits: 341, category: "Cough", specialty: "Respiratory" },
+  {
+    name: "Dental Problem",
+    visits: 298,
+    category: "Dental Problem",
+    specialty: "Dental",
+  },
+  {
+    name: "Report Review",
+    visits: 276,
+    category: "Report Review",
+    specialty: "General Medicine",
+  },
+  {
+    name: "Weakness",
+    visits: 251,
+    category: "Weakness",
+    specialty: "General Medicine",
+  },
+];
+const hondaDiseaseWeights = Array.from(
+  { length: 21 },
+  (_, index) => 18 + index,
+);
+const hondaDiseaseTrend = monthSeries("2024-07-01", Array(21).fill(0)).map(
+  (point, index) => {
+    const row = { ...point };
+    hondaTrendKeys.forEach((key) => {
+      const disease = hondaDiseaseRows.find((item) => item.name === key);
+      row[key] = spread(disease.visits, hondaDiseaseWeights)[index];
+    });
+    return row;
+  },
+);
+const hondaDiseaseAnalysis = {
+  opd: 5458,
+  diseases: hondaDiseaseRows,
+  trend: hondaDiseaseTrend,
+  trendKeys: hondaTrendKeys,
+  areas: complaintAreas,
+};
+const hondaDiseaseFilterNames = hondaDiseaseRows.map((item) => item.name);
+
+const campComplaintNames = [
+  "Pain",
+  "Weakness/Fatigue",
+  "Fever & Infection",
+  "Allergy/Skin",
+  "Cold Cough",
+];
 const campComplaintPairs = [
   ["Pain", 812],
   ["Weakness/Fatigue", 604],
@@ -188,7 +406,9 @@ const revenueServices = [
   { name: "Consultation", value: 0 },
   { name: "Suture/First Aid/Procedure", value: 0 },
 ];
-const revenueKnown = [5583, 8025, 11611, 14689, 10712, 13769, 13987, 21554, 16930, 22451, 23475];
+const revenueKnown = [
+  5583, 8025, 11611, 14689, 10712, 13769, 13987, 21554, 16930, 22451, 23475,
+];
 const revenueMonths = monthSeries("2025-06-01", [
   ...revenueKnown,
   ...spread(237646 - sum(revenueKnown), Array(5).fill(1)),
@@ -197,20 +417,42 @@ const revenueMonths = monthSeries("2025-06-01", [
 const costCategories = [
   { name: "Staff Salary", value: 4855000 },
   { name: "Medicine and Consumables", value: 1075800 },
-  { name: "Camp Cost", value: 848000 },
+  { name: "Health Camp", value: 848000 },
   { name: "Management Cost", value: 828000 },
   { name: "CAPEX", value: 691200 },
+  { name: "IEC Branding", value: 120000 },
+  { name: "Tech Stack", value: 95000 },
+  { name: "HR Recruitment", value: 45000 },
   { name: "Miscellaneous", value: 508770 },
   { name: "Compliances and Licensing", value: 180000 },
   { name: "Admin Consumables", value: 128706 },
 ];
-const costKnown = [118047, 1166301, 567024, 536735, 547730, 501134, 479338, 503737, 520230, 522138];
-const costValues = [...costKnown, ...spread(9115476 - sum(costKnown), Array(7).fill(1))];
+
+const costKnown = [
+  118047, 1166301, 567024, 536735, 547730, 501134, 479338, 503737, 520230,
+  522138,
+];
+const costValues = [
+  ...costKnown,
+  ...spread(9115476 - sum(costKnown), Array(7).fill(1)),
+];
 const costMonths = monthSeries("2025-04-01", costValues);
 
-const quarterLabels = ["Q2 2025", "Q3 2025", "Q4 2025", "Q1 2026", "Q2 2026", "Q3 2026"];
+const quarterLabels = [
+  "Q2 2025",
+  "Q3 2025",
+  "Q4 2025",
+  "Q1 2026",
+  "Q2 2026",
+  "Q3 2026",
+];
 const quarterWeights = [3, 3, 3, 3, 3, 2].map((months, index) =>
-  sum(costValues.slice(index === 0 ? 0 : [0, 3, 6, 9, 12, 15][index], [3, 6, 9, 12, 15, 17][index])),
+  sum(
+    costValues.slice(
+      index === 0 ? 0 : [0, 3, 6, 9, 12, 15][index],
+      [3, 6, 9, 12, 15, 17][index],
+    ),
+  ),
 );
 const quarterKeys = costCategories.map((item) => item.name);
 const quarterly = quarterLabels.map((label, index) => {
@@ -227,66 +469,140 @@ const quarterly = quarterLabels.map((label, index) => {
   return row;
 });
 
-const fixedKeys = costCategories.map((item) => item.name);
-const fixedVariable = [
-  {
-    label: "Fixed Cost",
-    "Staff Salary": 4855000,
-    "Management Cost": 828000,
-    CAPEX: 691200,
-  },
-  {
-    label: "Variable Cost",
-    "Medicine and Consumables": 1075800,
-    "Camp Cost": 848000,
-    Miscellaneous: 508770,
-    "Compliances and Licensing": 180000,
-    "Admin Consumables": 128706,
-  },
+// const fixedKeys = costCategories.map((item) => item.name);
+// const fixedVariable = [
+//   {
+//     label: "Fixed Cost",
+//     "Staff Salary": 4855000,
+//     "Management Cost": 828000,
+//     CAPEX: 691200,
+//   },
+//   {
+//     label: "Variable Cost",
+//     "Medicine and Consumables": 1075800,
+//     "Camp Cost": 848000,
+//     Miscellaneous: 508770,
+//     "Compliances and Licensing": 180000,
+//     "Admin Consumables": 128706,
+//   },
+// ];
+
+const genderOptions = [
+  all,
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+];
+const patientTypeOptions = [
+  all,
+  { value: "apl", label: "APL" },
+  { value: "bpl", label: "BPL" },
 ];
 
-const genderOptions = [all, { value: "male", label: "Male" }, { value: "female", label: "Female" }];
-const patientTypeOptions = [all, { value: "apl", label: "APL" }, { value: "bpl", label: "BPL" }];
+const footfallTotal = [
+  412, 318, 521, 698, 1240, 892, 610, 554, 672, 891, 934, 812, 856, 844, 1021,
+  1488, 1422, 978, 1098, 1012, 988, 1076, 1154, 1128, 1088, 1210, 1422, 1898,
+  1988,
+];
+const footfallUnique = [
+  198, 176, 312, 248, 378, 712, 468, 402, 488, 642, 678, 592, 604, 658, 768,
+  1022, 1048, 712, 756, 742, 718, 782, 824, 798, 776, 868, 1012, 1348, 1428,
+];
 
 export const hondaTabs = {
   "unique-patients": {
-    initialFilters: () => ({ gender: "all", patientType: "all" }),
+    initialFilters: () => ({
+      gender: "all",
+      patientType: "all",
+      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+    }),
     filters: [
+      { id: "dateRange", type: "dateRange", label: "Registration date" },
       { id: "gender", type: "select", label: "Gender", options: genderOptions },
-      { id: "patientType", type: "select", label: "Patient type", options: patientTypeOptions },
+      {
+        id: "patientType",
+        type: "select",
+        label: "Patient type",
+        options: patientTypeOptions,
+      },
     ],
     select: (filters) => selectPatient(patientProfile, filters, "patients"),
   },
+  footfall: {
+    initialFilters: () => ({
+      dateRange: defaultDateRange("2024-05-01", "2026-09-30"),
+    }),
+    filters: [{ id: "dateRange", type: "dateRange", label: "Date" }],
+    select: (filters) =>
+      selectFootfall(
+        {
+          total: monthSeries("2024-05-01", footfallTotal),
+          unique: monthSeries("2024-05-01", footfallUnique),
+          headline: {
+            totalPatients: 10650,
+            uniquePatients: 5458,
+            returningPatients: 5192,
+          },
+        },
+        filters,
+      ),
+  },
   "camp-profile": {
-    initialFilters: () => ({ gender: "all", patientType: "all" }),
+    initialFilters: () => ({
+      gender: "all",
+      patientType: "all",
+      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+    }),
     filters: [
+      { id: "dateRange", type: "dateRange", label: "Camp date" },
       { id: "gender", type: "select", label: "Gender", options: genderOptions },
-      { id: "patientType", type: "select", label: "Patient type", options: patientTypeOptions },
+      {
+        id: "patientType",
+        type: "select",
+        label: "Patient type",
+        options: patientTypeOptions,
+      },
     ],
     select: (filters) => selectPatient(campProfile, filters, "patients"),
   },
   complaints: {
-    initialFilters: () => ({ complaint: "all", area: "all" }),
+    initialFilters: () => ({
+      complaint: "all",
+      area: "all",
+      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+    }),
     filters: [
+      { id: "dateRange", type: "dateRange", label: "Date" },
       {
         id: "complaint",
         type: "select",
-        label: "Complaints",
-        options: [all, ...complaintNames.map((name) => ({ value: name, label: name }))],
+        label: "Disease",
+        options: [
+          all,
+          ...hondaDiseaseFilterNames.map((name) => ({
+            value: name,
+            label: name,
+          })),
+        ],
       },
       {
         id: "area",
         type: "select",
         label: "Geographic area",
-        options: [all, ...complaintAreas.map((area) => ({ value: area.area, label: area.area }))],
+        options: [
+          all,
+          ...complaintAreas.map((area) => ({
+            value: area.area,
+            label: area.area,
+          })),
+        ],
       },
     ],
-    select: (filters) => selectComplaints({
-      names: complaintNames,
-      complaints: complaintPairs.map(([label, value]) => ({ label, value })),
-      byAge: complaintsByAge(complaintPairs),
-      areas: complaintAreas,
-    }, filters, "complaints"),
+    select: (filters) =>
+      selectDisease(hondaDiseaseAnalysis, {
+        ...filters,
+        diseaseCategory: "all",
+        specialty: "all",
+      }),
   },
   "camp-complaints": {
     initialFilters: () => ({ complaint: "all", gender: "all", area: "all" }),
@@ -295,35 +611,103 @@ export const hondaTabs = {
         id: "complaint",
         type: "select",
         label: "Complaints",
-        options: [all, ...campComplaintNames.map((name) => ({ value: name, label: name }))],
+        options: [
+          all,
+          ...campComplaintNames.map((name) => ({ value: name, label: name })),
+        ],
       },
       { id: "gender", type: "select", label: "Gender", options: genderOptions },
       {
         id: "area",
         type: "select",
         label: "Geographic area",
-        options: [all, ...campComplaintAreas.map((area) => ({ value: area.area, label: area.area }))],
+        options: [
+          all,
+          ...campComplaintAreas.map((area) => ({
+            value: area.area,
+            label: area.area,
+          })),
+        ],
       },
     ],
-    select: (filters) => selectComplaints({
-      names: campComplaintNames,
-      totalPatients: 3009,
-      complaints: campComplaintPairs.map(([label, value]) => ({ label, value })),
-      byAge: complaintsByAge(campComplaintPairs),
-      areas: campComplaintAreas,
-      gender: [
-        { name: "Female", value: 1586 },
-        { name: "Male", value: 1423 },
-      ],
-      revenueByComplaint: [
-        { label: "Pain", value: 10137 },
-        { label: "Weakness/Fatigue", value: 8379 },
-        { label: "Fever & Infection", value: 4642 },
-        { label: "General Consultation", value: 3140 },
-        { label: "Allergy/Skin", value: 2323 },
-        { label: "Other", value: 9513 },
-      ],
-    }, filters, "complaints"),
+    select: (filters) =>
+      selectComplaints(
+        {
+          names: campComplaintNames,
+          totalPatients: 3009,
+          complaints: campComplaintPairs.map(([label, value]) => ({
+            label,
+            value,
+          })),
+          byAge: complaintsByAge(campComplaintPairs),
+          areas: campComplaintAreas,
+          gender: [
+            { name: "Female", value: 1586 },
+            { name: "Male", value: 1423 },
+          ],
+          revenueByComplaint: [
+            { label: "Pain", value: 10137 },
+            { label: "Weakness/Fatigue", value: 8379 },
+            { label: "Fever & Infection", value: 4642 },
+            { label: "General Consultation", value: 3140 },
+            { label: "Allergy/Skin", value: 2323 },
+            { label: "Other", value: 9513 },
+          ],
+        },
+        filters,
+        "complaints",
+      ),
+  },
+
+  "third-party": {
+    initialFilters: () => ({
+      dateRange: defaultDateRange("2024-07-01", "2026-06-30"),
+      category: "all",
+    }),
+    filters: [
+      { id: "dateRange", type: "dateRange", label: "Date" },
+      {
+        id: "category",
+        type: "select",
+        label: "Categories",
+        options: [
+          all,
+          ...categoryKeys.map((name) => ({ value: name, label: name })),
+        ],
+      },
+    ],
+    select: (filters) =>
+      selectThirdParty(
+        { months: thirdPartyMonths, categories: thirdPartyCategories },
+        filters,
+      ),
+  },
+  "third-party-category": {
+    initialFilters: () => ({
+      dateRange: defaultDateRange("2024-07-01", "2026-06-30"),
+      category: "all",
+    }),
+    filters: [
+      { id: "dateRange", type: "dateRange", label: "Months" },
+      {
+        id: "category",
+        type: "select",
+        label: "Categories",
+        options: [
+          all,
+          ...categoryKeys.map((name) => ({ value: name, label: name })),
+        ],
+      },
+    ],
+    select: (filters) =>
+      selectThirdPartyCategory(
+        {
+          categoryMonths,
+          categoryKeys,
+          categories: thirdPartyCategories,
+        },
+        filters,
+      ),
   },
   feedback: {
     initialFilters: () => ({ feedback: "all" }),
@@ -332,14 +716,24 @@ export const hondaTabs = {
         id: "feedback",
         type: "select",
         label: "Feedback category",
-        options: [all, ...feedbackSlices.map((item) => ({ value: item.name, label: item.name }))],
+        options: [
+          all,
+          ...feedbackSlices.map((item) => ({
+            value: item.name,
+            label: item.name,
+          })),
+        ],
       },
     ],
-    select: (filters) => selectFeedback({
-      totalPatients: 9279,
-      respondedPct: 65.2,
-      slices: feedbackSlices,
-    }, filters),
+    select: (filters) =>
+      selectFeedback(
+        {
+          totalPatients: 9279,
+          respondedPct: 65.2,
+          slices: feedbackSlices,
+        },
+        filters,
+      ),
   },
   revenue: {
     initialFilters: () => ({
@@ -352,42 +746,90 @@ export const hondaTabs = {
         id: "service",
         type: "select",
         label: "Service category",
-        options: [all, ...revenueServices.map((service) => ({ value: service.name, label: service.name }))],
+        options: [
+          all,
+          ...revenueServices.map((service) => ({
+            value: service.name,
+            label: service.name,
+          })),
+        ],
       },
     ],
     select: (filters) => {
-      const view = selectRevenue({
-        total: 237646,
-        services: revenueServices,
-        months: revenueMonths,
-        yearly: [
-          { serviceCategory: "Pharmacy", y2024: 0, y2025: 140000, y2026: 91636, total: 231636 },
-          { serviceCategory: "Random Blood Sugar Test", y2024: 0, y2025: 2200, y2026: 1920, total: 4120 },
-          { serviceCategory: "Hemoglobin Test", y2024: 0, y2025: 700, y2026: 490, total: 1190 },
-          { serviceCategory: "ECG", y2024: 0, y2025: 400, y2026: 300, total: 700 },
-          { serviceCategory: "Consultation", y2024: 0, y2025: 0, y2026: 0, total: 0 },
-          { serviceCategory: "Suture/First Aid/Procedure", y2024: 0, y2025: 0, y2026: 0, total: 0 },
-        ],
-        utilization: [
-          { service: "CONSULTATION", patients: 5706 },
-          { service: "VALID CONSULTATION", patients: 5239 },
-          { service: "RBS", patients: 641 },
-          { service: "Hb", patients: 217 },
-          { service: "ECG", patients: 23 },
-          { service: "Hemoglobin Test (Digital Method)", patients: 2 },
-          { service: "Blood Glucose Random (Digital Method)", patients: 1 },
-          { service: "FIRST AID LEVEL 1 (MINOR)", patients: 1 },
-        ],
-        patientType: [
-          { label: "OPD", APL: 5910, BPL: 100 },
-          { label: "Pharmacy", APL: 228654, BPL: 2982 },
-        ],
-      }, filters);
+      const view = selectRevenue(
+        {
+          total: 237646,
+          services: revenueServices,
+          months: revenueMonths,
+          yearly: [
+            {
+              serviceCategory: "Pharmacy",
+              y2024: 0,
+              y2025: 140000,
+              y2026: 91636,
+              total: 231636,
+            },
+            {
+              serviceCategory: "Random Blood Sugar Test",
+              y2024: 0,
+              y2025: 2200,
+              y2026: 1920,
+              total: 4120,
+            },
+            {
+              serviceCategory: "Hemoglobin Test",
+              y2024: 0,
+              y2025: 700,
+              y2026: 490,
+              total: 1190,
+            },
+            {
+              serviceCategory: "ECG",
+              y2024: 0,
+              y2025: 400,
+              y2026: 300,
+              total: 700,
+            },
+            {
+              serviceCategory: "Consultation",
+              y2024: 0,
+              y2025: 0,
+              y2026: 0,
+              total: 0,
+            },
+            {
+              serviceCategory: "Suture/First Aid/Procedure",
+              y2024: 0,
+              y2025: 0,
+              y2026: 0,
+              total: 0,
+            },
+          ],
+          utilization: [
+            { service: "CONSULTATION", patients: 5706 },
+            { service: "VALID CONSULTATION", patients: 5239 },
+            { service: "RBS", patients: 641 },
+            { service: "Hb", patients: 217 },
+            { service: "ECG", patients: 23 },
+            { service: "Hemoglobin Test (Digital Method)", patients: 2 },
+            { service: "Blood Glucose Random (Digital Method)", patients: 1 },
+            { service: "FIRST AID LEVEL 1 (MINOR)", patients: 1 },
+          ],
+          patientType: [
+            { label: "OPD", APL: 5910, BPL: 100 },
+            { label: "Pharmacy", APL: 228654, BPL: 2982 },
+          ],
+        },
+        filters,
+      );
       if (filters.service !== "all") {
         view.utilization = view.utilization?.filter((row) => {
           const map = {
             Pharmacy: ["CONSULTATION"],
-            "Random Blood Sugar Test": ["RBS", "Blood Glucose Random (Digital Method)"],
+            "Random Blood Sugar Test": [
+              "RBS",
+              "Blood Glucose Random (Digital Method)",
+            ],
             "Hemoglobin Test": ["Hb", "Hemoglobin Test (Digital Method)"],
             ECG: ["ECG"],
             Consultation: ["CONSULTATION", "VALID CONSULTATION"],
@@ -410,17 +852,27 @@ export const hondaTabs = {
         id: "category",
         type: "select",
         label: "Categories",
-        options: [all, ...costCategories.map((item) => ({ value: item.name, label: item.name }))],
+        options: [
+          all,
+          ...costCategories.map((item) => ({
+            value: item.name,
+            label: item.name,
+          })),
+        ],
       },
     ],
-    select: (filters) => selectCost({
-      total: 9115476,
-      categories: costCategories,
-      months: costMonths,
-      fixedVariable,
-      fixedKeys,
-      quarterly,
-      quarterKeys,
-    }, filters),
+    select: (filters) =>
+      selectCost(
+        {
+          total: 9375476,
+          categories: costCategories,
+          months: costMonths,
+          // fixedVariable,
+          // fixedKeys,
+          quarterly,
+          quarterKeys,
+        },
+        filters,
+      ),
   },
 };

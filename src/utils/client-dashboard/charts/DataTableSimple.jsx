@@ -22,15 +22,35 @@ const customStyles = {
   },
 };
 
-export function DataTableSimple({ columns, data, title }) {
+// export function DataTableSimple({ columns, data, title }) {
+//   return (
+//     <DataTable
+//       title={title}
+//       columns={columns}
+//       data={data}
+//       customStyles={customStyles}
+//       pagination={data.length > 10}
+//       paginationPerPage={10}
+//       highlightOnHover
+//       dense
+//     />
+//   );
+// }
+
+export function DataTableSimple({
+  columns,
+  data,
+  title,
+  pagination = data.length > 15,
+}) {
   return (
     <DataTable
       title={title}
       columns={columns}
       data={data}
       customStyles={customStyles}
-      pagination={data.length > 10}
-      paginationPerPage={10}
+      pagination={pagination}
+      paginationPerPage={15}
       highlightOnHover
       dense
     />

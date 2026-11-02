@@ -1,16 +1,68 @@
 import { defaultDateRange } from "../../../utils/client-dashboard/FilterBar";
 import { monthSeries, spread, sum } from "../allocate";
 import {
+  selectComplaints,
   selectCost,
-  selectDisease,
   selectFootfall,
   selectPatient,
   selectRevenue,
   selectThirdParty,
   selectThirdPartyCategory,
+  selectFeedback,
+  selectDisease,
 } from "../select";
 
 const all = { value: "all", label: "All" };
+
+const ages = ["0-17", "18-29", "30-44", "45-60", "60+"];
+const ageWeights = [18, 20, 30, 20, 12];
+
+function complaintsByAge(pairs) {
+  const parts = Object.fromEntries(
+    pairs.map(([name, total]) => [name, spread(total, ageWeights)]),
+  );
+  return ages.map((label, index) => {
+    const row = { label };
+    pairs.forEach(([name]) => {
+      row[name] = parts[name][index];
+    });
+    return row;
+  });
+}
+const ampComplaintTop5 = [
+  ["Fever", 3901],
+  ["Musculoskeletal Pain", 3253],
+  ["Blood Test", 2952],
+  ["Cough", 1631],
+  ["Weakness", 1285],
+];
+const ampComplaintNames = ampComplaintTop5.map(([name]) => name);
+const ampAgeBuckets = ["0-17", "18-29", "30-44", "45-60", "60+"];
+const ampAgeWeights = [18, 20, 30, 20, 12];
+function ampComplaintsByAge(pairs) {
+  const parts = Object.fromEntries(
+    pairs.map(([name, total]) => [name, spread(total, ampAgeWeights)]),
+  );
+  return ampAgeBuckets.map((label, index) => {
+    const row = { label };
+    pairs.forEach(([name]) => {
+      row[name] = parts[name][index];
+    });
+    return row;
+  });
+}
+const ampComplaintAreas = [
+  { area: "NAURANGPUR", patients: 5801 },
+  { area: "BIHAR", patients: 1775 },
+  { area: "NSG", patients: 1184 },
+  { area: "RAMPURA", patients: 1116 },
+  { area: "UTTAR PRADESH", patients: 977 },
+];
+const ampFeedbackSlices = [
+  { name: "Patient liked service", value: 4 },
+  { name: "Invalid number", value: 2 },
+  { name: "Not Reachable", value: 1 },
+];
 
 const revenueServices = [
   { name: "Pharmacy", value: 7092347 },
@@ -26,8 +78,8 @@ const revenueServices = [
 ];
 
 const revenueKnown = [
-  74980, 521000, 753340, 216630, 805330, 510770, 1396580, 552690, 469380, 466240,
-  704580, 763140, 411250, 474800, 137890, 946170, 235370, 460000,
+  74980, 521000, 753340, 216630, 805330, 510770, 1396580, 552690, 469380,
+  466240, 704580, 763140, 411250, 474800, 137890, 946170, 235370, 460000,
 ];
 const revenueMonths = monthSeries("2024-07-01", [
   ...revenueKnown,
@@ -35,21 +87,76 @@ const revenueMonths = monthSeries("2024-07-01", [
 ]);
 
 const revenueYearly = [
-  { serviceCategory: "Pharmacy", y2024: 1089112, y2025: 2921469, y2026: 3081766, total: 7092347 },
-  { serviceCategory: "Suture/First Aid/Procedure", y2024: 10575, y2025: 1428152, y2026: 2522442, total: 3961169 },
-  { serviceCategory: "Diagnostics", y2024: 453234, y2025: 1165473, y2026: 1133020, total: 2751727 },
-  { serviceCategory: "Spectacle", y2024: 159304, y2025: 450480, y2026: 406423, total: 1016207 },
-  { serviceCategory: "X Ray", y2024: 45500, y2025: 294986, y2026: 355650, total: 696136 },
-  { serviceCategory: "Consultation", y2024: 73680, y2025: 107678, y2026: 190830, total: 372188 },
-  { serviceCategory: "Specialist Consultation", y2024: 38965, y2025: 91326, y2026: 234400, total: 364691 },
-  { serviceCategory: "B2B", y2024: 0, y2025: 100848, y2026: 48024, total: 148872 },
-  { serviceCategory: "Satellite Center", y2024: 11114, y2025: 6934, y2026: 0, total: 18048 },
+  {
+    serviceCategory: "Pharmacy",
+    y2024: 1089112,
+    y2025: 2921469,
+    y2026: 3081766,
+    total: 7092347,
+  },
+  {
+    serviceCategory: "Suture/First Aid/Procedure",
+    y2024: 10575,
+    y2025: 1428152,
+    y2026: 2522442,
+    total: 3961169,
+  },
+  {
+    serviceCategory: "Diagnostics",
+    y2024: 453234,
+    y2025: 1165473,
+    y2026: 1133020,
+    total: 2751727,
+  },
+  {
+    serviceCategory: "Spectacle",
+    y2024: 159304,
+    y2025: 450480,
+    y2026: 406423,
+    total: 1016207,
+  },
+  {
+    serviceCategory: "X Ray",
+    y2024: 45500,
+    y2025: 294986,
+    y2026: 355650,
+    total: 696136,
+  },
+  {
+    serviceCategory: "Consultation",
+    y2024: 73680,
+    y2025: 107678,
+    y2026: 190830,
+    total: 372188,
+  },
+  {
+    serviceCategory: "Specialist Consultation",
+    y2024: 38965,
+    y2025: 91326,
+    y2026: 234400,
+    total: 364691,
+  },
+  {
+    serviceCategory: "B2B",
+    y2024: 0,
+    y2025: 100848,
+    y2026: 48024,
+    total: 148872,
+  },
+  {
+    serviceCategory: "Satellite Center",
+    y2024: 11114,
+    y2025: 6934,
+    y2026: 0,
+    total: 18048,
+  },
   { serviceCategory: "Camp", y2024: 0, y2025: 0, y2026: 0, total: 0 },
 ];
 
 const costCategories = [
-  { name: "Salaries", value: 15652000 },
-  { name: "Management Exp", value: 5400000 },
+  { name: "Staff Salary", value: 15652000 },
+  { name: "Management Cost", value: 5400000 },
+  { name: "Capex", value: 0 },
   { name: "Medicines", value: 4352000 },
   { name: "Tech Stack", value: 2315000 },
   { name: "Diagnostics", value: 1376000 },
@@ -60,9 +167,9 @@ const costCategories = [
 ];
 
 const costKnown = [
-  696000, 1587000, 1769000, 1417000, 1201000, 1552000, 981000, 1257000, 1224000, 1551000,
-  1164000, 1418000, 1282000, 1293000, 1343000, 1422000, 1264000, 1241000, 1307000, 1300000,
-  1457000, 1201000, 1301000, 1360000,
+  696000, 1587000, 1769000, 1417000, 1201000, 1552000, 981000, 1257000, 1224000,
+  1551000, 1164000, 1418000, 1282000, 1293000, 1343000, 1422000, 1264000,
+  1241000, 1307000, 1300000, 1457000, 1201000, 1301000, 1360000,
 ];
 const costMonths = monthSeries("2024-04-01", [
   ...costKnown,
@@ -124,29 +231,141 @@ const categoryMonths = thirdPartyLabels.map((point, index) => {
 });
 
 const footfallTotal = [
-  645, 462, 730, 1065, 2168, 1440, 885, 785, 956, 1339, 1407, 1208, 1282, 1273, 1602,
-  2369, 2329, 1516, 1684, 1535, 1481, 1622, 1764, 1746, 1658, 1873, 2264, 3020, 3170,
+  645, 462, 730, 1065, 2168, 1440, 885, 785, 956, 1339, 1407, 1208, 1282, 1273,
+  1602, 2369, 2329, 1516, 1684, 1535, 1481, 1622, 1764, 1746, 1658, 1873, 2264,
+  3020, 3170,
 ];
 const footfallUnique = [
   240, 254, 428, 329, 489, 1072, 672, 580, 685, 932, 983, 849, 861, 945, 1102,
-  1555, 1607, 1092, 1156, 1138, 1100, 1198, 1256, 1222, 1204, 1340, 1572, 2113, 2242,
+  1555, 1607, 1092, 1156, 1138, 1100, 1198, 1256, 1222, 1204, 1340, 1572, 2113,
+  2242,
 ];
 
 const diseases = [
-  { name: "Fever", visits: 3901, category: "Fever & Viral", specialty: "General Medicine" },
-  { name: "Musculoskeletal Pain", visits: 3253, category: "Musculoskeletal", specialty: "Orthopedics" },
-  { name: "Blood Test", visits: 2952, category: "Investigations", specialty: "Laboratory" },
-  { name: "Others", visits: 2581, category: "Others", specialty: "General Medicine" },
-  { name: "Gastrointestinal Problem", visits: 1858, category: "Gastrointestinal", specialty: "Gastroenterology" },
-  { name: "Eye Problem", visits: 1746, category: "Eye", specialty: "Ophthalmology" },
-  { name: "Cough", visits: 1631, category: "Respiratory", specialty: "Respiratory" },
-  { name: "Dental Problem", visits: 1462, category: "Dental", specialty: "Dental" },
-  { name: "Report Review", visits: 1427, category: "Others", specialty: "General Medicine" },
-  { name: "Weakness", visits: 1285, category: "General", specialty: "General Medicine" },
-  { name: "Other diseases", visits: 8231, category: "Others", specialty: "Other specialties" },
+  {
+    name: "Fever",
+    visits: 3901,
+    category: "Fever & Viral",
+    specialty: "General Medicine",
+  },
+  {
+    name: "Musculoskeletal Pain",
+    visits: 3253,
+    category: "Musculoskeletal",
+    specialty: "Orthopedics",
+  },
+  {
+    name: "Blood Test",
+    visits: 2952,
+    category: "Investigations",
+    specialty: "Laboratory",
+  },
+  {
+    name: "Others",
+    visits: 2581,
+    category: "Others",
+    specialty: "General Medicine",
+  },
+  {
+    name: "Gastrointestinal Problem",
+    visits: 1858,
+    category: "Gastrointestinal",
+    specialty: "Gastroenterology",
+  },
+  {
+    name: "Eye Problem",
+    visits: 1746,
+    category: "Eye",
+    specialty: "Ophthalmology",
+  },
+  {
+    name: "Cough",
+    visits: 1631,
+    category: "Respiratory",
+    specialty: "Respiratory",
+  },
+  {
+    name: "Dental Problem",
+    visits: 1462,
+    category: "Dental",
+    specialty: "Dental",
+  },
+  {
+    name: "Report Review",
+    visits: 1427,
+    category: "Others",
+    specialty: "General Medicine",
+  },
+  {
+    name: "Weakness",
+    visits: 1285,
+    category: "General",
+    specialty: "General Medicine",
+  },
+  {
+    name: "Other diseases",
+    visits: 8231,
+    category: "Others",
+    specialty: "Other specialties",
+  },
 ];
-
-const trendKeys = ["Fever", "Musculoskeletal Pain", "Blood Test", "Others", "Gastrointestinal Problem"];
+const complaintNames = [
+  "Fever/Cold/Cough",
+  "Weakness",
+  "Body Pain",
+  "Allergy",
+  "Hypertension",
+];
+const complaintPairs = [
+  ["Fever/Cold/Cough", 1645],
+  ["Weakness", 1404],
+  ["Body Pain", 1264],
+  ["Allergy", 330],
+  ["Hypertension", 267],
+];
+const complaintAreas = [
+  { area: "KHANDSA", patients: 1978 },
+  { area: "NARSINGPUR", patients: 454 },
+  { area: "NAHARPUR RUPA", patients: 360 },
+  { area: "MOHMADPUR", patients: 329 },
+  { area: "SHAKTI PARK", patients: 316 },
+];
+const feedbackSlices = [
+  { name: "Patient liked service", value: 5779 },
+  { name: "Not Reachable", value: 2536 },
+  { name: "Invalid number", value: 626 },
+  { name: "Not Satisfied", value: 230 },
+  { name: "Other", value: 70 },
+  { name: "Under medication", value: 38 },
+];
+const campComplaintNames = [
+  "Pain",
+  "Weakness/Fatigue",
+  "Fever & Infection",
+  "Allergy/Skin",
+  "Cold Cough",
+];
+const campComplaintPairs = [
+  ["Pain", 812],
+  ["Weakness/Fatigue", 604],
+  ["Fever & Infection", 449],
+  ["Allergy/Skin", 170],
+  ["Cold Cough", 98],
+];
+const campComplaintAreas = [
+  { area: "KHANDSA", patients: 734 },
+  { area: "NAHARPUR RUPA", patients: 346 },
+  { area: "SHAKTI PARK", patients: 236 },
+  { area: "NARSINGPUR", patients: 229 },
+  { area: "KADIPUR", patients: 220 },
+];
+const trendKeys = [
+  "Fever",
+  "Musculoskeletal Pain",
+  "Blood Test",
+  "Others",
+  "Gastrointestinal Problem",
+];
 const diseaseWeights = Array.from({ length: 21 }, (_, index) => 20 + index);
 const diseaseLabels = monthSeries("2025-01-01", Array(21).fill(0));
 const diseaseTrend = diseaseLabels.map((point, index) => {
@@ -191,13 +410,76 @@ const patientProfile = {
   segmentation: {
     columns: ["Sex", "0-17", "18-44", "45-60", "60+", "Total"],
     rows: [
-      { Sex: "Female", block: "Female", kind: "group", "0-17": "8.15%", "18-44": "21.81%", "45-60": "4.69%", "60+": "4.05%", Total: "38.71%" },
-      { Sex: "APL", block: "Female", kind: "apl", "0-17": "4.03%", "18-44": "10.54%", "45-60": "2.28%", "60+": "2.54%", Total: "19.40%" },
-      { Sex: "BPL", block: "Female", kind: "bpl", "0-17": "4.12%", "18-44": "11.27%", "45-60": "2.42%", "60+": "1.50%", Total: "19.31%" },
-      { Sex: "Male", block: "Male", kind: "group", "0-17": "11.38%", "18-44": "37.63%", "45-60": "7.74%", "60+": "4.52%", Total: "61.28%" },
-      { Sex: "APL", block: "Male", kind: "apl", "0-17": "5.31%", "18-44": "19.42%", "45-60": "3.28%", "60+": "2.35%", Total: "30.36%" },
-      { Sex: "BPL", block: "Male", kind: "bpl", "0-17": "6.07%", "18-44": "18.21%", "45-60": "4.47%", "60+": "2.17%", Total: "30.92%" },
-      { Sex: "Total", block: "Total", kind: "total", "0-17": "19.55%", "18-44": "59.45%", "45-60": "12.44%", "60+": "8.57%", Total: "100.00%" },
+      {
+        Sex: "Female",
+        block: "Female",
+        kind: "group",
+        "0-17": "8.15%",
+        "18-44": "21.81%",
+        "45-60": "4.69%",
+        "60+": "4.05%",
+        Total: "38.71%",
+      },
+      {
+        Sex: "APL",
+        block: "Female",
+        kind: "apl",
+        "0-17": "4.03%",
+        "18-44": "10.54%",
+        "45-60": "2.28%",
+        "60+": "2.54%",
+        Total: "19.40%",
+      },
+      {
+        Sex: "BPL",
+        block: "Female",
+        kind: "bpl",
+        "0-17": "4.12%",
+        "18-44": "11.27%",
+        "45-60": "2.42%",
+        "60+": "1.50%",
+        Total: "19.31%",
+      },
+      {
+        Sex: "Male",
+        block: "Male",
+        kind: "group",
+        "0-17": "11.38%",
+        "18-44": "37.63%",
+        "45-60": "7.74%",
+        "60+": "4.52%",
+        Total: "61.28%",
+      },
+      {
+        Sex: "APL",
+        block: "Male",
+        kind: "apl",
+        "0-17": "5.31%",
+        "18-44": "19.42%",
+        "45-60": "3.28%",
+        "60+": "2.35%",
+        Total: "30.36%",
+      },
+      {
+        Sex: "BPL",
+        block: "Male",
+        kind: "bpl",
+        "0-17": "6.07%",
+        "18-44": "18.21%",
+        "45-60": "4.47%",
+        "60+": "2.17%",
+        Total: "30.92%",
+      },
+      {
+        Sex: "Total",
+        block: "Total",
+        kind: "total",
+        "0-17": "19.55%",
+        "18-44": "59.45%",
+        "45-60": "12.44%",
+        "60+": "8.57%",
+        Total: "100.00%",
+      },
     ],
   },
   geo: [
@@ -274,10 +556,38 @@ const costSource = {
   categories: costCategories,
   months: costMonths,
   salaries,
+  fixedKeys: costCategories.map((item) => item.name),
+  fixedVariable: [
+    {
+      label: "Fixed Cost",
+      "Staff Salary": 15652000,
+      "Management Cost": 5400000,
+      Capex: 0,
+    },
+    {
+      label: "Variable Cost",
+      Medicines: 4352000,
+      "Tech Stack": 2315000,
+      Diagnostics: 1376000,
+      Dentist: 1340000,
+      "Compliance & Certification": 688000,
+      "Consumables HSVK": 2200000,
+      Misc: 2242166,
+    },
+  ],
 };
 
-const genderOptions = [all, { value: "male", label: "Male" }, { value: "female", label: "Female" }, { value: "other", label: "Other" }];
-const patientTypeOptions = [all, { value: "apl", label: "APL" }, { value: "bpl", label: "BPL" }];
+const genderOptions = [
+  all,
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+  { value: "other", label: "Other" },
+];
+const patientTypeOptions = [
+  all,
+  { value: "apl", label: "APL" },
+  { value: "bpl", label: "BPL" },
+];
 
 export const ampTabs = {
   revenue: {
@@ -291,7 +601,21 @@ export const ampTabs = {
         id: "service",
         type: "select",
         label: "Service category",
-        options: [all, ...revenueServices.map((service) => ({ value: service.name, label: service.name }))],
+        options: [
+          all,
+          { value: "Pharmacy", label: "Pharmacy" },
+          {
+            value: "Random Blood Sugar Test (RBS/RBD)",
+            label: "Random Blood Sugar Test (RBS/RBD)",
+          },
+          { value: "Hemoglobin Test (HB)", label: "Hemoglobin Test (HB)" },
+          { value: "ECG", label: "ECG" },
+          { value: "Consultation", label: "Consultation" },
+          {
+            value: "Suture / First Aid / Procedure",
+            label: "Suture / First Aid / Procedure",
+          },
+        ],
       },
     ],
     select: (filters) => selectRevenue(revenueSource, filters),
@@ -307,10 +631,46 @@ export const ampTabs = {
         id: "category",
         type: "select",
         label: "Categories",
-        options: [all, ...costCategories.map((item) => ({ value: item.name, label: item.name }))],
+        options: [
+          all,
+          ...costCategories.map((item) => ({
+            value: item.name,
+            label: item.name,
+          })),
+        ],
       },
     ],
     select: (filters) => selectCost(costSource, filters),
+  },
+  feedback: {
+    initialFilters: () => ({
+      dateRange: defaultDateRange("2025-06-01", "2025-06-30"),
+      feedback: "all",
+    }),
+    filters: [
+      { id: "dateRange", type: "dateRange", label: "Bill date" },
+      {
+        id: "feedback",
+        type: "select",
+        label: "Feedback category",
+        options: [
+          all,
+          ...ampFeedbackSlices.map((item) => ({
+            value: item.name,
+            label: item.name,
+          })),
+        ],
+      },
+    ],
+    select: (filters) =>
+      selectFeedback(
+        {
+          totalPatients: 8,
+          respondedPct: 50,
+          slices: ampFeedbackSlices,
+        },
+        filters,
+      ),
   },
   "third-party": {
     initialFilters: () => ({
@@ -323,10 +683,17 @@ export const ampTabs = {
         id: "category",
         type: "select",
         label: "Categories",
-        options: [all, ...categoryKeys.map((name) => ({ value: name, label: name }))],
+        options: [
+          all,
+          ...categoryKeys.map((name) => ({ value: name, label: name })),
+        ],
       },
     ],
-    select: (filters) => selectThirdParty({ months: thirdPartyMonths, categories: thirdPartyCategories }, filters),
+    select: (filters) =>
+      selectThirdParty(
+        { months: thirdPartyMonths, categories: thirdPartyCategories },
+        filters,
+      ),
   },
   "third-party-category": {
     initialFilters: () => ({
@@ -339,65 +706,175 @@ export const ampTabs = {
         id: "category",
         type: "select",
         label: "Categories",
-        options: [all, ...categoryKeys.map((name) => ({ value: name, label: name }))],
+        options: [
+          all,
+          ...categoryKeys.map((name) => ({ value: name, label: name })),
+        ],
       },
     ],
-    select: (filters) => selectThirdPartyCategory({
-      categoryMonths,
-      categoryKeys,
-      categories: thirdPartyCategories,
-    }, filters),
+    select: (filters) =>
+      selectThirdPartyCategory(
+        {
+          categoryMonths,
+          categoryKeys,
+          categories: thirdPartyCategories,
+        },
+        filters,
+      ),
   },
   "unique-patients": {
-    initialFilters: () => ({ gender: "all", patientType: "all" }),
+    initialFilters: () => ({
+      gender: "all",
+      patientType: "all",
+      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+    }),
     filters: [
+      { id: "dateRange", type: "dateRange", label: "Registration date" },
       { id: "gender", type: "select", label: "Gender", options: genderOptions },
-      { id: "patientType", type: "select", label: "Patient type", options: patientTypeOptions },
+      {
+        id: "patientType",
+        type: "select",
+        label: "Patient type",
+        options: patientTypeOptions,
+      },
     ],
     select: (filters) => selectPatient(patientProfile, filters, "patients"),
   },
-  footfall: {
-    initialFilters: () => ({ dateRange: defaultDateRange("2024-05-01", "2026-09-30") }),
-    filters: [{ id: "dateRange", type: "dateRange", label: "Date" }],
-    select: (filters) => selectFootfall({
-      total: monthSeries("2024-05-01", footfallTotal),
-      unique: monthSeries("2024-05-01", footfallUnique),
-      headline: { totalPatients: 45278, uniquePatients: 23559, returningPatients: 21719 },
-    }, filters),
+  "camp-complaints": {
+    initialFilters: () => ({ complaint: "all", gender: "all", area: "all" }),
+    filters: [
+      {
+        id: "complaint",
+        type: "select",
+        label: "Complaints",
+        options: [
+          all,
+          ...campComplaintNames.map((name) => ({ value: name, label: name })),
+        ],
+      },
+      { id: "gender", type: "select", label: "Gender", options: genderOptions },
+      {
+        id: "area",
+        type: "select",
+        label: "Geographic area",
+        options: [
+          all,
+          ...campComplaintAreas.map((area) => ({
+            value: area.area,
+            label: area.area,
+          })),
+        ],
+      },
+    ],
+    select: (filters) =>
+      selectComplaints(
+        {
+          names: campComplaintNames,
+          totalPatients: 3009,
+          complaints: campComplaintPairs.map(([label, value]) => ({
+            label,
+            value,
+          })),
+          byAge: complaintsByAge(campComplaintPairs),
+          areas: campComplaintAreas,
+          gender: [
+            { name: "Female", value: 1586 },
+            { name: "Male", value: 1423 },
+          ],
+          revenueByComplaint: [
+            { label: "Pain", value: 10137 },
+            { label: "Weakness/Fatigue", value: 8379 },
+            { label: "Fever & Infection", value: 4642 },
+            { label: "General Consultation", value: 3140 },
+            { label: "Allergy/Skin", value: 2323 },
+            { label: "Other", value: 9513 },
+          ],
+        },
+        filters,
+        "complaints",
+      ),
   },
+  footfall: {
+    initialFilters: () => ({
+      dateRange: defaultDateRange("2024-05-01", "2026-09-30"),
+    }),
+    filters: [{ id: "dateRange", type: "dateRange", label: "Date" }],
+    select: (filters) =>
+      selectFootfall(
+        {
+          total: monthSeries("2024-05-01", footfallTotal),
+          unique: monthSeries("2024-05-01", footfallUnique),
+          headline: {
+            totalPatients: 45278,
+            uniquePatients: 23559,
+            returningPatients: 21719,
+          },
+        },
+        filters,
+      ),
+  },
+  /** AMP Disease Analysis tab — same data as GET /dashboard/patient-complaints (ChiefComplaints). */
   disease: {
     initialFilters: () => ({
       dateRange: defaultDateRange("2025-01-01", "2026-09-30"),
-      diseaseCategory: "all",
-      specialty: "all",
+      complaint: "all",
+      area: "all",
     }),
     filters: [
       { id: "dateRange", type: "dateRange", label: "Date" },
       {
-        id: "diseaseCategory",
+        id: "complaint",
         type: "select",
-        label: "Disease category",
-        options: [all, ...[...new Set(diseases.map((item) => item.category))].map((name) => ({ value: name, label: name }))],
+        label: "Complaints",
+        options: [
+          all,
+          ...ampComplaintNames.map((name) => ({ value: name, label: name })),
+        ],
       },
       {
-        id: "specialty",
+        id: "area",
         type: "select",
-        label: "Medical speciality",
-        options: [all, ...[...new Set(diseases.map((item) => item.specialty))].map((name) => ({ value: name, label: name }))],
+        label: "Geographic area",
+        options: [
+          all,
+          ...ampComplaintAreas.map((row) => ({
+            value: row.area,
+            label: row.area,
+          })),
+        ],
       },
     ],
-    select: (filters) => selectDisease({
-      opd: 45278,
-      diseases,
-      trend: diseaseTrend,
-      trendKeys,
-    }, filters),
+    select: (filters) =>
+      selectComplaints(
+        {
+          names: ampComplaintNames,
+          complaints: ampComplaintTop5.map(([label, value]) => ({
+            label,
+            value,
+          })),
+          byAge: ampComplaintsByAge(ampComplaintTop5),
+          areas: ampComplaintAreas,
+          complaintsChartTitle: "Top 5 Complaints",
+        },
+        filters,
+        "complaints",
+      ),
   },
   "camp-profile": {
-    initialFilters: () => ({ gender: "all", patientType: "all" }),
+    initialFilters: () => ({
+      gender: "all",
+      patientType: "all",
+      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+    }),
     filters: [
+      { id: "dateRange", type: "dateRange", label: "Camp date" },
       { id: "gender", type: "select", label: "Gender", options: genderOptions },
-      { id: "patientType", type: "select", label: "Patient type", options: patientTypeOptions },
+      {
+        id: "patientType",
+        type: "select",
+        label: "Patient type",
+        options: patientTypeOptions,
+      },
     ],
     select: (filters) => selectPatient(campProfile, filters, "patients"),
   },
