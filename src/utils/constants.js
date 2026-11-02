@@ -18,7 +18,17 @@ export const RELATIONSHIP_OPTIONS = [
   "Other",
 ];
 export const TITLES = ["Mr", "Mrs", "Miss", "Dr", "Master", "Baby of", "Baby"];
-export const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-", "N/A"];
+export const BLOOD_GROUPS = [
+  "A+",
+  "A-",
+  "B+",
+  "B-",
+  "O+",
+  "O-",
+  "AB+",
+  "AB-",
+  "N/A",
+];
 export const RESIDENTAL_STATUS = ["Local", "Outstation", "Migrant"];
 export const OCCUPATION_OPTIONS = [
   "Private Sector",
@@ -54,7 +64,6 @@ export const IDENTIFICATION_TYPES = [
   { value: "health_card_abha", label: "Health Card ABHA" },
   { value: "other", label: "Other" },
   { value: "N/A", label: "N/A" },
-
 ];
 
 export const PILL_CONSUMPTION_TIMES = [
@@ -102,7 +111,7 @@ export const Referral_Options = [
   { label: "Health Camp", value: "Health Camp" },
   { label: "Mobilization", value: "Mobilization" },
   { label: "Digital Marketing", value: "Digital Marketing" },
-  { label: "Amp Family", value: "Amp Family", tenantIds: [2], },
+  { label: "Amp Family", value: "Amp Family", tenantIds: [2] },
   { label: "Canopy Outreach", value: "Canopy Outreach" },
   { label: "B2B", value: "B2B" },
 ];
@@ -184,7 +193,6 @@ export const ROLES = [
     label: "OPHTHALMOLOGY",
     value: "OPHTHALMOLOGY",
   },
-
 ];
 export const DEPARTMENT_OPTIONS = [
   "Administration",
@@ -298,3 +306,11 @@ export const getStoredPackages = () => {
   }
 };
 
+export const API_TENANT_ID = {
+  honda: 1,
+  amp: 2,
+};
+export const DASHBOARD_API_TAGS = {
+  PatientProfile: "DashboardPatientProfile",
+  CampPatientProfile: "DashboardCampPatientProfile",
+};

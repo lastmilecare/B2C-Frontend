@@ -1,24 +1,28 @@
 /**
  * Add to your route.config array.
- * Paths use `/*` so `/edit` works (ExpenseForm list → Open sheet).
  *
  * import {
+ *   AmpExpenseIndexRedirect,
  *   AmpOperatingExpensePage,
  *   HondaComplianceExpensePage,
- *   HondaMiscExpensePage,
- *   HondaSatelliteExpensePage,
- *   HondaSalaryExpensePage,
- *   HondaVendorExpensePage,
- *   HondaTotalExpPage,
+ *   ...
  * } from './expenses/expenseRouteComponents';
  */
 
-// ——— AMP (single sheet — keeps your existing URL) ———
+// ——— AMP (recommended URLs) ———
 export const ampExpenseRoutes = [
+  // Old bookmark: /expense-transactions → canonical AMP sheet
   {
-    path: '/expense-transactions/operating/*',
-    component: 'AmpOperatingExpensePage', // use AmpOperatingExpensePage import in real file
-    permission: 'read:client_dashboard',
+    path: "/expense-transactions",
+    component: "AmpExpenseIndexRedirect",
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+    exact: true,
+  },
+  {
+    path: "/expense-transactions/operating/*",
+    component: "AmpOperatingExpensePage",
+    permission: "read:client_dashboard",
     showInSidebar: false,
   },
 ];
@@ -26,51 +30,81 @@ export const ampExpenseRoutes = [
 // ——— Honda (one route per Google tab) ———
 export const hondaExpenseRoutes = [
   {
-    path: '/expense-transactions/compliances/*',
-    component: 'HondaComplianceExpensePage',
-    permission: 'read:client_dashboard',
+    path: "/expense-transactions/compliances/*",
+    component: "HondaComplianceExpensePage",
+    permission: "read:client_dashboard",
     showInSidebar: false,
   },
   {
-    path: '/expense-transactions/misc/*',
-    component: 'HondaMiscExpensePage',
-    permission: 'read:client_dashboard',
-    showInSidebar: false,
-  },
-   {
-    path: '/expense-transactions/consumables/*',
-    component: 'HondaConsumablesExpensePage',
-    permission: 'read:client_dashboard',
+    path: "/expense-transactions/misc/*",
+    component: "HondaMiscExpensePage",
+    permission: "read:client_dashboard",
     showInSidebar: false,
   },
   {
-    path: '/expense-transactions/satellite/*',
-    component: 'HondaSatelliteExpensePage',
-    permission: 'read:client_dashboard',
+    path: "/expense-transactions/consumables/*",
+    component: "HondaConsumablesExpensePage",
+    permission: "read:client_dashboard",
     showInSidebar: false,
   },
   {
-    path: '/expense-transactions/salaries/*',
-    component: 'HondaSalaryExpensePage',
-    permission: 'read:client_dashboard',
+    path: "/expense-transactions/satellite/*",
+    component: "HondaSatelliteExpensePage",
+    permission: "read:client_dashboard",
     showInSidebar: false,
   },
   {
-    path: '/expense-transactions/vendor-payments/*',
-    component: 'HondaVendorExpensePage',
-    permission: 'read:client_dashboard',
+    path: "/expense-transactions/salaries/*",
+    component: "HondaSalaryExpensePage",
+    permission: "read:client_dashboard",
     showInSidebar: false,
   },
   {
-    path: '/expense-transactions/total-exp/*',
-    component: 'HondaTotalExpPage',
-    permission: 'read:client_dashboard',
+    path: "/expense-transactions/hr-recruitment/*",
+    component: "HondaHrRecruitmentExpensePage",
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/health-camp/*",
+    component: "HondaHealthCampExpensePage",
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/iec-branding/*",
+    component: "HondaIecBrandingExpensePage",
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/tech-stack/*",
+    component: "HondaTechStackExpensePage",
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/management-exp/*",
+    component: "HondaManagementExpPage",
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/vendor-payments/*",
+    component: "HondaVendorExpensePage",
+    permission: "read:client_dashboard",
+    showInSidebar: false,
+  },
+  {
+    path: "/expense-transactions/total-exp/*",
+    component: "HondaTotalExpPage",
+    permission: "read:client_dashboard",
     showInSidebar: false,
   },
 ];
 
 /**
- * If your router registers ALL routes for every user, split at runtime instead:
- * spread only ampExpenseRoutes OR hondaExpenseRoutes when building the config,
- * or guard with a layout that redirects wrong client.
+ * Optional: keep legacy AMP URL working (same as redirect + operating page):
+ *   path: '/expense-transactions/*' → AmpOperatingExpensePage
+ * Prefer /operating/* so report_type resolves from the URL like Honda tabs.
  */

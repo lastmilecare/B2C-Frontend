@@ -1,7 +1,10 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import axiosClient from "../api/axiosClient";
 import { expenseMockHandlers } from "../mocks/expenseMockApi";
-import { transformExpenseSheetResponse,transformExpenseSummaryResponse } from "./../pages/expenses/expenseApiNormalize";
+import {
+  transformExpenseSheetResponse,
+  transformExpenseSummaryResponse,
+} from "./../pages/expenses/expenseApiNormalize";
 const axiosBaseQuery =
   ({ baseUrl } = { baseUrl: "" }) =>
   async ({ url, method, data, params, responseType }) => {
@@ -2542,6 +2545,99 @@ export const api = createApi({
       query: () => "/expense-sheets",
       providesTags: [{ type: "ExpenseSheet", id: "INDEX" }],
     }),
+    getPatientProfile: build.query({
+      query: ({ gender = "all", patientType = "all" } = {}) => ({
+        url: "/dashboard/patient-profile",
+        method: "GET",
+        params: {
+          gender,
+          patientType,
+        },
+      }),
+      providesTags: ["DashboardPatientProfile"],
+    }),
+
+    getCampPatientProfile: build.query({
+      query: ({ gender = "all", patientType = "all", from, to } = {}) => ({
+        url: "/dashboard/camp-patient-profile",
+        method: "GET",
+        params: {
+          gender,
+          patientType,
+          from,
+          to,
+        },
+      }),
+      providesTags: ["DashboardCampPatientProfile"],
+    }),
+    getPatientComplaints: build.query({
+      query: ({
+        complaint = "all",
+        area = "all",
+        gender = "all",
+        from,
+        to,
+      } = {}) => ({
+        url: "/dashboard/patient-complaints",
+        method: "GET",
+        params: {
+          complaint,
+          area,
+          gender,
+          from,
+          to,
+        },
+      }),
+      providesTags: ["DashboardPatientComplaints"],
+    }),
+    getPatientFootfall: build.query({
+      query: ({ from, to } = {}) => ({
+        url: "/dashboard/patient-footfall",
+        method: "GET",
+        params: { from, to },
+      }),
+      providesTags: ["DashboardPatientFootfall"],
+    }),
+    getRevenue: build.query({
+      query: ({ service = "all", from, to } = {}) => ({
+        url: "/dashboard/revenue",
+        method: "GET",
+        params: { service, from, to },
+      }),
+      providesTags: ["DashboardRevenue"],
+    }),
+    getCost: build.query({
+      query: ({ category = "all", from, to } = {}) => ({
+        url: "/dashboard/cost",
+        method: "GET",
+        params: { category, from, to },
+      }),
+      providesTags: ["DashboardCost"],
+    }),
+    getThirdParty: build.query({
+      query: ({ category = "all", from, to } = {}) => ({
+        url: "/dashboard/third-party",
+        method: "GET",
+        params: { category, from, to },
+      }),
+      providesTags: ["DashboardThirdParty"],
+    }),
+    getThirdPartyCategory: build.query({
+      query: ({ category = "all", from, to } = {}) => ({
+        url: "/dashboard/third-party-category",
+        method: "GET",
+        params: { category, from, to },
+      }),
+      providesTags: ["DashboardThirdPartyCategory"],
+    }),
+    getPatientFeedback: build.query({
+      query: ({ feedback = "all", from, to } = {}) => ({
+        url: "/dashboard/patient-feedback",
+        method: "GET",
+        params: { feedback, from, to },
+      }),
+      providesTags: ["DashboardPatientFeedback"],
+    }),
   }),
 });
 
@@ -2805,5 +2901,14 @@ export const {
   useGetFeedbackVisitQuery,
   useGetFeedbackPatientHistoryQuery,
   useSaveFeedbackMutation,
+  useGetPatientProfileQuery,
+  useGetCampPatientProfileQuery,
+  useGetPatientComplaintsQuery,
+  useGetPatientFootfallQuery,
+  useGetRevenueQuery,
+  useGetCostQuery,
+  useGetThirdPartyQuery,
+  useGetThirdPartyCategoryQuery,
+  useGetPatientFeedbackQuery,
 } = api;
 
