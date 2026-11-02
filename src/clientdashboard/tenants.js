@@ -27,9 +27,9 @@ export const TENANTS = {
     tabs: [
       { id: "revenue", label: "Revenue" },
       { id: "cost", label: "Cost" },
-      { id: "unique-patients", label: "Unique Patient Profile" },
       { id: "third-party", label: "3rd Party Analysis" },
       { id: "third-party-category", label: "3rd Party Category" },
+      { id: "unique-patients", label: "Unique Patient Profile" },
       { id: "footfall", label: "Patient Footfall" },
       { id: "complaints", label: "Patient Complaints Analysis" },
     ],
