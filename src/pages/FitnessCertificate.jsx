@@ -314,6 +314,7 @@ const FitnessCertificate = ({
         ["residence_address", "Residence address"],
         ["certificate_age", "Certificate age"],
         ["doctor_id", "Medical Inspector / Doctor"],
+        ["vendor_id", "Vendor name"],
       ];
       const missing = required.find(([field]) => !formik.values[field]?.toString()?.trim());
       if (missing) return `${missing[1]} is required`;
@@ -404,7 +405,7 @@ const FitnessCertificate = ({
                       </option>
                     ))}
                   </Select>
-                  <Select label="Vendor Name" {...formik.getFieldProps("vendor_id")}>
+                  <Select label="Vendor Name" required {...formik.getFieldProps("vendor_id")}>
                     <option value="">Select Vendor</option>
                     {vendors.map((vendor) => (
                       <option key={vendor.id} value={vendor.id}>
