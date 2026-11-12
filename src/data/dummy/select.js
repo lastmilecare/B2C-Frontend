@@ -317,7 +317,30 @@ export function selectPatient(profile, filters, panel = "patients") {
     ...item,
     value: item.fixed ? item.value : Math.round(item.value * ratio),
   }));
-
+  const ampKpis = profile.amp
+    ? [
+        {
+          label: "Medicine bills (total)",
+          value: Math.round(profile.amp.medicineBillTotal * ratio),
+        },
+        {
+          label: "Medicine patients (unique)",
+          value: Math.round(profile.amp.medicineBillUnique * ratio),
+        },
+        ...(profile.amp.newPatients != null
+          ? [
+              {
+                label: "New patients (visits)",
+                value: Math.round(profile.amp.newPatients * ratio),
+              },
+              {
+                label: "Returning patients (visits)",
+                value: Math.round(profile.amp.returningPatients * ratio),
+              },
+            ]
+          : []),
+      ]
+    : [];
   return {
     panel,
     kpis: [
@@ -326,6 +349,7 @@ export function selectPatient(profile, filters, panel = "patients") {
         value: genderName || typeName ? unique : profile.uniqueHeadline,
       },
       ...extras,
+      ...ampKpis,
       ...(profile.returning
         ? [
             {

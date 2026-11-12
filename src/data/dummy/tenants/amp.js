@@ -382,6 +382,16 @@ const patientProfile = {
   base: 23559,
   returning: 21719,
   totalPatients: 45278,
+  amp: {
+    medicineBillTotal: 28450,
+    medicineBillUnique: 19220,
+    newPatients: 4200,
+    returningPatients: 8900,
+    newReturningByCategory: [
+      { category: "APL", new: 2100, returning: 4500 },
+      { category: "BPL", new: 2100, returning: 4400 },
+    ],
+  },
   byGenderCategory: {
     Male: { APL: 7152, BPL: 7285 },
     Female: { APL: 4572, BPL: 4547 },
@@ -500,6 +510,10 @@ const campProfile = {
   uniqueHeadline: 4800,
   base: 4800,
   totalPatients: 4800,
+  amp: {
+    medicineBillTotal: 1920,
+    medicineBillUnique: 1650,
+  },
   extras: [
     { label: "Total Camps", value: 28, fixed: true },
     { label: "Medicine Dispensing Visits — Camp", value: 1920 },
@@ -804,6 +818,7 @@ export const ampTabs = {
         {
           total: monthSeries("2024-05-01", footfallTotal),
           unique: monthSeries("2024-05-01", footfallUnique),
+          registrationTrend: monthSeries("2024-05-01", footfallUnique.map((p) => Math.round(p.value * 0.42))),
           headline: {
             totalPatients: 45278,
             uniquePatients: 23559,

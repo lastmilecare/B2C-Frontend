@@ -418,6 +418,26 @@ function PatientsPanel({ view }) {
           </DashboardCard>
         )}
       </div>
+      {view.newReturningByCategory?.length > 0 && (
+        <DashboardCard title="New vs Returning Patients by Category (APL / BPL)">
+          <BarChartPanel
+            data={view.newReturningByCategory.map((row) => ({
+              label: row.category,
+              new: row.new,
+              returning: row.returning,
+            }))}
+            layout="horizontal"
+            stacked
+            xLabel="Category"
+            yLabel="Unique patients"
+            height={280}
+            dataKeys={[
+              { key: "new", name: "New", color: "#2563eb" },
+              { key: "returning", name: "Returning", color: "#d97706" },
+            ]}
+          />
+        </DashboardCard>
+      )}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <DashboardCard title="Patients Geographic Distribution (Top 10 Areas)">
           <BarChartPanel
@@ -473,6 +493,16 @@ function FootfallPanel({ view }) {
           xLabel="Month"
         />
       </DashboardCard>
+      {view.registrationTrend?.length > 0 && (
+        <DashboardCard title="New Patient Registration">
+          <TrendLineChart
+            data={view.registrationTrend}
+            yLabel="Registrations"
+            xLabel="Month"
+            height={360}
+          />
+        </DashboardCard>
+      )}
     </div>
   );
 }

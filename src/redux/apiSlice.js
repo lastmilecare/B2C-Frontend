@@ -2546,12 +2546,14 @@ export const api = createApi({
       providesTags: [{ type: "ExpenseSheet", id: "INDEX" }],
     }),
     getPatientProfile: build.query({
-      query: ({ gender = "all", patientType = "all" } = {}) => ({
+      query: ({ gender = "all", patientType = "all", from, to } = {}) => ({
         url: "/dashboard/patient-profile",
         method: "GET",
         params: {
           gender,
           patientType,
+          from,
+          to,
         },
       }),
       providesTags: ["DashboardPatientProfile"],
@@ -2638,6 +2640,7 @@ export const api = createApi({
       }),
       providesTags: ["DashboardPatientFeedback"],
     }),
+
   }),
 });
 
