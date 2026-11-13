@@ -149,7 +149,12 @@ const FeedbackList = () => {
     }
 
     const { center_id: _c, ...rest } = tempFilters;
-    const next = { ...rest };
+    const next = {};
+    Object.entries(rest).forEach(([key, value]) => {
+      if (value !== "" && value != null) {
+        next[key] = value;
+      }
+    });
     if (centerId) {
       next.center_ids = centerId;
     }
@@ -375,9 +380,7 @@ const FeedbackList = () => {
         title="Feedback visits"
         columns={columns}
         data={patients}
-        totalRows={
-          hasCenterFilter && hasVisitOrCallingDate ? pagination.total || 0 : 0
-        }
+        totalRows={canFetchList ? pagination.total || 0 : 0}
         currentPage={pagination.page || page}
         perPage={pagination.pageSize || limit}
         onPageChange={(newPage) => setPage(newPage)}
