@@ -2601,10 +2601,10 @@ export const api = createApi({
       providesTags: ["DashboardPatientFootfall"],
     }),
     getRevenue: build.query({
-      query: ({ service = "all", from, to } = {}) => ({
+      query: ({ service = "all", from, to, patientType = "all" } = {}) => ({
         url: "/dashboard/revenue",
         method: "GET",
-        params: { service, from, to },
+        params: { service, from, to, patientType },
       }),
       providesTags: ["DashboardRevenue"],
     }),
