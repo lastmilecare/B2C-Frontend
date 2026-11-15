@@ -46,6 +46,14 @@ function buildQueryArg(tenantSlug, tabId, filters) {
       ...dateRangeQuery(filters),
     };
   }
+  if (tabId === "revenue") {
+    return {
+      gender: filters.gender ?? "all",
+      patientType: filters.patientType ?? "all",
+      service: filters.service ?? "all",
+      ...dateRangeQuery(filters),
+    };
+  }
   return {
     gender: filters.gender ?? "all",
     patientType: filters.patientType ?? "all",
@@ -58,6 +66,7 @@ function buildQueryArg(tenantSlug, tabId, filters) {
 export function useDashboardView(tenantSlug, tabId, filters, bundle) {
   // const mode = API_ENABLED ? resolveApiTabMode(tenantSlug, tabId) : null;
   const mode = resolveApiTabMode(tenantSlug, tabId);
+  debugger;
   const queryArg = useMemo(
     () => buildQueryArg(tenantSlug, tabId, filters),
     [tenantSlug, tabId, filters],

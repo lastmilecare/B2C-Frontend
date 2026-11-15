@@ -400,12 +400,15 @@ const feedbackSlices = [
 
 const revenueServices = [
   { name: "Pharmacy", value: 231636 },
-  { name: "Random Blood Sugar Test", value: 4120 },
-  { name: "Hemoglobin Test", value: 1190 },
-  { name: "ECG", value: 700 },
+  { name: "Spectacle", value: 4120 },
+  { name: "Diagnostic", value: 1190 },
+  { name: "X-Ray", value: 700 },
   { name: "Consultation", value: 0 },
-  { name: "Suture/First Aid/Procedure", value: 0 },
+  { name: "Specialist Consultation", value: 0 },
+  { name: "B2B", value: 0 },
+  { name: "Suture / First Aid / Procedure", value: 0 },
 ];
+
 const revenueKnown = [
   5583, 8025, 11611, 14689, 10712, 13769, 13987, 21554, 16930, 22451, 23475,
 ];
@@ -739,6 +742,7 @@ export const hondaTabs = {
     initialFilters: () => ({
       dateRange: defaultDateRange("2025-06-01", "2026-09-30"),
       service: "all",
+      patientType: "all",
     }),
     filters: [
       { id: "dateRange", type: "dateRange", label: "Date" },
@@ -753,6 +757,13 @@ export const hondaTabs = {
             label: service.name,
           })),
         ],
+      },
+      {
+        id: "patientType",
+        type: "select",
+        label:
+          "Patient type (That impact the Revenue Service category only and exclude Pharmacy, Spectacle)",
+        options: patientTypeOptions,
       },
     ],
     select: (filters) => {
