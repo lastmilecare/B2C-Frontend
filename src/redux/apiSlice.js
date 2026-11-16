@@ -2593,10 +2593,10 @@ export const api = createApi({
       providesTags: ["DashboardPatientComplaints"],
     }),
     getPatientFootfall: build.query({
-      query: ({ from, to } = {}) => ({
+      query: ({ gender = "all", patientType = "all", from, to } = {}) => ({
         url: "/dashboard/patient-footfall",
         method: "GET",
-        params: { from, to },
+        params: { gender, patientType, from, to },
       }),
       providesTags: ["DashboardPatientFootfall"],
     }),
@@ -2640,7 +2640,6 @@ export const api = createApi({
       }),
       providesTags: ["DashboardPatientFeedback"],
     }),
-
   }),
 });
 
@@ -2914,4 +2913,3 @@ export const {
   useGetThirdPartyCategoryQuery,
   useGetPatientFeedbackQuery,
 } = api;
-
