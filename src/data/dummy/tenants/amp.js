@@ -810,15 +810,29 @@ export const ampTabs = {
   },
   footfall: {
     initialFilters: () => ({
+      gender: "all",
+      patientType: "all",
       dateRange: defaultDateRange("2024-05-01", "2026-09-30"),
     }),
-    filters: [{ id: "dateRange", type: "dateRange", label: "Date" }],
+    filters: [
+      { id: "dateRange", type: "dateRange", label: "Date" },
+      { id: "gender", type: "select", label: "Gender", options: genderOptions },
+      {
+        id: "patientType",
+        type: "select",
+        label: "Patient type",
+        options: patientTypeOptions,
+      },
+    ],
     select: (filters) =>
       selectFootfall(
         {
           total: monthSeries("2024-05-01", footfallTotal),
           unique: monthSeries("2024-05-01", footfallUnique),
-          registrationTrend: monthSeries("2024-05-01", footfallUnique.map((p) => Math.round(p.value * 0.42))),
+          registrationTrend: monthSeries(
+            "2024-05-01",
+            footfallUnique.map((p) => Math.round(p.value * 0.42)),
+          ),
           headline: {
             totalPatients: 45278,
             uniquePatients: 23559,

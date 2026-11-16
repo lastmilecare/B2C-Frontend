@@ -95,7 +95,6 @@ function buildQueryArg(tenantSlug, tabId, filters) {
  */
 export function useDashboardView(tenantSlug, tabId, filters, bundle) {
   // const mode = API_ENABLED ? resolveApiTabMode(tenantSlug, tabId) : null;
-  debugger;
   const mode = resolveApiTabMode(tenantSlug, tabId);
   const queryArg = useMemo(
     () => buildQueryArg(tenantSlug, tabId, filters),
