@@ -532,9 +532,20 @@ export const hondaTabs = {
   },
   footfall: {
     initialFilters: () => ({
+      gender: "all",
+      patientType: "all",
       dateRange: defaultDateRange("2024-05-01", "2026-09-30"),
     }),
-    filters: [{ id: "dateRange", type: "dateRange", label: "Date" }],
+    filters: [
+      { id: "dateRange", type: "dateRange", label: "Date" },
+      { id: "gender", type: "select", label: "Gender", options: genderOptions },
+      {
+        id: "patientType",
+        type: "select",
+        label: "Patient type",
+        options: patientTypeOptions,
+      },
+    ],
     select: (filters) =>
       selectFootfall(
         {

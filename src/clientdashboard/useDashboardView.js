@@ -54,6 +54,36 @@ function buildQueryArg(tenantSlug, tabId, filters) {
       ...dateRangeQuery(filters),
     };
   }
+  if (tabId === "cost") {
+    return {
+      gender: filters.gender ?? "all",
+      category: filters.category ?? "all",
+      ...dateRangeQuery(filters),
+    };
+  }
+  if (tabId === "third-party") {
+    return {
+      gender: filters.gender ?? "all",
+      category: filters.category ?? "all",
+      ...dateRangeQuery(filters),
+    };
+  }
+  if (tabId === "third-party-category") {
+    return {
+      gender: filters.gender ?? "all",
+      category: filters.category ?? "all",
+      ...dateRangeQuery(filters),
+    };
+  }
+
+  // if (tabId === "footfall") {
+  //   return {
+  //     gender: filters.gender ?? "all",
+  //     patientType: (filters.patientType ?? "all").toUpperCase(),
+  //     ...dateRangeQuery(filters),
+  //   };
+  // }
+
   return {
     gender: filters.gender ?? "all",
     patientType: filters.patientType ?? "all",
@@ -65,8 +95,8 @@ function buildQueryArg(tenantSlug, tabId, filters) {
  */
 export function useDashboardView(tenantSlug, tabId, filters, bundle) {
   // const mode = API_ENABLED ? resolveApiTabMode(tenantSlug, tabId) : null;
-  const mode = resolveApiTabMode(tenantSlug, tabId);
   debugger;
+  const mode = resolveApiTabMode(tenantSlug, tabId);
   const queryArg = useMemo(
     () => buildQueryArg(tenantSlug, tabId, filters),
     [tenantSlug, tabId, filters],
