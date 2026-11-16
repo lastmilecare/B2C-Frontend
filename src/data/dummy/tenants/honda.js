@@ -500,7 +500,8 @@ const patientTypeOptions = [
   { value: "apl", label: "APL" },
   { value: "bpl", label: "BPL" },
 ];
-
+const todayDate=new Date().toISOString().slice(0, 10);
+const initialDateRange = defaultDateRange("2024-05-01", todayDate);
 const footfallTotal = [
   412, 318, 521, 698, 1240, 892, 610, 554, 672, 891, 934, 812, 856, 844, 1021,
   1488, 1422, 978, 1098, 1012, 988, 1076, 1154, 1128, 1088, 1210, 1422, 1898,
@@ -516,7 +517,7 @@ export const hondaTabs = {
     initialFilters: () => ({
       gender: "all",
       patientType: "all",
-      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+      dateRange: initialDateRange,
     }),
     filters: [
       { id: "dateRange", type: "dateRange", label: "Registration date" },
@@ -534,7 +535,7 @@ export const hondaTabs = {
     initialFilters: () => ({
       gender: "all",
       patientType: "all",
-      dateRange: defaultDateRange("2024-05-01", "2026-09-30"),
+      dateRange: initialDateRange,
     }),
     filters: [
       { id: "dateRange", type: "dateRange", label: "Date" },
@@ -564,7 +565,7 @@ export const hondaTabs = {
     initialFilters: () => ({
       gender: "all",
       patientType: "all",
-      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+      dateRange: initialDateRange,
     }),
     filters: [
       { id: "dateRange", type: "dateRange", label: "Camp date" },
@@ -582,7 +583,7 @@ export const hondaTabs = {
     initialFilters: () => ({
       complaint: "all",
       area: "all",
-      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+      dateRange: initialDateRange,
     }),
     filters: [
       { id: "dateRange", type: "dateRange", label: "Date" },
@@ -675,7 +676,7 @@ export const hondaTabs = {
 
   "third-party": {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2024-07-01", "2026-06-30"),
+      dateRange: initialDateRange,
       category: "all",
     }),
     filters: [
@@ -698,7 +699,7 @@ export const hondaTabs = {
   },
   "third-party-category": {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2024-07-01", "2026-06-30"),
+      dateRange: initialDateRange,
       category: "all",
     }),
     filters: [
@@ -751,7 +752,7 @@ export const hondaTabs = {
   },
   revenue: {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2025-06-01", "2026-09-30"),
+      dateRange: initialDateRange,
       service: "all",
       patientType: "all",
     }),
@@ -865,7 +866,7 @@ export const hondaTabs = {
   },
   cost: {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2025-04-01", "2026-08-31"),
+      dateRange: initialDateRange,
       category: "all",
     }),
     filters: [
