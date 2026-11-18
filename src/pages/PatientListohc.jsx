@@ -15,8 +15,14 @@ import Avatar from "../components/common/Avatar";
 import { useNavigate } from "react-router-dom";
 import BulkUploadModal from "./BulkUploadModal";
 import { downloadBlob, getBulkTemplateFilename } from "../utils/downloadBlob";
+import { cookie } from "../utils/cookie";
+
+const CONFIGURED_TENANT_ID = Number(import.meta.env.VITE_TENANT_ID);
+
 const PatientListohc = () => {
   const navigate = useNavigate();
+  const isTenant21 =
+    Number(cookie.get("tenantId")) === CONFIGURED_TENANT_ID;
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
@@ -37,6 +43,7 @@ const PatientListohc = () => {
     endDate: "",
     external_id: "",
     idProof_number: "",
+    localAddress: "",
   });
 
   const [downloadTemplate] = useDownloadBulkTemplateMutation();
@@ -53,7 +60,12 @@ const PatientListohc = () => {
   const patients = data?.data || [];
   const pagination = data?.pagination || {};
 
-  const { data: vendors = [] } = useGetComboQuery("ohc-vendor");
+  const { data: vendors = [] } = useGetComboQuery("ohc-vendor", {
+    skip: isTenant21,
+  });
+  const { data: villages = [] } = useGetComboQuery("ohc-village", {
+    skip: !isTenant21,
+  });
   const vendorNameById = useMemo(() => {
     const map = {};
     vendors.forEach((vendor) => {
@@ -72,6 +84,11 @@ const PatientListohc = () => {
       vendorNameById[Number(vendorId)] ||
       "—"
     );
+  };
+
+  const resolveVillageName = (row) => {
+    const villageName = row.localAddress?.trim();
+    return villageName || "—";
   };
 
   const handleChange = (e) => {
@@ -134,6 +151,7 @@ const PatientListohc = () => {
       endDate: "",
       external_id: "",
       idProof_number: "",
+      localAddress: "",
     });
     setFilters({});
     setPage(1);
@@ -191,6 +209,22 @@ const PatientListohc = () => {
         { label: "BPL", value: "bpl" },
       ],
     },
+
+    ...(isTenant21
+      ? [
+          {
+            label: "Village Name",
+            name: "localAddress",
+            type: "select",
+            options: (villages || [])
+              .filter((v) => v?.label)
+              .map((v) => ({
+                label: v.label,
+                value: v.label,
+              })),
+          },
+        ]
+      : []),
 
     { label: "Date from", name: "startDate", type: "date" },
     { label: "Date to", name: "endDate", type: "date" },
@@ -311,21 +345,37 @@ const PatientListohc = () => {
       },
     },
 
-    {
-      name: "Vendor",
-      center: true,
-      width: "180px",
-      minWidth: "180px",
-      maxWidth: "200px",
-      wrap: true,
-      cell: (row) => (
-        <div className="w-full flex justify-center items-center px-1">
-          <span className="text-xs text-slate-700 text-center leading-snug break-words">
-            {resolveVendorName(row)}
-          </span>
-        </div>
-      ),
-    },
+    isTenant21
+      ? {
+          name: "Village Name",
+          center: true,
+          width: "180px",
+          minWidth: "180px",
+          maxWidth: "200px",
+          wrap: true,
+          cell: (row) => (
+            <div className="w-full flex justify-center items-center px-1">
+              <span className="text-xs text-slate-700 text-center leading-snug break-words">
+                {resolveVillageName(row)}
+              </span>
+            </div>
+          ),
+        }
+      : {
+          name: "Vendor",
+          center: true,
+          width: "180px",
+          minWidth: "180px",
+          maxWidth: "200px",
+          wrap: true,
+          cell: (row) => (
+            <div className="w-full flex justify-center items-center px-1">
+              <span className="text-xs text-slate-700 text-center leading-snug break-words">
+                {resolveVendorName(row)}
+              </span>
+            </div>
+          ),
+        },
 
     {
       name: "Added On",
@@ -333,10 +383,12 @@ const PatientListohc = () => {
     },
   ];
 
+  const listTitle = isTenant21 ? "Registration List" : "Patient List";
+
   return (
     <div className="max-w-7xl mx-auto">
       <h1 className="text-2xl font-semibold text-gray-700 mb-6">
-        Patient List
+        {listTitle}
       </h1>
 
       <CopyFilterBar
@@ -352,7 +404,7 @@ const PatientListohc = () => {
 
       <PatientTable
         allowStaffEdit
-        title="Patient List"
+        title={listTitle}
         data={patients}
         columns={columns}
         totalRows={pagination.totalRecords || 0}

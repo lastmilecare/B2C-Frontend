@@ -41,25 +41,53 @@ import {
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const STEP_FIELDS = {
-  1: [
-    "title",
-    "name",
-    "contactNumber",
-    "CO",
-    "gender",
-    "department_id",
-    "designation_id",
-  ],
-  2: ["country", "localAddressState", "fincat", "pin"],
+const SPECIAL_CATEGORY_OPTIONS = [
+  "Pregnant Woman",
+  "Child Under 5",
+  "Elderly (60+)",
+  "Bedridden",
+  "Physically Challenged",
+];
+
+const YES_NO_OPTIONS = ["Yes", "No"];
+
+const CONFIGURED_TENANT_ID = Number(import.meta.env.VITE_TENANT_ID);
+
+const getStepFields = (isTenant21) => ({
+  1: isTenant21
+    ? ["title", "name", "contactNumber", "gender"]
+    : [
+        "title",
+        "name",
+        "contactNumber",
+        "CO",
+        "gender",
+        "department_id",
+        "designation_id",
+      ],
+  2: isTenant21
+    ? ["country", "localAddressState", "fincat", "pin", "villageId"]
+    : ["country", "localAddressState", "fincat", "pin"],
   3: ["idProof_name", "idProof_number"],
-};
+});
 
 const requiredSelect = (message) =>
   Yup.mixed().test("required", message, (value) => {
     if (value === 0) return true;
     return value !== "" && value !== null && value !== undefined;
   });
+
+const parseYesNoToBoolean = (value) => {
+  if (value === "Yes") return true;
+  if (value === "No") return false;
+  return null;
+};
+
+const booleanToYesNo = (value) => {
+  if (value === true) return "Yes";
+  if (value === false) return "No";
+  return "";
+};
 
 const PatientRegistrationOhc = () => {
   const [searchDiseases] = useLazySearchDiseasesQuery();
@@ -69,6 +97,9 @@ const PatientRegistrationOhc = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const isTenant21 =
+    Number(cookie.get("tenantId")) === CONFIGURED_TENANT_ID;
+  const STEP_FIELDS = getStepFields(isTenant21);
   // const { data: patientApiResponse, isLoading: isFetching } = useGetPatientByIdQuery(id, {
   //     skip: !isEdit,
   // });
@@ -104,11 +135,27 @@ const PatientRegistrationOhc = () => {
       ...filters,
     },
     {
-      skip: !page || !limit,
+      skip: !page || !limit || isTenant21,
     },
   );
 
-  const { data: vendors = [] } = useGetComboQuery("ohc-vendor");
+  const { data: vendors = [] } = useGetComboQuery("ohc-vendor", {
+    skip: isTenant21,
+  });
+  const { data: villagesRaw = [] } = useGetComboQuery("ohc-village", {
+    skip: !isTenant21,
+  });
+  const villages = useMemo(() => {
+    const list = Array.isArray(villagesRaw)
+      ? villagesRaw
+      : villagesRaw?.data || [];
+    return list
+      .map((v) => ({
+        value: v?.value ?? v?.VILLID ?? v?.villid ?? v?.id,
+        label: String(v?.label ?? v?.VillageName ?? v?.name ?? "").trim(),
+      }))
+      .filter((v) => v.value != null && v.label);
+  }, [villagesRaw]);
   const departmentsData = data?.data || [];
 
   const departments = [...departmentsData].sort((a, b) =>
@@ -127,7 +174,7 @@ const PatientRegistrationOhc = () => {
       ...filters,
     },
     {
-      skip: !page || !limit,
+      skip: !page || !limit || isTenant21,
     },
   );
   const designationsData = designationData?.data || [];
@@ -219,6 +266,10 @@ const PatientRegistrationOhc = () => {
       designation_id: "",
       vendor_id: "",
       ageNumber: "",
+      ayushmanCardHolder: "",
+      needHomeCare: "",
+      specialCategory: "",
+      villageId: "",
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
@@ -232,7 +283,9 @@ const PatientRegistrationOhc = () => {
       country: Yup.string().required("Country is required"),
       localAddressState: Yup.string().required("State is required"),
       occupation: Yup.string(),
-      CO: Yup.string().required("Co is required"),
+      CO: isTenant21
+        ? Yup.string()
+        : Yup.string().required("Co is required"),
       employeeId: Yup.string(),
       pin: Yup.string().matches(/^[0-9]{6}$/, {
         message: "Pin Code must be 6 digits",
@@ -246,8 +299,18 @@ const PatientRegistrationOhc = () => {
         then: (schema) => schema.required("Identification Number is required"),
         otherwise: (schema) => schema.notRequired(),
       }),
-      department_id: requiredSelect("Department is required"),
-      designation_id: requiredSelect("Designation is required"),
+      department_id: isTenant21
+        ? Yup.mixed()
+        : requiredSelect("Department is required"),
+      designation_id: isTenant21
+        ? Yup.mixed()
+        : requiredSelect("Designation is required"),
+      villageId: isTenant21
+        ? requiredSelect("Village is required")
+        : Yup.mixed(),
+      ayushmanCardHolder: Yup.string(),
+      needHomeCare: Yup.string(),
+      specialCategory: Yup.string(),
     }),
 
     onSubmit: async (values) => {
@@ -390,6 +453,12 @@ const PatientRegistrationOhc = () => {
             p.vendor_id != null && p.vendor_id !== ""
               ? String(p.vendor_id)
               : "",
+          ayushmanCardHolder: booleanToYesNo(
+            p.ayushmanCardHolder ?? p.Ayushman_Card_Holder,
+          ),
+          needHomeCare: booleanToYesNo(p.needHomeCare ?? p.Need_Home_Care),
+          specialCategory: p.specialCategory || p.Special_Category || "",
+          villageId: "",
         });
       };
 
@@ -399,6 +468,26 @@ const PatientRegistrationOhc = () => {
       setStateId(p.state_id || "");
     }
   }, [patientApiResponse, isEdit]);
+
+  // Preselect Village from existing localAddress for Tenant 21 edit
+  useEffect(() => {
+    if (!isTenant21 || !isEdit || !villages.length) return;
+    if (formik.values.villageId) return;
+
+    const patient = patientApiResponse?.data || patientApiResponse;
+    const address = String(patient?.localAddress || "").trim();
+    if (!address) return;
+
+    const match = villages.find(
+      (v) => String(v.label).trim().toLowerCase() === address.toLowerCase(),
+    );
+
+    if (!match) return;
+
+    formik.setFieldValue("villageId", String(match.value));
+    formik.setFieldValue("localAddress", match.label);
+  }, [villages, isEdit, isTenant21, patientApiResponse, formik.values.villageId]);
+
   const referralOptions = Referral_Options.map((option) => option.value);
   const buildPayload = (values) => {
     if (!values) return null;
@@ -409,11 +498,17 @@ const PatientRegistrationOhc = () => {
 
     const disease_ids = values?.diseases.map((d) => d.id) || [];
 
+    const selectedVillage = villages.find(
+      (v) => String(v.value) === String(values.villageId),
+    );
+
     const payload = {
       name: values.name,
       healthCardNumber: values.healthCardNumber,
       gender: values.gender,
-      localAddress: values.localAddress,
+      localAddress: isTenant21
+        ? selectedVillage?.label || values.localAddress || null
+        : values.localAddress,
       contactNumber: values.contactNumber,
       emergencyContactName: values.emergencyContactName,
       emergencyContactNumber: values.emergencyContactNumber,
@@ -432,22 +527,32 @@ const PatientRegistrationOhc = () => {
       state_id: Number(values.localAddressState),
       district_id: Number(values.localAddressDistrict),
       category: values.fincat,
-      occupation: values.occupation,
       residentialstatus: values.residentialstatus,
       title: values.title,
-      co: values.CO,
-      relationship: values.relationship,
-      employeeId: values.employeeId?.trim() || null,
       // ReferredBy: values.ReferredBy || "",
       permanentAddress: values.permanentAddress,
-      department_id: values.department_id
-        ? String(values.department_id)
-        : "",
-      designation_id: values.designation_id
-        ? String(values.designation_id)
-        : "",
-      vendor_id: values.vendor_id ? Number(values.vendor_id) : null,
     };
+
+    if (isTenant21) {
+      // Preserve existing hidden-field DB values: do not send them.
+      payload.ayushmanCardHolder = parseYesNoToBoolean(
+        values.ayushmanCardHolder,
+      );
+      payload.needHomeCare = parseYesNoToBoolean(values.needHomeCare);
+      payload.specialCategory = values.specialCategory || null;
+    } else {
+      payload.occupation = values.occupation;
+      payload.co = values.CO;
+      payload.relationship = values.relationship;
+      payload.employeeId = values.employeeId?.trim() || null;
+      payload.department_id = values.department_id
+        ? String(values.department_id)
+        : "";
+      payload.designation_id = values.designation_id
+        ? String(values.designation_id)
+        : "";
+      payload.vendor_id = values.vendor_id ? Number(values.vendor_id) : null;
+    }
 
     if (!isEdit) {
       payload.createdBy = userId;
@@ -474,6 +579,9 @@ const PatientRegistrationOhc = () => {
         department_id: "",
         designation_id: "",
         vendor_id: "",
+        ayushmanCardHolder: "",
+        needHomeCare: "",
+        specialCategory: "",
       });
     }
 
@@ -490,6 +598,7 @@ const PatientRegistrationOhc = () => {
         localAddress: "",
         pin: "",
         permanentAddress: "",
+        villageId: "",
         // ReferredBy: "",
       });
 
@@ -587,6 +696,9 @@ const PatientRegistrationOhc = () => {
   const selectedVendor = vendors.find(
     (item) => String(item.id) === String(formik.values.vendor_id),
   );
+  const selectedVillage = villages.find(
+    (item) => String(item.value) === String(formik.values.villageId),
+  );
 
   const TITLE_GENDER_MAP = {
     Mr: "Male",
@@ -594,6 +706,14 @@ const PatientRegistrationOhc = () => {
     Miss: "Female",
     Master: "Male",
   };
+
+  const formHeading = isTenant21
+    ? isEdit
+      ? "Edit Registration Form"
+      : "Registration Form"
+    : isEdit
+      ? "Edit Worker Details"
+      : "Worker Registration";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 py-10">
@@ -605,7 +725,7 @@ const PatientRegistrationOhc = () => {
               <UserIcon className="w-6 text-blue-600" />
             </span>
 
-            {isEdit ? "Edit Worker Details" : "Worker Registration"}
+            {formHeading}
           </h1>
 
           <div className="flex gap-2">
@@ -730,22 +850,26 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       className="bg-sky-50 text-gray-600 cursor-not-allowed"
                     />
 
-                    <Input
-                      {...formik.getFieldProps("CO")}
-                      label="C/O"
-                      required
-                      error={formik.touched.CO && formik.errors.CO}
-                    />
+                    {!isTenant21 && (
+                      <Input
+                        {...formik.getFieldProps("CO")}
+                        label="C/O"
+                        required
+                        error={formik.touched.CO && formik.errors.CO}
+                      />
+                    )}
 
-                    <Select
-                      {...formik.getFieldProps("relationship")}
-                      label="Relationship"
-                    >
-                      <option value="">Select</option>
-                      {RELATIONSHIP_OPTIONS.map((relation) => (
-                        <option key={relation}>{relation}</option>
-                      ))}
-                    </Select>
+                    {!isTenant21 && (
+                      <Select
+                        {...formik.getFieldProps("relationship")}
+                        label="Relationship"
+                      >
+                        <option value="">Select</option>
+                        {RELATIONSHIP_OPTIONS.map((relation) => (
+                          <option key={relation}>{relation}</option>
+                        ))}
+                      </Select>
+                    )}
 
                     <Select
                       {...formik.getFieldProps("gender")}
@@ -777,84 +901,136 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                         formik.errors.contactNumber
                       }
                     />
-                    <Input
-                      {...formik.getFieldProps("employeeId")}
-                      label="Employee Id"
-                      error={
-                        formik.touched.employeeId && formik.errors.employeeId
-                      }
-                    />
-                    <Select
-                      {...formik.getFieldProps("vendor_id")}
-                      label="Vendor Name"
-                    >
-                      <option value="">Select Vendor</option>
-                      {vendors.map((vendor) => (
-                        <option key={vendor.id} value={String(vendor.id)}>
-                          {vendor.name}
-                        </option>
-                      ))}
-                    </Select>
-                    <Select
-                      {...formik.getFieldProps("occupation")}
-                      label="Occupation"
-                      error={
-                        formik.touched.occupation && formik.errors.occupation
-                      }
-                    >
-                      <option value="">Select</option>
-                      {OCCUPATION_OPTIONS.map((e) => (
-                        <option key={e}>{e}</option>
-                      ))}
-                    </Select>
-                    <Select
-                      {...formik.getFieldProps("department_id")}
-                      label="Department"
-                      required
-                      error={
-                        formik.touched.department_id &&
-                        formik.errors.department_id
-                      }
-                      onChange={(e) => {
-                        const departmentId = e.target.value;
-                        formik.setFieldValue("department_id", departmentId);
-                        formik.setFieldValue("designation_id", "");
-                        formik.setFieldTouched("department_id", true, false);
-                        formik.setFieldTouched("designation_id", false, false);
-                      }}
-                      onBlur={formik.handleBlur}
-                    >
-                      <option value="">Select Department</option>
+                    {!isTenant21 && (
+                      <Input
+                        {...formik.getFieldProps("employeeId")}
+                        label="Employee Id"
+                        error={
+                          formik.touched.employeeId && formik.errors.employeeId
+                        }
+                      />
+                    )}
+                    {!isTenant21 && (
+                      <Select
+                        {...formik.getFieldProps("vendor_id")}
+                        label="Vendor Name"
+                      >
+                        <option value="">Select Vendor</option>
+                        {vendors.map((vendor) => (
+                          <option key={vendor.id} value={String(vendor.id)}>
+                            {vendor.name}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+                    {!isTenant21 && (
+                      <Select
+                        {...formik.getFieldProps("occupation")}
+                        label="Occupation"
+                        error={
+                          formik.touched.occupation && formik.errors.occupation
+                        }
+                      >
+                        <option value="">Select</option>
+                        {OCCUPATION_OPTIONS.map((e) => (
+                          <option key={e}>{e}</option>
+                        ))}
+                      </Select>
+                    )}
+                    {!isTenant21 && (
+                      <Select
+                        {...formik.getFieldProps("department_id")}
+                        label="Department"
+                        required
+                        error={
+                          formik.touched.department_id &&
+                          formik.errors.department_id
+                        }
+                        onChange={(e) => {
+                          const departmentId = e.target.value;
+                          formik.setFieldValue("department_id", departmentId);
+                          formik.setFieldValue("designation_id", "");
+                          formik.setFieldTouched("department_id", true, false);
+                          formik.setFieldTouched("designation_id", false, false);
+                        }}
+                        onBlur={formik.handleBlur}
+                      >
+                        <option value="">Select Department</option>
 
-                      {departments.map((item) => (
-                        <option key={item.id} value={String(item.id)}>
-                          {item.name || `Department #${item.id}`}
-                        </option>
-                      ))}
-                    </Select>
+                        {departments.map((item) => (
+                          <option key={item.id} value={String(item.id)}>
+                            {item.name || `Department #${item.id}`}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
 
-                    <Select
-                      {...formik.getFieldProps("designation_id")}
-                      label="Designation"
-                      required
-                      disabled={!formik.values.department_id}
-                      error={
-                        formik.touched.designation_id &&
-                        formik.errors.designation_id
-                      }
-                    >
-                      <option value="">
-                        {formik.values.department_id
-                          ? "Select Designation"
-                          : "Select Department First"}
-                      </option>
-
-                      {designation.map((item) => (
-                        <option key={item.id} value={String(item.id)}>
-                          {item.name || `Designation #${item.id}`}
+                    {!isTenant21 && (
+                      <Select
+                        {...formik.getFieldProps("designation_id")}
+                        label="Designation"
+                        required
+                        disabled={!formik.values.department_id}
+                        error={
+                          formik.touched.designation_id &&
+                          formik.errors.designation_id
+                        }
+                      >
+                        <option value="">
+                          {formik.values.department_id
+                            ? "Select Designation"
+                            : "Select Department First"}
                         </option>
-                      ))}
-                    </Select>
+
+                        {designation.map((item) => (
+                          <option key={item.id} value={String(item.id)}>
+                            {item.name || `Designation #${item.id}`}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+
+                    {isTenant21 && (
+                      <Select
+                        {...formik.getFieldProps("ayushmanCardHolder")}
+                        label="Ayushman Card Holder"
+                      >
+                        <option value="">Select</option>
+                        {YES_NO_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+
+                    {isTenant21 && (
+                      <Select
+                        {...formik.getFieldProps("needHomeCare")}
+                        label="Need Home Care"
+                      >
+                        <option value="">Select</option>
+                        {YES_NO_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+
+                    {isTenant21 && (
+                      <Select
+                        {...formik.getFieldProps("specialCategory")}
+                        label="Special Category"
+                      >
+                        <option value="">Select</option>
+                        {SPECIAL_CATEGORY_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
                   </div>
                 </section>
               )}
@@ -958,10 +1134,44 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       onChange={formik.handleChange}
                       name="healthCardNumber"
                     />
-                    <Input
-                      {...formik.getFieldProps("localAddress")}
-                      label="Local Address"
-                    />
+                    {isTenant21 ? (
+                      <Select
+                        label="Village"
+                        required
+                        name="villageId"
+                        value={formik.values.villageId}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          formik.setFieldValue("villageId", value);
+                          const match = villages.find(
+                            (v) => String(v.value) === String(value),
+                          );
+                          formik.setFieldValue(
+                            "localAddress",
+                            match?.label || "",
+                          );
+                        }}
+                        onBlur={formik.handleBlur}
+                        error={
+                          formik.touched.villageId && formik.errors.villageId
+                        }
+                      >
+                        <option value="">Select Village</option>
+                        {villages.map((village) => (
+                          <option
+                            key={village.value}
+                            value={String(village.value)}
+                          >
+                            {village.label}
+                          </option>
+                        ))}
+                      </Select>
+                    ) : (
+                      <Input
+                        {...formik.getFieldProps("localAddress")}
+                        label="Local Address"
+                      />
+                    )}
                     <Input
                       {...formik.getFieldProps("permanentAddress")}
                       label="Permanent Address"
@@ -1126,35 +1336,69 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                         <b>Contact:</b> {formik.values.contactNumber || "-"}
                       </p>
 
-                      <p>
-                        <b>C/O:</b> {formik.values.CO || "-"}
-                      </p>
+                      {!isTenant21 && (
+                        <p>
+                          <b>C/O:</b> {formik.values.CO || "-"}
+                        </p>
+                      )}
                       {/* <p>
                         <b>Local Address:</b> {formik.values.localAddress}
                       </p> */}
 
-                      <p>
-                        <b>Relationship:</b> {formik.values.relationship || "-"}
-                      </p>
+                      {!isTenant21 && (
+                        <p>
+                          <b>Relationship:</b>{" "}
+                          {formik.values.relationship || "-"}
+                        </p>
+                      )}
 
-                      <p>
-                        <b>Employee ID:</b> {formik.values.employeeId || "-"}
-                      </p>
+                      {!isTenant21 && (
+                        <p>
+                          <b>Employee ID:</b> {formik.values.employeeId || "-"}
+                        </p>
+                      )}
 
-                      <p>
-                        <b>Vendor Name:</b> {selectedVendor?.name || "-"}
-                      </p>
+                      {!isTenant21 && (
+                        <p>
+                          <b>Vendor Name:</b> {selectedVendor?.name || "-"}
+                        </p>
+                      )}
 
                       <p>
                         <b>Category:</b> {formik.values.fincat || "-"}
                       </p>
-                      <p>
-                        <b>Department:</b> {selectedDepartment?.name || "-"}
-                      </p>
+                      {!isTenant21 && (
+                        <p>
+                          <b>Department:</b> {selectedDepartment?.name || "-"}
+                        </p>
+                      )}
 
-                      <p>
-                        <b>Designation:</b> {selectedDesignation?.name || "-"}
-                      </p>
+                      {!isTenant21 && (
+                        <p>
+                          <b>Designation:</b> {selectedDesignation?.name || "-"}
+                        </p>
+                      )}
+
+                      {isTenant21 && (
+                        <p>
+                          <b>Ayushman Card Holder:</b>{" "}
+                          {formik.values.ayushmanCardHolder || "-"}
+                        </p>
+                      )}
+
+                      {isTenant21 && (
+                        <p>
+                          <b>Need Home Care:</b>{" "}
+                          {formik.values.needHomeCare || "-"}
+                        </p>
+                      )}
+
+                      {isTenant21 && (
+                        <p>
+                          <b>Special Category:</b>{" "}
+                          {formik.values.specialCategory || "-"}
+                        </p>
+                      )}
                     </div>
 
                     <div className="border-t pt-3 text-sm">
@@ -1164,9 +1408,12 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                           {formik.values.residentialstatus || "-"}
                         </p>
 
-                        <p>
-                          <b>Occupation:</b> {formik.values.occupation || "-"}
-                        </p>
+                        {!isTenant21 && (
+                          <p>
+                            <b>Occupation:</b>{" "}
+                            {formik.values.occupation || "-"}
+                          </p>
+                        )}
 
                         <p>
                           <b>Country:</b>{" "}
@@ -1209,9 +1456,18 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       </div>
 
                       <div className="mt-3">
-                        <p>
-                          <b>Address:</b> {formik.values.localAddress || "-"}
-                        </p>
+                        {isTenant21 ? (
+                          <p>
+                            <b>Village:</b>{" "}
+                            {selectedVillage?.label ||
+                              formik.values.localAddress ||
+                              "-"}
+                          </p>
+                        ) : (
+                          <p>
+                            <b>Address:</b> {formik.values.localAddress || "-"}
+                          </p>
+                        )}
                         <p>
                           <b>Permanent Address:</b>{" "}
                           {formik.values.permanentAddress || "-"}
