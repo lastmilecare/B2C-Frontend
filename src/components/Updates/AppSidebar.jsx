@@ -694,7 +694,9 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                OHC Dashboard
+                 {Number(tenantId) === Number(import.meta.env.VITE_TENANT_ID)
+                  ? "Dashboard"
+                  : "OHC Dashboard"}
               </NavLink>
             )}
             {can("create:ohc_patient_registration") && (

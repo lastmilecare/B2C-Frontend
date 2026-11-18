@@ -2642,6 +2642,16 @@ export const api = createApi({
       }),
       providesTags: ["DashboardPatientFeedback"],
     }),
+    exportPatientExcel: build.query({
+      query: (filters = {}) => ({
+        url: "/patient/patient-export",
+        method: "GET",
+        params: filters,
+        responseType: "blob",
+      }),
+      // transformResponse: (response) => response,
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -2914,4 +2924,5 @@ export const {
   useGetThirdPartyQuery,
   useGetThirdPartyCategoryQuery,
   useGetPatientFeedbackQuery,
+  useLazyExportPatientExcelQuery,
 } = api;

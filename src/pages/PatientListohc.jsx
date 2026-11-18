@@ -6,6 +6,7 @@ import {
   useBulkUploadPatientsMutation,
   useDeletePatientMutation,
   useGetComboQuery,
+  useLazyExportPatientExcelQuery,
 } from "../redux/apiSlice";
 import PatientTable from "../components/Updates/PatientTable";
 import CopyFilterBar from "../components/Updates/Filter";
@@ -16,19 +17,18 @@ import { useNavigate } from "react-router-dom";
 import BulkUploadModal from "./BulkUploadModal";
 import { downloadBlob, getBulkTemplateFilename } from "../utils/downloadBlob";
 import { cookie } from "../utils/cookie";
-
+import { generateFileName } from "../utils/helper";
 const CONFIGURED_TENANT_ID = Number(import.meta.env.VITE_TENANT_ID);
 
 const PatientListohc = () => {
   const navigate = useNavigate();
-  const isTenant21 =
-    Number(cookie.get("tenantId")) === CONFIGURED_TENANT_ID;
+  const isTenant21 = Number(cookie.get("tenantId")) === CONFIGURED_TENANT_ID;
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
   const [uhidSearch, setUhidSearch] = useState("");
   const debouncedUhid = useDebounce(uhidSearch, 500);
-
+  const [exportExcel] = useLazyExportPatientExcelQuery();
   const { data: suggestions = [] } = useSearchUHIDQuery(debouncedUhid, {
     skip: debouncedUhid.length < 2,
   });
@@ -384,12 +384,43 @@ const PatientListohc = () => {
   ];
 
   const listTitle = isTenant21 ? "Registration List" : "Patient List";
+  const handleExport = async () => {
+    try {
+      debugger;
+      const blob = await exportExcel({
+        ...filters,
+        reportType: "list",
+      }).unwrap();
 
+      const fileName = generateFileName("RegistrationDetail", {
+        dateFrom: filters?.startDate,
+        dateTo: filters?.endDate,
+        extension: "xlsx",
+      });
+
+      downloadBlob(blob, fileName);
+    } catch (error) {
+      const status = error?.status;
+      const message = error?.data?.message || "Something went wrong";
+
+      if (status === 404) {
+        return healthAlert({
+          title: "No Data Found",
+          text: message,
+          icon: "info",
+        });
+      }
+
+      healthAlert({
+        title: "Export Error",
+        text: message,
+        icon: "error",
+      });
+    }
+  };
   return (
     <div className="max-w-7xl mx-auto">
-      <h1 className="text-2xl font-semibold text-gray-700 mb-6">
-        {listTitle}
-      </h1>
+      <h1 className="text-2xl font-semibold text-gray-700 mb-6">{listTitle}</h1>
 
       <CopyFilterBar
         filtersConfig={filtersConfig}
@@ -400,6 +431,7 @@ const PatientListohc = () => {
         suggestions={suggestions}
         uhidSearch={uhidSearch}
         onSelectSuggestion={handleSelectSuggestion}
+        onExport={handleExport}
       />
 
       <PatientTable
