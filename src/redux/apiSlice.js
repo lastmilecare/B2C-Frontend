@@ -78,6 +78,7 @@ export const api = createApi({
         endDate,
         external_id,
         idProof_number,
+        localAddress,
       } = {}) => ({
         url: "/patient",
         method: "get",
@@ -92,6 +93,7 @@ export const api = createApi({
           endDate,
           external_id,
           idProof_number,
+          localAddress,
         },
       }),
       providesTags: ["Patient"],

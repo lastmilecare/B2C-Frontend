@@ -7,10 +7,15 @@ import {
   ClipboardDocumentIcon,
   CreditCardIcon,
 } from "@heroicons/react/24/outline";
+import { cookie } from "../utils/cookie";
+
+const CONFIGURED_TENANT_ID = Number(import.meta.env.VITE_TENANT_ID);
 
 const PatientPage = () => {
   const location = useLocation();
   const { id } = useParams();
+  const isTenant21 =
+    Number(cookie.get("tenantId")) === CONFIGURED_TENANT_ID;
 
   const [activeTab, setActiveTab] = useState("form");
 
@@ -40,7 +45,7 @@ const PatientPage = () => {
             }`}
           >
             <ClipboardDocumentIcon className="w-4 h-4" />
-            Worker Form
+            {isTenant21 ? "Registration Form" : "Worker Form"}
           </button>
 
          
@@ -54,7 +59,7 @@ const PatientPage = () => {
             }`}
           >
             <CreditCardIcon className="w-4 h-4" />
-            Worker List
+            {isTenant21 ? "Registration List" : "Worker List"}
           </button>
 
         </div>

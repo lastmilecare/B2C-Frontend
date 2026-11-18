@@ -703,7 +703,9 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                Worker Registration
+                {Number(tenantId) === Number(import.meta.env.VITE_TENANT_ID)
+                  ? "Registration"
+                  : "Worker Registration"}
               </NavLink>
             )}
             {/* {can("create:ohc_patient_registration") && ( */}
