@@ -602,11 +602,12 @@ const patientTypeOptions = [
   { value: "apl", label: "APL" },
   { value: "bpl", label: "BPL" },
 ];
-
+const todayDate = new Date().toISOString().slice(0, 10);
+const initialDateRange = defaultDateRange("2025-06-01", todayDate);
 export const ampTabs = {
   revenue: {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+      dateRange: initialDateRange,
       service: "all",
     }),
     filters: [
@@ -636,7 +637,7 @@ export const ampTabs = {
   },
   cost: {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2024-04-01", "2026-06-30"),
+      dateRange: initialDateRange,
       category: "all",
     }),
     filters: [
@@ -658,7 +659,7 @@ export const ampTabs = {
   },
   feedback: {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2025-06-01", "2025-06-30"),
+      dateRange: initialDateRange,
       feedback: "all",
     }),
     filters: [
@@ -688,7 +689,7 @@ export const ampTabs = {
   },
   "third-party": {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2024-07-01", "2026-06-30"),
+      dateRange: initialDateRange,
       category: "all",
     }),
     filters: [
@@ -711,7 +712,7 @@ export const ampTabs = {
   },
   "third-party-category": {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2024-07-01", "2026-06-30"),
+      dateRange: initialDateRange,
       category: "all",
     }),
     filters: [
@@ -740,7 +741,7 @@ export const ampTabs = {
     initialFilters: () => ({
       gender: "all",
       patientType: "all",
-      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+      dateRange: initialDateRange,
     }),
     filters: [
       { id: "dateRange", type: "dateRange", label: "Registration date" },
@@ -810,15 +811,29 @@ export const ampTabs = {
   },
   footfall: {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2024-05-01", "2026-09-30"),
+      gender: "all",
+      patientType: "all",
+      dateRange: initialDateRange,
     }),
-    filters: [{ id: "dateRange", type: "dateRange", label: "Date" }],
+    filters: [
+      { id: "dateRange", type: "dateRange", label: "Date" },
+      { id: "gender", type: "select", label: "Gender", options: genderOptions },
+      {
+        id: "patientType",
+        type: "select",
+        label: "Patient type",
+        options: patientTypeOptions,
+      },
+    ],
     select: (filters) =>
       selectFootfall(
         {
           total: monthSeries("2024-05-01", footfallTotal),
           unique: monthSeries("2024-05-01", footfallUnique),
-          registrationTrend: monthSeries("2024-05-01", footfallUnique.map((p) => Math.round(p.value * 0.42))),
+          registrationTrend: monthSeries(
+            "2024-05-01",
+            footfallUnique.map((p) => Math.round(p.value * 0.42)),
+          ),
           headline: {
             totalPatients: 45278,
             uniquePatients: 23559,
@@ -831,7 +846,7 @@ export const ampTabs = {
   /** AMP Disease Analysis tab — same data as GET /dashboard/patient-complaints (ChiefComplaints). */
   disease: {
     initialFilters: () => ({
-      dateRange: defaultDateRange("2025-01-01", "2026-09-30"),
+      dateRange: initialDateRange,
       complaint: "all",
       area: "all",
     }),
@@ -879,7 +894,7 @@ export const ampTabs = {
     initialFilters: () => ({
       gender: "all",
       patientType: "all",
-      dateRange: defaultDateRange("2024-07-01", "2026-09-30"),
+      dateRange: initialDateRange,
     }),
     filters: [
       { id: "dateRange", type: "dateRange", label: "Camp date" },
