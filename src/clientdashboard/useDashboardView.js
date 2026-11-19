@@ -10,6 +10,7 @@ import {
   useGetThirdPartyQuery,
   useGetThirdPartyCategoryQuery,
   useGetPatientFeedbackQuery,
+  useGetMhcuProgramOverviewQuery,
 } from "../redux/apiSlice";
 
 import { resolveApiTabMode, usesPatientComplaintsApi } from "./apiTabRouting";
@@ -83,6 +84,12 @@ function buildQueryArg(tenantSlug, tabId, filters) {
   //     ...dateRangeQuery(filters),
   //   };
   // }
+  if (tenantSlug === "mhcu-adani" && tabId === "overview") {
+    return {
+      village: filters.village ?? "all",
+      ...dateRangeQuery(filters),
+    };
+  }
 
   return {
     gender: filters.gender ?? "all",
@@ -128,6 +135,9 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
   const patientFeedback = useGetPatientFeedbackQuery(queryArg, {
     skip: mode !== "patientFeedback",
   });
+  const mhcuProgramOverview = useGetMhcuProgramOverviewQuery(queryArg, {
+    skip: mode !== "mhcuProgramOverview",
+  });
   const active =
     mode === "patientProfile"
       ? patientProfile
@@ -147,7 +157,9 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
                     ? thirdPartyCategory
                     : mode === "patientFeedback"
                       ? patientFeedback
-                      : null;
+                      : mode === "mhcuProgramOverview"
+                        ? mhcuProgramOverview
+                        : null;
 
   const dummyView = useMemo(() => {
     if (mode) return null;

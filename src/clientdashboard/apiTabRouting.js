@@ -12,7 +12,9 @@ const TAB_MODES = {
   "third-party": "thirdParty",
   "third-party-category": "thirdPartyCategory",
 };
-
+const MHCU_API_TAB_MODES = {
+  overview: "mhcuProgramOverview",
+};
 export function resolveApiTabMode(tenantSlug, tabId) {
   if (tabId === "disease" && tenantSlug === "amp") {
     return "patientComplaints";
@@ -20,6 +22,10 @@ export function resolveApiTabMode(tenantSlug, tabId) {
   if (tabId === "feedback" && tenantSlug === "amp") {
     return "patientFeedback";
   }
+  if (tenantSlug === "mhcu-adani") {
+    return MHCU_API_TAB_MODES[tabId] ?? null;
+  }
+
   return TAB_MODES[tabId] ?? null;
 }
 
