@@ -664,6 +664,59 @@ function FeedbackPanel({ view }) {
     </div>
   );
 }
+// const PANELS = {
+//   revenue: RevenuePanel,
+//   cost: CostPanel,
+//   "third-party": ThirdPartyPanel,
+//   "third-party-category": ThirdPartyCategoryPanel,
+//   patients: PatientsPanel,
+//   footfall: FootfallPanel,
+//   disease: DiseasePanel,
+//   complaints: ComplaintsPanel,
+//   feedback: FeedbackPanel,
+// };
+import {
+  MhcuAwarenessPanel,
+  MhcuConcernPanel,
+  MhcuHomeCarePanel,
+  MhcuInventoryPanel,
+  MhcuMedicinesPanel,
+  MhcuOverviewPanel,
+  MhcuRiskPanel,
+  MhcuSchemesPanel,
+  MhcuTablePanel,
+  MhcuVillageScorecardPanel,
+} from "./mhcu-panels";
+function MhcuOverviewWrap({ view }) {
+  return <MhcuOverviewPanel view={view} KpiRow={KpiRow} />;
+}
+function MhcuRiskWrap({ view }) {
+  return <MhcuRiskPanel view={view} KpiRow={KpiRow} />;
+}
+function MhcuScorecardWrap({ view }) {
+  return <MhcuVillageScorecardPanel view={view} />;
+}
+function MhcuMedicinesWrap({ view }) {
+  return <MhcuMedicinesPanel view={view} KpiRow={KpiRow} />;
+}
+function MhcuInventoryWrap({ view }) {
+  return <MhcuInventoryPanel view={view} KpiRow={KpiRow} />;
+}
+function MhcuHomeCareWrap({ view }) {
+  return <MhcuHomeCarePanel view={view} KpiRow={KpiRow} />;
+}
+function MhcuReferralsWrap({ view }) {
+  return <MhcuTablePanel view={view} KpiRow={KpiRow} title="Referrals" />;
+}
+function MhcuSchemesWrap({ view }) {
+  return <MhcuSchemesPanel view={view} KpiRow={KpiRow} />;
+}
+function MhcuAwarenessWrap({ view }) {
+  return <MhcuAwarenessPanel view={view} KpiRow={KpiRow} />;
+}
+function MhcuConcernWrap({ view }) {
+  return <MhcuConcernPanel view={view} KpiRow={KpiRow} />;
+}
 const PANELS = {
   revenue: RevenuePanel,
   cost: CostPanel,
@@ -674,7 +727,18 @@ const PANELS = {
   disease: DiseasePanel,
   complaints: ComplaintsPanel,
   feedback: FeedbackPanel,
+  "mhcu-overview": MhcuOverviewWrap,
+  "mhcu-risk": MhcuRiskWrap,
+  "mhcu-village-scorecard": MhcuScorecardWrap,
+  "mhcu-medicines": MhcuMedicinesWrap,
+  "mhcu-inventory": MhcuInventoryWrap,
+  "mhcu-home-care": MhcuHomeCareWrap,
+  "mhcu-referrals": MhcuReferralsWrap,
+  "mhcu-schemes": MhcuSchemesWrap,
+  "mhcu-awareness": MhcuAwarenessWrap,
+  "mhcu-concern": MhcuConcernWrap,
 };
+
 export function DashboardPanel({ view }) {
   if (!view || view.empty) {
     return <ChartEmpty message="No records for the selected filters." />;

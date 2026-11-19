@@ -2,11 +2,10 @@ import { monthOverlaps, reconcile, sum, yearOverlaps } from "./allocate";
 
 const GENDER_LABEL = { male: "Male", female: "Female", other: "Other" };
 
-function clip(series, range) {
+export function clip(series, range) {
   return series.filter((point) => monthOverlaps(point.iso, range));
 }
-
-function isFull(series, range) {
+export function isFull(series, range) {
   return clip(series, range).length === series.length;
 }
 

@@ -1,5 +1,6 @@
 import { ampTabs } from "./dummy/tenants/amp";
 import { hondaTabs } from "./dummy/tenants/honda";
+import { mhcuAdaniTabs } from "./dummy/tenants/mhcu-adani";
 
 /**
  * Dummy dashboard source. Replace `sources` with RTK Query results later;
@@ -8,6 +9,7 @@ import { hondaTabs } from "./dummy/tenants/honda";
 const sources = {
   amp: ampTabs,
   honda: hondaTabs,
+  "mhcu-adani": mhcuAdaniTabs,
 };
 
 export function getTabBundle(tenantId, tabId) {

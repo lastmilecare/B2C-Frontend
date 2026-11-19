@@ -85,6 +85,8 @@ import {
   HondaManagementExpPage,
 } from "../pages/expenses/expenseRouteComponents";
 import ExpenseLandingPage from "../pages/expenses/ExpenseLandingPage";
+import MhcuAdaniDashboardPage from "../clients/mhcu-adani/MhcuAdaniDashboardPage";
+
 export const ROUTES = [
   // ── Dashboard ─────────────────────────────────────────────────────────────
   {
@@ -931,6 +933,12 @@ export const ROUTES = [
     path: "/expense-transactions/operating/*",
     component: AmpOperatingExpensePage,
     permission: "read:add_expense",
+    showInSidebar: false,
+  },
+  {
+    path: "/mhcu-adani-dashboard",
+    component: MhcuAdaniDashboardPage,
+    permission: "read:client_dashboard",
     showInSidebar: false,
   },
 ];

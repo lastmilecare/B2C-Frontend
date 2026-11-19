@@ -552,7 +552,16 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
               >
                 AMP Dashboard
               </NavLink>
+            ) : tenantId == 21? (
+              <NavLink
+                to="/mhcu-adani-dashboard"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                MHCU Dashboard
+              </NavLink>
             ) : null}
+            
           </MenuGroup>
         )}
         {can("read:add_expense") && (

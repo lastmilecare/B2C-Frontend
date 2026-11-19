@@ -18,6 +18,14 @@ const clients = [
     href: "/honda",
     accent: "border-red-200 bg-red-50/50",
   },
+  {
+    slug: "mhcu-adani",
+    name: "MHCU-ADANI",
+    description:
+      "Patient care and operations — complaints, tests.",
+    href: "/mhcu-adani",
+    accent: "border-red-200 bg-red-50/50",
+  },
 ];
 
 export function HomePage() {
