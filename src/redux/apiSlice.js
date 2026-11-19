@@ -413,6 +413,17 @@ export const api = createApi({
       }),
       providesTags: ["Prescription"],
     }),
+    getVisitVitals: build.query({
+      query: ({ picasoId, excludeBillNo } = {}) => ({
+        url: "/picasoid-prescription/visit-vitals",
+        method: "GET",
+        params: {
+          picasoId,
+          ...(excludeBillNo ? { excludeBillNo } : {}),
+        },
+      }),
+      providesTags: ["Prescription"],
+    }),
     createPrescription: build.mutation({
       query: (PrescriptionData) => ({
         url: "/picasoid-prescription/create",
@@ -2697,6 +2708,7 @@ export const {
   useGetMedicineSalesQuery,
   useGetMediceneListQuery,
   useGetPrescriptionsListQuery,
+  useGetVisitVitalsQuery,
   useCreatePrescriptionMutation,
   useUpdatePrescriptionMutation,
   useTogglePrescriptionStatusMutation,
