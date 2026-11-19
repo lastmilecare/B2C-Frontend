@@ -41,6 +41,7 @@ import {
   useGetPrescriptionsListQuery,
   useGetAmbulanceServicesQuery,
   useGetFitnessCertificatesCountQuery,
+  useGetLowStockItemsQuery,
 } from "../redux/apiSlice";
 import { getOpdDashboardData } from "../utils/dashboard/opdTransformer";
 import { getPatientDashboardData } from "../utils/dashboard/patientTransformer";
@@ -204,11 +205,19 @@ export const Dashboard = () => {
       fitnessCertificateDashboard,
     ],
   );
+  const tenantId = cookie.get("tenantId") || "N/A";
+  const MMUClient = Number(tenantId) === Number(import.meta.env.VITE_TENANT_ID);
+  const { data: lowStockData, isLoading: stockLoading } =
+    useGetLowStockItemsQuery();
+  const lowStockItems = lowStockData?.data || [];
+  const [page, setPage] = useState(1);
 
+  const itemsPerPage = 5;
+
+  const startIndex = (page - 1) * itemsPerPage;
   const username = cookie.get("name") || "User";
   const role = cookie.get("role") || "N/A";
 
-  const tenantId = cookie.get("tenantId") || "N/A";
   const tenantName = tenantId == 1 ? "Honda" : "M3M";
   const opdChart = {
     labels: careFlow.labels,
@@ -408,7 +417,8 @@ export const Dashboard = () => {
       },
     ],
   };
-
+console.log("data.periodLabel", data);
+const kpiCard= MMUClient ? data.kpis.filter((kpi) => kpi.label !== "Fitness Certificates" && kpi.label !== "Ambulance Dispatches") : data.kpis;
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 rounded-xl bg-emerald-600 p-6 text-white sm:flex-row sm:items-center sm:justify-between">
@@ -465,7 +475,7 @@ export const Dashboard = () => {
       <p className="text-sm text-slate-500">{data.periodLabel}</p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {data.kpis.map((kpi, i) => (
+        {kpiCard.map((kpi, i) => (
           <KpiCard key={kpi.label} metric={kpi} index={i} />
         ))}
       </div>
@@ -503,7 +513,7 @@ export const Dashboard = () => {
         </ChartCard>
 
         <ChartCard
-          title="Workers Visited"
+          title= {MMUClient ? "Patients Visited" : "Workers Visited"}
           subtitle="Footfall volume — vertical bars for precise count comparison"
         >
           <div className="h-[220px]">
@@ -553,37 +563,89 @@ export const Dashboard = () => {
             }))}
           />
         </ChartCard> */}
-
-        <ChartCard
-          title="Fitness Certificates"
-          subtitle="Occupational fitness clearance issued per period"
-        >
-          <div className="h-[220px]">
-            <Bar
-              data={fitnessChart}
-              options={barChartOptions(false, "certificates")}
+        {!MMUClient && (
+          <ChartCard
+            title="Fitness Certificates"
+            subtitle="Occupational fitness clearance issued per period"
+          >
+            <div className="h-[220px]">
+              <Bar
+                data={fitnessChart}
+                options={barChartOptions(false, "certificates")}
+              />
+            </div>
+            <ChartLegend
+              items={[
+                { color: OHC_THEME.amber, label: "Fitness certificates" },
+              ]}
             />
-          </div>
-          <ChartLegend
-            items={[{ color: OHC_THEME.amber, label: "Fitness certificates" }]}
-          />
-        </ChartCard>
-
-        <ChartCard
-          title="Ambulance Service"
-          subtitle="Emergency dispatches — track volume by day/month/year"
-        >
-          <div className="h-[220px]">
-            <Bar
-              data={ambulanceChart}
-              options={barChartOptions(false, "dispatches")}
+          </ChartCard>
+        )}
+        {!MMUClient && (
+          <ChartCard
+            title="Ambulance Service"
+            subtitle="Emergency dispatches — track volume by day/month/year"
+          >
+            <div className="h-[220px]">
+              <Bar
+                data={ambulanceChart}
+                options={barChartOptions(false, "dispatches")}
+              />
+            </div>
+            <ChartLegend
+              items={[{ color: OHC_THEME.rose, label: "Ambulance dispatches" }]}
             />
-          </div>
-          <ChartLegend
-            items={[{ color: OHC_THEME.rose, label: "Ambulance dispatches" }]}
-          />
-        </ChartCard>
+          </ChartCard>
+        )}
+        {MMUClient && (
+          <ChartCard>
+            <div
+              className={`bg-white/70 backdrop-blur-lg shadow rounded-2xl p-6 ${
+                !can("read:sales_record") ? "opacity-50" : ""
+              }`}
+            >
+              <h3 className="font-semibold mb-4">Low Stock Medicines</h3>
 
+              <>
+                <div className="space-y-2 text-sm">
+                  {stockLoading ? (
+                    <p>Loading...</p>
+                  ) : lowStockItems.length === 0 ? (
+                    <p>No low stock items</p>
+                  ) : (
+                    paginatedItems.map((item) => (
+                      <div key={item.ID} className="flex justify-between">
+                        <span>{item.ItemName}</span>
+
+                        <span className="text-red-500 font-semibold">
+                          {item.BalQty} left
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="flex justify-between mt-4">
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage(page - 1)}
+                    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    Prev
+                  </button>
+
+                  <button
+                    disabled={startIndex + itemsPerPage >= lowStockItems.length}
+                    onClick={() => setPage(page + 1)}
+                    className="px-3 py-1 bg-emerald-500 text-white rounded disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            </div>
+          </ChartCard>
+        )}
         <ChartCard
           title="Chief Complaints"
           subtitle="Most common presenting complaints — donut for proportion at a glance"
@@ -620,48 +682,6 @@ export const Dashboard = () => {
           </div>
         </ChartCard>
       </div>
-      {/* 
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-        <h3 className="text-base font-semibold text-slate-800">
-          Recommended dashboard layout for OHC
-        </h3>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              title: "Executive KPI strip",
-              desc: "Top cards with today / this month / this year totals and % change vs previous period.",
-            },
-            {
-              title: "Care flow grouped bars",
-              desc: "Registration → OPD → Prescription side-by-side — best for spotting drop-off in your core flow.",
-            },
-            {
-              title: "Trend lines (OPD, Rx)",
-              desc: "Line charts for new vs follow-up and prescriptions — easy day/month/year comparison.",
-            },
-            {
-              title: "Volume bars (workers, fitness, ambulance)",
-              desc: "Vertical bars with integer ticks — precise counts for client EOD/EOM reports.",
-            },
-            {
-              title: "Distribution (tests, complaints)",
-              desc: "Horizontal bars for test names; donut + table for complaint mix percentages.",
-            },
-            {
-              title: "Filters",
-              desc: "Day | Month | Year toggle plus center filter for parent vs single-site views.",
-            },
-          ].map((item) => (
-            <div
-              key={item.title}
-              className="rounded-xl border border-white bg-white p-4 shadow-sm"
-            >
-              <p className="font-medium text-emerald-800">{item.title}</p>
-              <p className="mt-1 text-sm text-slate-500">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div> */}
     </div>
   );
 };
