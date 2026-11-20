@@ -16,24 +16,24 @@ import {
   selectMhcuVillageScorecard,
   selectPatient,
 } from "./mhcu-adani/mhcu-select";
-
+import {
+  mhcuStandardFilters,
+  mhcuStandardInitialFilters,
+  MHCU_DEFAULT_DATE_RANGE,
+} from "../../../clientdashboard/mhcu-filters";
 const all = { value: "all", label: "All villages" };
 const villageOptions = [all, ...MHCU_VILLAGE_NAMES.map((name) => ({ value: name, label: name }))];
-
 const genderOptions = [
   all,
   { value: "male", label: "Male" },
   { value: "female", label: "Female" },
 ];
-
-const defaultRange = defaultDateRange("2026-01-01", "2026-11-30");
-
+const defaultRange = MHCU_DEFAULT_DATE_RANGE;
 const villageFilters = (extra = []) => [
   { id: "dateRange", type: "dateRange", label: "Date" },
   { id: "village", type: "select", label: "Village", options: villageOptions },
   ...extra,
 ];
-
 const patientProfile = {
   uniqueHeadline: 4820,
   base: 4820,
@@ -84,7 +84,6 @@ const patientProfile = {
     { name: "Home care", value: 128 },
   ],
 };
-
 const diseases = [
   { name: "Hypertension", visits: 620, category: "NCD", specialty: "General Medicine" },
   { name: "Diabetes", visits: 540, category: "NCD", specialty: "General Medicine" },
@@ -105,7 +104,6 @@ const diseaseTrend = monthSeries("2026-01-01", Array(11).fill(0)).map((point, in
   });
   return row;
 });
-
 const feedbackSlices = [
   { name: "5 — Excellent", value: 2100 },
   { name: "4 — Good", value: 1680 },
@@ -113,7 +111,6 @@ const feedbackSlices = [
   { name: "2 — Poor", value: 180 },
   { name: "1 — Very poor", value: 48 },
 ];
-
 const scorecardRows = MHCU_VILLAGE_NAMES.map((name, index) => ({
   village: name,
   opd: 420 - (index % 5) * 18,
@@ -122,7 +119,6 @@ const scorecardRows = MHCU_VILLAGE_NAMES.map((name, index) => ({
   awareness: 2 + (index % 2),
   feedbackScore: (4.1 + (index % 8) * 0.05).toFixed(1),
 }));
-
 const visitTrendMonths = monthSeries("2026-01-01", [
   280, 310, 340, 380, 420, 460, 490, 520, 540, 580, 610,
 ]).map((point, index) => ({
@@ -130,11 +126,10 @@ const visitTrendMonths = monthSeries("2026-01-01", [
   visits: [280, 310, 340, 380, 420, 460, 490, 520, 540, 580, 610][index],
   newPatients: [120, 130, 125, 140, 155, 165, 170, 178, 182, 190, 198][index],
 }));
-
 export const mhcuAdaniTabs = {
   overview: {
-    initialFilters: () => ({ village: "all", dateRange: defaultRange }),
-    filters: villageFilters(),
+    initialFilters: () => mhcuStandardInitialFilters(),
+    filters: mhcuStandardFilters(),
     select: (filters) =>
       selectMhcuOverview(
         {

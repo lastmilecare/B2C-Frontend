@@ -6,29 +6,32 @@ import { TENANTS } from "./tenants";
 import { DashboardPanel } from "./panels";
 import { useDashboardView } from "./useDashboardView";
 import { mergeFilterOptionsFromView } from "./mergeFilterOptions";
+import { mhcuApiFiltersReady } from "./mhcu-filters";
 
 export function TenantDashboard({ tenantId }) {
   const config = TENANTS[tenantId];
   const [searchParams, setSearchParams] = useSearchParams();
   const requested = searchParams.get("tab");
-  const tabId = config.tabs.some((tab) => tab.id === requested)
-    ? requested
-    : config.tabs[0].id;
+  const tabId = config.tabs.some((tab) => tab.id === requested) ? requested : config.tabs[0].id;
   const bundle = getTabBundle(tenantId, tabId);
   const [filters, setFilters] = useState(() => bundle.initialFilters());
+
   useEffect(() => {
     setFilters(getTabBundle(tenantId, tabId).initialFilters());
   }, [tenantId, tabId]);
+
   const { view, isLoading, isError, error, isApiTab } = useDashboardView(
     tenantId,
     tabId,
     filters,
     bundle,
   );
+
   const filterFields = useMemo(
     () => mergeFilterOptionsFromView(bundle.filters, view),
-    [bundle.filters, view?.categoryOptions],
+    [bundle.filters, view?.categoryOptions, view?.feedbackOptions],
   );
+
   return (
     <DashboardShell
       title={config.title}
@@ -46,11 +49,14 @@ export function TenantDashboard({ tenantId }) {
         <FilterBar
           filters={filterFields}
           values={filters}
-          onChange={(id, value) =>
-            setFilters((current) => ({ ...current, [id]: value }))
-          }
+          onChange={(id, value) => setFilters((current) => ({ ...current, [id]: value }))}
         />
       </div>
+      {tenantId === "mhcu-adani" && isApiTab && !mhcuApiFiltersReady(filters) && (
+        <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Select a valid date range to load this tab.
+        </p>
+      )}
       {isApiTab && isLoading && (
         <p className="mb-4 text-sm text-muted">Loading dashboard data…</p>
       )}
@@ -59,7 +65,13 @@ export function TenantDashboard({ tenantId }) {
           Could not load data{error?.error ? `: ${error.error}` : "."}
         </p>
       )}
-      <DashboardPanel view={view} />
+      <DashboardPanel
+        view={
+          tenantId === "mhcu-adani" && isApiTab && !mhcuApiFiltersReady(filters)
+            ? null
+            : view
+        }
+      />
     </DashboardShell>
   );
 }

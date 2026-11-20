@@ -12,7 +12,7 @@ import {
   useGetPatientFeedbackQuery,
   useGetMhcuProgramOverviewQuery,
 } from "../redux/apiSlice";
-
+import { mhcuApiFiltersReady, mhcuStandardQueryParams } from "./mhcu-filters";
 import { resolveApiTabMode, usesPatientComplaintsApi } from "./apiTabRouting";
 const API_ENABLED = Boolean(import.meta.env.VITE_API_BASE_URL?.trim());
 function campDateQuery(filters) {
@@ -85,10 +85,7 @@ function buildQueryArg(tenantSlug, tabId, filters) {
   //   };
   // }
   if (tenantSlug === "mhcu-adani" && tabId === "overview") {
-    return {
-      village: filters.village ?? "all",
-      ...dateRangeQuery(filters),
-    };
+    return mhcuStandardQueryParams(filters);
   }
 
   return {

@@ -2653,10 +2653,16 @@ export const api = createApi({
       keepUnusedDataFor: 0,
     }),
     getMhcuProgramOverview: build.query({
-      query: ({ village = "all", from, to } = {}) => ({
+      query: ({
+        village = "all",
+        patientType = "all",
+        gender = "all",
+        from,
+        to,
+      } = {}) => ({
         url: "/dashboard/mhcu/program-overview",
         method: "GET",
-        params: { village, from, to },
+        params: { village, patientType, gender, from, to },
       }),
       providesTags: ["DashboardMhcuProgramOverview"],
     }),
