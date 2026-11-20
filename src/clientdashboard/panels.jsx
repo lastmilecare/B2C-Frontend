@@ -486,7 +486,7 @@ function FootfallPanel({ view }) {
           xLabel="Month"
         />
       </DashboardCard>
-      <DashboardCard title="Unique Patients Footfall">
+      <DashboardCard title="Unique Patients Footfall (IN OPD)">
         <TrendLineChart
           data={view.uniqueTrend}
           yLabel="Unique patients"
