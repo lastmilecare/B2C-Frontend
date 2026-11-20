@@ -31,6 +31,13 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { useSelector } from "react-redux";
 import { cookie } from "../utils/cookie";
+import { getTenantFeatures } from "../config/tenantFeatures";
+import { calculateBMI } from "../utils/healthFlags";
+import {
+  REFERRAL_TO_OPTIONS,
+  REFERRAL_URGENCY_OPTIONS,
+} from "../utils/referralData";
+
 const parseChiefComplaintNames = (value) => {
   if (!value || typeof value !== "string") return [];
 
@@ -41,6 +48,7 @@ const parseChiefComplaintNames = (value) => {
 };
 
 const OhcPrescriptionForm = () => {
+  const tenantFeatures = getTenantFeatures(cookie.get("tenantId"));
   const [activeStep, setActiveStep] = useState(1);
 
   const nextStep = async () => {
@@ -202,6 +210,14 @@ const OhcPrescriptionForm = () => {
       height: values.height ? Number(values.height) : null,
       weight: values.weight ? Number(values.weight) : null,
       glucose: values.glucose ? Number(values.glucose) : null,
+      ...(tenantFeatures.enableHemoglobin
+        ? {
+            haemoglobin:
+              values.haemoglobin !== "" && values.haemoglobin != null
+                ? Number(values.haemoglobin)
+                : null,
+          }
+        : {}),
       chiefComplaints: values.ChiefComplaint?.map((c) => c.name).join(", "),
       history: values.history || "",
 
@@ -211,7 +227,16 @@ const OhcPrescriptionForm = () => {
       preventiveAdvice: values.advice || "",
       otherInstructions: values.otherinstrution || "",
       nextFollowup: values.followup || "",
-      referrals: values.ReferTo,
+      referrals: tenantFeatures.enableStructuredReferral
+        ? values.referralTo || null
+        : values.ReferTo || null,
+      ...(tenantFeatures.enableStructuredReferral
+        ? {
+            referralReason: values.referralReason || null,
+            referralUrgency: values.referralUrgency || null,
+            referralOutcome: values.referralOutcome || null,
+          }
+        : {}),
       remarks: values.Remarks,
       hospitalId: values.hospitalId || 1,
       financialYearId: new Date().getFullYear(),
@@ -285,10 +310,15 @@ const OhcPrescriptionForm = () => {
       hospitalId: "",
       Remarks: "",
       ReferTo: "",
+      referralTo: "",
+      referralReason: "",
+      referralUrgency: "",
+      referralOutcome: "",
       ConsultantDoctorID: "",
       CenterID: "",
       PatientID: "",
       glucose: "",
+      haemoglobin: "",
       diagnosis: ""
     },
     validationSchema: Yup.object({
@@ -324,6 +354,11 @@ const OhcPrescriptionForm = () => {
       glucose: Yup.number()
         .min(20, "Glucose too low")
         .max(700, "Glucose too high"),
+      haemoglobin: Yup.number()
+        .min(1, "Haemoglobin too low")
+        .max(25, "Haemoglobin too high")
+        .nullable()
+        .transform((v, o) => (o === "" || o == null ? null : v)),
     }),
     onSubmit: async (values) => {
       const errors = await formik.validateForm();
@@ -455,7 +490,12 @@ const OhcPrescriptionForm = () => {
       height: row.height ?? "",
       weight: row.weight ?? "",
       glucose: row.glucose ?? "",
+      haemoglobin: row.haemoglobin ?? "",
       diagnosis: row.physicalFindings ?? "",
+      referralTo: row.referrals ?? "",
+      referralReason: row.referralReason ?? "",
+      referralUrgency: row.referralUrgency ?? "",
+      referralOutcome: row.referralOutcome ?? "",
     };
 
     formik.setValues((prev) => ({ ...prev, ...updates }), false);
@@ -738,6 +778,31 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       max: 700,
                     }}
                   />
+                  {tenantFeatures.enableHemoglobin && (
+                    <Input
+                      {...formik.getFieldProps("haemoglobin")}
+                      label="Haemoglobin (g/dL)"
+                      type="number"
+                      inputProps={{
+                        step: "0.1",
+                        min: 1,
+                        max: 25,
+                      }}
+                    />
+                  )}
+                  {tenantFeatures.enableBMI && (
+                    <Input
+                      label="BMI (kg/m²)"
+                      value={
+                        calculateBMI(
+                          formik.values.weight,
+                          formik.values.height,
+                        ) ?? ""
+                      }
+                      readOnly
+                      className="bg-sky-50 cursor-not-allowed"
+                    />
+                  )}
                 </div>
               </section>
             )}{" "}
@@ -804,6 +869,53 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     label="Diagnosis"
                   />
                 </div>
+
+                {tenantFeatures.enableStructuredReferral && (
+                  <div className="mt-8">
+                    <h4 className="text-base font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                      <span className="w-1.5 h-5 bg-sky-600 rounded-full"></span>
+                      Referral Details
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <Select
+                        {...formik.getFieldProps("referralTo")}
+                        label="Referred To"
+                      >
+                        <option value="">Select</option>
+                        {REFERRAL_TO_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </Select>
+
+                      <Select
+                        {...formik.getFieldProps("referralUrgency")}
+                        label="Urgency"
+                      >
+                        <option value="">Select</option>
+                        {REFERRAL_URGENCY_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </Select>
+
+                      <Input
+                        {...formik.getFieldProps("referralReason")}
+                        label="Reason"
+                        placeholder="Reason for referral"
+                      />
+
+                      <Input
+                        {...formik.getFieldProps("referralOutcome")}
+                        label="Outcome (updated on next visit)"
+                        placeholder="Enter outcome on next visit"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {!can("update:prescription_form") && (
                   <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
                     <div>
@@ -1090,6 +1202,21 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   <p>
                     <b>Weight (kg):</b> {formik.values.weight}
                   </p>
+                  {tenantFeatures.enableHemoglobin && (
+                    <p>
+                      <b>Haemoglobin (g/dL):</b>{" "}
+                      {formik.values.haemoglobin || "-"}
+                    </p>
+                  )}
+                  {tenantFeatures.enableBMI && (
+                    <p>
+                      <b>BMI (kg/m²):</b>{" "}
+                      {calculateBMI(
+                        formik.values.weight,
+                        formik.values.height,
+                      ) ?? "-"}
+                    </p>
+                  )}
                   <p>
                     <b>Glucose (mg/dL):</b> {formik.values.glucose}
                   </p>
@@ -1112,6 +1239,23 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                     <b>Follow-up:</b> {formik.values.followup ? `${formik.values.followup} days` : "-"}
                   </p>
                 </div>
+
+                {tenantFeatures.enableStructuredReferral && (
+                  <div className="border-t pt-3 text-sm grid md:grid-cols-2 gap-3">
+                    <p>
+                      <b>Referred To:</b> {formik.values.referralTo || "-"}
+                    </p>
+                    <p>
+                      <b>Urgency:</b> {formik.values.referralUrgency || "-"}
+                    </p>
+                    <p>
+                      <b>Reason:</b> {formik.values.referralReason || "-"}
+                    </p>
+                    <p>
+                      <b>Outcome:</b> {formik.values.referralOutcome || "-"}
+                    </p>
+                  </div>
+                )}
 
                 <div className="border-t pt-4 space-y-4 text-sm">
                   <div>
@@ -1254,6 +1398,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         height: "",
                         weight: "",
                         glucose: "",
+                        haemoglobin: "",
                       });
                     }
 
@@ -1268,6 +1413,10 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         advice: "",
                         history: "",
                         glucose: "",
+                        referralTo: "",
+                        referralReason: "",
+                        referralUrgency: "",
+                        referralOutcome: "",
                       });
                     }
 

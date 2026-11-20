@@ -23,6 +23,7 @@ import {
   useGetPatientDueQuery,
   useGetServiceMastersQuery,
   useGetOpdBillByIdQuery,
+  useGetVisitVitalsQuery,
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert } from "../utils/healthSwal";
@@ -34,9 +35,18 @@ import { Input, Select, Button, baseInput } from "../components/FormControls";
 import { Picaso_Paymode_Options } from "../utils/constants";
 import { cookie } from "../utils/cookie";
 import { formatDate } from "../utils/helper";
+import { getTenantFeatures } from "../config/tenantFeatures";
+import PreviousVisitHealthSummary from "../components/ohc/PreviousVisitHealthSummary";
+
+const COST_FREE_PAYMODE_ID = "5";
+
 const OpdOhcForm = () => {
   const userId = cookie.get("user_id");
   const tenantId = Number(cookie.get("tenantId"));
+  const tenantFeatures = getTenantFeatures(tenantId);
+  const isConfiguredTenant = tenantFeatures.enableOpdCostFreeBilling;
+  const totalSteps = isConfiguredTenant ? 3 : 4;
+  const confirmStep = isConfiguredTenant ? 3 : 4;
 
   const referralConfig = {
     1: {
@@ -85,7 +95,7 @@ const OpdOhcForm = () => {
       return;
     }
 
-    if (activeStep === 3) {
+    if (activeStep === 3 && !isConfiguredTenant) {
       if (!formik.values.PayMode) {
         formik.setTouched({
           PayMode: true,
@@ -112,10 +122,30 @@ const OpdOhcForm = () => {
         return;
       }
     }
+
+    // Tenant 21: Services → Confirm (skip Billing)
+    if (isConfiguredTenant && activeStep === 2) {
+      formik.setFieldValue("PayMode", COST_FREE_PAYMODE_ID);
+      formik.setFieldValue("TotalAmount", 0);
+      formik.setFieldValue("PaidAmount", 0);
+      formik.setFieldValue("DueAmount", 0);
+      formik.setFieldValue("CashAmount", 0);
+      formik.setFieldValue("CardAmount", 0);
+      formik.setFieldValue("AdjustWithBalance", true);
+      setActiveStep(confirmStep);
+      return;
+    }
+
     setActiveStep((prev) => prev + 1);
   };
 
-  const prevStep = () => setActiveStep((prev) => prev - 1);
+  const prevStep = () => {
+    if (isConfiguredTenant && activeStep === confirmStep) {
+      setActiveStep(2);
+      return;
+    }
+    setActiveStep((prev) => prev - 1);
+  };
   const [isPaidManuallyEdited, setIsPaidManuallyEdited] = useState(false);
   const [selectedServices, setSelectedServices] = useState([]);
   const [uhidSearch, setUhidSearch] = useState("");
@@ -200,6 +230,26 @@ const OpdOhcForm = () => {
     skip: !selectedUhid || selectedUhid.trim() === "",
   });
 
+  const visitUhid =
+    selectedUhid ||
+    editData?.uhid ||
+    editData?.PicasoNo ||
+    editData?.picasoId ||
+    "";
+
+  const { data: visitVitalsData } = useGetVisitVitalsQuery(
+    {
+      picasoId: visitUhid,
+      excludeBillNo: billNo || undefined,
+    },
+    {
+      skip:
+        !tenantFeatures.enablePreviousVisitSummary ||
+        !visitUhid ||
+        String(visitUhid).trim() === "",
+    },
+  );
+
   useEffect(() => {
     if (!previousFetchDue?.data) return;
 
@@ -225,10 +275,12 @@ const OpdOhcForm = () => {
   const { data: allServices = [] } = useGetServiceMastersQuery("");
   useEffect(() => {
     if (editData && department && doctors && paymode) {
-      setUhidSearch(editData.uhid || "");
+      const editUhid =
+        editData.uhid || editData.PicasoNo || editData.picasoId || "";
+      setUhidSearch(editUhid);
       // setIsPaidManuallyEdited(true);
-      setSelectedUhid(editData.uhid || "");
-      populatedUhidRef.current = editData.uhid || "";
+      setSelectedUhid(editUhid);
+      populatedUhidRef.current = editUhid;
       const deptObj = department.find(
         (d) =>
           Number(d.id) === Number(editData.DepartmentID) ||
@@ -367,11 +419,21 @@ const OpdOhcForm = () => {
     const addedBy = editData
       ? editData.added_by_id ?? editData.AddedBy ?? opdBillData?.AddedBy ?? userId
       : userId;
-    const finalAmount = selectedServices.reduce(
+    const calculatedAmount = selectedServices.reduce(
       (sum, s) =>
         sum + (s.ServiceAmount || s.price) * (s.Qty || s.quantity || 1),
       0,
     );
+    // Tenant 21: cost-free OPD — persist zero amounts + Cost Free pay mode
+    const finalAmount = isConfiguredTenant ? 0 : calculatedAmount;
+    const payMode = isConfiguredTenant
+      ? Number(COST_FREE_PAYMODE_ID)
+      : Number(values.PayMode);
+    const paidAmount = isConfiguredTenant ? 0 : Number(values.PaidAmount || 0);
+    const cashAmount = isConfiguredTenant ? 0 : Number(values.CashAmount || 0);
+    const cardAmount = isConfiguredTenant ? 0 : Number(values.CardAmount || 0);
+    const dueAmount = isConfiguredTenant ? 0 : Number(values.DueAmount || 0);
+
     const chiefComplaintStr =
       Array.isArray(values.ChiefComplaint) && values.ChiefComplaint.length > 0
         ? values.ChiefComplaint.map((e) => e.name).join(", ")
@@ -386,11 +448,11 @@ const OpdOhcForm = () => {
       Mobile: values.Mobile,
       ServiceTypeID: selectedServices[0]?.ServiceTypeID || 1,
       PatientType: values.FinCategory == "BPL" ? 2 : 1,
-      PaidAmount: Number(values.PaidAmount || 0),
-      CashAmount: Number(values.CashAmount || 0),
-      CardAmount: Number(values.CardAmount || 0),
-      PayMode: Number(values.PayMode),
-      DueAmount: Number(values.DueAmount || 0),
+      PaidAmount: paidAmount,
+      CashAmount: cashAmount,
+      CardAmount: cardAmount,
+      PayMode: payMode,
+      DueAmount: dueAmount,
       AddedBy: addedBy,
       DepartmentID: values.Department,
       ConsultantDoctorID: Number(values.Doctor),
@@ -408,12 +470,14 @@ const OpdOhcForm = () => {
       ServiceTypeID: s.ServiceTypeID || 1,
       ServiceID: Number(s.id),
       ServiceName: s.name,
-      ServiceAmount: Number(s.price),
+      ServiceAmount: isConfiguredTenant ? 0 : Number(s.price),
       Qty: Number(s.quantity || 1),
       HospitalID: Number(s.HospitalID),
       FinancialYearID: currentYear,
       PatientID: pData.PatientID || pData.id,
-      NetServiceAmount: Number(s.quantity * s.price),
+      NetServiceAmount: isConfiguredTenant
+        ? 0
+        : Number(s.quantity * s.price),
       PicasoNo: values.UHID || pData.external_id,
       HospitalCharge: 0,
       DoctorCharge: 0,
@@ -472,11 +536,16 @@ const OpdOhcForm = () => {
       Doctor: Yup.number()
         .min(1, "Consulting doctor is required")
         .required("Consulting doctor is required"),
-      PayMode: Yup.string().required("Payment Mode is required"),
+      PayMode: isConfiguredTenant
+        ? Yup.string()
+        : Yup.string().required("Payment Mode is required"),
     }),
 
     onSubmit: async (values) => {
-      if (!values.PayMode || values.PayMode === "") {
+      if (
+        !isConfiguredTenant &&
+        (!values.PayMode || values.PayMode === "")
+      ) {
         healthAlert({
           title: "Payment Mode Required",
           text: "Please select a Payment Mode before saving the bill.",
@@ -486,7 +555,19 @@ const OpdOhcForm = () => {
         return;
       }
       try {
-        const payload = buildPayload(values);
+        const submitValues = isConfiguredTenant
+          ? {
+              ...values,
+              PayMode: COST_FREE_PAYMODE_ID,
+              TotalAmount: 0,
+              PaidAmount: 0,
+              DueAmount: 0,
+              CashAmount: 0,
+              CardAmount: 0,
+              AdjustWithBalance: true,
+            }
+          : values;
+        const payload = buildPayload(submitValues);
         if (!payload) {
           healthAlert({
             title: "OPD Billing",
@@ -533,6 +614,18 @@ const OpdOhcForm = () => {
     if (Object.keys(formik.errors).length > 0) {
     }
   }, [formik.errors]);
+
+  // Tenant 21: default to Cost Free / zero amounts
+  useEffect(() => {
+    if (!isConfiguredTenant) return;
+    formik.setFieldValue("PayMode", COST_FREE_PAYMODE_ID);
+    formik.setFieldValue("TotalAmount", 0);
+    formik.setFieldValue("PaidAmount", 0);
+    formik.setFieldValue("DueAmount", 0);
+    formik.setFieldValue("CashAmount", 0);
+    formik.setFieldValue("CardAmount", 0);
+    formik.setFieldValue("AdjustWithBalance", true);
+  }, [isConfiguredTenant]);
 
   useEffect(() => {
     if (editData) return;
@@ -635,7 +728,7 @@ const OpdOhcForm = () => {
           </h1>
 
           <div className="flex gap-2">
-            {[1, 2, 3, 4].map((s) => (
+            {Array.from({ length: totalSteps }, (_, i) => i + 1).map((s) => (
               <div
                 key={s}
                 className={`h-2 w-12 rounded-full ${
@@ -650,8 +743,14 @@ const OpdOhcForm = () => {
             {[
               { id: 1, label: "Patient", icon: UserIcon },
               { id: 2, label: "Services", icon: ClipboardDocumentIcon },
-              { id: 3, label: "Billing", icon: CreditCardIcon },
-              { id: 4, label: "Confirm", icon: DocumentCheckIcon },
+              ...(!isConfiguredTenant
+                ? [{ id: 3, label: "Billing", icon: CreditCardIcon }]
+                : []),
+              {
+                id: confirmStep,
+                label: "Confirm",
+                icon: DocumentCheckIcon,
+              },
             ].map((step) => (
               <button
                 key={step.id}
@@ -933,6 +1032,15 @@ const OpdOhcForm = () => {
                                               readOnly
                                           /> */}
                   </div>
+
+                  {tenantFeatures.enablePreviousVisitSummary &&
+                    tenantFeatures.enableHealthFlags &&
+                    (visitVitalsData?.previous || visitVitalsData?.current) && (
+                      <PreviousVisitHealthSummary
+                        previous={visitVitalsData?.previous}
+                        current={visitVitalsData?.current}
+                      />
+                    )}
                 </section>
               )}
               {activeStep === 2 && (
@@ -945,6 +1053,15 @@ const OpdOhcForm = () => {
                     payMode={formik.values.PayMode}
                     type={formik.values.FinCategory}
                     setBillingTotals={(total) => {
+                      if (isConfiguredTenant) {
+                        formik.setFieldValue("TotalAmount", 0);
+                        formik.setFieldValue("PaidAmount", 0);
+                        formik.setFieldValue("DueAmount", 0);
+                        formik.setFieldValue("CashAmount", 0);
+                        formik.setFieldValue("CardAmount", 0);
+                        formik.setFieldValue("PayMode", COST_FREE_PAYMODE_ID);
+                        return;
+                      }
                       const amount = Number(total || 0);
                       formik.setFieldValue("TotalAmount", amount);
                       if (!editData && !isPaidManuallyEdited) {
@@ -1011,7 +1128,7 @@ const OpdOhcForm = () => {
                 </section>
               )}
 
-              {activeStep === 3 && (
+              {activeStep === 3 && !isConfiguredTenant && (
                 <section>
                   <h3 className="text-lg font-semibold text-sky-700 mb-3 flex items-center gap-2">
                     <span className="w-1.5 h-6 bg-sky-600 rounded-full"></span>{" "}
@@ -1217,7 +1334,7 @@ const OpdOhcForm = () => {
                   </div>
                 </section>
               )}
-              {activeStep === 4 && (
+              {activeStep === confirmStep && (
                 <>
                   <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 space-y-5">
                     <h3 className="text-lg font-semibold text-sky-600">
@@ -1355,13 +1472,16 @@ const OpdOhcForm = () => {
                                   </td>
 
                                   <td className="px-3 py-2 text-right">
-                                    Rs.{service.price}
+                                    Rs.
+                                    {isConfiguredTenant ? 0 : service.price}
                                   </td>
 
                                   <td className="px-3 py-2 text-right font-medium">
                                     Rs.
-                                    {(service.price || 0) *
-                                      (service.quantity || 1)}
+                                    {isConfiguredTenant
+                                      ? 0
+                                      : (service.price || 0) *
+                                        (service.quantity || 1)}
                                   </td>
                                 </tr>
                               ))}
@@ -1380,46 +1500,63 @@ const OpdOhcForm = () => {
                         Billing Details
                       </h4>
 
-                      <div className="grid md:grid-cols-2 gap-3 text-sm">
-                        <p>
-                          <b>Total Amount:</b> Rs.
-                          {formik.values.TotalAmount}
-                        </p>
+                      {isConfiguredTenant ? (
+                        <div className="grid md:grid-cols-2 gap-3 text-sm">
+                          <p>
+                            <b>Payment Mode:</b> Cost Free
+                          </p>
+                          <p>
+                            <b>Total Amount:</b> Rs.0
+                          </p>
+                          <p>
+                            <b>Paid Amount:</b> Rs.0
+                          </p>
+                          <p>
+                            <b>Due Amount:</b> Rs.0
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="grid md:grid-cols-2 gap-3 text-sm">
+                          <p>
+                            <b>Total Amount:</b> Rs.
+                            {formik.values.TotalAmount}
+                          </p>
 
-                        <p>
-                          <b>Paid Amount:</b> Rs.
-                          {formik.values.PaidAmount}
-                        </p>
+                          <p>
+                            <b>Paid Amount:</b> Rs.
+                            {formik.values.PaidAmount}
+                          </p>
 
-                        <p>
-                          <b>Due Amount:</b> Rs.
-                          {formik.values.DueAmount}
-                        </p>
+                          <p>
+                            <b>Due Amount:</b> Rs.
+                            {formik.values.DueAmount}
+                          </p>
 
-                        <p>
-                          <b>Cash Amount:</b> Rs.
-                          {formik.values.CashAmount}
-                        </p>
+                          <p>
+                            <b>Cash Amount:</b> Rs.
+                            {formik.values.CashAmount}
+                          </p>
 
-                        <p>
-                          <b>Card / Online Amount:</b> Rs.
-                          {formik.values.CardAmount}
-                        </p>
+                          <p>
+                            <b>Card / Online Amount:</b> Rs.
+                            {formik.values.CardAmount}
+                          </p>
 
-                        <p>
-                          <b>Payment Mode:</b>{" "}
-                          {
-                            Picaso_Paymode_Options.find(
-                              (p) => p.id == formik.values.PayMode,
-                            )?.name
-                          }
-                        </p>
+                          <p>
+                            <b>Payment Mode:</b>{" "}
+                            {
+                              Picaso_Paymode_Options.find(
+                                (p) => p.id == formik.values.PayMode,
+                              )?.name
+                            }
+                          </p>
 
-                        <p>
-                          <b>Adjust With Balance:</b>{" "}
-                          {formik.values.AdjustWithBalance ? "Yes" : "No"}
-                        </p>
-                      </div>
+                          <p>
+                            <b>Adjust With Balance:</b>{" "}
+                            {formik.values.AdjustWithBalance ? "Yes" : "No"}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </>
@@ -1471,7 +1608,7 @@ const OpdOhcForm = () => {
                         });
                       }
 
-                      if (activeStep === 3) {
+                      if (activeStep === 3 && !isConfiguredTenant) {
                         formik.setValues({
                           ...formik.values,
                           PreviousDue: 0,
@@ -1487,7 +1624,7 @@ const OpdOhcForm = () => {
                         setIsPaidManuallyEdited(false);
                       }
 
-                      if (activeStep === 4) {
+                      if (activeStep === confirmStep) {
                         formik.resetForm();
 
                         setSelectedServices([]);
@@ -1521,7 +1658,7 @@ const OpdOhcForm = () => {
                   </Button>
                 </div>
 
-                {activeStep < 4 ? (
+                {activeStep < confirmStep ? (
                   <Button type="button" variant="sky" onClick={nextStep}>
                     Continue
                   </Button>

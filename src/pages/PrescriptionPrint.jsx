@@ -2,9 +2,12 @@ import React, { forwardRef } from "react";
 import { useGetOrgProfilesQuery } from "../redux/apiSlice";
 import { cookie } from "../utils/cookie";
 import { formatDateTime2 } from "../utils/helper";
+import { getTenantFeatures } from "../config/tenantFeatures";
+
 const PrescriptionPrint = forwardRef(({ data }, ref) => {
   const center_id = cookie.get("center_id");
   const tenant_id = cookie.get("tenantId");
+  const tenantFeatures = getTenantFeatures(tenant_id);
   const page = 1;
   const limit = 10;
   const filters = {
@@ -369,6 +372,31 @@ const PrescriptionPrint = forwardRef(({ data }, ref) => {
         <span style={colon1}>:</span>
         <span style={value}>{data?.otherInstructions}</span>
       </div>
+
+      {tenantFeatures.enableStructuredReferral && (
+        <>
+          <div style={rowBlock}>
+            <span style={label}>Referred To</span>
+            <span style={colon1}>:</span>
+            <span style={value}>{data?.referrals || "-"}</span>
+          </div>
+          <div style={rowBlock}>
+            <span style={label}>Referral Urgency</span>
+            <span style={colon1}>:</span>
+            <span style={value}>{data?.referralUrgency || "-"}</span>
+          </div>
+          <div style={rowBlock}>
+            <span style={label}>Referral Reason</span>
+            <span style={colon1}>:</span>
+            <span style={value}>{data?.referralReason || "-"}</span>
+          </div>
+          <div style={rowBlock}>
+            <span style={label}>Referral Outcome</span>
+            <span style={colon1}>:</span>
+            <span style={value}>{data?.referralOutcome || "-"}</span>
+          </div>
+        </>
+      )}
 
       {/* Signature */}
       <div
