@@ -2677,6 +2677,20 @@ export const api = createApi({
       }),
       providesTags: ["DashboardMhcuProgramOverview"],
     }),
+    getMhcuPatientsScreening: build.query({
+      query: ({
+        village = "all",
+        patientType = "all",
+        gender = "all",
+        from,
+        to,
+      } = {}) => ({
+        url: "/dashboard/mhcu/patients-screening",
+        method: "GET",
+        params: { village, patientType, gender, from, to },
+      }),
+      providesTags: ["DashboardMhcuPatientsScreening"],
+    }),
   }),
 });
 
@@ -2952,4 +2966,5 @@ export const {
   useGetPatientFeedbackQuery,
   useLazyExportPatientExcelQuery,
   useGetMhcuProgramOverviewQuery,
+  useGetMhcuPatientsScreeningQuery,
 } = api;

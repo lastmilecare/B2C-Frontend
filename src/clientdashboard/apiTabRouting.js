@@ -14,6 +14,7 @@ const TAB_MODES = {
 };
 const MHCU_API_TAB_MODES = {
   overview: "mhcuProgramOverview",
+  patients: "mhcuPatientsScreening",
 };
 export function resolveApiTabMode(tenantSlug, tabId) {
   if (tabId === "disease" && tenantSlug === "amp") {

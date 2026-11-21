@@ -11,6 +11,7 @@ import {
   useGetThirdPartyCategoryQuery,
   useGetPatientFeedbackQuery,
   useGetMhcuProgramOverviewQuery,
+  useGetMhcuPatientsScreeningQuery,
 } from "../redux/apiSlice";
 import { mhcuApiFiltersReady, mhcuStandardQueryParams } from "./mhcu-filters";
 import { resolveApiTabMode, usesPatientComplaintsApi } from "./apiTabRouting";
@@ -132,9 +133,16 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
   const patientFeedback = useGetPatientFeedbackQuery(queryArg, {
     skip: mode !== "patientFeedback",
   });
+  const mhcuApiReady =
+    (mode === "mhcuProgramOverview" || mode === "mhcuPatientsScreening") &&
+    mhcuApiFiltersReady(filters);
   const mhcuProgramOverview = useGetMhcuProgramOverviewQuery(queryArg, {
-    skip: mode !== "mhcuProgramOverview",
+    skip: mode !== "mhcuProgramOverview" || !mhcuApiReady,
   });
+  const mhcuPatientsScreening = useGetMhcuPatientsScreeningQuery(queryArg, {
+    skip: mode !== "mhcuPatientsScreening" || !mhcuApiReady,
+  });
+
   const active =
     mode === "patientProfile"
       ? patientProfile
@@ -156,7 +164,9 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
                       ? patientFeedback
                       : mode === "mhcuProgramOverview"
                         ? mhcuProgramOverview
-                        : null;
+                        : mode === "mhcuPatientsScreening"
+                          ? mhcuPatientsScreening
+                          : null;
 
   const dummyView = useMemo(() => {
     if (mode) return null;
