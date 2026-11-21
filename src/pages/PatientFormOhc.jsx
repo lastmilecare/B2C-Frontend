@@ -530,7 +530,6 @@ const PatientRegistrationOhc = () => {
       residentialstatus: values.residentialstatus,
       title: values.title,
       // ReferredBy: values.ReferredBy || "",
-      permanentAddress: values.permanentAddress,
     };
 
     if (isTenant21) {
@@ -540,7 +539,9 @@ const PatientRegistrationOhc = () => {
       );
       payload.needHomeCare = parseYesNoToBoolean(values.needHomeCare);
       payload.specialCategory = values.specialCategory || null;
+      // Permanent Address hidden for configured tenant — do not overwrite DB
     } else {
+      payload.permanentAddress = values.permanentAddress;
       payload.occupation = values.occupation;
       payload.co = values.CO;
       payload.relationship = values.relationship;
@@ -1172,10 +1173,12 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                         label="Local Address"
                       />
                     )}
-                    <Input
-                      {...formik.getFieldProps("permanentAddress")}
-                      label="Permanent Address"
-                    />
+                    {!isTenant21 && (
+                      <Input
+                        {...formik.getFieldProps("permanentAddress")}
+                        label="Permanent Address"
+                      />
+                    )}
                     <Input
                       label="Pin Code"
                       type="tel"
@@ -1468,10 +1471,12 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                             <b>Address:</b> {formik.values.localAddress || "-"}
                           </p>
                         )}
-                        <p>
-                          <b>Permanent Address:</b>{" "}
-                          {formik.values.permanentAddress || "-"}
-                        </p>
+                        {!isTenant21 && (
+                          <p>
+                            <b>Permanent Address:</b>{" "}
+                            {formik.values.permanentAddress || "-"}
+                          </p>
+                        )}
                       </div>
                     </div>
 
