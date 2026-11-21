@@ -22,6 +22,7 @@ import {
 } from "@heroicons/react/24/outline";
 import logo from "../../assets/lmc-logo.png";
 import { cookie } from "../../utils/cookie";
+import { isConfiguredTenant } from "../../config/tenantFeatures";
 
 const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
   const { permissions } = useSelector((state) => state.auth);
@@ -32,6 +33,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
   };
   const tenantType = cookie.get("tenantType");
   const tenantId = cookie.get("tenantId") || "N/A";
+  const isMhcuTenant = isConfiguredTenant(tenantId);
   const [menus, setMenus] = useState({
     patient: false,
     opd: false,
@@ -151,6 +153,22 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
         onClick={() => setIsOpen(false)}
       >
         Sales Record
+      </NavLink>
+    </MenuGroup>
+  );
+
+  const patientDetailsMenu = can("read:patient_details") && (
+    <MenuGroup
+      menuKey="PatientDetails"
+      icon={UserCircleIcon}
+      label="Patient Details"
+    >
+      <NavLink
+        to="/patient-details"
+        className={subNavItem}
+        onClick={() => setIsOpen(false)}
+      >
+        Patient Details
       </NavLink>
     </MenuGroup>
   );
@@ -297,6 +315,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
         )}
 
         {!isOhcTenant && inventoryMenu}
+        {!isOhcTenant && patientDetailsMenu}
         {/* ── Camp Opd ──────────────────────────── */}
         {can("create:camp_opd_form") && (
           <MenuGroup
@@ -333,23 +352,6 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
                 <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
                   Beta
                 </span>
-              </NavLink>
-            )}
-          </MenuGroup>
-        )}
-        {can("read:patient_details") && (
-          <MenuGroup
-            menuKey="PatientDetails"
-            icon={UserCircleIcon}
-            label="Patient Details"
-          >
-            {can("read:patient_details") && (
-              <NavLink
-                to="/patient-details"
-                className={subNavItem}
-                onClick={() => setIsOpen(false)}
-              >
-                Patient Details
               </NavLink>
             )}
           </MenuGroup>
@@ -694,18 +696,20 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
           </MenuGroup>
         )}
 
-        {/* ── OHC ─────────────────────────────────────────── */}
+        {/* ── OHC / MHCU (configured tenant) ───────────────── */}
         {can("read:ohc_dashboard") && (
-          <MenuGroup menuKey="ohc" icon={HeartIcon} label="OHC">
+          <MenuGroup
+            menuKey="ohc"
+            icon={HeartIcon}
+            label={isMhcuTenant ? "MHCU" : "OHC"}
+          >
             {can("read:ohc_dashboard") && (
               <NavLink
                 to="/ohc-dashboard"
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                 {Number(tenantId) === Number(import.meta.env.VITE_TENANT_ID)
-                  ? "Dashboard"
-                  : "OHC Dashboard"}
+                {isMhcuTenant ? "Dashboard" : "OHC Dashboard"}
               </NavLink>
             )}
             {can("create:ohc_patient_registration") && (
@@ -714,9 +718,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
                 className={subNavItem}
                 onClick={() => setIsOpen(false)}
               >
-                {Number(tenantId) === Number(import.meta.env.VITE_TENANT_ID)
-                  ? "Registration"
-                  : "Worker Registration"}
+                {isMhcuTenant ? "Registration" : "Worker Registration"}
               </NavLink>
             )}
             {/* {can("create:ohc_patient_registration") && ( */}
@@ -864,7 +866,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
               </NavLink>
             )} */}
 
-            {can("read:ohc_dashboard") && (
+            {can("read:ambulance_form") && (
               <NavLink
                 to="/ambulance"
                 className={subNavItem}
@@ -873,7 +875,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
                 Ambulance
               </NavLink>
             )}
-            {can("read:ohc_dashboard") && (
+            {can("read:ambulance_form") && (
               <NavLink
                 to="/ambulance-service"
                 className={subNavItem}
@@ -886,6 +888,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
         )}
 
         {isOhcTenant && inventoryMenu}
+        {isOhcTenant && patientDetailsMenu}
       </nav>
     </motion.aside>
   );
