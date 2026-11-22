@@ -36,6 +36,7 @@ export function DonutChart({
   showLegend = true,
   valueFormat = "number",
   variant = "donut",
+  paletteByName,
 }) {
   const slices = data.filter((item) => Number(item.value) > 0);
   if (!slices.length) return <ChartEmpty />;
@@ -43,7 +44,10 @@ export function DonutChart({
   const total = slices.reduce((sum, item) => sum + item.value, 0);
   const enriched = slices.map((item, index) => ({
     ...item,
-    color: item.color || CHART_PALETTE[index % CHART_PALETTE.length],
+    color:
+      item.color ||
+      paletteByName?.[item.name] ||
+      CHART_PALETTE[index % CHART_PALETTE.length],
     percent: item.percent ?? ((item.value / total) * 100).toFixed(2),
   }));
 

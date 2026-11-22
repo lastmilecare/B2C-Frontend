@@ -3,7 +3,6 @@ import { MHCU_VILLAGE_NAMES } from "./mhcu-adani/villages";
 
 import {
   selectDisease,
-  selectFeedback,
   selectMhcuAwareness,
   selectMhcuConcern,
   selectMhcuHomeCare,
@@ -19,7 +18,11 @@ import {
 import {
   mhcuStandardFilters,
   mhcuStandardInitialFilters,
+  mhcuDiseaseFilters,
+  mhcuDiseaseInitialFilters,
   MHCU_DEFAULT_DATE_RANGE,
+   mhcuConcernFilters,
+  mhcuConcernInitialFilters,
 } from "../../../clientdashboard/mhcu-filters";
 
 const all = { value: "all", label: "All villages" };
@@ -189,13 +192,6 @@ const diseaseTrend = monthSeries("2026-01-01", Array(11).fill(0)).map(
   },
 );
 
-const feedbackSlices = [
-  { name: "5 — Excellent", value: 2100 },
-  { name: "4 — Good", value: 1680 },
-  { name: "3 — Average", value: 620 },
-  { name: "2 — Poor", value: 180 },
-  { name: "1 — Very poor", value: 48 },
-];
 
 const scorecardRows = MHCU_VILLAGE_NAMES.map((name, index) => ({
   village: name,
@@ -256,8 +252,8 @@ export const mhcuAdaniTabs = {
     },
   },
   "risk-zones": {
-    initialFilters: () => ({ village: "all", dateRange: defaultRange }),
-    filters: villageFilters(),
+    initialFilters: () => mhcuStandardInitialFilters(),
+    filters: mhcuStandardFilters(),
     select: (filters) =>
       selectMhcuRisk(
         {
@@ -294,24 +290,8 @@ export const mhcuAdaniTabs = {
       ),
   },
   disease: {
-    initialFilters: () => ({
-      village: "all",
-      complaint: "all",
-      dateRange: defaultRange,
-    }),
-    filters: villageFilters([
-      {
-        id: "complaint",
-        type: "select",
-        label: "Diagnosis",
-        options: [
-          all,
-          ...diseases
-            .slice(0, 8)
-            .map((d) => ({ value: d.name, label: d.name })),
-        ],
-      },
-    ]),
+    initialFilters: () => mhcuDiseaseInitialFilters(),
+    filters: mhcuDiseaseFilters(),
     select: (filters) =>
       selectDisease(
         {
@@ -398,8 +378,8 @@ export const mhcuAdaniTabs = {
       ),
   },
   "home-care": {
-    initialFilters: () => ({ village: "all", dateRange: defaultRange }),
-    filters: villageFilters(),
+    initialFilters: () => mhcuDiseaseInitialFilters(),
+    filters: mhcuDiseaseFilters(),
     select: (filters) =>
       selectMhcuHomeCare(
         {
@@ -524,41 +504,80 @@ export const mhcuAdaniTabs = {
       ),
   },
   "village-scorecard": {
-    initialFilters: () => ({ village: "all", dateRange: defaultRange }),
-    filters: villageFilters(),
+    initialFilters: () => mhcuStandardInitialFilters(),
+    filters: mhcuStandardFilters(),
     select: (filters) =>
       selectMhcuVillageScorecard({ rows: scorecardRows }, filters),
   },
-  feedback: {
-    initialFilters: () => ({
-      village: "all",
-      feedback: "all",
-      dateRange: defaultRange,
-    }),
-    filters: villageFilters([
-      {
-        id: "feedback",
-        type: "select",
-        label: "Rating",
-        options: [
-          all,
-          ...feedbackSlices.map((s) => ({ value: s.name, label: s.name })),
+   feedback: {
+    initialFilters: () => mhcuStandardInitialFilters(),
+    filters: mhcuStandardFilters(),
+    select: (filters) => {
+      const share = filters.village === "all" ? 1 : 0.12;
+      const yesNo = (yes, no, other = 4) => [
+        { name: "Yes", value: Math.round(yes * share) },
+        { name: "No", value: Math.round(no * share) },
+        { name: "Other", value: Math.round(other * share) },
+      ];
+      return {
+        panel: "feedback",
+        kpis: [
+          { label: "Feedback completed", value: Math.round(4628 * share) },
+          { label: "Completion rate", value: 78, format: "percent" },
         ],
-      },
-    ]),
-    select: (filters) =>
-      selectFeedback(
-        {
-          totalPatients: 4628,
-          respondedPct: 78,
-          slices: feedbackSlices,
-        },
-        filters,
-      ),
+        questions: [
+          {
+            key: "health_improved",
+            question: "Has your health improved?",
+            total: Math.round(820 * share),
+            slices: yesNo(520, 280),
+          },
+          {
+            key: "wait_queue",
+            question:
+              "Did you have to wait too long or stand in a queue to see the doctor?",
+            total: Math.round(820 * share),
+            slices: yesNo(180, 610, 30),
+          },
+          {
+            key: "medicine_regularly",
+            question: "Are you taking medicine regularly?",
+            total: Math.round(820 * share),
+            slices: yesNo(640, 160),
+          },
+          {
+            key: "all_medicine_received",
+            question: "Did you get all the prescribed medicine?",
+            total: Math.round(820 * share),
+            slices: yesNo(580, 210, 30),
+          },
+          {
+            key: "staff_behaviour",
+            question: "How was the staff behaviour?",
+            total: Math.round(820 * share),
+            slices: [
+              { name: "Good", value: Math.round(610 * share) },
+              { name: "Moderate", value: Math.round(150 * share) },
+              { name: "Not Good", value: Math.round(60 * share) },
+            ],
+          },
+          {
+            key: "overall_feedback",
+            question: "Overall Feedback",
+            total: Math.round(820 * share),
+            slices: [
+              { name: "Good", value: Math.round(520 * share) },
+              { name: "Moderate", value: Math.round(210 * share) },
+              { name: "Not Good", value: Math.round(90 * share) },
+            ],
+          },
+        ],
+      };
+    },
   },
   concern: {
-    initialFilters: () => ({ village: "all", dateRange: defaultRange }),
-    filters: villageFilters(),
+    initialFilters: () => mhcuConcernInitialFilters(),
+    filters: mhcuConcernFilters(),
     select: (filters) =>
       selectMhcuConcern(
         {

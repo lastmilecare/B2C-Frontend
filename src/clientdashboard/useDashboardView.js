@@ -12,6 +12,12 @@ import {
   useGetPatientFeedbackQuery,
   useGetMhcuProgramOverviewQuery,
   useGetMhcuPatientsScreeningQuery,
+  useGetMhcuRiskZonesQuery,
+  useGetMhcuDiseaseChronicQuery,
+  useGetMhcuHomeCareQuery,
+  useGetMhcuVillageScorecardQuery,
+  useGetMhcuPatientFeedbackQuery,
+  useGetMhcuConcernCasesQuery,
 } from "../redux/apiSlice";
 import { mhcuApiFiltersReady, mhcuStandardQueryParams } from "./mhcu-filters";
 import { resolveApiTabMode, usesPatientComplaintsApi } from "./apiTabRouting";
@@ -85,8 +91,19 @@ function buildQueryArg(tenantSlug, tabId, filters) {
   //     ...dateRangeQuery(filters),
   //   };
   // }
-  if (tenantSlug === "mhcu-adani" && tabId === "overview") {
-    return mhcuStandardQueryParams(filters);
+
+  if (
+    (tenantSlug === "mhcu-adani" &&
+      (tabId === "overview" ||
+        tabId === "patients" ||
+        tabId === "risk-zones" ||
+        tabId === "disease")) ||
+    tabId === "home-care" ||
+    tabId === "village-scorecard" ||
+    tabId === "feedback" ||
+    tabId === "concern"
+  ) {
+    return mhcuStandardQueryParams(filters, tabId);
   }
 
   return {
@@ -134,15 +151,41 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
     skip: mode !== "patientFeedback",
   });
   const mhcuApiReady =
-    (mode === "mhcuProgramOverview" || mode === "mhcuPatientsScreening") &&
+    (mode === "mhcuProgramOverview" ||
+      mode === "mhcuPatientsScreening" ||
+      mode === "mhcuRiskZones" ||
+      mode === "mhcuDiseaseChronic" ||
+      mode === "mhcuHomeCare" ||
+      mode === "mhcuVillageScorecard" ||
+      mode === "mhcuPatientFeedback" ||
+      mode === "mhcuConcernCases") &&
     mhcuApiFiltersReady(filters);
+
   const mhcuProgramOverview = useGetMhcuProgramOverviewQuery(queryArg, {
     skip: mode !== "mhcuProgramOverview" || !mhcuApiReady,
   });
+
   const mhcuPatientsScreening = useGetMhcuPatientsScreeningQuery(queryArg, {
     skip: mode !== "mhcuPatientsScreening" || !mhcuApiReady,
   });
-
+  const mhcuRiskZones = useGetMhcuRiskZonesQuery(queryArg, {
+    skip: mode !== "mhcuRiskZones" || !mhcuApiReady,
+  });
+  const mhcuDiseaseChronic = useGetMhcuDiseaseChronicQuery(queryArg, {
+    skip: mode !== "mhcuDiseaseChronic" || !mhcuApiReady,
+  });
+  const mhcuHomeCare = useGetMhcuHomeCareQuery(queryArg, {
+    skip: mode !== "mhcuHomeCare" || !mhcuApiReady,
+  });
+  const mhcuVillageScorecard = useGetMhcuVillageScorecardQuery(queryArg, {
+    skip: mode !== "mhcuVillageScorecard" || !mhcuApiReady,
+  });
+  const mhcuPatientFeedback = useGetMhcuPatientFeedbackQuery(queryArg, {
+    skip: mode !== "mhcuPatientFeedback" || !mhcuApiReady,
+  });
+  const mhcuConcernCases = useGetMhcuConcernCasesQuery(queryArg, {
+    skip: mode !== "mhcuConcernCases" || !mhcuApiReady,
+  });
   const active =
     mode === "patientProfile"
       ? patientProfile
@@ -166,7 +209,19 @@ export function useDashboardView(tenantSlug, tabId, filters, bundle) {
                         ? mhcuProgramOverview
                         : mode === "mhcuPatientsScreening"
                           ? mhcuPatientsScreening
-                          : null;
+                          : mode === "mhcuRiskZones"
+                            ? mhcuRiskZones
+                            : mode === "mhcuDiseaseChronic"
+                              ? mhcuDiseaseChronic
+                              : mode === "mhcuHomeCare"
+                                ? mhcuHomeCare
+                                : mode === "mhcuVillageScorecard"
+                                  ? mhcuVillageScorecard
+                                  : mode === "mhcuPatientFeedback"
+                                    ? mhcuPatientFeedback
+                                    : mode === "mhcuConcernCases"
+                                      ? mhcuConcernCases
+                                      : null;
 
   const dummyView = useMemo(() => {
     if (mode) return null;

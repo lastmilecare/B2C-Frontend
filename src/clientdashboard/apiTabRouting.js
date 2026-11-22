@@ -15,6 +15,12 @@ const TAB_MODES = {
 const MHCU_API_TAB_MODES = {
   overview: "mhcuProgramOverview",
   patients: "mhcuPatientsScreening",
+  "risk-zones": "mhcuRiskZones",
+  disease: "mhcuDiseaseChronic",
+  "home-care": "mhcuHomeCare",
+  "village-scorecard": "mhcuVillageScorecard",
+  feedback: "mhcuPatientFeedback",
+   concern: "mhcuConcernCases",
 };
 export function resolveApiTabMode(tenantSlug, tabId) {
   if (tabId === "disease" && tenantSlug === "amp") {

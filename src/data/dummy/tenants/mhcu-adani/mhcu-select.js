@@ -279,12 +279,19 @@ export function selectMhcuAwareness(source, filters) {
     rows,
   };
 }
-
+const CONCERN_TIER_MAP = {
+  all: null,
+  high: "High",
+  moderate: "Moderate",
+  normal: "Normal",
+};
 export function selectMhcuConcern(source, filters) {
   const share = villageShare(filters);
   let rows = source.rows;
   if (filters.village !== "all")
     rows = rows.filter((r) => r.village === filters.village);
+  const tierWanted = CONCERN_TIER_MAP[filters.concernLevel ?? "all"];
+  if (tierWanted) rows = rows.filter((r) => r.tier === tierWanted);
   return {
     panel: "mhcu-concern",
     kpis: [

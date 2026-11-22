@@ -8,7 +8,6 @@ function withOptions(bundleFilters, fieldId, names) {
   );
 }
 
-/** Sync category / feedback dropdowns from API view models. */
 export function mergeFilterOptionsFromView(bundleFilters, view) {
   let fields = bundleFilters;
   fields = withOptions(fields, "category", view?.categoryOptions);

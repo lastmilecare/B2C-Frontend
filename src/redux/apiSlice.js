@@ -2691,6 +2691,92 @@ export const api = createApi({
       }),
       providesTags: ["DashboardMhcuPatientsScreening"],
     }),
+    getMhcuRiskZones: build.query({
+      query: ({
+        village = "all",
+        patientType = "all",
+        gender = "all",
+        from,
+        to,
+      } = {}) => ({
+        url: "/dashboard/mhcu/risk-zones",
+        method: "GET",
+        params: { village, patientType, gender, from, to },
+      }),
+      providesTags: ["DashboardMhcuRiskZones"],
+    }),
+    getMhcuDiseaseChronic: build.query({
+      query: ({
+        village = "all",
+        patientType = "all",
+        gender = "all",
+        diagnosis = "all",
+        from,
+        to,
+      } = {}) => ({
+        url: "/dashboard/mhcu/disease-chronic",
+        method: "GET",
+        params: { village, patientType, gender, diagnosis, from, to },
+      }),
+      providesTags: ["DashboardMhcuDiseaseChronic"],
+    }),
+    getMhcuHomeCare: build.query({
+      query: ({
+        village = "all",
+        patientType = "all",
+        gender = "all",
+        from,
+        to,
+      } = {}) => ({
+        url: "/dashboard/mhcu/home-care",
+        method: "GET",
+        params: { village, patientType, gender, from, to },
+      }),
+      providesTags: ["DashboardMhcuHomeCare"],
+    }),
+    getMhcuVillageScorecard: build.query({
+      query: ({
+        village = "all",
+        patientType = "all",
+        gender = "all",
+        from,
+        to,
+      } = {}) => ({
+        url: "/dashboard/mhcu/village-scorecard",
+        method: "GET",
+        params: { village, patientType, gender, from, to },
+      }),
+      providesTags: ["DashboardMhcuVillageScorecard"],
+    }),
+    getMhcuPatientFeedback: build.query({
+      query: ({
+        village = "all",
+        patientType = "all",
+        gender = "all",
+        from,
+        to,
+      } = {}) => ({
+        url: "/dashboard/mhcu/patient-feedback",
+        method: "GET",
+        params: { village, patientType, gender, from, to },
+      }),
+      providesTags: ["DashboardMhcuPatientFeedback"],
+    }),
+    getMhcuConcernCases: build.query({
+      query: ({
+        village = "all",
+        patientType = "all",
+        gender = "all",
+        concernLevel = "all",
+        from,
+        to,
+      } = {}) => ({
+        url: "/dashboard/mhcu/concern-cases",
+        method: "GET",
+        params: { village, patientType, gender, concernLevel, from, to },
+      }),
+      providesTags: ["DashboardMhcuConcernCases"],
+    }),
   }),
 });
 
@@ -2967,4 +3053,10 @@ export const {
   useLazyExportPatientExcelQuery,
   useGetMhcuProgramOverviewQuery,
   useGetMhcuPatientsScreeningQuery,
+  useGetMhcuRiskZonesQuery,
+  useGetMhcuDiseaseChronicQuery,
+  useGetMhcuHomeCareQuery,
+  useGetMhcuVillageScorecardQuery,
+  useGetMhcuPatientFeedbackQuery,
+  useGetMhcuConcernCasesQuery,
 } = api;

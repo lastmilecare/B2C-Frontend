@@ -12,7 +12,7 @@ import {
   ChartEmpty,
   CHART_PALETTE,
 } from "../utils/client-dashboard";
-
+import { MHCU_FEEDBACK_ANSWER_COLORS } from "./mhcu-feedback-colors";
 function series(names) {
   return names.map((name, index) => ({
     key: name,
@@ -537,7 +537,9 @@ function DiseasePanel({ view }) {
             ]}
           />
         </DashboardCard>
-        <DashboardCard title="Specialty-wise Patient Visits">
+        <DashboardCard
+          title={view.specialtiesChartTitle ?? "Specialty-wise Patient Visits"}
+        >
           <BarChartPanel
             data={view.specialties.map((item) => ({
               label: item.name,
@@ -553,6 +555,33 @@ function DiseasePanel({ view }) {
           />
         </DashboardCard>
       </div>
+      {view.byVillage?.length > 0 && (
+        <DashboardCard title="Top diagnoses by village" noPadding>
+          <DataTableSimple
+            columns={[
+              {
+                name: "Village",
+                selector: (row) => row.village,
+                sortable: true,
+                grow: 2,
+              },
+              {
+                name: "Diagnosis",
+                selector: (row) => row.diagnosis,
+                sortable: true,
+                grow: 2,
+              },
+              {
+                name: "Cases",
+                selector: (row) => row.patients,
+                sortable: true,
+                right: true,
+              },
+            ]}
+            data={view.byVillage}
+          />
+        </DashboardCard>
+      )}
     </div>
   );
 }
@@ -654,27 +683,17 @@ function ComplaintsPanel({ view }) {
   );
 }
 
-function FeedbackPanel({ view }) {
-  return (
-    <div className="space-y-6">
-      <KpiRow items={view.kpis} />
-      <DashboardCard title="Feedback by Patients">
-        <PieChartPanel data={view.slices} height={360} />
-      </DashboardCard>
-    </div>
-  );
-}
-// const PANELS = {
-//   revenue: RevenuePanel,
-//   cost: CostPanel,
-//   "third-party": ThirdPartyPanel,
-//   "third-party-category": ThirdPartyCategoryPanel,
-//   patients: PatientsPanel,
-//   footfall: FootfallPanel,
-//   disease: DiseasePanel,
-//   complaints: ComplaintsPanel,
-//   feedback: FeedbackPanel,
-// };
+// function FeedbackPanel({ view }) {
+//   return (
+//     <div className="space-y-6">
+//       <KpiRow items={view.kpis} />
+//       <DashboardCard title="Feedback by Patients">
+//         <PieChartPanel data={view.slices} height={360} />
+//       </DashboardCard>
+//     </div>
+//   );
+// }
+
 import {
   MhcuAwarenessPanel,
   MhcuConcernPanel,
@@ -717,6 +736,37 @@ function MhcuAwarenessWrap({ view }) {
 function MhcuConcernWrap({ view }) {
   return <MhcuConcernPanel view={view} KpiRow={KpiRow} />;
 }
+
+function FeedbackPanel({ view }) {
+  if (view.questions?.length) {
+    return (
+      <div className="space-y-6">
+        <KpiRow items={view.kpis} />
+        <p className="text-sm text-muted">
+          Each card shows how patients answered one survey question (Yes / No or scale).
+        </p>
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          {view.questions.map((block) => (
+            <DashboardCard
+              key={block.key}
+              title={block.question}
+              subtitle={`${block.total} responses`}
+            >
+              <PieChartPanel
+                data={block.slices.map((item) => ({
+                  name: item.name,
+                  value: item.value,
+                }))}
+                paletteByName={MHCU_FEEDBACK_ANSWER_COLORS}
+                height={260}
+              />
+            </DashboardCard>
+          ))}
+        </div>
+      </div>
+    );
+  }
+}
 const PANELS = {
   revenue: RevenuePanel,
   cost: CostPanel,
@@ -747,3 +797,4 @@ export function DashboardPanel({ view }) {
   if (!Panel) return <ChartEmpty message="This tab is not available." />;
   return <Panel view={view} />;
 }
+
