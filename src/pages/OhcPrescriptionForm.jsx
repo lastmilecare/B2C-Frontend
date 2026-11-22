@@ -18,6 +18,8 @@ import {
   useGetMediceneListQuery,
   useUpdatePrescriptionMutation,
   useGetComboQuery,
+  useCreatePrescriptionMutation,
+  useBookTeleConsultationMutation,
 } from "../redux/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { healthAlert, healthAlerts } from "../utils/healthSwal";
@@ -25,7 +27,6 @@ import PrescriptionPrint from "./PrescriptionPrint";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { MEDICINE_FREQUENCIES } from "../utils/constants";
-import { useCreatePrescriptionMutation } from "../redux/apiSlice";
 import { formatISO } from "date-fns";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Input, Select, Button, baseInput } from "../components/FormControls";
@@ -37,6 +38,12 @@ import {
   REFERRAL_TO_OPTIONS,
   REFERRAL_URGENCY_OPTIONS,
 } from "../utils/referralData";
+import { FITNESS_STATUS_OPTIONS } from "../utils/fitnessStatus";
+import {
+  isTeleDoctorId,
+  isTeleVisitType,
+  mergeTeleDoctorsFromApi,
+} from "../utils/teleConsultationDoctors";
 
 const parseChiefComplaintNames = (value) => {
   if (!value || typeof value !== "string") return [];
@@ -46,6 +53,19 @@ const parseChiefComplaintNames = (value) => {
     .map((name) => name.trim())
     .filter(Boolean);
 };
+
+/** Allow blank vitals; only validate when a value is entered. */
+const optionalNumber = (min, max, minMsg, maxMsg) =>
+  Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === "" || originalValue == null || originalValue === undefined
+        ? null
+        : value,
+    )
+    .nullable()
+    .notRequired()
+    .min(min, minMsg)
+    .max(max, maxMsg);
 
 const OhcPrescriptionForm = () => {
   const tenantFeatures = getTenantFeatures(cookie.get("tenantId"));
@@ -64,12 +84,14 @@ const OhcPrescriptionForm = () => {
         Name: true,
         Mobile: true,
       });
-
+      healthAlerts.warning(
+        errors.billno || errors.UHID || errors.Name || errors.Mobile,
+      );
       return;
     }
 
     if (activeStep === 2) {
-      if (
+      const vitalError =
         errors.bpsystolic ||
         errors.bpdiastolic ||
         errors.pulserate ||
@@ -77,16 +99,45 @@ const OhcPrescriptionForm = () => {
         errors.temperature ||
         errors.height ||
         errors.weight ||
-        errors.glucose
-      ) {
-        const firstError = Object.values(errors)[0];
-        healthAlerts.warning(firstError);
+        errors.glucose ||
+        errors.haemoglobin;
+      if (vitalError) {
+        formik.setTouched(
+          {
+            bpsystolic: true,
+            bpdiastolic: true,
+            pulserate: true,
+            spo2: true,
+            temperature: true,
+            height: true,
+            weight: true,
+            glucose: true,
+            haemoglobin: true,
+          },
+          false,
+        );
+        healthAlerts.warning(vitalError);
         return;
       }
     }
-    if (activeStep === 3 && !can("update:prescription_form")) {
-      await formik.submitForm();
-      return;
+    if (activeStep === 3) {
+      if (
+        tenantFeatures.enableTeleConsultation &&
+        (errors.isDoctorAvailable || errors.teleDoctorId)
+      ) {
+        formik.setTouched(
+          { isDoctorAvailable: true, teleDoctorId: true },
+          false,
+        );
+        healthAlerts.warning(
+          errors.isDoctorAvailable || errors.teleDoctorId,
+        );
+        return;
+      }
+      if (!can("update:prescription_form")) {
+        await formik.submitForm();
+        return;
+      }
     }
     if (activeStep === 4) {
       if (prescriptionList.length === 0) {
@@ -111,9 +162,19 @@ const OhcPrescriptionForm = () => {
   const [medicineSuggestions, setMedicineSuggestions] = useState([]);
   const populatedUhidRef = useRef("");
   const [createPrescription, { isLoading }] = useCreatePrescriptionMutation();
+  const [bookTeleConsultation, { isLoading: isBookingTele }] =
+    useBookTeleConsultationMutation();
   const { ID: id } = useParams();
   const location = useLocation();
   const { data: diseaseSearchResponse } = useGetComboQuery("diseases-byname");
+  // Tele doctors: Users.id list for configured tenant (names from /combo/tele-doctor)
+  const { data: teleDoctorApiRows = [] } = useGetComboQuery(
+    tenantFeatures.enableTeleConsultation ? "tele-doctor" : skipToken,
+  );
+  const teleDoctors = React.useMemo(
+    () => mergeTeleDoctorsFromApi(teleDoctorApiRows),
+    [teleDoctorApiRows],
+  );
   const row = location.state?.row ?? null;
   const diseaseOptions = React.useMemo(
     () => diseaseSearchResponse || [],
@@ -194,7 +255,13 @@ const OhcPrescriptionForm = () => {
     // const addedDate = formatISO(new Date());
 
     return {
-      consultingId: values.consultingId,
+      // Tele stores Users.id; prefer selected tele doctor when doctor unavailable
+      consultingId:
+        tenantFeatures.enableTeleConsultation &&
+        values.isDoctorAvailable === "no" &&
+        values.teleDoctorId
+          ? Number(values.teleDoctorId)
+          : values.consultingId,
       picasoId: values.UHID,
       billNo: values.billno ? Number(values.billno) : null,
       patientName: values.Name,
@@ -236,6 +303,9 @@ const OhcPrescriptionForm = () => {
             referralUrgency: values.referralUrgency || null,
             referralOutcome: values.referralOutcome || null,
           }
+        : {}),
+      ...(tenantFeatures.enableFitnessStatus
+        ? { fitnessStatus: values.fitnessStatus || null }
         : {}),
       remarks: values.Remarks,
       hospitalId: values.hospitalId || 1,
@@ -314,13 +384,19 @@ const OhcPrescriptionForm = () => {
       referralReason: "",
       referralUrgency: "",
       referralOutcome: "",
+      fitnessStatus: "",
       ConsultantDoctorID: "",
       CenterID: "",
       PatientID: "",
       glucose: "",
       haemoglobin: "",
-      diagnosis: ""
+      diagnosis: "",
+      isDoctorAvailable: "",
+      teleDoctorId: "",
     },
+    // Formik would silently skip onSubmit when invalid — we validate inside onSubmit
+    // so the user always gets a toast (e.g. tele doctor availability on step 3).
+    validateOnSubmit: false,
     validationSchema: Yup.object({
       billno: Yup.string().required("Bill No is required"),
       UHID: Yup.string().required("UHID is required"),
@@ -328,43 +404,82 @@ const OhcPrescriptionForm = () => {
       Mobile: Yup.string()
         .matches(/^[0-9]{10}$/, "Must be 10 digits")
         .required("Mobile is required"),
-      bpsystolic: Yup.number()
-        .min(70, "Too low for systolic BP")
-        .max(250, "Too high for systolic BP"),
-
-      bpdiastolic: Yup.number()
-        .min(40, "Too low for diastolic BP")
-        .max(150, "Too high for diastolic BP"),
-
-      pulserate: Yup.number()
-        .min(30, "Pulse too low")
-        .max(220, "Pulse too high"),
-
-      spo2: Yup.number()
-        .min(70, "Critically low SpO₂")
-        .max(100, "Invalid SpO₂ value"),
-
-      temperature: Yup.number()
-        .min(95, "Hypothermia risk")
-        .max(108, "Dangerously high temperature"),
-
-      height: Yup.number().min(30, "Invalid height").max(250, "Invalid height"),
-
-      weight: Yup.number().min(2, "Invalid weight").max(300, "Invalid weight"),
-      glucose: Yup.number()
-        .min(20, "Glucose too low")
-        .max(700, "Glucose too high"),
-      haemoglobin: Yup.number()
-        .min(1, "Haemoglobin too low")
-        .max(25, "Haemoglobin too high")
-        .nullable()
-        .transform((v, o) => (o === "" || o == null ? null : v)),
+      bpsystolic: optionalNumber(
+        70,
+        250,
+        "Too low for systolic BP",
+        "Too high for systolic BP",
+      ),
+      bpdiastolic: optionalNumber(
+        40,
+        150,
+        "Too low for diastolic BP",
+        "Too high for diastolic BP",
+      ),
+      pulserate: optionalNumber(30, 220, "Pulse too low", "Pulse too high"),
+      spo2: optionalNumber(70, 100, "Critically low SpO₂", "Invalid SpO₂ value"),
+      temperature: optionalNumber(
+        95,
+        108,
+        "Hypothermia risk",
+        "Dangerously high temperature",
+      ),
+      height: optionalNumber(30, 250, "Invalid height", "Invalid height"),
+      weight: optionalNumber(2, 300, "Invalid weight", "Invalid weight"),
+      glucose: optionalNumber(20, 700, "Glucose too low", "Glucose too high"),
+      haemoglobin: optionalNumber(
+        1,
+        25,
+        "Haemoglobin too low",
+        "Haemoglobin too high",
+      ),
+      ...(tenantFeatures.enableTeleConsultation
+        ? {
+            isDoctorAvailable: Yup.string()
+              .oneOf(["yes", "no"], "Select doctor availability")
+              .required("Select doctor availability"),
+            teleDoctorId: Yup.string().when("isDoctorAvailable", {
+              is: "no",
+              then: (schema) =>
+                schema.required("Select a doctor for tele consultation"),
+              otherwise: (schema) => schema.notRequired(),
+            }),
+          }
+        : {}),
     }),
     onSubmit: async (values) => {
       const errors = await formik.validateForm();
 
       if (Object.keys(errors).length > 0) {
-        formik.setTouched(errors);
+        formik.setTouched(
+          Object.keys(errors).reduce((acc, key) => {
+            acc[key] = true;
+            return acc;
+          }, {}),
+        );
+
+        if (errors.isDoctorAvailable || errors.teleDoctorId) {
+          setActiveStep(3);
+        } else if (
+          errors.bpsystolic ||
+          errors.bpdiastolic ||
+          errors.pulserate ||
+          errors.spo2 ||
+          errors.temperature ||
+          errors.height ||
+          errors.weight ||
+          errors.glucose ||
+          errors.haemoglobin
+        ) {
+          setActiveStep(2);
+        } else if (
+          errors.billno ||
+          errors.UHID ||
+          errors.Name ||
+          errors.Mobile
+        ) {
+          setActiveStep(1);
+        }
 
         const firstError = Object.values(errors)[0];
         healthAlerts.warning(firstError);
@@ -373,6 +488,7 @@ const OhcPrescriptionForm = () => {
       }
       if (can("update:prescription_form") && prescriptionList.length === 0) {
         healthAlerts.warning("Please add at least one medicine");
+        setActiveStep(4);
         return;
       }
 
@@ -382,19 +498,55 @@ const OhcPrescriptionForm = () => {
       );
 
       try {
+        let sheetId = id ? Number(id) : null;
         if (id) {
-          await updatePrescription({ id, ...payload }).unwrap();
+          const updated = await updatePrescription({
+            id,
+            ...payload,
+          }).unwrap();
+          sheetId = Number(updated?.PrescriptionID || id);
           healthAlerts.success("Prescription Updated Successfully");
-          navigate("/ohc-prescription-form", { state: { goToList: true } });
         } else {
-          await createPrescription(payload).unwrap();
+          const created = await createPrescription(payload).unwrap();
+          sheetId = Number(created?.PrescriptionID);
           healthAlerts.success("Prescription Saved Successfully");
-          navigate("/ohc-prescription-form", { state: { goToList: true } });
         }
+
+        const needsTele =
+          tenantFeatures.enableTeleConsultation &&
+          values.isDoctorAvailable === "no";
+
+        if (needsTele) {
+          if (!sheetId) {
+            throw new Error("Missing consulting sheet id for tele consultation");
+          }
+          const tele = await bookTeleConsultation({
+            consultingSheetId: sheetId,
+            isDoctorAvailable: false,
+            doctorId: Number(values.teleDoctorId),
+          }).unwrap();
+
+          const roomName = tele?.roomName || "";
+          const meetLink = tele?.meetLink || "";
+          if (!roomName || !meetLink) {
+            healthAlerts.warning(
+              "Please wait. consultation has not started yet.",
+            );
+            navigate("/ohc-prescription-form", { state: { goToList: true } });
+            return;
+          }
+
+          navigate(
+            `/ohc-join-call?room_name=${encodeURIComponent(roomName)}&meet_link=${encodeURIComponent(meetLink)}`,
+          );
+          return;
+        }
+
+        navigate("/ohc-prescription-form", { state: { goToList: true } });
       } catch (error) {
         healthAlert({
           title: "Prescription Error",
-          text: error?.data?.message || "Something went wrong",
+          text: error?.data?.message || error?.message || "Something went wrong",
           icon: "error",
         });
       }
@@ -410,6 +562,11 @@ const OhcPrescriptionForm = () => {
     let months = patientData.driverDetails[0]?.imonth || 0;
     let days = patientData.driverDetails[0]?.idays || 0;
     const finalAge = `${years}y ${months}m ${days}d`;
+    const opdDoctorId = patientData.ConsultantDoctorID || "";
+    const fromTeleOpd =
+      tenantFeatures.enableTeleConsultation &&
+      (isTeleVisitType(patientData.Visitype) || isTeleDoctorId(opdDoctorId));
+
     const updates = {
       UHID: patientData.PicasoNo || "",
       Name: patientData.driverDetails[0]?.name || "",
@@ -417,7 +574,7 @@ const OhcPrescriptionForm = () => {
       Mobile: patientData.Mobile || "",
       FinCategory: patientData.driverDetails[0]?.category || "",
       Age: finalAge,
-      consultingId: patientData.ConsultantDoctorID || "",
+      consultingId: opdDoctorId,
       hospitalId: patientData.HospitalID,
       Remarks: patientData.Remarks,
       ReferTo: patientData.ReferTo,
@@ -425,6 +582,14 @@ const OhcPrescriptionForm = () => {
       ConsultantDoctorID: patientData.ConsultantDoctorID,
       CenterID: patientData.CenterID,
       PatientID: patientData.PatientID,
+      ...(fromTeleOpd
+        ? {
+            isDoctorAvailable: "no",
+            teleDoctorId: isTeleDoctorId(opdDoctorId)
+              ? String(opdDoctorId)
+              : "",
+          }
+        : {}),
     };
     formik.setValues({ ...formik.values, ...updates }, false);
   }, [patientData, selectedBill]);
@@ -496,6 +661,7 @@ const OhcPrescriptionForm = () => {
       referralReason: row.referralReason ?? "",
       referralUrgency: row.referralUrgency ?? "",
       referralOutcome: row.referralOutcome ?? "",
+      fitnessStatus: row.fitnessStatus ?? "",
     };
 
     formik.setValues((prev) => ({ ...prev, ...updates }), false);
@@ -870,6 +1036,28 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   />
                 </div>
 
+                {tenantFeatures.enableFitnessStatus && (
+                  <div className="mt-8">
+                    <h4 className="text-base font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                      <span className="w-1.5 h-5 bg-sky-600 rounded-full"></span>
+                      Fitness Status
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <Select
+                        {...formik.getFieldProps("fitnessStatus")}
+                        label="Fitness Status"
+                      >
+                        <option value="">Select</option>
+                        {FITNESS_STATUS_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
                 {tenantFeatures.enableStructuredReferral && (
                   <div className="mt-8">
                     <h4 className="text-base font-semibold text-sky-700 mb-3 flex items-center gap-2">
@@ -913,6 +1101,60 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         placeholder="Enter outcome on next visit"
                       />
                     </div>
+                  </div>
+                )}
+
+                {tenantFeatures.enableTeleConsultation && (
+                  <div className="mt-8">
+                    <h4 className="text-base font-semibold text-sky-700 mb-3 flex items-center gap-2">
+                      <span className="w-1.5 h-5 bg-sky-600 rounded-full"></span>
+                      Doctor Availability
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <Select
+                        label="Is doctor available (physical)?"
+                        name="isDoctorAvailable"
+                        value={formik.values.isDoctorAvailable}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          formik.setFieldValue("isDoctorAvailable", value);
+                          if (value !== "no") {
+                            formik.setFieldValue("teleDoctorId", "");
+                          }
+                        }}
+                        onBlur={formik.handleBlur}
+                      >
+                        <option value="">Select</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                      </Select>
+
+                      {formik.values.isDoctorAvailable === "no" && (
+                        <Select
+                          {...formik.getFieldProps("teleDoctorId")}
+                          label="Select doctor for tele consultation"
+                        >
+                          <option value="">Select doctor</option>
+                          {teleDoctors.map((d) => (
+                            <option key={d.userId} value={d.userId}>
+                              {d.name}
+                            </option>
+                          ))}
+                        </Select>
+                      )}
+                    </div>
+                    {formik.touched.isDoctorAvailable &&
+                      formik.errors.isDoctorAvailable && (
+                        <p className="text-sm text-red-500 mt-2">
+                          {formik.errors.isDoctorAvailable}
+                        </p>
+                      )}
+                    {formik.touched.teleDoctorId &&
+                      formik.errors.teleDoctorId && (
+                        <p className="text-sm text-red-500 mt-2">
+                          {formik.errors.teleDoctorId}
+                        </p>
+                      )}
                   </div>
                 )}
 
@@ -1240,6 +1482,15 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   </p>
                 </div>
 
+                {tenantFeatures.enableFitnessStatus && (
+                  <div className="border-t pt-3 text-sm">
+                    <p>
+                      <b>Fitness Status:</b>{" "}
+                      {formik.values.fitnessStatus || "-"}
+                    </p>
+                  </div>
+                )}
+
                 {tenantFeatures.enableStructuredReferral && (
                   <div className="border-t pt-3 text-sm grid md:grid-cols-2 gap-3">
                     <p>
@@ -1417,6 +1668,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         referralReason: "",
                         referralUrgency: "",
                         referralOutcome: "",
+                        fitnessStatus: "",
+                        isDoctorAvailable: "",
+                        teleDoctorId: "",
                       });
                     }
 
@@ -1463,13 +1717,36 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    const dataToPrint =
+                    const base =
                       id && row
                         ? row
                         : buildPrescriptionPayload(
                             formik.values,
                             prescriptionList,
                           );
+
+                    const doctorRef =
+                      formik.values.teleDoctorId ||
+                      formik.values.consultingId ||
+                      patientData?.ConsultantDoctorID ||
+                      base?.consultingId;
+
+                    const teleDoc = teleDoctors.find(
+                      (d) => Number(d.userId) === Number(doctorRef),
+                    );
+
+                    const dataToPrint = {
+                      ...base,
+                      doctor: base?.doctor ||
+                        (teleDoc
+                          ? {
+                              name: teleDoc.name,
+                              qualification: teleDoc.qualification || "",
+                              registration_number:
+                                teleDoc.registration_number || "",
+                            }
+                          : undefined),
+                    };
 
                     onPrintCS(dataToPrint);
                   }}
@@ -1500,7 +1777,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   <Button
                     type="button"
                     variant="sky"
-                    disabled={isLoading}
+                    disabled={isLoading || isBookingTele}
                     onClick={() => formik.submitForm()}
                   >
                     <CheckCircleIcon className="w-5 h-5 inline mr-1" />
@@ -1513,7 +1790,11 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                 )
               ) : (
                 <div className="flex gap-2">
-                  <Button type="submit" variant="sky" disabled={isLoading}>
+                  <Button
+                    type="submit"
+                    variant="sky"
+                    disabled={isLoading || isBookingTele}
+                  >
                     <CheckCircleIcon className="w-5 h-5 inline mr-1" />
                     {id ? "Update" : "Save"}
                   </Button>

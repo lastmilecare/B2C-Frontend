@@ -37,6 +37,12 @@ import { cookie } from "../utils/cookie";
 import { formatDate } from "../utils/helper";
 import { getTenantFeatures } from "../config/tenantFeatures";
 import PreviousVisitHealthSummary from "../components/ohc/PreviousVisitHealthSummary";
+import {
+  TELE_VISIT_TYPE,
+  PHYSICAL_VISIT_TYPE,
+  isTeleVisitType,
+  mergeTeleDoctorsFromApi,
+} from "../utils/teleConsultationDoctors";
 
 const COST_FREE_PAYMODE_ID = "5";
 
@@ -154,6 +160,13 @@ const OpdOhcForm = () => {
   const [suggestionsList, setSuggestionsList] = useState([]);
   const { data: doctors, isLoading: doctorsComboLoading } =
     useGetComboQuery("doctor");
+  const { data: teleDoctorApiRows = [] } = useGetComboQuery(
+    tenantFeatures.enableTeleConsultation ? "tele-doctor" : skipToken,
+  );
+  const teleDoctors = React.useMemo(
+    () => mergeTeleDoctorsFromApi(teleDoctorApiRows),
+    [teleDoctorApiRows],
+  );
 
   const { data: department, isLoading: departmentComboLoading } =
     useGetComboQuery("department");
@@ -230,14 +243,19 @@ const OpdOhcForm = () => {
     skip: !selectedUhid || selectedUhid.trim() === "",
   });
 
-  const visitUhid =
+  const visitUhid = String(
     selectedUhid ||
-    editData?.uhid ||
-    editData?.PicasoNo ||
-    editData?.picasoId ||
-    "";
+      editData?.uhid ||
+      editData?.PicasoNo ||
+      editData?.picasoId ||
+      "",
+  ).trim();
 
-  const { data: visitVitalsData } = useGetVisitVitalsQuery(
+  const {
+    data: visitVitalsData,
+    isFetching: visitVitalsFetching,
+    isSuccess: visitVitalsSuccess,
+  } = useGetVisitVitalsQuery(
     {
       picasoId: visitUhid,
       excludeBillNo: billNo || undefined,
@@ -247,6 +265,7 @@ const OpdOhcForm = () => {
         !tenantFeatures.enablePreviousVisitSummary ||
         !visitUhid ||
         String(visitUhid).trim() === "",
+      refetchOnMountOrArgChange: true,
     },
   );
 
@@ -258,6 +277,39 @@ const OpdOhcForm = () => {
       Number(previousFetchDue.data.PreviousDue || 0),
     );
   }, [previousFetchDue.data]);
+
+  // Sync Last Visit Date from last prescription vitals (Visit Health Summary source)
+  useEffect(() => {
+    if (!tenantFeatures.enablePreviousVisitSummary) return;
+    if (!visitUhid) return;
+    if (visitVitalsFetching) return;
+
+    const prevDate = visitVitalsData?.previous?.visitDate;
+    const currDate = visitVitalsData?.current?.visitDate;
+    if (prevDate) {
+      formik.setFieldValue("lastVisitDate", formatDate(prevDate));
+      formik.setFieldValue(
+        "LastVisitDate",
+        new Date(prevDate).toISOString().split("T")[0],
+      );
+    } else if (currDate) {
+      formik.setFieldValue("lastVisitDate", formatDate(currDate));
+      formik.setFieldValue(
+        "LastVisitDate",
+        new Date(currDate).toISOString().split("T")[0],
+      );
+    } else if (visitVitalsSuccess) {
+      // First OPD / no prescription vitals yet — still show summary as first visit
+      formik.setFieldValue("lastVisitDate", "First visit");
+      formik.setFieldValue("LastVisitDate", "");
+    }
+  }, [
+    tenantFeatures.enablePreviousVisitSummary,
+    visitUhid,
+    visitVitalsData,
+    visitVitalsFetching,
+    visitVitalsSuccess,
+  ]);
 
   useEffect(() => {
     if (selectedUhid) return;
@@ -357,6 +409,11 @@ const OpdOhcForm = () => {
         Age: editData.age || "",
         Department: deptObj ? deptObj.id : 0,
         Doctor: doctorObj?.id || editData.DoctorId || "",
+        consultationMode: isTeleVisitType(
+          editData.Visitype || editData.visitype || editData.VisitType,
+        )
+          ? "tele"
+          : "physical",
         ReferBy:
           editData.ReferTo !== undefined && editData.ReferTo !== null
             ? String(editData.ReferTo)
@@ -464,6 +521,14 @@ const OpdOhcForm = () => {
       ReferTo: values.ReferBy ? Number(values.ReferBy) : null,
       IsActive: true,
       complaint: chiefComplaintStr,
+      ...(tenantFeatures.enableTeleConsultation
+        ? {
+            Visitype:
+              values.consultationMode === "tele"
+                ? TELE_VISIT_TYPE
+                : PHYSICAL_VISIT_TYPE,
+          }
+        : {}),
     };
 
     const details = selectedServices.map((s) => ({
@@ -505,10 +570,12 @@ const OpdOhcForm = () => {
       DOB: "",
       Department: 0,
       Doctor: 0,
+      consultationMode: "physical",
       FinCategory: "",
       ReferBy: "",
       // VisitType: "",
       LastVisitDate: "",
+      lastVisitDate: "",
       Quantity: 1,
       ServiceName: "",
       PreviousDue: 0,
@@ -643,7 +710,10 @@ const OpdOhcForm = () => {
         ? new Date(patientData.createdAt).toISOString().split("T")[0]
         : "",
       PreviousDue: previousFetchDue?.data?.PreviousDue || 0,
-      lastVisitDate: formatDate(patientData?.lastVisitDate) || "N/A",
+      // Placeholder until visit-vitals effect sets real previous prescription date
+      lastVisitDate: patientData?.lastVisitDate
+        ? formatDate(patientData.lastVisitDate)
+        : "…",
     };
 
     if (patientData.dateOfBirthOrAge) {
@@ -804,6 +874,8 @@ const OpdOhcForm = () => {
                           setSelectedUhid("");
 
                           formik.setFieldValue("UHID", "");
+                          formik.setFieldValue("lastVisitDate", "");
+                          formik.setFieldValue("LastVisitDate", "");
                           setSuggestionsList([]);
 
                           populatedUhidRef.current = "";
@@ -916,38 +988,80 @@ const OpdOhcForm = () => {
                         </option>
                       ))}
                     </Select>
+                    {tenantFeatures.enableTeleConsultation && (
+                      <Select
+                        label={
+                          <span>
+                            Consultation Type{" "}
+                            <span className="text-red-500">*</span>
+                          </span>
+                        }
+                        name="consultationMode"
+                        value={formik.values.consultationMode || "physical"}
+                        onChange={(e) => {
+                          const mode = e.target.value;
+                          formik.setFieldValue("consultationMode", mode);
+                          formik.setFieldValue("Doctor", "");
+                        }}
+                        onBlur={formik.handleBlur}
+                      >
+                        <option value="physical">Physical</option>
+                        <option value="tele">Tele Consultation</option>
+                      </Select>
+                    )}
+
                     <Select
                       {...formik.getFieldProps("Doctor")}
                       label={
                         <span>
-                          {depCurrentId === 9
-                            ? "Consulting Doctor"
-                            : depCurrentId === 3
-                              ? "Nursing"
-                              : depCurrentId === 6
-                                ? "Lab"
-                                : depCurrentId === 13
-                                  ? "Radiology"
-                                  : "Doctor"}
+                          {formik.values.consultationMode === "tele" &&
+                          tenantFeatures.enableTeleConsultation
+                            ? "Tele Consultation Doctor"
+                            : depCurrentId === 9
+                              ? "Consulting Doctor"
+                              : depCurrentId === 3
+                                ? "Nursing"
+                                : depCurrentId === 6
+                                  ? "Lab"
+                                  : depCurrentId === 13
+                                    ? "Radiology"
+                                    : "Doctor"}
                           <span className="text-red-500"> *</span>
                         </span>
                       }
                       error={formik.touched.Doctor && formik.errors.Doctor}
                     >
                       <option value="">
-                        {depCurrentId === 9
-                          ? "Consulting Doctor"
-                          : depCurrentId === 3
-                            ? "Select Nursing"
-                            : depCurrentId === 6
-                              ? "Select Lab"
-                              : depCurrentId === 13
-                                ? "Select Radiology"
-                                : "Select"}
+                        {formik.values.consultationMode === "tele" &&
+                        tenantFeatures.enableTeleConsultation
+                          ? "Select tele doctor"
+                          : depCurrentId === 9
+                            ? "Consulting Doctor"
+                            : depCurrentId === 3
+                              ? "Select Nursing"
+                              : depCurrentId === 6
+                                ? "Select Lab"
+                                : depCurrentId === 13
+                                  ? "Select Radiology"
+                                  : "Select"}
                       </option>
 
-                      {/* Department 9 → Doctors */}
-                      {depCurrentId === 9 &&
+                      {/* Tele consultation → fixed MHCU tele doctors */}
+                      {formik.values.consultationMode === "tele" &&
+                      tenantFeatures.enableTeleConsultation
+                        ? teleDoctors.map((d) => (
+                            <option key={d.userId} value={d.userId}>
+                              {d.name}
+                            </option>
+                          ))
+                        : null}
+
+                      {/* Department 9 → Doctors (physical) */}
+                      {!(
+                        formik.values.consultationMode === "tele" &&
+                        tenantFeatures.enableTeleConsultation
+                      ) &&
+                        depCurrentId === 9 &&
                         doctors?.map((d) => (
                           <option key={d.id} value={d.id}>
                             {d.name || d.doctor_name}
@@ -955,7 +1069,11 @@ const OpdOhcForm = () => {
                         ))}
 
                       {/* Department 3 → Nursing */}
-                      {depCurrentId === 3 &&
+                      {!(
+                        formik.values.consultationMode === "tele" &&
+                        tenantFeatures.enableTeleConsultation
+                      ) &&
+                        depCurrentId === 3 &&
                         nursing?.map((d) => (
                           <option key={d.id} value={d.id}>
                             {d.username}
@@ -963,13 +1081,21 @@ const OpdOhcForm = () => {
                         ))}
 
                       {/* Department 6 → Lab */}
-                      {depCurrentId === 6 &&
+                      {!(
+                        formik.values.consultationMode === "tele" &&
+                        tenantFeatures.enableTeleConsultation
+                      ) &&
+                        depCurrentId === 6 &&
                         lab?.map((d) => (
                           <option key={d.id} value={d.id}>
                             {d.username}
                           </option>
                         ))}
-                      {depCurrentId === 13 &&
+                      {!(
+                        formik.values.consultationMode === "tele" &&
+                        tenantFeatures.enableTeleConsultation
+                      ) &&
+                        depCurrentId === 13 &&
                         radiology?.map((d) => (
                           <option key={d.id} value={d.id}>
                             {d.username}
@@ -1035,10 +1161,14 @@ const OpdOhcForm = () => {
 
                   {tenantFeatures.enablePreviousVisitSummary &&
                     tenantFeatures.enableHealthFlags &&
-                    (visitVitalsData?.previous || visitVitalsData?.current) && (
+                    visitUhid &&
+                    (visitVitalsFetching ||
+                      visitVitalsData?.previous ||
+                      visitVitalsData?.current) && (
                       <PreviousVisitHealthSummary
-                        previous={visitVitalsData?.previous}
-                        current={visitVitalsData?.current}
+                        previous={visitVitalsData?.previous ?? null}
+                        current={visitVitalsData?.current ?? null}
+                        isLoading={visitVitalsFetching && !visitVitalsSuccess}
                       />
                     )}
                 </section>
@@ -1380,30 +1510,50 @@ const OpdOhcForm = () => {
                           }
                         </p>
 
+                        {tenantFeatures.enableTeleConsultation && (
+                          <p>
+                            <b>Consultation Type:</b>{" "}
+                            {formik.values.consultationMode === "tele"
+                              ? "Tele Consultation"
+                              : "Physical"}
+                          </p>
+                        )}
+
                         <p>
                           <b>
-                            {depCurrentId === 9
-                              ? "Doctor:"
-                              : depCurrentId === 3
-                                ? "Nursing:"
-                                : depCurrentId === 6
-                                  ? "Lab:"
-                                  : "Doctor:"}
+                            {formik.values.consultationMode === "tele" &&
+                            tenantFeatures.enableTeleConsultation
+                              ? "Tele Doctor:"
+                              : depCurrentId === 9
+                                ? "Doctor:"
+                                : depCurrentId === 3
+                                  ? "Nursing:"
+                                  : depCurrentId === 6
+                                    ? "Lab:"
+                                    : "Doctor:"}
                           </b>{" "}
-                          {depCurrentId === 9
-                            ? doctors?.find((d) => d.id == formik.values.Doctor)
-                                ?.name ||
-                              doctors?.find((d) => d.id == formik.values.Doctor)
-                                ?.doctor_name ||
-                              "-"
-                            : depCurrentId === 3
-                              ? nursing?.find(
+                          {formik.values.consultationMode === "tele" &&
+                          tenantFeatures.enableTeleConsultation
+                            ? teleDoctors.find(
+                                (d) => d.userId == formik.values.Doctor,
+                              )?.name || "-"
+                            : depCurrentId === 9
+                              ? doctors?.find(
                                   (d) => d.id == formik.values.Doctor,
-                                )?.username || "-"
-                              : depCurrentId === 6
-                                ? lab?.find((d) => d.id == formik.values.Doctor)
-                                    ?.username || "-"
-                                : "-"}
+                                )?.name ||
+                                doctors?.find(
+                                  (d) => d.id == formik.values.Doctor,
+                                )?.doctor_name ||
+                                "-"
+                              : depCurrentId === 3
+                                ? nursing?.find(
+                                    (d) => d.id == formik.values.Doctor,
+                                  )?.username || "-"
+                                : depCurrentId === 6
+                                  ? lab?.find(
+                                      (d) => d.id == formik.values.Doctor,
+                                    )?.username || "-"
+                                  : "-"}
                         </p>
 
                         <p>
@@ -1586,6 +1736,8 @@ const OpdOhcForm = () => {
                           FinCategory: "",
                           ReferBy: "",
                           ChiefComplaint: [],
+                          lastVisitDate: "",
+                          LastVisitDate: "",
                         });
 
                         setUhidSearch("");

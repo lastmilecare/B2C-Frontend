@@ -422,7 +422,36 @@ export const api = createApi({
           ...(excludeBillNo ? { excludeBillNo } : {}),
         },
       }),
+      transformResponse: (response) => {
+        // Support both raw and { data: {...} } envelopes
+        const payload = response?.data?.previous !== undefined || response?.data?.current !== undefined
+          ? response.data
+          : response;
+        return {
+          previous: payload?.previous ?? null,
+          current: payload?.current ?? null,
+          isFirstVisit: payload?.isFirstVisit ?? false,
+          sameDayRevisit: payload?.sameDayRevisit ?? false,
+        };
+      },
       providesTags: ["Prescription"],
+    }),
+    getAdminAnalysis: build.query({
+      query: (params = {}) => ({
+        url: "/picasoid-prescription/admin-analysis",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Prescription"],
+    }),
+    exportAdminAnalysisExcel: build.query({
+      query: (params = {}) => ({
+        url: "/picasoid-prescription/admin-analysis/export",
+        method: "GET",
+        params,
+        responseType: "blob",
+      }),
+      keepUnusedDataFor: 0,
     }),
     createPrescription: build.mutation({
       query: (PrescriptionData) => ({
@@ -439,6 +468,21 @@ export const api = createApi({
         data: body,
       }),
       invalidatesTags: ["Prescription"],
+    }),
+    bookTeleConsultation: build.mutation({
+      query: (body) => ({
+        url: "/picasoid-prescription/book-tele-consultation",
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Prescription"],
+    }),
+    generateDailyToken: build.mutation({
+      query: (body) => ({
+        url: "/daily-video/generate-token",
+        method: "POST",
+        data: body,
+      }),
     }),
     togglePrescriptionStatus: build.mutation({
       query: (id) => ({
@@ -2815,8 +2859,12 @@ export const {
   useGetMediceneListQuery,
   useGetPrescriptionsListQuery,
   useGetVisitVitalsQuery,
+  useGetAdminAnalysisQuery,
+  useLazyExportAdminAnalysisExcelQuery,
   useCreatePrescriptionMutation,
   useUpdatePrescriptionMutation,
+  useBookTeleConsultationMutation,
+  useGenerateDailyTokenMutation,
   useTogglePrescriptionStatusMutation,
   useLazyExportOpdExcelQuery,
   useCreateMedicineStockMutation,

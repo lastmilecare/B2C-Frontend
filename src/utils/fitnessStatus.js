@@ -1,0 +1,5 @@
+export const FITNESS_STATUS_OPTIONS = [
+  "FIT",
+  "FIT WITH MEDICATION",
+  "UNFIT & REFER",
+];

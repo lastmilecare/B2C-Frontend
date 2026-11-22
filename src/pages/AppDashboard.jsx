@@ -252,11 +252,14 @@ export const Dashboard = () => {
     ],
   };
 
+  const personLabel = MMUClient ? "Patient" : "Worker";
+  const personPlural = MMUClient ? "Patients" : "Workers";
+
   const workersChart = {
     labels: careFlow.labels,
     datasets: [
       {
-        label: "Workers visited",
+        label: `${personPlural} visited`,
         data: data.workersVisited,
         backgroundColor: gradientBarColors(data.workersVisited),
         borderColor: OHC_THEME.emerald,
@@ -417,8 +420,18 @@ export const Dashboard = () => {
       },
     ],
   };
-console.log("data.periodLabel", data);
-const kpiCard= MMUClient ? data.kpis.filter((kpi) => kpi.label !== "Fitness Certificates" && kpi.label !== "Ambulance Dispatches") : data.kpis;
+  const kpiCard = (MMUClient
+    ? data.kpis.filter(
+        (kpi) =>
+          kpi.label !== "Fitness Certificates" &&
+          kpi.label !== "Ambulance Dispatches",
+      )
+    : data.kpis
+  ).map((kpi) =>
+    MMUClient && kpi.label === "Registered Workers"
+      ? { ...kpi, label: "Registered Patients" }
+      : kpi,
+  );
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 rounded-xl bg-emerald-600 p-6 text-white sm:flex-row sm:items-center sm:justify-between">
@@ -428,7 +441,8 @@ const kpiCard= MMUClient ? data.kpis.filter((kpi) => kpi.label !== "Fitness Cert
             {`${role} of ${tenantName}`})
           </h1>
           <p className="mt-1 text-sm text-emerald-100">
-            Worker Registration → OPD → Prescription · Fitness · Ambulance
+            {personLabel} Registration → OPD → Prescription
+            {MMUClient ? "" : " · Fitness · Ambulance"}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -489,7 +503,10 @@ const kpiCard= MMUClient ? data.kpis.filter((kpi) => kpi.label !== "Fitness Cert
         </div>
         <ChartLegend
           items={[
-            { color: OHC_THEME.emerald, label: "Worker registration" },
+            {
+              color: OHC_THEME.emerald,
+              label: `${personLabel} registration`,
+            },
             { color: OHC_THEME.teal, label: "OPD visit" },
             { color: OHC_THEME.sky, label: "Prescription issued" },
           ]}
@@ -513,17 +530,22 @@ const kpiCard= MMUClient ? data.kpis.filter((kpi) => kpi.label !== "Fitness Cert
         </ChartCard>
 
         <ChartCard
-          title= {MMUClient ? "Patients Visited" : "Workers Visited"}
+          title={`${personPlural} Visited`}
           subtitle="Footfall volume — vertical bars for precise count comparison"
         >
           <div className="h-[220px]">
             <Bar
               data={workersChart}
-              options={barChartOptions(false, "workers")}
+              options={barChartOptions(false, MMUClient ? "patients" : "workers")}
             />
           </div>
           <ChartLegend
-            items={[{ color: OHC_THEME.emeraldMd, label: "Workers visited" }]}
+            items={[
+              {
+                color: OHC_THEME.emeraldMd,
+                label: `${personPlural} visited`,
+              },
+            ]}
           />
         </ChartCard>
 

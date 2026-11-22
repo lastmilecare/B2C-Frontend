@@ -65,6 +65,8 @@ import AmbulanceServicePage from "../pages/AmbulanceServicePage";
 import OpdohcPrescriptionPage from "../pages/OhcPrescriptionpage";
 import ohcPrescriptionForm from "../pages/OhcPrescriptionForm";
 import ohcPrescriptionList from "../pages/OhcPrescriptionList";
+import OhcJoinCallPage from "../pages/OhcJoinCallPage";
+import MhcuAdminAnalysis from "../pages/MhcuAdminAnalysis";
 import AmpDashboard from "../clients/amp/AmpDashboardPage";
 import HondaDashboard from "../clients/honda/HondaDashboardPage";
 import ExpensePage from "../pages/expenses/ExpensePage";
@@ -837,6 +839,18 @@ export const ROUTES = [
     path: "/ohc-prescription-form/:ID",
     component: OpdohcPrescriptionPage,
     permission: null,
+    showInSidebar: false,
+  },
+  {
+    path: "/ohc-join-call",
+    component: OhcJoinCallPage,
+    permission: null,
+    showInSidebar: false,
+  },
+  {
+    path: "/mhcu-admin-analysis",
+    component: MhcuAdminAnalysis,
+    permission: "read:ohc_dashboard",
     showInSidebar: false,
   },
   {
