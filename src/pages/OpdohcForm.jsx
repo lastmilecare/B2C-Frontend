@@ -326,7 +326,20 @@ const OpdOhcForm = () => {
   }, [suggestions, selectedUhid, uhidSearch]);
   const { data: allServices = [] } = useGetServiceMastersQuery("");
   useEffect(() => {
-    if (editData && department && doctors && paymode) {
+    if (!editData || !department || !paymode) return;
+    const editingTele = isTeleVisitType(
+      editData.Visitype || editData.visitype || editData.VisitType,
+    );
+    if (
+      editingTele &&
+      tenantFeatures.enableTeleConsultation &&
+      !teleDoctors.length
+    ) {
+      return;
+    }
+    if (!editingTele && !doctors) return;
+
+    if (editData && department && paymode) {
       const editUhid =
         editData.uhid || editData.PicasoNo || editData.picasoId || "";
       setUhidSearch(editUhid);
@@ -354,10 +367,22 @@ const OpdOhcForm = () => {
 
       const departmentId = Number(deptObj?.id || editData.DepartmentID);
       const selectedDoctorId = Number(editData.DoctorId);
+      const teleEdit = isTeleVisitType(
+        editData.Visitype || editData.visitype || editData.VisitType,
+      );
 
       let doctorObj = null;
 
-      if (departmentId === 9) {
+      if (teleEdit && tenantFeatures.enableTeleConsultation) {
+        const teleDoc = teleDoctors.find(
+          (d) =>
+            Number(d.id) === selectedDoctorId ||
+            Number(d.userId) === selectedDoctorId,
+        );
+        if (teleDoc?.id) {
+          doctorObj = { id: teleDoc.id, name: teleDoc.name };
+        }
+      } else if (departmentId === 9) {
         doctorObj = doctors?.find(
           (d) =>
             Number(d.id) === selectedDoctorId ||
@@ -451,7 +476,17 @@ const OpdOhcForm = () => {
         setSelectedServices(mapped);
       }
     }
-  }, [editData, department, doctors, nursing, lab, paymode, allServices]);
+  }, [
+    editData,
+    department,
+    doctors,
+    nursing,
+    lab,
+    paymode,
+    allServices,
+    teleDoctors,
+    tenantFeatures.enableTeleConsultation,
+  ]);
   const [depCurrentId, setDepCurrentId] = useState(0);
   const parseDOB = (raw) => {
     if (!raw) return "";
@@ -1050,7 +1085,7 @@ const OpdOhcForm = () => {
                       {formik.values.consultationMode === "tele" &&
                       tenantFeatures.enableTeleConsultation
                         ? teleDoctors.map((d) => (
-                            <option key={d.userId} value={d.userId}>
+                            <option key={d.id} value={d.id}>
                               {d.name}
                             </option>
                           ))
@@ -1535,7 +1570,9 @@ const OpdOhcForm = () => {
                           {formik.values.consultationMode === "tele" &&
                           tenantFeatures.enableTeleConsultation
                             ? teleDoctors.find(
-                                (d) => d.userId == formik.values.Doctor,
+                                (d) =>
+                                  Number(d.id) === Number(formik.values.Doctor) ||
+                                  Number(d.userId) === Number(formik.values.Doctor),
                               )?.name || "-"
                             : depCurrentId === 9
                               ? doctors?.find(

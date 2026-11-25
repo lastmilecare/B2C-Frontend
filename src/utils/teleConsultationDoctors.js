@@ -1,53 +1,74 @@
 /**
- * Fixed tele-consultation doctors for configured tenant (VITE_TENANT_ID).
- * `id` / `userId` = Users.id (NOT Doctors.id).
- * Saved on OPD as ConsultantDoctorID / DoctorId and on prescription tele as ConsultingID.
+ * Tele consultation doctors (configured tenant).
+ * Combo + OPD/prescription use Doctors.id — not Users.id.
+ * Add more Doctors.id values when new tele doctors are onboarded.
  */
-export const TELE_CONSULTATION_DOCTORS = [
-  { id: 580, userId: 580, name: "Amrita Jha" },
-  { id: 584, userId: 584, name: "Shiv Singh Rajawat" },
-  { id: 602, userId: 602, name: "Ramesh Kumar Yadav" },
-  { id: 608, userId: 608, name: "Dharam Pal" },
-];
+export const TELE_DOCTOR_IDS = [49];
 
-export const TELE_DOCTOR_USER_IDS = TELE_CONSULTATION_DOCTORS.map((d) => d.userId);
+/** Fallback labels until /combo/tele-doctor loads (doctor id → display). */
+export const TELE_CONSULTATION_DOCTORS = [
+  { id: 49, userId: 178, name: "Amrita Jha" },
+];
 
 export const TELE_VISIT_TYPE = "TELE";
 export const PHYSICAL_VISIT_TYPE = "PHYSICAL";
 
-export const isTeleDoctorId = (id) =>
-  TELE_CONSULTATION_DOCTORS.some(
-    (d) => Number(d.userId) === Number(id) || Number(d.id) === Number(id),
+export const isTeleDoctorId = (id) => {
+  const n = Number(id);
+  if (!n || Number.isNaN(n)) return false;
+  if (TELE_DOCTOR_IDS.includes(n)) return true;
+  return TELE_CONSULTATION_DOCTORS.some(
+    (d) => Number(d.id) === n || Number(d.userId) === n,
   );
+};
 
 export const isTeleVisitType = (visitType) =>
   String(visitType || "")
     .trim()
     .toUpperCase() === TELE_VISIT_TYPE;
 
-/** Merge API rows (user id + name/qualification/reg) over the fixed list. */
+/** Merge API rows (Doctors.id) over fallback list. */
 export const mergeTeleDoctorsFromApi = (apiRows = []) => {
   if (!Array.isArray(apiRows) || apiRows.length === 0) {
-    return TELE_CONSULTATION_DOCTORS;
+    return [...TELE_CONSULTATION_DOCTORS];
   }
-  const byId = new Map(
+
+  const byDoctorId = new Map(
     apiRows.map((r) => [
-      Number(r.id ?? r.user_id ?? r.userId),
+      Number(r.id),
       {
+        id: Number(r.id),
+        userId: r.user_id != null ? Number(r.user_id) : null,
         name: r.name || r.doctor_name || r.username || "",
         qualification: r.qualification || "",
         registration_number: r.registration_number || "",
       },
     ]),
   );
-  return TELE_CONSULTATION_DOCTORS.map((d) => {
-    const extra = byId.get(Number(d.userId)) || {};
+
+  const fromStatic = TELE_CONSULTATION_DOCTORS.map((d) => {
+    const hit = byDoctorId.get(Number(d.id));
+    if (!hit) return { ...d };
     return {
-      ...d,
-      name: extra.name || d.name,
-      qualification: extra.qualification || d.qualification || "",
-      registration_number:
-        extra.registration_number || d.registration_number || "",
+      id: hit.id,
+      userId: hit.userId ?? d.userId,
+      name: hit.name || d.name,
+      qualification: hit.qualification || "",
+      registration_number: hit.registration_number || "",
     };
   });
+
+  const staticIds = new Set(fromStatic.map((d) => Number(d.id)));
+  const extra = apiRows
+    .filter((r) => !staticIds.has(Number(r.id)))
+    .map((r) => ({
+      id: Number(r.id),
+      userId: r.user_id != null ? Number(r.user_id) : null,
+      name: r.name || r.doctor_name || r.username || "",
+      qualification: r.qualification || "",
+      registration_number: r.registration_number || "",
+    }));
+
+  const merged = [...fromStatic, ...extra];
+  return merged.length ? merged : fromStatic;
 };

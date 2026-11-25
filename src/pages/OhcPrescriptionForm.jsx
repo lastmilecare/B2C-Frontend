@@ -69,6 +69,10 @@ const optionalNumber = (min, max, minMsg, maxMsg) =>
 
 const OhcPrescriptionForm = () => {
   const tenantFeatures = getTenantFeatures(cookie.get("tenantId"));
+  const loggedInRole = String(cookie.get("role") || "").toUpperCase();
+  const isLoggedInDoctor = loggedInRole === "DOCTOR";
+  const showDoctorAvailabilitySection =
+    tenantFeatures.enableTeleConsultation && !isLoggedInDoctor;
   const [activeStep, setActiveStep] = useState(1);
 
   const nextStep = async () => {
@@ -122,7 +126,7 @@ const OhcPrescriptionForm = () => {
     }
     if (activeStep === 3) {
       if (
-        tenantFeatures.enableTeleConsultation &&
+        showDoctorAvailabilitySection &&
         (errors.isDoctorAvailable || errors.teleDoctorId)
       ) {
         formik.setTouched(
@@ -167,9 +171,9 @@ const OhcPrescriptionForm = () => {
   const { ID: id } = useParams();
   const location = useLocation();
   const { data: diseaseSearchResponse } = useGetComboQuery("diseases-byname");
-  // Tele doctors: Users.id list for configured tenant (names from /combo/tele-doctor)
+  // Tele doctors: Doctors.id from /combo/tele-doctor
   const { data: teleDoctorApiRows = [] } = useGetComboQuery(
-    tenantFeatures.enableTeleConsultation ? "tele-doctor" : skipToken,
+    showDoctorAvailabilitySection ? "tele-doctor" : skipToken,
   );
   const teleDoctors = React.useMemo(
     () => mergeTeleDoctorsFromApi(teleDoctorApiRows),
@@ -255,9 +259,9 @@ const OhcPrescriptionForm = () => {
     // const addedDate = formatISO(new Date());
 
     return {
-      // Tele stores Users.id; prefer selected tele doctor when doctor unavailable
+      // Prefer selected tele doctor (Doctors.id) when doctor unavailable on site
       consultingId:
-        tenantFeatures.enableTeleConsultation &&
+        showDoctorAvailabilitySection &&
         values.isDoctorAvailable === "no" &&
         values.teleDoctorId
           ? Number(values.teleDoctorId)
@@ -433,7 +437,7 @@ const OhcPrescriptionForm = () => {
         "Haemoglobin too low",
         "Haemoglobin too high",
       ),
-      ...(tenantFeatures.enableTeleConsultation
+      ...(showDoctorAvailabilitySection
         ? {
             isDoctorAvailable: Yup.string()
               .oneOf(["yes", "no"], "Select doctor availability")
@@ -513,8 +517,7 @@ const OhcPrescriptionForm = () => {
         }
 
         const needsTele =
-          tenantFeatures.enableTeleConsultation &&
-          values.isDoctorAvailable === "no";
+          showDoctorAvailabilitySection && values.isDoctorAvailable === "no";
 
         if (needsTele) {
           if (!sheetId) {
@@ -564,7 +567,7 @@ const OhcPrescriptionForm = () => {
     const finalAge = `${years}y ${months}m ${days}d`;
     const opdDoctorId = patientData.ConsultantDoctorID || "";
     const fromTeleOpd =
-      tenantFeatures.enableTeleConsultation &&
+      showDoctorAvailabilitySection &&
       (isTeleVisitType(patientData.Visitype) || isTeleDoctorId(opdDoctorId));
 
     const updates = {
@@ -585,9 +588,21 @@ const OhcPrescriptionForm = () => {
       ...(fromTeleOpd
         ? {
             isDoctorAvailable: "no",
-            teleDoctorId: isTeleDoctorId(opdDoctorId)
-              ? String(opdDoctorId)
-              : "",
+            teleDoctorId: (() => {
+              if (!isTeleDoctorId(opdDoctorId)) return "";
+              const teleDoc = teleDoctors.find(
+                (d) =>
+                  Number(d.id) === Number(opdDoctorId) ||
+                  Number(d.userId) === Number(opdDoctorId),
+              );
+              return teleDoc?.id != null ? String(teleDoc.id) : String(opdDoctorId);
+            })(),
+            consultingId:
+              teleDoctors.find(
+                (d) =>
+                  Number(d.id) === Number(opdDoctorId) ||
+                  Number(d.userId) === Number(opdDoctorId),
+              )?.id ?? opdDoctorId,
           }
         : {}),
     };
@@ -1104,7 +1119,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                   </div>
                 )}
 
-                {tenantFeatures.enableTeleConsultation && (
+                {showDoctorAvailabilitySection && (
                   <div className="mt-8">
                     <h4 className="text-base font-semibold text-sky-700 mb-3 flex items-center gap-2">
                       <span className="w-1.5 h-5 bg-sky-600 rounded-full"></span>
@@ -1136,7 +1151,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                         >
                           <option value="">Select doctor</option>
                           {teleDoctors.map((d) => (
-                            <option key={d.userId} value={d.userId}>
+                            <option key={d.id} value={d.id}>
                               {d.name}
                             </option>
                           ))}
@@ -1732,7 +1747,9 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow" : "text-gray-400"}
                       base?.consultingId;
 
                     const teleDoc = teleDoctors.find(
-                      (d) => Number(d.userId) === Number(doctorRef),
+                      (d) =>
+                        Number(d.id) === Number(doctorRef) ||
+                        Number(d.userId) === Number(doctorRef),
                     );
 
                     const dataToPrint = {

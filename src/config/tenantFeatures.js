@@ -21,6 +21,7 @@ const DEFAULT_FEATURES = {
   enableFitnessStatus: false,
   enableAdminAnalysis: false,
   enableMhcuRegistrationAutos: false,
+  enableHindiPrescriptionPrint: false,
 };
 
 const CONFIGURED_TENANT_FEATURES = {
@@ -36,6 +37,7 @@ const CONFIGURED_TENANT_FEATURES = {
   enableFitnessStatus: true,
   enableAdminAnalysis: true,
   enableMhcuRegistrationAutos: true,
+  enableHindiPrescriptionPrint: true,
 };
 
 export const getTenantFeatures = (tenantId) => {
