@@ -488,9 +488,11 @@ const PatientRegistrationOhc = () => {
     formik.setFieldValue("localAddress", match.label);
     formik.setFieldValue("country", "1");
     setCountryId("1");
-    formik.setFieldValue("localAddressState", "23");
-    setStateId("23");
-    formik.setFieldValue("localAddressDistrict", "508");
+    // for prod 23
+    formik.setFieldValue("localAddressState", "13");
+    setStateId("13");
+    // for prod 508
+    formik.setFieldValue("localAddressDistrict", "190");
   }, [villages, isEdit, isTenant21, patientApiResponse, formik.values.villageId]);
 
   const referralOptions = Referral_Options.map((option) => option.value);
@@ -702,9 +704,10 @@ const PatientRegistrationOhc = () => {
     if (!villageValue) return;
     formik.setFieldValue("country", "1");
     setCountryId("1");
-    formik.setFieldValue("localAddressState", "23");
-    setStateId("23");
-    formik.setFieldValue("localAddressDistrict", "508");
+    // for prod 23
+    formik.setFieldValue("localAddressState", "13");
+    setStateId("13");
+    formik.setFieldValue("localAddressDistrict", "190");
   };
   const selectedDepartment = departments.find(
     (item) => String(item.id) === String(formik.values.department_id),
