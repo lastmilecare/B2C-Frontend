@@ -33,7 +33,11 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
   };
   const tenantType = cookie.get("tenantType");
   const tenantId = cookie.get("tenantId") || "N/A";
+  const role = String(cookie.get("role") || "").toUpperCase();
+  const isViewer = role === "VIEWER";
   const isMhcuTenant = isConfiguredTenant(tenantId);
+  // VIEWER: hide MHCU/OHC module only — Client Dashboard → MHCU Dashboard stays visible
+  const showOhcMenu = can("read:ohc_dashboard") && !(isMhcuTenant && isViewer);
   const [menus, setMenus] = useState({
     patient: false,
     opd: false,
@@ -554,7 +558,7 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
               >
                 AMP Dashboard
               </NavLink>
-            ) : tenantId == 21? (
+            ) : isMhcuTenant ? (
               <NavLink
                 to="/mhcu-adani-dashboard"
                 className={subNavItem}
@@ -696,8 +700,8 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
           </MenuGroup>
         )}
 
-        {/* ── OHC / MHCU (configured tenant) ───────────────── */}
-        {can("read:ohc_dashboard") && (
+        {/* ── OHC / MHCU (configured tenant) — hidden for VIEWER on MHCU ─ */}
+        {showOhcMenu && (
           <MenuGroup
             menuKey="ohc"
             icon={HeartIcon}
@@ -736,6 +740,15 @@ const AppSidebar = ({ isOpen, setIsOpen, width = 260, transition }) => {
             >
               OPD Prescription
             </NavLink>
+            {isMhcuTenant && can("read:ohc_dashboard") && (
+              <NavLink
+                to="/mhcu-admin-analysis"
+                className={subNavItem}
+                onClick={() => setIsOpen(false)}
+              >
+                Admin Analysis
+              </NavLink>
+            )}
             {/* )} */}
             {/* <NavLink
               to="/test-packages-ohc"

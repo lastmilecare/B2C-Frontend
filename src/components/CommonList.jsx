@@ -27,6 +27,7 @@ const CommonList = ({
   onExport = () => {},
   onPrint = () => {},
   onPrintCS = () => {},
+  onPrintHindi = () => {},
   isLoading = false,
   filtersConfig = [],
   onFilterApply = () => {},
@@ -160,6 +161,11 @@ const CommonList = ({
         color: "text-purple-700",
         handler: onPrintCS,
       },
+      printHindi: {
+        label: "Print in Hindi",
+        color: "text-emerald-700",
+        handler: onPrintHindi,
+      },
       status: { label: "Status", color: "", handler: onStatus },
     };
 
@@ -195,6 +201,7 @@ const CommonList = ({
     onView,
     onPrint,
     onPrintCS,
+    onPrintHindi,
     onStatus,
     openMenuRow,
     allowStaffActions,

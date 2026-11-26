@@ -5,7 +5,17 @@ import {
   maxConcern,
   CONCERN_LEVELS,
 } from "../../utils/healthFlags";
-import { formatDate } from "../../utils/helper";
+import { formatDate, formatDateTime2 } from "../../utils/helper";
+
+const visitLabel = (visitDate) => {
+  if (!visitDate) return null;
+  // Show date+time so same-day revisits are distinguishable
+  try {
+    return formatDateTime2(visitDate);
+  } catch {
+    return formatDate(visitDate);
+  }
+};
 
 const StatusBadge = ({ level, recordedOnly }) => {
   if (recordedOnly && level !== CONCERN_LEVELS.NA) {
@@ -38,9 +48,11 @@ const emptyItem = (template) => ({
 
 /**
  * Previous + current visit vitals comparison with health flags & escalation.
- * Shows current vitals even when there is no older previous visit.
+ * Shows an empty first-visit table when UHID has no prescription vitals yet.
  */
-const PreviousVisitHealthSummary = ({ previous, current }) => {
+const PreviousVisitHealthSummary = ({ previous, current, isLoading }) => {
+  const emptyTemplateFlags = useMemo(() => buildVitalsFlags({}), []);
+
   const previousFlags = useMemo(
     () => (previous ? buildVitalsFlags(previous) : null),
     [previous],
@@ -50,15 +62,22 @@ const PreviousVisitHealthSummary = ({ previous, current }) => {
     [current],
   );
 
-  if (!previous && !current) {
-    return null;
-  }
-
   const comparisonKeys = (
     previousFlags?.items ||
     currentFlags?.items ||
+    emptyTemplateFlags.items ||
     []
   ).filter((item) => item.key !== "bmi");
+
+  if (isLoading) {
+    return (
+      <section className="mt-6">
+        <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-5 text-sm text-slate-600">
+          Loading Visit Health Summary…
+        </div>
+      </section>
+    );
+  }
 
   const filterWithoutBmi = (flags) => {
     if (!flags) return null;
@@ -122,22 +141,41 @@ const PreviousVisitHealthSummary = ({ previous, current }) => {
               Previous Visit:{" "}
               <span className="font-medium text-slate-800">
                 {previous?.visitDate
-                  ? formatDate(previous.visitDate)
-                  : "None (first prescription visit)"}
+                  ? visitLabel(previous.visitDate)
+                  : "None (first visit / no prior prescription vitals)"}
               </span>
               {" · "}
               Current Visit:{" "}
               {current?.visitDate ? (
                 <span className="font-medium text-slate-800">
-                  {formatDate(current.visitDate)}
+                  {visitLabel(current.visitDate)}
                 </span>
               ) : (
-                <span className="text-slate-500">Vitals not recorded yet</span>
+                <span className="text-slate-500">
+                  Vitals not recorded yet (complete prescription to capture)
+                </span>
               )}
             </p>
           </div>
           {highest !== CONCERN_LEVELS.NA && <StatusBadge level={highest} />}
         </div>
+
+        {previous && current && (
+          <p className="mb-3 text-sm text-sky-800 bg-sky-50 border border-sky-100 rounded-lg px-3 py-2">
+            Comparing last two prescription vitals
+            {previous.visitDate ? ` (${visitLabel(previous.visitDate)}` : ""}
+            {current.visitDate ? ` → ${visitLabel(current.visitDate)})` : ")"}.
+            Same-day revisits are included.
+          </p>
+        )}
+        {previous && !current && (
+          <p className="mb-3 text-sm text-sky-800 bg-sky-50 border border-sky-100 rounded-lg px-3 py-2">
+            Previous readings are from the last OPD prescription (
+            {previous.visitDate ? visitLabel(previous.visitDate) : "prior visit"}
+            ). Current stays empty until today&apos;s prescription vitals are
+            saved.
+          </p>
+        )}
 
         <div className="overflow-x-auto rounded-xl border border-sky-100 bg-white">
           <table className="min-w-full text-sm">
@@ -228,6 +266,12 @@ const PreviousVisitHealthSummary = ({ previous, current }) => {
           <p className="mt-3 text-xs text-slate-500">
             No older visit found. Showing today&apos;s prescription vitals under
             Current Visit.
+          </p>
+        )}
+        {previous && !current && (
+          <p className="mt-3 text-xs text-slate-500">
+            Showing last recorded prescription vitals under Previous. Current
+            stays empty until today&apos;s prescription vitals are saved.
           </p>
         )}
 

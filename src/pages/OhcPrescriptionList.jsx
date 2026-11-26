@@ -9,6 +9,8 @@ import {
 } from "../redux/apiSlice";
 import { useReactToPrint } from "react-to-print";
 import PrescriptionPrint from "./PrescriptionPrint";
+import OhcPrescriptionPrint from "./OhcPrescriptionPrint";
+import OhcPrescriptionPrintHindi from "./OhcPrescriptionPrintHindi";
 import { useNavigate } from "react-router-dom";
 import useDebounce from "../hooks/useDebounce";
 import { healthAlerts, healthAlert } from "../utils/healthSwal";
@@ -16,8 +18,13 @@ import { generateFileName, downloadBlob } from "../utils/helper";
 import Avatar from "../components/common/Avatar";
 import { formatDate, formatTimeVal } from "../utils/helper";
 import { cookie } from "../utils/cookie";
+import { getTenantFeatures } from "../config/tenantFeatures";
+
 const OhcPrescriptionList = () => {
   const role = cookie.get("role");
+  const tenantFeatures = getTenantFeatures(cookie.get("tenantId"));
+  const useCompactOhcPrint = tenantFeatures.enableOpdCostFreeBilling;
+  const showHindiPrint = tenantFeatures.enableHindiPrescriptionPrint;
   const [exportExcel] = useLazyExportPrescriptionsExcelQuery();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -40,7 +47,9 @@ const OhcPrescriptionList = () => {
   const [toggleStatus] = useTogglePrescriptionStatusMutation();
   const [filters, setFilters] = useState({});
   const [printRow, setPrintRow] = useState(null);
+  const [printRowHindi, setPrintRowHindi] = useState(null);
   const printRef = useRef();
+  const printHindiRef = useRef();
   const { data, isLoading, isError, error } = useGetPrescriptionsListQuery(
     {
       page,
@@ -312,6 +321,13 @@ const OhcPrescriptionList = () => {
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: "Prescription",
+    pageStyle: useCompactOhcPrint
+      ? `
+      @page { size: A4 portrait; margin: 8mm; }
+      html, body { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    `
+      : undefined,
   });
 
   const onPrint = (row) => {
@@ -327,6 +343,40 @@ const OhcPrescriptionList = () => {
       }, 300);
     }, 50);
   };
+
+  const handlePrintHindi = useReactToPrint({
+    contentRef: printHindiRef,
+    documentTitle: "Prescription (Hindi)",
+    pageStyle: useCompactOhcPrint
+      ? `
+      @page { size: A4 portrait; margin: 8mm; }
+      html, body { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    `
+      : undefined,
+  });
+
+  const onPrintInHindi = (row) => {
+    setPrintRowHindi(null);
+
+    setTimeout(() => {
+      setPrintRowHindi({ ...row });
+
+      setTimeout(() => {
+        if (printHindiRef.current) {
+          handlePrintHindi();
+        }
+      }, 300);
+    }, 50);
+  };
+
+  const baseActionButtons =
+    role === "DOCTOR" ? ["edit", "print"] : ["edit", "delete", "print"];
+
+    // in this case, if showHindiPrint is true, we can add "printHindi" to the action buttons
+  const listActionButtons = showHindiPrint
+    ? [...baseActionButtons,]
+    : baseActionButtons;
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -362,13 +412,12 @@ const OhcPrescriptionList = () => {
           setPage(1);
         }}
         enableActions
-        actionButtons={
-          role === "DOCTOR" ? ["edit", "print"] : ["edit", "delete", "print"]
-        }
+        actionButtons={listActionButtons}
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onPrint={onPrint}
+        onPrintHindi={onPrintInHindi}
         enableAdd
         addButtonText="Add"
         onAdd={() =>
@@ -381,7 +430,16 @@ const OhcPrescriptionList = () => {
       />
       {printRow && (
         <div style={{ display: "none" }}>
-          <PrescriptionPrint ref={printRef} data={printRow} />
+          {useCompactOhcPrint ? (
+            <OhcPrescriptionPrint ref={printRef} data={printRow} />
+          ) : (
+            <PrescriptionPrint ref={printRef} data={printRow} />
+          )}
+        </div>
+      )}
+      {printRowHindi && useCompactOhcPrint && (
+        <div style={{ display: "none" }}>
+          <OhcPrescriptionPrintHindi ref={printHindiRef} data={printRowHindi} />
         </div>
       )}
     </div>

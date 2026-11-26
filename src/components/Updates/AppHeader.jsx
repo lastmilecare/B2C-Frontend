@@ -22,7 +22,7 @@ const AppHeader = ({ toggleSidebar }) => {
     navigate("/login");
   };
   const tenantId = cookie.get("tenantId") || "N/A";
-
+// for prod tenantId = 4, for dev tenantId = 21, 
   const tenantName =
     tenantId == 1
       ? "Honda"
@@ -30,6 +30,8 @@ const AppHeader = ({ toggleSidebar }) => {
         ? "AMP"
         : tenantId == 3
           ? "M3M"
+          : tenantId == 21
+          ? "MHCU"
           : "";
   const letterAnimation = {
     animate: {

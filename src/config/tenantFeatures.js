@@ -17,6 +17,11 @@ const DEFAULT_FEATURES = {
   enableOpdCostFreeBilling: false,
   enablePatientFormCustomization: false,
   enableStructuredReferral: false,
+  enableTeleConsultation: false,
+  enableFitnessStatus: false,
+  enableAdminAnalysis: false,
+  enableMhcuRegistrationAutos: false,
+  enableHindiPrescriptionPrint: false,
 };
 
 const CONFIGURED_TENANT_FEATURES = {
@@ -28,6 +33,11 @@ const CONFIGURED_TENANT_FEATURES = {
   enableOpdCostFreeBilling: true,
   enablePatientFormCustomization: true,
   enableStructuredReferral: true,
+  enableTeleConsultation: true,
+  enableFitnessStatus: true,
+  enableAdminAnalysis: true,
+  enableMhcuRegistrationAutos: true,
+  enableHindiPrescriptionPrint: true,
 };
 
 export const getTenantFeatures = (tenantId) => {

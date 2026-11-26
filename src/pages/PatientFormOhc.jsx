@@ -486,6 +486,13 @@ const PatientRegistrationOhc = () => {
 
     formik.setFieldValue("villageId", String(match.value));
     formik.setFieldValue("localAddress", match.label);
+    formik.setFieldValue("country", "1");
+    setCountryId("1");
+    // for prod 23
+    formik.setFieldValue("localAddressState", "13");
+    setStateId("13");
+    // for prod 508
+    formik.setFieldValue("localAddressDistrict", "190");
   }, [villages, isEdit, isTenant21, patientApiResponse, formik.values.villageId]);
 
   const referralOptions = Referral_Options.map((option) => option.value);
@@ -674,11 +681,14 @@ const PatientRegistrationOhc = () => {
 
     const years = parseInt(raw, 10) || 0;
     const today = new Date();
-    const derivedDOB = new Date(
-      today.getFullYear() - years,
-      today.getMonth(),
-      today.getDate(),
-    );
+    // Configured tenant (MHCU): DOB = 1 Jan of (currentYear - age)
+    const derivedDOB = isTenant21
+      ? new Date(today.getFullYear() - years, 0, 1)
+      : new Date(
+          today.getFullYear() - years,
+          today.getMonth(),
+          today.getDate(),
+        );
 
     const formattedDate = `${derivedDOB.getFullYear()}-${String(
       derivedDOB.getMonth() + 1,
@@ -686,6 +696,18 @@ const PatientRegistrationOhc = () => {
 
     formik.setFieldValue("dob", formattedDate);
     formik.setFieldValue("age", `${years}y 0m 0d`);
+  };
+
+  /** MHCU: village select → India / Madhya Pradesh / Anuppur */
+  const applyMhcuLocationFromVillage = (villageValue) => {
+    if (!isTenant21) return;
+    if (!villageValue) return;
+    formik.setFieldValue("country", "1");
+    setCountryId("1");
+    // for prod 23
+    formik.setFieldValue("localAddressState", "13");
+    setStateId("13");
+    formik.setFieldValue("localAddressDistrict", "190");
   };
   const selectedDepartment = departments.find(
     (item) => String(item.id) === String(formik.values.department_id),
@@ -1064,6 +1086,41 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       <option>BPL</option>
                     </Select>
 
+                    {isTenant21 ? (
+                      <Select
+                        label="Village"
+                        required
+                        name="villageId"
+                        value={formik.values.villageId}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          formik.setFieldValue("villageId", value);
+                          const match = villages.find(
+                            (v) => String(v.value) === String(value),
+                          );
+                          formik.setFieldValue(
+                            "localAddress",
+                            match?.label || "",
+                          );
+                          applyMhcuLocationFromVillage(value);
+                        }}
+                        onBlur={formik.handleBlur}
+                        error={
+                          formik.touched.villageId && formik.errors.villageId
+                        }
+                      >
+                        <option value="">Select Village</option>
+                        {villages.map((village) => (
+                          <option
+                            key={village.value}
+                            value={String(village.value)}
+                          >
+                            {village.label}
+                          </option>
+                        ))}
+                      </Select>
+                    ) : null}
+
                     <Select
                       label="Country"
                       required
@@ -1135,39 +1192,7 @@ ${activeStep === step.id ? "bg-white text-sky-600 shadow " : "text-gray-400"}`}
                       onChange={formik.handleChange}
                       name="healthCardNumber"
                     />
-                    {isTenant21 ? (
-                      <Select
-                        label="Village"
-                        required
-                        name="villageId"
-                        value={formik.values.villageId}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          formik.setFieldValue("villageId", value);
-                          const match = villages.find(
-                            (v) => String(v.value) === String(value),
-                          );
-                          formik.setFieldValue(
-                            "localAddress",
-                            match?.label || "",
-                          );
-                        }}
-                        onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.villageId && formik.errors.villageId
-                        }
-                      >
-                        <option value="">Select Village</option>
-                        {villages.map((village) => (
-                          <option
-                            key={village.value}
-                            value={String(village.value)}
-                          >
-                            {village.label}
-                          </option>
-                        ))}
-                      </Select>
-                    ) : (
+                    {!isTenant21 && (
                       <Input
                         {...formik.getFieldProps("localAddress")}
                         label="Local Address"
