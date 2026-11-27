@@ -3,11 +3,12 @@
  * Combo + OPD/prescription use Doctors.id — not Users.id.
  * Add more Doctors.id values when new tele doctors are onboarded.
  */
-export const TELE_DOCTOR_IDS = [49];
+export const TELE_DOCTOR_IDS = [49,134];
 
 /** Fallback labels until /combo/tele-doctor loads (doctor id → display). */
 export const TELE_CONSULTATION_DOCTORS = [
   { id: 49, userId: 178, name: "Amrita Jha" },
+  { id: 134, userId: 4, name: "Dr. Amit" },
 ];
 
 export const TELE_VISIT_TYPE = "TELE";
